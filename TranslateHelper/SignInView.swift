@@ -6,6 +6,28 @@
 import SwiftUI
 import AuthenticationServices
 
+// MARK: - Social button press style
+struct SocialButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(configuration.isPressed
+                          ? Color.tsCard.opacity(0.6)
+                          : Color.tsCard)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(
+                        Color.tsAccent.opacity(configuration.isPressed ? 1.0 : 0.4),
+                        lineWidth: 1.5
+                    )
+            )
+            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+            .animation(.easeInOut(duration: 0.12), value: configuration.isPressed)
+    }
+}
+
 struct SignInView: View {
     @EnvironmentObject var auth: AuthManager
     @State private var email = ""
@@ -20,17 +42,17 @@ struct SignInView: View {
 
                 VStack(spacing: 0) {
 
-                    // ── Top-left wordmark ──────────────────────────────
+                    // ── Wordmark — 150% larger ─────────────────────────
                     HStack {
-                        TSWordmark(iconSize: 28, fontSize: 18)
+                        TSWordmark(iconSize: 42, fontSize: 27)
                         Spacer()
                     }
                     .padding(.horizontal, 24)
-                    .padding(.top, 56)
+                    .padding(.top, 52)
 
-                    Spacer()
+                    // ── Sign In block — shifted up ─────────────────────
+                    Spacer().frame(height: 36)
 
-                    // ── Main content block (vertically centred) ────────
                     VStack(alignment: .leading, spacing: 0) {
 
                         // Left-aligned title
@@ -70,64 +92,64 @@ struct SignInView: View {
                             .font(.system(size: 14))
                             .foregroundColor(.tsAccent)
                             .frame(maxWidth: .infinity, alignment: .trailing)
-                            .padding(.bottom, 28)
+                    }
+                    .padding(.horizontal, 24)
 
-                        // OR CONTINUE WITH
-                        HStack(spacing: 12) {
-                            Rectangle()
-                                .frame(height: 1)
-                                .foregroundColor(Color.tsCard)
-                            Text("OR CONTINUE WITH")
-                                .font(.system(size: 11, weight: .semibold))
-                                .foregroundColor(.tsSecondary)
-                                .tracking(1.5)
-                                .fixedSize()
-                            Rectangle()
-                                .frame(height: 1)
-                                .foregroundColor(Color.tsCard)
+                    // ── OR CONTINUE WITH ───────────────────────────────
+                    HStack(spacing: 12) {
+                        Rectangle().frame(height: 1).foregroundColor(Color.tsCard)
+                        Text("OR CONTINUE WITH")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundColor(.tsSecondary)
+                            .tracking(1.5)
+                            .fixedSize()
+                        Rectangle().frame(height: 1).foregroundColor(Color.tsCard)
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.top, 28)
+                    .padding(.bottom, 16)
+
+                    // ── Social buttons ─────────────────────────────────
+                    HStack(spacing: 16) {
+
+                        // Apple
+                        Button {
+                            // TODO: Apple Sign-In
+                        } label: {
+                            Image(systemName: "apple.logo")
+                                .font(.system(size: 22, weight: .medium))
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 56)
                         }
-                        .padding(.bottom, 20)
+                        .buttonStyle(SocialButtonStyle())
 
-                        // Social buttons — icon only
-                        HStack(spacing: 16) {
-                            Button {
-                            } label: {
-                                Image(systemName: "apple.logo")
-                                    .font(.system(size: 22, weight: .medium))
-                                    .foregroundColor(.white)
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 56)
-                                    .background(Color.tsCard)
-                                    .cornerRadius(16)
-                            }
-
-                            Button {
-                            } label: {
-                                GoogleGIcon(size: 24)
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 56)
-                                    .background(Color.tsCard)
-                                    .cornerRadius(16)
-                            }
+                        // Google
+                        Button {
+                            // TODO: Google Sign-In
+                        } label: {
+                            GoogleGIcon(size: 24)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 56)
                         }
-                        .padding(.bottom, 24)
-
-                        // Don't have an account — below social buttons
-                        Button(action: { showCreate = true }) {
-                            HStack(spacing: 4) {
-                                Text("Don't have an account?")
-                                    .foregroundColor(.tsSecondary)
-                                Text("Create Account")
-                                    .foregroundColor(.tsAccent)
-                                    .fontWeight(.semibold)
-                            }
-                            .font(.system(size: 15))
-                        }
-                        .frame(maxWidth: .infinity)
+                        .buttonStyle(SocialButtonStyle())
                     }
                     .padding(.horizontal, 24)
 
                     Spacer()
+
+                    // ── Create account ─────────────────────────────────
+                    Button(action: { showCreate = true }) {
+                        HStack(spacing: 4) {
+                            Text("Don't have an account?")
+                                .foregroundColor(.tsSecondary)
+                            Text("Create Account")
+                                .foregroundColor(.tsAccent)
+                                .fontWeight(.semibold)
+                        }
+                        .font(.system(size: 15))
+                    }
+                    .padding(.bottom, 16)
 
                     // Home indicator
                     RoundedRectangle(cornerRadius: 3)
