@@ -17,132 +17,136 @@ struct SignInView: View {
         NavigationStack {
             ZStack {
                 Color.tsBackground.ignoresSafeArea()
+                VStack(spacing: 0) {
+                    ScrollView {
+                        VStack(spacing: 0) {
+                            Spacer().frame(height: 48)
 
-                ScrollView {
-                    VStack(spacing: 0) {
-                        Spacer().frame(height: 60)
+                            // ── Logo + Title ───────────────────────────
+                            VStack(spacing: 14) {
+                                Image("TalkSwitchLogo")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 52, height: 52)
 
-                        // ── Logo + Title ───────────────────────────────
-                        VStack(spacing: 14) {
-                            Image("TalkSwitchLogo")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 52, height: 52)
+                                VStack(spacing: 6) {
+                                    Text("Sign In")
+                                        .font(.system(size: 32, weight: .bold))
+                                        .foregroundColor(.white)
+                                    Text("Welcome back to your language journey.")
+                                        .font(.system(size: 15))
+                                        .foregroundColor(.tsSecondary)
+                                        .multilineTextAlignment(.center)
+                                }
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.horizontal, 24)
 
-                            VStack(spacing: 6) {
-                                Text("Sign In")
-                                    .font(.system(size: 32, weight: .bold))
-                                    .foregroundColor(.white)
-                                Text("Welcome back to your language journey.")
-                                    .font(.system(size: 15))
+                            Spacer().frame(height: 36)
+
+                            // ── Fields ─────────────────────────────────
+                            VStack(spacing: 12) {
+                                TSTextField(placeholder: "Email", text: $email)
+                                TSTextField(placeholder: "Password", text: $password, isSecure: true)
+                            }
+                            .padding(.horizontal, 24)
+
+                            Spacer().frame(height: 16)
+
+                            // Error
+                            if let err = auth.errorMessage {
+                                Text(err)
+                                    .font(.caption)
+                                    .foregroundColor(.red)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.horizontal, 24)
+                                    .padding(.bottom, 8)
+                            }
+
+                            // ── Sign In button ─────────────────────────
+                            TSButton(title: "Sign In", isLoading: auth.isLoading) {
+                                Task { await auth.signIn(email: email, password: password) }
+                            }
+                            .padding(.horizontal, 24)
+
+                            // ── Forgot password ────────────────────────
+                            Button("Forgot Password?") { showForgot = true }
+                                .font(.system(size: 14))
+                                .foregroundColor(.tsAccent)
+                                .padding(.top, 16)
+
+                            Spacer().frame(height: 28)
+
+                            // ── OR CONTINUE WITH divider ───────────────
+                            HStack(spacing: 12) {
+                                Rectangle()
+                                    .frame(height: 1)
+                                    .foregroundColor(Color.tsCard)
+                                Text("OR CONTINUE WITH")
+                                    .font(.system(size: 11, weight: .semibold))
                                     .foregroundColor(.tsSecondary)
-                                    .multilineTextAlignment(.center)
+                                    .tracking(1.5)
+                                    .fixedSize()
+                                Rectangle()
+                                    .frame(height: 1)
+                                    .foregroundColor(Color.tsCard)
                             }
-                        }
-                        .frame(maxWidth: .infinity)
+                            .padding(.horizontal, 24)
 
-                        Spacer().frame(height: 32)
+                            Spacer().frame(height: 20)
 
-                        // ── Fields ─────────────────────────────────────
-                        VStack(spacing: 12) {
-                            TSTextField(placeholder: "Email", text: $email)
-                            TSTextField(placeholder: "Password", text: $password, isSecure: true)
-                        }
-
-                        Spacer().frame(height: 16)
-
-                        // Error
-                        if let err = auth.errorMessage {
-                            Text(err)
-                                .font(.caption)
-                                .foregroundColor(.red)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.bottom, 8)
-                        }
-
-                        // ── Sign In button ─────────────────────────────
-                        TSButton(title: "Sign In", isLoading: auth.isLoading) {
-                            Task { await auth.signIn(email: email, password: password) }
-                        }
-
-                        // ── Forgot password ────────────────────────────
-                        Button("Forgot Password?") { showForgot = true }
-                            .font(.system(size: 14))
-                            .foregroundColor(.tsAccent)
-                            .padding(.top, 14)
-
-                        // ── Divider ────────────────────────────────────
-                        HStack {
-                            Rectangle().frame(height: 1).foregroundColor(Color.tsBorder)
-                            Text("OR CONTINUE WITH")
-                                .font(.system(size: 11, weight: .medium))
-                                .foregroundColor(.tsSecondary)
-                                .fixedSize()
-                                .padding(.horizontal, 10)
-                            Rectangle().frame(height: 1).foregroundColor(Color.tsBorder)
-                        }
-                        .padding(.vertical, 24)
-
-                        // ── Social buttons: Apple LEFT, Google RIGHT ───
-                        HStack(spacing: 12) {
-
-                            // Apple
-                            Button {
-                                // TODO: wire Apple Sign-In
-                            } label: {
-                                HStack(spacing: 8) {
+                            // ── Social buttons: icon only ──────────────
+                            HStack(spacing: 16) {
+                                // Apple — icon only
+                                Button {
+                                    // TODO: Apple Sign-In
+                                } label: {
                                     Image(systemName: "apple.logo")
-                                        .font(.system(size: 20, weight: .medium))
+                                        .font(.system(size: 22, weight: .medium))
                                         .foregroundColor(.white)
-                                    Text("Apple")
-                                        .font(.system(size: 15, weight: .semibold))
-                                        .foregroundColor(.white)
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 56)
+                                        .background(Color.tsCard)
+                                        .cornerRadius(16)
                                 }
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 52)
-                                .background(Color.tsCard)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 14)
-                                        .stroke(Color.tsAccent.opacity(0.4), lineWidth: 1.5)
-                                )
-                                .cornerRadius(14)
-                            }
 
-                            // Google
-                            Button {
-                                // TODO: wire Google Sign-In
-                            } label: {
-                                HStack(spacing: 8) {
-                                    GoogleGIcon()
-                                    Text("Google")
-                                        .font(.system(size: 15, weight: .semibold))
-                                        .foregroundColor(.white)
+                                // Google — icon only
+                                Button {
+                                    // TODO: Google Sign-In
+                                } label: {
+                                    GoogleGIcon(size: 24)
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 56)
+                                        .background(Color.tsCard)
+                                        .cornerRadius(16)
                                 }
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 52)
-                                .background(Color.tsCard)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 14)
-                                        .stroke(Color.tsAccent.opacity(0.4), lineWidth: 1.5)
-                                )
-                                .cornerRadius(14)
                             }
+                            .padding(.horizontal, 24)
+
+                            Spacer().frame(height: 40)
                         }
+                    }
 
-                        Spacer().frame(height: 32)
-
-                        // ── Sign up link ───────────────────────────────
+                    // ── Footer (pinned to bottom) ──────────────────────
+                    VStack(spacing: 16) {
                         Button(action: { showCreate = true }) {
                             HStack(spacing: 4) {
-                                Text("Don't have an account?").foregroundColor(.tsSecondary)
-                                Text("Create Account").foregroundColor(.tsAccent).fontWeight(.semibold)
+                                Text("Don't have an account?")
+                                    .foregroundColor(.tsSecondary)
+                                Text("Create Account")
+                                    .foregroundColor(.tsAccent)
+                                    .fontWeight(.semibold)
                             }
                             .font(.system(size: 15))
                         }
 
-                        Spacer().frame(height: 48)
+                        // Home indicator
+                        RoundedRectangle(cornerRadius: 3)
+                            .fill(Color.white.opacity(0.2))
+                            .frame(width: 128, height: 5)
                     }
-                    .padding(.horizontal, 24)
+                    .padding(.bottom, 16)
+                    .padding(.top, 8)
                 }
             }
             .navigationDestination(isPresented: $showCreate) { CreateAccountView() }
@@ -151,23 +155,18 @@ struct SignInView: View {
     }
 }
 
-// ── Google "G" icon using brand colours ───────────────────────────────────
+// MARK: - Google G icon
 struct GoogleGIcon: View {
+    var size: CGFloat = 20
     var body: some View {
-        ZStack {
-            Text("G")
-                .font(.system(size: 18, weight: .bold))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [
-                            Color(red: 0.26, green: 0.52, blue: 0.96), // Google blue
-                            Color(red: 0.92, green: 0.26, blue: 0.21), // Google red
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
+        Text("G")
+            .font(.system(size: size, weight: .bold))
+            .foregroundStyle(
+                LinearGradient(
+                    colors: [Color(hex: "#4285F4"), Color(hex: "#EA4335")],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
                 )
-        }
-        .frame(width: 22, height: 22)
+            )
     }
 }
