@@ -25,7 +25,7 @@ struct CreateAccountView: View {
                     Spacer()
                     Text("Create Account")
                         .font(.system(size: 17, weight: .semibold))
-                        .foregroundColor(.white)
+                        .foregroundColor(.tsLabel)
                     Spacer()
                     Spacer().frame(width: 44) // Balance
                 }
@@ -38,7 +38,7 @@ struct CreateAccountView: View {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Join the journey")
                                 .font(.system(size: 32, weight: .bold))
-                                .foregroundColor(.white)
+                                .foregroundColor(.tsLabel)
                             Text("Start mastering new languages today.")
                                 .font(.system(size: 17))
                                 .foregroundColor(.tsSecondary)
@@ -74,7 +74,7 @@ struct CreateAccountView: View {
                         ZStack {
                             Text("Create Account")
                                 .font(.system(size: 17, weight: .semibold))
-                                .foregroundColor(.white)
+                                .foregroundColor(.tsLabel)
                                 .opacity(auth.isLoading ? 0 : 1)
                             
                             if auth.isLoading {
@@ -131,7 +131,7 @@ struct OnboardingField: View {
                 }
             }
             .font(.system(size: 17))
-            .foregroundColor(.white)
+            .foregroundColor(.tsLabel)
             .padding(.horizontal, 16)
             .padding(.vertical, 16)
             .background(Color.tsCard)

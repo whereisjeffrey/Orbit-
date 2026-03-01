@@ -20,7 +20,7 @@ struct LibraryView: View {
                     HStack {
                         Text("Library")
                             .font(.system(size: 30, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(.tsLabel)
                         Spacer()
                         HStack(spacing: 12) {
                             Circle()
@@ -55,7 +55,7 @@ struct LibraryView: View {
                             .foregroundColor(.tsSecondary)
                             .font(.system(size: 16))
                         TextField("Search your decks...", text: $searchText)
-                            .foregroundColor(.white)
+                            .foregroundColor(.tsLabel)
                             .autocorrectionDisabled()
                     }
                     .padding(.horizontal, 12)
@@ -81,7 +81,7 @@ struct LibraryView: View {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("My Clipboard")
                                         .font(.system(size: 20, weight: .bold))
-                                        .foregroundColor(.white)
+                                        .foregroundColor(.tsLabel)
                                     Text("Synced from keyboard")
                                         .font(.system(size: 13))
                                         .foregroundColor(.tsSecondary)
@@ -145,7 +145,7 @@ struct LibraryView: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Daily Goal")
                                 .font(.system(size: 15, weight: .bold))
-                                .foregroundColor(.white)
+                                .foregroundColor(.tsLabel)
                             Text("15 / 20 phrases reviewed")
                                 .font(.system(size: 13))
                                 .foregroundColor(.tsSecondary)
@@ -155,7 +155,7 @@ struct LibraryView: View {
 
                         Button("Keep Going") {}
                             .font(.system(size: 13, weight: .semibold))
-                            .foregroundColor(.white)
+                            .foregroundColor(.tsLabel)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 6)
                             .overlay(Capsule().stroke(Color.white.opacity(0.2), lineWidth: 1))
@@ -179,7 +179,7 @@ struct LanguageBubble: View {
     var body: some View {
         Text(label)
             .font(.system(size: 10, weight: .bold))
-            .foregroundColor(.white)
+            .foregroundColor(.tsLabel)
             .frame(width: 32, height: 32)
             .background(color)
             .clipShape(Circle())
@@ -205,7 +205,7 @@ struct DeckCard: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.system(size: 17, weight: .bold))
-                    .foregroundColor(.white)
+                    .foregroundColor(.tsLabel)
                 Text("\(count) phrases")
                     .font(.system(size: 13))
                     .foregroundColor(.tsSecondary)

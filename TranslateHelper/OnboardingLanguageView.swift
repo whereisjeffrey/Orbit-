@@ -54,7 +54,7 @@ struct OnboardingLanguageView: View {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("I want to learn...")
                                 .font(.system(size: 34, weight: .bold))
-                                .foregroundColor(.white)
+                                .foregroundColor(.tsLabel)
                             Text("Select the language you'd like to master. You can add more later.")
                                 .font(.system(size: 17))
                                 .foregroundColor(.tsSecondary)
@@ -106,7 +106,7 @@ struct OnboardingLanguageView: View {
                     Button(action: { showGoals = true }) {
                         Text("Continue")
                             .font(.system(size: 19, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(.tsLabel)
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
                             .background(Color.tsAccent)

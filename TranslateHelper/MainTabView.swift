@@ -33,7 +33,7 @@ struct MainTabView: View {
                                 .shadow(color: Color.tsAccent.opacity(0.39), radius: 10, x: 0, y: 4)
                             Image(systemName: "plus")
                                 .font(.system(size: 28, weight: .semibold))
-                                .foregroundColor(.white)
+                                .foregroundColor(.tsLabel)
                         }
                     }
                     .offset(y: -20)

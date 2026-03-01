@@ -96,7 +96,7 @@ struct LanguageSelectionView: View {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("My native language")
                                 .font(.system(size: 34, weight: .bold))
-                                .foregroundColor(.white)
+                                .foregroundColor(.tsLabel)
                             Text("Please select your native language")
                                 .font(.system(size: 17))
                                 .foregroundColor(.tsSecondary)
@@ -116,7 +116,7 @@ struct LanguageSelectionView: View {
                             HStack {
                                 Text("\(nativeLanguage.flag) \(nativeLanguage.name)")
                                     .font(.system(size: 17, weight: .medium))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(.tsLabel)
                                 Spacer()
                                 Image(systemName: "chevron.down")
                                     .font(.system(size: 14))
@@ -134,7 +134,7 @@ struct LanguageSelectionView: View {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("I want to learn...")
                                 .font(.system(size: 34, weight: .bold))
-                                .foregroundColor(.white)
+                                .foregroundColor(.tsLabel)
                             Text("Select the language you'd like to master. You can add more later.")
                                 .font(.system(size: 17))
                                 .foregroundColor(.tsSecondary)
@@ -172,7 +172,7 @@ struct LanguageSelectionView: View {
                     Button(action: onContinue) {
                         Text("Continue")
                             .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(.tsLabel)
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
                             .background(
@@ -215,7 +215,7 @@ struct LanguageCard: View {
                         .font(.system(size: 40))
                     Text(language.name)
                         .font(.system(size: 17, weight: .semibold))
-                        .foregroundColor(.white)
+                        .foregroundColor(.tsLabel)
                         .multilineTextAlignment(.center)
                 }
                 .frame(maxWidth: .infinity)
@@ -235,7 +235,7 @@ struct LanguageCard: View {
                             .frame(width: 20, height: 20)
                         Image(systemName: "checkmark")
                             .font(.system(size: 10, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(.tsLabel)
                     }
                     .padding(8)
                 }

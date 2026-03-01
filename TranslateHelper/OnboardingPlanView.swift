@@ -15,7 +15,7 @@ struct OnboardingPlanView: View {
                     Button(action: { dismiss() }) {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 24, weight: .semibold))
-                            .foregroundColor(.white)
+                            .foregroundColor(.tsLabel)
                             .frame(width: 40, height: 40)
                             .background(Color.white.opacity(0.1))
                             .clipShape(Circle())
@@ -23,7 +23,7 @@ struct OnboardingPlanView: View {
                     Spacer()
                     Text("Choose Your Plan")
                         .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(.white)
+                        .foregroundColor(.tsLabel)
                     Spacer()
                     Spacer().frame(width: 40)
                 }
@@ -35,7 +35,7 @@ struct OnboardingPlanView: View {
                         VStack(spacing: 8) {
                             Text("Master Any Language")
                                 .font(.system(size: 24, weight: .bold))
-                                .foregroundColor(.white)
+                                .foregroundColor(.tsLabel)
                             Text("Select the plan that works best for your learning goals.")
                                 .font(.system(size: 15, weight: .medium))
                                 .foregroundColor(Color(hex: "A1A1AA"))
@@ -56,7 +56,7 @@ struct OnboardingPlanView: View {
                                                     .font(.system(size: 20, weight: .bold))
                                                 Text("Pro")
                                                     .font(.system(size: 24, weight: .bold))
-                                                    .foregroundColor(.white)
+                                                    .foregroundColor(.tsLabel)
                                             }
                                             Text("Unlock your full potential")
                                                 .font(.system(size: 14, weight: .medium))
@@ -66,7 +66,7 @@ struct OnboardingPlanView: View {
                                         VStack(alignment: .trailing, spacing: 2) {
                                             Text("$9.99")
                                                 .font(.system(size: 30, weight: .bold))
-                                                .foregroundColor(.white)
+                                                .foregroundColor(.tsLabel)
                                             Text("/ month")
                                                 .font(.system(size: 12, weight: .medium))
                                                 .foregroundColor(Color(hex: "A1A1AA"))
@@ -91,7 +91,7 @@ struct OnboardingPlanView: View {
                                 // Badge
                                 Text("MOST POPULAR")
                                     .font(.system(size: 10, weight: .bold))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(.tsLabel)
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 4)
                                     .background(LinearGradient(colors: [Color.tsAccent, Color(hex: "00F0FF")], startPoint: .leading, endPoint: .trailing))
@@ -154,7 +154,7 @@ struct OnboardingPlanView: View {
                     Button(action: { navigateToLibrary = true }) {
                         Text("Start 7-Day Free Trial")
                             .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(.tsLabel)
                             .frame(maxWidth: .infinity)
                             .frame(height: 60)
                             .background(Color.tsAccent)

@@ -26,7 +26,7 @@ struct ForgotPasswordView: View {
 
                         Text("Check Your Email")
                             .font(.system(size: 26, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(.tsLabel)
 
                         Text("We sent a reset link to\n\(email)")
                             .font(.system(size: 15))
@@ -48,7 +48,7 @@ struct ForgotPasswordView: View {
                     VStack(spacing: 8) {
                         Text("Forgot Password?")
                             .font(.system(size: 26, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(.tsLabel)
                         Text("Enter your email and we'll send a reset link")
                             .font(.system(size: 15))
                             .foregroundColor(.tsSecondary)

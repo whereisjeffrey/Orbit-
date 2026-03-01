@@ -22,7 +22,7 @@ struct StudySourceWordView: View {
                     VStack(spacing: 2) {
                         Text("Study Mode")
                             .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(.tsLabel)
                         Text("12 OF 45 CARDS")
                             .font(.system(size: 10, weight: .semibold))
                             .foregroundColor(.tsSecondary)
@@ -49,7 +49,7 @@ struct StudySourceWordView: View {
                         HStack(spacing: 8) {
                             HStack(spacing: 4) {
                                 Text("🇧🇷").font(.system(size: 16))
-                                Text("Portuguese").font(.system(size: 12, weight: .semibold)).foregroundColor(.white)
+                                Text("Portuguese").font(.system(size: 12, weight: .semibold)).foregroundColor(.tsLabel)
                             }
                             
                             Image(systemName: "arrow.right")
@@ -58,7 +58,7 @@ struct StudySourceWordView: View {
                             
                             HStack(spacing: 4) {
                                 Text("🇺🇸").font(.system(size: 16))
-                                Text("English").font(.system(size: 12, weight: .semibold)).foregroundColor(.white)
+                                Text("English").font(.system(size: 12, weight: .semibold)).foregroundColor(.tsLabel)
                             }
                             
                             Button(action: {}) {
@@ -86,7 +86,7 @@ struct StudySourceWordView: View {
                             
                             Text("saudades")
                                 .font(.system(size: 36, weight: .bold))
-                                .foregroundColor(.white)
+                                .foregroundColor(.tsLabel)
                         }
                         
                         Spacer()

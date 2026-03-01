@@ -54,7 +54,7 @@ struct SignInView: View {
                         VStack(alignment: .leading, spacing: 6) {
                             Text("Sign In")
                                 .font(.system(size: 32, weight: .bold))
-                                .foregroundColor(.white)
+                                .foregroundColor(.tsLabel)
                             Text("Find your voice in any language.")
                                 .font(.system(size: 15))
                                 .foregroundColor(.tsSecondary)
@@ -107,7 +107,7 @@ struct SignInView: View {
                             } label: {
                                 Image(systemName: "apple.logo")
                                     .font(.system(size: 22, weight: .medium))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(.tsLabel)
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 56)
                             }

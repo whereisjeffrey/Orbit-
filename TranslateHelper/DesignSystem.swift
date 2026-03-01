@@ -114,9 +114,9 @@ struct TSTextField: View {
                     .autocorrectionDisabled()
             }
         }
-        .foregroundColor(.white)
+        .foregroundColor(.tsLabel)
         .padding()
-        .background(Color.tsCard)
+        .background(Color.tsInputBg)
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsBorder, lineWidth: 1))
         .cornerRadius(12)
     }

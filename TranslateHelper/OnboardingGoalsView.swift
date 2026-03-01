@@ -46,7 +46,7 @@ struct OnboardingGoalsView: View {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Why are you learning?")
                                 .font(.system(size: 34, weight: .bold))
-                                .foregroundColor(.white)
+                                .foregroundColor(.tsLabel)
                             Text("Select all that apply. This helps us customize your study cards.")
                                 .font(.system(size: 17))
                                 .foregroundColor(.tsSecondary)
@@ -73,7 +73,7 @@ struct OnboardingGoalsView: View {
                                         
                                         Text(name)
                                             .font(.system(size: 17, weight: .semibold))
-                                            .foregroundColor(.white)
+                                            .foregroundColor(.tsLabel)
                                     }
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 148)
@@ -99,7 +99,7 @@ struct OnboardingGoalsView: View {
                     Button(action: { showPlan = true }) {
                         Text("Continue")
                             .font(.system(size: 17, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(.tsLabel)
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
                             .background(
