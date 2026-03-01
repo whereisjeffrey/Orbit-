@@ -66,15 +66,18 @@ class AuthManager: ObservableObject {
     }
 
     private func friendlyError(_ error: Error) -> String {
-        let code = AuthErrorCode(_nsError: error as NSError).code
-        switch code {
-        case .wrongPassword, .invalidCredential: return "Incorrect email or password."
-        case .userNotFound:    return "No account found with that email."
-        case .emailAlreadyInUse: return "An account already exists with that email."
-        case .weakPassword:    return "Password must be at least 6 characters."
-        case .invalidEmail:    return "Please enter a valid email address."
-        case .networkError:    return "Network error. Check your connection."
-        default:               return error.localizedDescription
+        let nsError = error as NSError
+        if let code = AuthErrorCode(rawValue: nsError.code) {
+            switch code {
+            case .wrongPassword, .invalidCredential: return "Incorrect email or password."
+            case .userNotFound:       return "No account found with that email."
+            case .emailAlreadyInUse:  return "An account already exists with that email."
+            case .weakPassword:       return "Password must be at least 6 characters."
+            case .invalidEmail:       return "Please enter a valid email address."
+            case .networkError:       return "Network error. Check your connection."
+            default:                  return error.localizedDescription
+            }
         }
+        return error.localizedDescription
     }
 }
