@@ -21,14 +21,8 @@ struct SignInView: View {
                 VStack(spacing: 0) {
 
                     // ── Top-left wordmark ──────────────────────────────
-                    HStack(spacing: 8) {
-                        Image("TalkSwitchLogo")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 28, height: 28)
-                        Text("TalkSwitch")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(.white)
+                    HStack {
+                        TSWordmark(iconSize: 28, fontSize: 18)
                         Spacer()
                     }
                     .padding(.horizontal, 24)

@@ -36,6 +36,39 @@ extension LinearGradient {
 
 // MARK: - Shared Components
 
+
+// MARK: - Logo Components
+//
+// Two variants:
+//   TSLogoIcon   — the wifi/signal icon only (use in tab bars, small contexts)
+//   TSWordmark   — icon + "TalkSwitch" text side by side (use in headers, auth screens)
+//
+// Asset names: "TalkSwitchLogo" (icon only) in Assets.xcassets
+
+struct TSLogoIcon: View {
+    var size: CGFloat = 32
+    var body: some View {
+        Image("TalkSwitchLogo")
+            .resizable()
+            .scaledToFit()
+            .frame(width: size, height: size)
+    }
+}
+
+struct TSWordmark: View {
+    var iconSize: CGFloat = 28
+    var fontSize: CGFloat = 18
+
+    var body: some View {
+        HStack(spacing: 8) {
+            TSLogoIcon(size: iconSize)
+            Text("TalkSwitch")
+                .font(.system(size: fontSize, weight: .bold))
+                .foregroundColor(.white)
+        }
+    }
+}
+
 struct TSTextField: View {
     let placeholder: String
     @Binding var text: String
