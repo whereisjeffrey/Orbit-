@@ -11,71 +11,162 @@ struct Language: Identifiable, Hashable {
     let name: String
 }
 
+let allLanguages: [Language] = [
+    Language(flag: "\u{1F1F8}\u{1F1E6}", name: "Arabic"),
+    Language(flag: "\u{1F1E7}\u{1F1F7}", name: "Portuguese"),
+    Language(flag: "\u{1F1EA}\u{1F1F8}", name: "Spanish"),
+    Language(flag: "\u{1F1EB}\u{1F1F7}", name: "French"),
+    Language(flag: "\u{1F1E9}\u{1F1EA}", name: "German"),
+    Language(flag: "\u{1F1EE}\u{1F1F9}", name: "Italian"),
+    Language(flag: "\u{1F1EF}\u{1F1F5}", name: "Japanese"),
+    Language(flag: "\u{1F1F0}\u{1F1F7}", name: "Korean"),
+]
+
+let nativeLanguages: [Language] = [
+    Language(flag: "\u{1F1FA}\u{1F1F8}", name: "English"),
+    Language(flag: "\u{1F1E7}\u{1F1F7}", name: "Portuguese"),
+    Language(flag: "\u{1F1EA}\u{1F1F8}", name: "Spanish"),
+    Language(flag: "\u{1F1EB}\u{1F1F7}", name: "French"),
+    Language(flag: "\u{1F1E9}\u{1F1EA}", name: "German"),
+    Language(flag: "\u{1F1EE}\u{1F1F9}", name: "Italian"),
+    Language(flag: "\u{1F1EF}\u{1F1F5}", name: "Japanese"),
+    Language(flag: "\u{1F1F0}\u{1F1F7}", name: "Korean"),
+]
+
 struct LanguageSelectionView: View {
+    var step: Int = 1
+    var totalSteps: Int = 3
     @Binding var selectedLanguage: Language?
+    let onBack: () -> Void
+    let onSkip: () -> Void
     let onContinue: () -> Void
 
-    let languages: [Language] = [
-        Language(flag: "🇸🇦", name: "Arabic"),
-        Language(flag: "🇧🇷", name: "Portuguese"),
-        Language(flag: "🇪🇸", name: "Spanish"),
-        Language(flag: "🇫🇷", name: "French"),
-        Language(flag: "🇩🇪", name: "German"),
-        Language(flag: "🇮🇹", name: "Italian"),
-        Language(flag: "🇯🇵", name: "Japanese"),
-        Language(flag: "🇰🇷", name: "Korean"),
-    ]
+    @State private var nativeLanguage: Language = nativeLanguages[0] // Default: English
+    @State private var showNativePicker = false
 
     let columns = [
-        GridItem(.flexible(), spacing: 12),
-        GridItem(.flexible(), spacing: 12),
-        GridItem(.flexible(), spacing: 12),
-        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 16),
+        GridItem(.flexible(), spacing: 16),
     ]
 
     var body: some View {
         ZStack(alignment: .bottom) {
             Color.tsBackground.ignoresSafeArea()
 
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
+            VStack(spacing: 0) {
 
-                    // Header
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("What language do you want to learn?")
-                            .font(.system(size: 28, weight: .bold))
-                            .foregroundColor(.white)
-                        Text("You can add more languages later.")
-                            .font(.system(size: 15))
-                            .foregroundColor(.tsSecondary)
+                // ── Nav bar ────────────────────────────────────────────
+                HStack {
+                    Button(action: onBack) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 22, weight: .semibold))
+                            .foregroundColor(.tsAccent)
                     }
-                    .padding(.horizontal, 24)
-                    .padding(.top, 56)
-                    .padding(.bottom, 32)
+                    .frame(width: 40, height: 40)
 
-                    // Language grid
-                    LazyVGrid(columns: columns, spacing: 12) {
-                        ForEach(languages) { language in
-                            LanguageCard(
-                                language: language,
-                                isSelected: selectedLanguage?.name == language.name
-                            ) {
-                                selectedLanguage = language
+                    Spacer()
+
+                    // Progress bar
+                    ZStack(alignment: .leading) {
+                        Capsule()
+                            .fill(Color.white.opacity(0.1))
+                            .frame(width: 128, height: 6)
+                        Capsule()
+                            .fill(Color.tsAccent)
+                            .frame(width: 128 * (CGFloat(step) / CGFloat(totalSteps)), height: 6)
+                    }
+
+                    Spacer()
+
+                    Button(action: onSkip) {
+                        Text("Skip")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(.tsAccent)
+                    }
+                    .frame(width: 40, height: 40)
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                .padding(.bottom, 8)
+
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+
+                        // ── Native language section ────────────────────
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("My native language")
+                                .font(.system(size: 34, weight: .bold))
+                                .foregroundColor(.white)
+                            Text("Please select your native language")
+                                .font(.system(size: 17))
+                                .foregroundColor(.tsSecondary)
+                        }
+                        .padding(.bottom, 24)
+
+                        // Native language picker
+                        Menu {
+                            ForEach(nativeLanguages) { lang in
+                                Button {
+                                    nativeLanguage = lang
+                                } label: {
+                                    Label("\(lang.flag) \(lang.name)", systemImage: "")
+                                }
+                            }
+                        } label: {
+                            HStack {
+                                Text("\(nativeLanguage.flag) \(nativeLanguage.name)")
+                                    .font(.system(size: 17, weight: .medium))
+                                    .foregroundColor(.white)
+                                Spacer()
+                                Image(systemName: "chevron.down")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.tsSecondary)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 14)
+                            .background(Color.tsCard)
+                            .cornerRadius(12)
+                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsBorder, lineWidth: 1))
+                        }
+                        .padding(.bottom, 32)
+
+                        // ── Learn section ──────────────────────────────
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("I want to learn...")
+                                .font(.system(size: 34, weight: .bold))
+                                .foregroundColor(.white)
+                            Text("Select the language you'd like to master. You can add more later.")
+                                .font(.system(size: 17))
+                                .foregroundColor(.tsSecondary)
+                        }
+                        .padding(.bottom, 24)
+
+                        // Language grid — 2 columns
+                        LazyVGrid(columns: columns, spacing: 16) {
+                            ForEach(allLanguages) { language in
+                                LanguageCard(
+                                    language: language,
+                                    isSelected: selectedLanguage?.name == language.name
+                                ) {
+                                    selectedLanguage = language
+                                }
                             }
                         }
+                        .padding(.bottom, 120)
                     }
                     .padding(.horizontal, 24)
-                    .padding(.bottom, 120) // space for CTA
+                    .padding(.top, 16)
                 }
             }
 
-            // Fixed bottom CTA
+            // ── Fixed bottom CTA ───────────────────────────────────────
             VStack(spacing: 0) {
                 LinearGradient(
                     colors: [Color.tsBackground.opacity(0), Color.tsBackground],
                     startPoint: .top, endPoint: .bottom
                 )
                 .frame(height: 32)
+                .allowsHitTesting(false)
 
                 VStack(spacing: 16) {
                     Button(action: onContinue) {
@@ -86,7 +177,9 @@ struct LanguageSelectionView: View {
                             .frame(height: 56)
                             .background(
                                 selectedLanguage != nil
-                                    ? AnyShapeStyle(LinearGradient.tsVibrant)
+                                    ? AnyShapeStyle(LinearGradient(
+                                        colors: [Color(hex: "#3B99FC"), Color(hex: "#007AFF")],
+                                        startPoint: .topLeading, endPoint: .bottomTrailing))
                                     : AnyShapeStyle(Color.tsCard)
                             )
                             .clipShape(Capsule())
@@ -109,7 +202,6 @@ struct LanguageSelectionView: View {
 }
 
 // MARK: - Language Card
-
 struct LanguageCard: View {
     let language: Language
     let isSelected: Bool
@@ -120,14 +212,14 @@ struct LanguageCard: View {
             ZStack(alignment: .topTrailing) {
                 VStack(spacing: 8) {
                     Text(language.flag)
-                        .font(.system(size: 36))
+                        .font(.system(size: 40))
                     Text(language.name)
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.system(size: 17, weight: .semibold))
                         .foregroundColor(.white)
                         .multilineTextAlignment(.center)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
+                .padding(.vertical, 24)
                 .padding(.horizontal, 8)
                 .background(Color.tsCard)
                 .cornerRadius(16)
@@ -136,7 +228,6 @@ struct LanguageCard: View {
                         .stroke(isSelected ? Color.tsAccent : Color.clear, lineWidth: 2)
                 )
 
-                // Checkmark badge
                 if isSelected {
                     ZStack {
                         Circle()
@@ -146,7 +237,7 @@ struct LanguageCard: View {
                             .font(.system(size: 10, weight: .bold))
                             .foregroundColor(.white)
                     }
-                    .offset(x: -8, y: 8)
+                    .padding(8)
                 }
             }
         }
