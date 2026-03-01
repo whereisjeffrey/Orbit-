@@ -100,6 +100,24 @@ TranslateHelper/
 
 ---
 
+
+## Spacing & Grid System
+
+**All spacing uses a 4pt base grid. Prefer multiples of 8.**
+
+| Use case | Values |
+|---|---|
+| Spacing / padding | 4, 8, 12, 16, 20, 24, 32, 40, 48, 56, 64 |
+| Icon sizes | 16, 20, 24, 32, 40, 44, 48, 56, 64 |
+| Corner radius | 8, 12, 14, 16, 24 (cards), 9999 (pill) |
+
+**Rules:**
+- Never use odd numbers (1, 3, 5, 7...) for spacing
+- Never use values like 15, 22, 35 — always round to nearest grid unit
+- When a % change is requested: calculate → round to nearest 8
+- Horizontal padding on screens: **24pt** (standard)
+- Card internal padding: **16pt** or **20pt**
+
 ## Design System
 
 All screens follow these rules:

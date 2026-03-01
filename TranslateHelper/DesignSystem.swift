@@ -5,6 +5,25 @@
 
 import SwiftUI
 
+// MARK: - Spacing Grid
+//
+// ALL spacing, padding, and sizing must use the 4pt base grid.
+// Prefer multiples of 8 wherever possible.
+//
+//  4   8   12   16   20   24   32   40   48   56   64
+//
+// Rules:
+//  - Never use odd numbers (1, 3, 5, 7...) for spacing
+//  - Never use values like 15, 22, 35 — round to nearest grid unit
+//  - When a % change is requested, calculate result then round to nearest 8
+//  - Icon sizes: 16 / 20 / 24 / 32 / 40 / 44 / 48 / 56 / 64
+//  - Corner radius: 8 / 12 / 14 / 16 / 24 (cards) / 9999 (pill)
+//
+// Examples:
+//  padding(.horizontal, 24)   ✅
+//  padding(.vertical, 16)     ✅
+//  padding(.all, 13)          ❌ → use 12 or 16
+
 // MARK: - Colours
 extension Color {
     static let tsBackground  = Color(hex: "#000000")
