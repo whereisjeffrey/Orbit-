@@ -98,6 +98,15 @@ struct TSButton: View {
     var isLoading = false
     let action: () -> Void
 
+    private let gradient = LinearGradient(
+        colors: [
+            Color(hex: "#5BA8FF"),  // lighter blue — top highlight
+            Color(hex: "#007AFF"),  // standard blue — bottom
+        ],
+        startPoint: .top,
+        endPoint: .bottom
+    )
+
     var body: some View {
         Button(action: action) {
             ZStack {
@@ -109,8 +118,9 @@ struct TSButton: View {
             }
             .frame(maxWidth: .infinity)
             .frame(height: 52)
-            .background(Color.tsAccent)
+            .background(gradient)
             .cornerRadius(14)
+            .shadow(color: Color.tsAccent.opacity(0.39), radius: 14, x: 0, y: 4)
         }
         .disabled(isLoading)
     }
