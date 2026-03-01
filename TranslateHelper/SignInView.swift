@@ -34,6 +34,7 @@ struct SignInView: View {
     @State private var password = ""
     @State private var showCreate = false
     @State private var showForgot = false
+    @State private var appleSignInTrigger = false
 
     var body: some View {
         NavigationStack {
@@ -89,7 +90,7 @@ struct SignInView: View {
 
                         // Forgot password
                         Button("Forgot Password?") { showForgot = true }
-                            .font(.system(size: 14))
+                            .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(.tsAccent)
                             .frame(maxWidth: .infinity, alignment: .trailing)
                     }
@@ -113,16 +114,20 @@ struct SignInView: View {
                     HStack(spacing: 16) {
 
                         // Apple
-                        Button {
-                            // TODO: Apple Sign-In
-                        } label: {
-                            Image(systemName: "apple.logo")
-                                .font(.system(size: 22, weight: .medium))
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 56)
+                        SignInWithAppleButton(.signIn) { request in
+                            let r = auth.appleSignInRequest()
+                            request.requestedScopes = r.requestedScopes
+                            request.nonce = r.nonce
+                        } onCompletion: { result in
+                            Task { await auth.handleAppleSignIn(result: result) }
                         }
-                        .buttonStyle(SocialButtonStyle())
+                        .signInWithAppleButtonStyle(.white)
+                        .frame(height: 56)
+                        .cornerRadius(16)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(Color.tsAccent.opacity(0.4), lineWidth: 1.5)
+                        )
 
                         // Google
                         Button {

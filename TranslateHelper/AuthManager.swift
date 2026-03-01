@@ -5,8 +5,9 @@
 
 import Foundation
 import Combine
-import Combine
 import FirebaseAuth
+import AuthenticationServices
+import CryptoKit
 
 @MainActor
 class AuthManager: ObservableObject {
@@ -15,6 +16,7 @@ class AuthManager: ObservableObject {
     @Published var errorMessage: String?
 
     private var handle: AuthStateDidChangeListenerHandle?
+    private var currentNonce: String?
 
     init() {
         handle = Auth.auth().addStateDidChangeListener { [weak self] _, user in
@@ -27,6 +29,8 @@ class AuthManager: ObservableObject {
     }
 
     var isSignedIn: Bool { user != nil }
+
+    // MARK: - Email/Password
 
     func signIn(email: String, password: String) async {
         isLoading = true; errorMessage = nil
@@ -53,17 +57,60 @@ class AuthManager: ObservableObject {
         isLoading = true; errorMessage = nil
         do {
             try await Auth.auth().sendPasswordReset(withEmail: email)
-            isLoading = false
-            return true
+            isLoading = false; return true
         } catch { errorMessage = friendlyError(error) }
-        isLoading = false
-        return false
+        isLoading = false; return false
     }
 
     func signOut() {
         try? Auth.auth().signOut()
         user = nil
     }
+
+    // MARK: - Apple Sign-In
+
+    func appleSignInRequest() -> ASAuthorizationAppleIDRequest {
+        let nonce = randomNonceString()
+        currentNonce = nonce
+        let provider = ASAuthorizationAppleIDProvider()
+        let request = provider.createRequest()
+        request.requestedScopes = [.fullName, .email]
+        request.nonce = sha256(nonce)
+        return request
+    }
+
+    func handleAppleSignIn(result: Result<ASAuthorization, Error>) async {
+        isLoading = true; errorMessage = nil
+        switch result {
+        case .success(let auth):
+            guard
+                let appleCredential = auth.credential as? ASAuthorizationAppleIDCredential,
+                let tokenData = appleCredential.identityToken,
+                let tokenString = String(data: tokenData, encoding: .utf8),
+                let nonce = currentNonce
+            else {
+                errorMessage = "Apple Sign-In failed. Please try again."
+                isLoading = false; return
+            }
+            let credential = OAuthProvider.appleCredential(
+                withIDToken: tokenString,
+                rawNonce: nonce,
+                fullName: appleCredential.fullName
+            )
+            do {
+                let r = try await Auth.auth().signIn(with: credential)
+                user = r.user
+            } catch { errorMessage = friendlyError(error) }
+
+        case .failure(let error):
+            if (error as NSError).code != ASAuthorizationError.canceled.rawValue {
+                errorMessage = friendlyError(error)
+            }
+        }
+        isLoading = false
+    }
+
+    // MARK: - Helpers
 
     private func friendlyError(_ error: Error) -> String {
         let nsError = error as NSError
@@ -79,5 +126,17 @@ class AuthManager: ObservableObject {
             }
         }
         return error.localizedDescription
+    }
+
+    private func randomNonceString(length: Int = 32) -> String {
+        var randomBytes = [UInt8](repeating: 0, count: length)
+        _ = SecRandomCopyBytes(kSecRandomDefault, randomBytes.count, &randomBytes)
+        return randomBytes.map { String(format: "%02x", $0) }.joined()
+    }
+
+    private func sha256(_ input: String) -> String {
+        let data = Data(input.utf8)
+        let hash = SHA256.hash(data: data)
+        return hash.compactMap { String(format: "%02x", $0) }.joined()
     }
 }
