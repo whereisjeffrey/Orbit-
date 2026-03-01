@@ -6,20 +6,16 @@
 import SwiftUI
 import AuthenticationServices
 
-// MARK: - Social button press style
 struct SocialButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(configuration.isPressed
-                          ? Color.tsCard.opacity(0.6)
-                          : Color.tsCard)
+                    .fill(configuration.isPressed ? Color.tsCard.opacity(0.6) : Color.tsCard)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
-                    .stroke(Color.tsAccent.opacity(configuration.isPressed ? 1.0 : 0.4),
-                            lineWidth: 1.5)
+                    .stroke(Color.tsAccent.opacity(configuration.isPressed ? 1.0 : 0.4), lineWidth: 1.5)
             )
             .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
             .animation(.easeInOut(duration: 0.12), value: configuration.isPressed)
@@ -33,6 +29,8 @@ struct SignInView: View {
     @State private var showCreate = false
     @State private var showForgot = false
 
+    private let appleHelper = AppleSignInHelper()
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -40,7 +38,7 @@ struct SignInView: View {
 
                 VStack(spacing: 0) {
 
-                    // ── Wordmark top-left ──────────────────────────────
+                    // Wordmark
                     HStack {
                         TSWordmark(iconSize: 42, fontSize: 27)
                         Spacer()
@@ -50,7 +48,7 @@ struct SignInView: View {
 
                     Spacer()
 
-                    // ── Sign In block — vertically centred ─────────────
+                    // Sign In block
                     VStack(alignment: .leading, spacing: 0) {
 
                         VStack(alignment: .leading, spacing: 6) {
@@ -70,10 +68,7 @@ struct SignInView: View {
                         .padding(.bottom, 16)
 
                         if let err = auth.errorMessage {
-                            Text(err)
-                                .font(.caption)
-                                .foregroundColor(.red)
-                                .padding(.bottom, 8)
+                            Text(err).font(.caption).foregroundColor(.red).padding(.bottom, 8)
                         }
 
                         TSButton(title: "Sign In", isLoading: auth.isLoading) {
@@ -87,14 +82,13 @@ struct SignInView: View {
                             .frame(maxWidth: .infinity, alignment: .trailing)
                             .padding(.bottom, 28)
 
-                        // OR CONTINUE WITH
+                        // Divider
                         HStack(spacing: 12) {
                             Rectangle().frame(height: 1).foregroundColor(Color.tsCard)
                             Text("OR CONTINUE WITH")
                                 .font(.system(size: 11, weight: .semibold))
                                 .foregroundColor(.tsSecondary)
-                                .tracking(1.5)
-                                .fixedSize()
+                                .tracking(1.5).fixedSize()
                             Rectangle().frame(height: 1).foregroundColor(Color.tsCard)
                         }
                         .padding(.bottom, 20)
@@ -102,31 +96,31 @@ struct SignInView: View {
                         // Social buttons
                         HStack(spacing: 16) {
 
-                            // Apple — native button with stroke overlay
-                            ZStack {
-                                SignInWithAppleButton(.signIn) { request in
-                                    let r = auth.appleSignInRequest()
-                                    request.requestedScopes = r.requestedScopes
-                                    request.nonce = r.nonce
-                                } onCompletion: { result in
+                            // Apple — custom, no text
+                            Button {
+                                let request = auth.appleSignInRequest()
+                                let scene = UIApplication.shared.connectedScenes
+                                    .first as? UIWindowScene
+                                appleHelper.signIn(from: scene, request: request) { result in
                                     Task { await auth.handleAppleSignIn(result: result) }
                                 }
-                                .signInWithAppleButtonStyle(.black)
-                                .frame(height: 56)
-                                .cornerRadius(16)
-
-                                // Stroke overlay on top of native button
-                                RoundedRectangle(cornerRadius: 16)
-                                    .stroke(Color.tsAccent.opacity(0.4), lineWidth: 1.5)
-                                    .allowsHitTesting(false)
-                            }
-                            .frame(height: 56)
-
-                            // Google
-                            Button {
-                                // TODO: wire Google Sign-In
                             } label: {
-                                GoogleGIcon(size: 24)
+                                Image(systemName: "apple.logo")
+                                    .font(.system(size: 22, weight: .medium))
+                                    .foregroundColor(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 56)
+                            }
+                            .buttonStyle(SocialButtonStyle())
+
+                            // Google — real logo, no text
+                            Button {
+                                // TODO: wire Google Sign-In after SDK added
+                            } label: {
+                                Image("GoogleLogo")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 24, height: 24)
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 56)
                             }
@@ -137,14 +131,11 @@ struct SignInView: View {
 
                     Spacer()
 
-                    // ── Create account — pinned to bottom ──────────────
+                    // Create account
                     Button(action: { showCreate = true }) {
                         HStack(spacing: 4) {
-                            Text("Don't have an account?")
-                                .foregroundColor(.tsSecondary)
-                            Text("Create Account")
-                                .foregroundColor(.tsAccent)
-                                .fontWeight(.semibold)
+                            Text("Don't have an account?").foregroundColor(.tsSecondary)
+                            Text("Create Account").foregroundColor(.tsAccent).fontWeight(.semibold)
                         }
                         .font(.system(size: 15))
                     }
@@ -159,20 +150,5 @@ struct SignInView: View {
             .navigationDestination(isPresented: $showCreate) { CreateAccountView() }
             .navigationDestination(isPresented: $showForgot) { ForgotPasswordView() }
         }
-    }
-}
-
-struct GoogleGIcon: View {
-    var size: CGFloat = 20
-    var body: some View {
-        Text("G")
-            .font(.system(size: size, weight: .bold))
-            .foregroundStyle(
-                LinearGradient(
-                    colors: [Color(hex: "#4285F4"), Color(hex: "#EA4335")],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
     }
 }
