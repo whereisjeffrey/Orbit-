@@ -61,7 +61,7 @@ struct SignInView: View {
                             Text("Sign In")
                                 .font(.system(size: 32, weight: .bold))
                                 .foregroundColor(.white)
-                            Text("Welcome back to your language journey.")
+                            Text("Find your voice in any language.")
                                 .font(.system(size: 15))
                                 .foregroundColor(.tsSecondary)
                         }
