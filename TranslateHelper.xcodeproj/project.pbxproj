@@ -12,7 +12,6 @@
 		006F75292F547D2200D581A9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 006F75202F547D2200D581A9 /* LaunchScreen.storyboard */; };
 		006F752A2F547D2200D581A9 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 006F75222F547D2200D581A9 /* Main.storyboard */; };
 		006F752B2F547D2200D581A9 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 006F751D2F547D2200D581A9 /* GoogleService-Info.plist */; };
-		006F752C2F547D2200D581A9 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 006F751E2F547D2200D581A9 /* Info.plist */; };
 		006F752D2F547D2200D581A9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 006F75172F547D2200D581A9 /* Assets.xcassets */; };
 		006F752E2F547D2200D581A9 /* CreateAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75192F547D2200D581A9 /* CreateAccountView.swift */; };
 		006F752F2F547D2200D581A9 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75232F547D2200D581A9 /* RootView.swift */; };
@@ -24,7 +23,6 @@
 		006F75352F547D2200D581A9 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75252F547D2200D581A9 /* SignInView.swift */; };
 		006F75362F547D2200D581A9 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75242F547D2200D581A9 /* SceneDelegate.swift */; };
 		006F75372F547D2200D581A9 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75182F547D2200D581A9 /* AuthManager.swift */; };
-		006F754B2F547D4A00D581A9 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 006F75402F547D4A00D581A9 /* Info.plist */; };
 		006F754C2F547D4A00D581A9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 006F75422F547D4A00D581A9 /* LaunchScreen.storyboard */; };
 		006F754D2F547D4A00D581A9 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 006F75442F547D4A00D581A9 /* Main.storyboard */; };
 		006F754E2F547D4A00D581A9 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 006F753F2F547D4A00D581A9 /* GoogleService-Info.plist */; };
@@ -42,7 +40,6 @@
 		006F756D2F547D5B00D581A9 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 006F75612F547D5B00D581A9 /* GoogleService-Info.plist */; };
 		006F756E2F547D5B00D581A9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 006F75642F547D5B00D581A9 /* LaunchScreen.storyboard */; };
 		006F756F2F547D5B00D581A9 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 006F75662F547D5B00D581A9 /* Main.storyboard */; };
-		006F75702F547D5B00D581A9 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 006F75622F547D5B00D581A9 /* Info.plist */; };
 		006F75712F547D5B00D581A9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 006F755B2F547D5B00D581A9 /* Assets.xcassets */; };
 		006F75722F547D5B00D581A9 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75692F547D5B00D581A9 /* SignInView.swift */; };
 		006F75732F547D5B00D581A9 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75682F547D5B00D581A9 /* SceneDelegate.swift */; };
@@ -57,7 +54,6 @@
 		006F758F2F547D7300D581A9 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 006F75832F547D7300D581A9 /* GoogleService-Info.plist */; };
 		006F75902F547D7300D581A9 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 006F75882F547D7300D581A9 /* Main.storyboard */; };
 		006F75912F547D7300D581A9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 006F757D2F547D7300D581A9 /* Assets.xcassets */; };
-		006F75922F547D7300D581A9 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 006F75842F547D7300D581A9 /* Info.plist */; };
 		006F75932F547D7300D581A9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 006F75862F547D7300D581A9 /* LaunchScreen.storyboard */; };
 		006F75942F547D7300D581A9 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75802F547D7300D581A9 /* DesignSystem.swift */; };
 		006F75952F547D7300D581A9 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F758B2F547D7300D581A9 /* SignInView.swift */; };
@@ -70,7 +66,6 @@
 		006F759C2F547D7300D581A9 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75892F547D7300D581A9 /* RootView.swift */; };
 		006F759D2F547D7300D581A9 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F758A2F547D7300D581A9 /* SceneDelegate.swift */; };
 		006F75B12F547D8800D581A9 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 006F75A52F547D8800D581A9 /* GoogleService-Info.plist */; };
-		006F75B22F547D8800D581A9 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 006F75A62F547D8800D581A9 /* Info.plist */; };
 		006F75B32F547D8800D581A9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 006F759F2F547D8800D581A9 /* Assets.xcassets */; };
 		006F75B42F547D8800D581A9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 006F75A82F547D8800D581A9 /* LaunchScreen.storyboard */; };
 		006F75B52F547D8800D581A9 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 006F75AA2F547D8800D581A9 /* Main.storyboard */; };
@@ -88,7 +83,6 @@
 		006F75D42F547D9C00D581A9 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 006F75CC2F547D9C00D581A9 /* Main.storyboard */; };
 		006F75D52F547D9C00D581A9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 006F75C12F547D9C00D581A9 /* Assets.xcassets */; };
 		006F75D62F547D9C00D581A9 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 006F75C72F547D9C00D581A9 /* GoogleService-Info.plist */; };
-		006F75D72F547D9C00D581A9 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 006F75C82F547D9C00D581A9 /* Info.plist */; };
 		006F75D82F547D9C00D581A9 /* DictateViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75C52F547D9C00D581A9 /* DictateViewController.swift */; };
 		006F75D92F547D9C00D581A9 /* ForgotPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75C62F547D9C00D581A9 /* ForgotPasswordView.swift */; };
 		006F75DA2F547D9C00D581A9 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75CD2F547D9C00D581A9 /* RootView.swift */; };
@@ -545,29 +539,23 @@
 				006F756D2F547D5B00D581A9 /* GoogleService-Info.plist in Resources */,
 				006F756E2F547D5B00D581A9 /* LaunchScreen.storyboard in Resources */,
 				006F756F2F547D5B00D581A9 /* Main.storyboard in Resources */,
-				006F75702F547D5B00D581A9 /* Info.plist in Resources */,
 				006F75712F547D5B00D581A9 /* Assets.xcassets in Resources */,
 				006F75D32F547D9C00D581A9 /* LaunchScreen.storyboard in Resources */,
 				006F75D42F547D9C00D581A9 /* Main.storyboard in Resources */,
 				006F75D52F547D9C00D581A9 /* Assets.xcassets in Resources */,
 				006F75D62F547D9C00D581A9 /* GoogleService-Info.plist in Resources */,
-				006F75D72F547D9C00D581A9 /* Info.plist in Resources */,
 				006F75292F547D2200D581A9 /* LaunchScreen.storyboard in Resources */,
 				006F752A2F547D2200D581A9 /* Main.storyboard in Resources */,
 				006F752B2F547D2200D581A9 /* GoogleService-Info.plist in Resources */,
-				006F752C2F547D2200D581A9 /* Info.plist in Resources */,
 				006F752D2F547D2200D581A9 /* Assets.xcassets in Resources */,
-				006F754B2F547D4A00D581A9 /* Info.plist in Resources */,
 				006F754C2F547D4A00D581A9 /* LaunchScreen.storyboard in Resources */,
 				006F754D2F547D4A00D581A9 /* Main.storyboard in Resources */,
 				006F758F2F547D7300D581A9 /* GoogleService-Info.plist in Resources */,
 				006F75902F547D7300D581A9 /* Main.storyboard in Resources */,
 				006F75912F547D7300D581A9 /* Assets.xcassets in Resources */,
-				006F75922F547D7300D581A9 /* Info.plist in Resources */,
 				006F75932F547D7300D581A9 /* LaunchScreen.storyboard in Resources */,
 				006F754E2F547D4A00D581A9 /* GoogleService-Info.plist in Resources */,
 				006F75B12F547D8800D581A9 /* GoogleService-Info.plist in Resources */,
-				006F75B22F547D8800D581A9 /* Info.plist in Resources */,
 				006F75B32F547D8800D581A9 /* Assets.xcassets in Resources */,
 				006F75B42F547D8800D581A9 /* LaunchScreen.storyboard in Resources */,
 				006F75B52F547D8800D581A9 /* Main.storyboard in Resources */,
@@ -776,6 +764,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = RRPLC27C5P;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TranslateHelper/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -807,6 +796,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = RRPLC27C5P;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TranslateHelper/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -955,6 +945,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = RRPLC27C5P;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TranslateHelperKeyboard/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = TranslateHelperKeyboard;
@@ -982,6 +973,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = RRPLC27C5P;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TranslateHelperKeyboard/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = TranslateHelperKeyboard;
