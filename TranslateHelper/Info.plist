@@ -2,6 +2,23 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFBundleDisplayName</key>
+	<string>TalkSwitch</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.jeffrey.TranslateHelper</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>translatehelper</string>
+			</array>
+		</dict>
+	</array>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>TalkSwitch needs microphone access for voice translation and speech coaching.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>TalkSwitch uses speech recognition to transcribe your voice for translation and coaching.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
