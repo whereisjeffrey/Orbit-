@@ -6,6 +6,7 @@
 import SwiftUI
 
 struct LibraryView: View {
+    @EnvironmentObject var auth: AuthManager
     @State private var searchText = ""
 
     var body: some View {
@@ -30,9 +31,18 @@ struct LibraryView: View {
                                         .foregroundColor(.tsAccent)
                                         .font(.system(size: 16))
                                 )
-                            Circle()
-                                .fill(Color(red: 1.0, green: 0.84, blue: 0.75))
-                                .frame(width: 36, height: 36)
+                            Button(action: {
+                                auth.signOut()
+                            }) {
+                                Circle()
+                                    .fill(Color(red: 1.0, green: 0.84, blue: 0.75))
+                                    .frame(width: 36, height: 36)
+                                    .overlay(
+                                        Image(systemName: "rectangle.portrait.and.arrow.right")
+                                            .foregroundColor(.black)
+                                            .font(.system(size: 14, weight: .bold))
+                                    )
+                            }
                         }
                     }
                     .padding(.horizontal, 16)

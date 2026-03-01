@@ -40,7 +40,7 @@ struct SignInView: View {
 
                     // Wordmark
                     HStack {
-                        TSWordmark(iconSize: 63, fontSize: 40)
+                        TSWordmark(iconSize: 70, fontSize: 30)
                         Spacer()
                     }
                     .padding(.horizontal, 24)
@@ -115,7 +115,7 @@ struct SignInView: View {
 
                             // Google — real logo, no text
                             Button {
-                                // TODO: wire Google Sign-In after SDK added
+                                Task { await auth.handleGoogleSignIn() }
                             } label: {
                                 Image("GoogleLogo")
                                     .resizable()
@@ -128,6 +128,7 @@ struct SignInView: View {
                         }
                     }
                     .padding(.horizontal, 24)
+                    .offset(y: -36)
 
                     Spacer()
 

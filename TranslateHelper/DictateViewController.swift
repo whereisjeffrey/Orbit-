@@ -133,7 +133,7 @@ class DictateViewController: UIViewController {
         SFSpeechRecognizer.requestAuthorization { [weak self] status in
             DispatchQueue.main.async {
                 guard let self = self, status == .authorized else { return }
-                AVAudioSession.sharedInstance().requestRecordPermission { granted in
+                AVAudioApplication.requestRecordPermission { granted in
                     DispatchQueue.main.async { if granted { self.startPtBR() } }
                 }
             }

@@ -8,6 +8,8 @@ import Combine
 import FirebaseAuth
 import AuthenticationServices
 import CryptoKit
+import GoogleSignIn
+import FirebaseCore
 
 @MainActor
 class AuthManager: ObservableObject {
@@ -104,6 +106,54 @@ class AuthManager: ObservableObject {
 
         case .failure(let error):
             if (error as NSError).code != ASAuthorizationError.canceled.rawValue {
+                errorMessage = friendlyError(error)
+            }
+        }
+        isLoading = false
+    }
+
+    // MARK: - Google Sign-In
+
+    func handleGoogleSignIn() async {
+        isLoading = true
+        errorMessage = nil
+        
+        // Attempt to get the presenting view controller
+        guard let windowScene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
+              let rootViewController = windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController else {
+            errorMessage = "Could not find root view controller to present Google Sign-In."
+            isLoading = false
+            return
+        }
+        
+        do {
+            guard let clientID = FirebaseApp.app()?.options.clientID else {
+                errorMessage = "Google Sign In is not configured properly in Firebase (missing CLIENT_ID)."
+                isLoading = false
+                return
+            }
+            
+            let config = GIDConfiguration(clientID: clientID)
+            GIDSignIn.sharedInstance.configuration = config
+            
+            let result = try await GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController)
+            
+            let user = result.user
+            guard let idToken = user.idToken?.tokenString else {
+                errorMessage = "No ID token found in Google Sign-In."
+                isLoading = false
+                return
+            }
+            
+            let credential = GoogleAuthProvider.credential(withIDToken: idToken,
+                                                           accessToken: user.accessToken.tokenString)
+            let authResult = try await Auth.auth().signIn(with: credential)
+            self.user = authResult.user
+        } catch {
+            let nsError = error as NSError
+            if nsError.domain == kGIDSignInErrorDomain, nsError.code == GIDSignInError.canceled.rawValue {
+                // User canceled, do not show error banner
+            } else {
                 errorMessage = friendlyError(error)
             }
         }

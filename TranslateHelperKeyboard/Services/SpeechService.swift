@@ -44,7 +44,7 @@ class SpeechService {
         }
 
         group.enter()
-        AVAudioSession.sharedInstance().requestRecordPermission { granted in
+        AVAudioApplication.requestRecordPermission { granted in
             micOK = granted
             group.leave()
         }
@@ -80,7 +80,7 @@ class SpeechService {
             if let builtInMic = session.availableInputs?.first(where: { $0.portType == .builtInMic }) {
                 try? session.setPreferredInput(builtInMic)
             }
-            let perm = session.recordPermission
+            let perm = AVAudioApplication.shared.recordPermission
             NSLog("TSKBD_AUDIO: session activated — sampleRate=\(session.sampleRate) micPerm=\(perm.rawValue)")
         } catch {
             NSLog("TSKBD_AUDIO: session failed — \(error.localizedDescription)")
@@ -174,7 +174,6 @@ class SpeechService {
                 // Stream partial results to UI
                 if !text.isEmpty {
                     lastRecognizedText = text
-                    let lang = language.hasPrefix("pt") ? "pt" : "en"
                     DispatchQueue.main.async {
                         self.delegate?.speechService(self, didRecognize: text, isFinal: result.isFinal)
                     }

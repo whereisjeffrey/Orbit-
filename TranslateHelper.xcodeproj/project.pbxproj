@@ -94,6 +94,7 @@
 		006F75E02F547D9C00D581A9 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75CE2F547D9C00D581A9 /* SceneDelegate.swift */; };
 		006F75E12F547D9C00D581A9 /* CreateAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75C32F547D9C00D581A9 /* CreateAccountView.swift */; };
 		006F75ED2F547E3500D581A9 /* TranslateHelperKeyboard.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 006F75E62F547E3500D581A9 /* TranslateHelperKeyboard.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		006F769E2F54C7FA00D581A9 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 006F769D2F54C7FA00D581A9 /* GoogleSignIn */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -264,6 +265,7 @@
 			files = (
 				006F75132F547CA800D581A9 /* FirebaseAuth in Frameworks */,
 				006F75152F547CA800D581A9 /* FirebaseFirestore in Frameworks */,
+				006F769E2F54C7FA00D581A9 /* GoogleSignIn in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -288,6 +290,7 @@
 				006F75282F547D2200D581A9 /* TranslateHelper */,
 				003133472F3DE56A00F7A418 /* TranslateHelper */,
 				006F75E72F547E3500D581A9 /* TranslateHelperKeyboard */,
+				006F769C2F54C7FA00D581A9 /* Frameworks */,
 				003133462F3DE56A00F7A418 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -439,6 +442,13 @@
 			path = TranslateHelper;
 			sourceTree = "<group>";
 		};
+		006F769C2F54C7FA00D581A9 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -463,6 +473,7 @@
 			packageProductDependencies = (
 				006F75122F547CA800D581A9 /* FirebaseAuth */,
 				006F75142F547CA800D581A9 /* FirebaseFirestore */,
+				006F769D2F54C7FA00D581A9 /* GoogleSignIn */,
 			);
 			productName = TranslateHelper;
 			productReference = 003133452F3DE56A00F7A418 /* TranslateHelper.app */;
@@ -1058,6 +1069,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 006F75112F547CA800D581A9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestore;
+		};
+		006F769D2F54C7FA00D581A9 /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 006F76952F54898800D581A9 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

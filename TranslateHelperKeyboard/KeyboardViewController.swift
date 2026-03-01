@@ -899,8 +899,7 @@ class KeyboardViewController: UIInputViewController {
         generator.impactOccurred()
 
         // Revert after 1.2s
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [weak self] in
-            guard let self = self else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
             btn.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.1)
             btn.setTitleColor(.white, for: .normal)
             btn.layer.borderColor = UIColor.systemBlue.withAlphaComponent(0.3).cgColor
