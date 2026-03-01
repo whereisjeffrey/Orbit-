@@ -26,6 +26,15 @@ extension Color {
     }
 }
 
+
+// MARK: - Fonts
+extension Font {
+    /// Sono Regular — used for TalkSwitch wordmark / brand text
+    static func sono(_ size: CGFloat) -> Font {
+        .custom("Sono-Regular", size: size)
+    }
+}
+
 // MARK: - Gradient
 extension LinearGradient {
     static let tsVibrant = LinearGradient(
@@ -63,7 +72,7 @@ struct TSWordmark: View {
         HStack(spacing: 8) {
             TSLogoIcon(size: iconSize)
             Text("TalkSwitch")
-                .font(.system(size: fontSize, weight: .bold))
+                .font(.sono(fontSize))
                 .foregroundColor(.white)
         }
     }
