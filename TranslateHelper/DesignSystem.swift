@@ -72,7 +72,7 @@ struct TSWordmark: View {
         HStack(spacing: 8) {
             TSLogoIcon(size: iconSize)
             Text("TalkSwitch")
-                .font(.sono(fontSize))
+                .font(.system(size: fontSize, weight: .bold, design: .rounded))
                 .foregroundColor(.white)
         }
     }

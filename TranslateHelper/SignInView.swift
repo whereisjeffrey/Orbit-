@@ -91,7 +91,7 @@ struct SignInView: View {
                                 .tracking(1.5).fixedSize()
                             Rectangle().frame(height: 1).foregroundColor(Color.tsCard)
                         }
-                        .padding(.bottom, 20)
+                        .padding(.bottom, 60)
 
                         // Social buttons
                         HStack(spacing: 16) {
