@@ -40,11 +40,11 @@ struct SignInView: View {
 
                     // Wordmark
                     HStack {
-                        TSWordmark(iconSize: 42, fontSize: 27)
+                        TSWordmark(iconSize: 63, fontSize: 40)
                         Spacer()
                     }
                     .padding(.horizontal, 24)
-                    .padding(.top, 52)
+                    .padding(.top, 20)
 
                     Spacer()
 

@@ -69,7 +69,7 @@ struct TSWordmark: View {
     var fontSize: CGFloat = 18
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 6) {
             TSLogoIcon(size: iconSize)
             Text("TalkSwitch")
                 .font(.custom("Sono-Regular", size: fontSize))
