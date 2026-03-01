@@ -519,6 +519,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				006F75112F547CA800D581A9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				006F76952F54898800D581A9 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 003133462F3DE56A00F7A418 /* Products */;
@@ -1035,6 +1036,14 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 12.10.0;
+			};
+		};
+		006F76952F54898800D581A9 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.1.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
