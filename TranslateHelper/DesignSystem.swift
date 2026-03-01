@@ -72,7 +72,8 @@ struct TSWordmark: View {
         HStack(spacing: 8) {
             TSLogoIcon(size: iconSize)
             Text("TalkSwitch")
-                .font(.system(size: fontSize, weight: .bold, design: .rounded))
+                .font(.custom("Sono-Regular", size: fontSize))
+                .kerning(fontSize * 0.01) // 1% letter spacing per Figma spec
                 .foregroundColor(.white)
         }
     }
