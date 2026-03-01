@@ -6,8 +6,225 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		006F75132F547CA800D581A9 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 006F75122F547CA800D581A9 /* FirebaseAuth */; };
+		006F75152F547CA800D581A9 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 006F75142F547CA800D581A9 /* FirebaseFirestore */; };
+		006F75292F547D2200D581A9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 006F75202F547D2200D581A9 /* LaunchScreen.storyboard */; };
+		006F752A2F547D2200D581A9 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 006F75222F547D2200D581A9 /* Main.storyboard */; };
+		006F752B2F547D2200D581A9 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 006F751D2F547D2200D581A9 /* GoogleService-Info.plist */; };
+		006F752C2F547D2200D581A9 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 006F751E2F547D2200D581A9 /* Info.plist */; };
+		006F752D2F547D2200D581A9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 006F75172F547D2200D581A9 /* Assets.xcassets */; };
+		006F752E2F547D2200D581A9 /* CreateAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75192F547D2200D581A9 /* CreateAccountView.swift */; };
+		006F752F2F547D2200D581A9 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75232F547D2200D581A9 /* RootView.swift */; };
+		006F75302F547D2200D581A9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75162F547D2200D581A9 /* AppDelegate.swift */; };
+		006F75312F547D2200D581A9 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F751A2F547D2200D581A9 /* DesignSystem.swift */; };
+		006F75322F547D2200D581A9 /* ForgotPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F751C2F547D2200D581A9 /* ForgotPasswordView.swift */; };
+		006F75332F547D2200D581A9 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75272F547D2200D581A9 /* ViewController.swift */; };
+		006F75342F547D2200D581A9 /* DictateViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F751B2F547D2200D581A9 /* DictateViewController.swift */; };
+		006F75352F547D2200D581A9 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75252F547D2200D581A9 /* SignInView.swift */; };
+		006F75362F547D2200D581A9 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75242F547D2200D581A9 /* SceneDelegate.swift */; };
+		006F75372F547D2200D581A9 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75182F547D2200D581A9 /* AuthManager.swift */; };
+		006F754B2F547D4A00D581A9 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 006F75402F547D4A00D581A9 /* Info.plist */; };
+		006F754C2F547D4A00D581A9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 006F75422F547D4A00D581A9 /* LaunchScreen.storyboard */; };
+		006F754D2F547D4A00D581A9 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 006F75442F547D4A00D581A9 /* Main.storyboard */; };
+		006F754E2F547D4A00D581A9 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 006F753F2F547D4A00D581A9 /* GoogleService-Info.plist */; };
+		006F754F2F547D4A00D581A9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 006F75392F547D4A00D581A9 /* Assets.xcassets */; };
+		006F75502F547D4A00D581A9 /* DictateViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F753D2F547D4A00D581A9 /* DictateViewController.swift */; };
+		006F75512F547D4A00D581A9 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75462F547D4A00D581A9 /* SceneDelegate.swift */; };
+		006F75522F547D4A00D581A9 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75492F547D4A00D581A9 /* ViewController.swift */; };
+		006F75532F547D4A00D581A9 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F753C2F547D4A00D581A9 /* DesignSystem.swift */; };
+		006F75542F547D4A00D581A9 /* ForgotPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F753E2F547D4A00D581A9 /* ForgotPasswordView.swift */; };
+		006F75552F547D4A00D581A9 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75472F547D4A00D581A9 /* SignInView.swift */; };
+		006F75562F547D4A00D581A9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75382F547D4A00D581A9 /* AppDelegate.swift */; };
+		006F75572F547D4A00D581A9 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75452F547D4A00D581A9 /* RootView.swift */; };
+		006F75582F547D4A00D581A9 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F753A2F547D4A00D581A9 /* AuthManager.swift */; };
+		006F75592F547D4A00D581A9 /* CreateAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F753B2F547D4A00D581A9 /* CreateAccountView.swift */; };
+		006F756D2F547D5B00D581A9 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 006F75612F547D5B00D581A9 /* GoogleService-Info.plist */; };
+		006F756E2F547D5B00D581A9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 006F75642F547D5B00D581A9 /* LaunchScreen.storyboard */; };
+		006F756F2F547D5B00D581A9 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 006F75662F547D5B00D581A9 /* Main.storyboard */; };
+		006F75702F547D5B00D581A9 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 006F75622F547D5B00D581A9 /* Info.plist */; };
+		006F75712F547D5B00D581A9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 006F755B2F547D5B00D581A9 /* Assets.xcassets */; };
+		006F75722F547D5B00D581A9 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75692F547D5B00D581A9 /* SignInView.swift */; };
+		006F75732F547D5B00D581A9 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75682F547D5B00D581A9 /* SceneDelegate.swift */; };
+		006F75742F547D5B00D581A9 /* ForgotPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75602F547D5B00D581A9 /* ForgotPasswordView.swift */; };
+		006F75752F547D5B00D581A9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F755A2F547D5B00D581A9 /* AppDelegate.swift */; };
+		006F75762F547D5B00D581A9 /* DictateViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F755F2F547D5B00D581A9 /* DictateViewController.swift */; };
+		006F75772F547D5B00D581A9 /* CreateAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F755D2F547D5B00D581A9 /* CreateAccountView.swift */; };
+		006F75782F547D5B00D581A9 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75672F547D5B00D581A9 /* RootView.swift */; };
+		006F75792F547D5B00D581A9 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F755C2F547D5B00D581A9 /* AuthManager.swift */; };
+		006F757A2F547D5B00D581A9 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F756B2F547D5B00D581A9 /* ViewController.swift */; };
+		006F757B2F547D5B00D581A9 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F755E2F547D5B00D581A9 /* DesignSystem.swift */; };
+		006F758F2F547D7300D581A9 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 006F75832F547D7300D581A9 /* GoogleService-Info.plist */; };
+		006F75902F547D7300D581A9 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 006F75882F547D7300D581A9 /* Main.storyboard */; };
+		006F75912F547D7300D581A9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 006F757D2F547D7300D581A9 /* Assets.xcassets */; };
+		006F75922F547D7300D581A9 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 006F75842F547D7300D581A9 /* Info.plist */; };
+		006F75932F547D7300D581A9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 006F75862F547D7300D581A9 /* LaunchScreen.storyboard */; };
+		006F75942F547D7300D581A9 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75802F547D7300D581A9 /* DesignSystem.swift */; };
+		006F75952F547D7300D581A9 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F758B2F547D7300D581A9 /* SignInView.swift */; };
+		006F75962F547D7300D581A9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F757C2F547D7300D581A9 /* AppDelegate.swift */; };
+		006F75972F547D7300D581A9 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F758D2F547D7300D581A9 /* ViewController.swift */; };
+		006F75982F547D7300D581A9 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F757E2F547D7300D581A9 /* AuthManager.swift */; };
+		006F75992F547D7300D581A9 /* ForgotPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75822F547D7300D581A9 /* ForgotPasswordView.swift */; };
+		006F759A2F547D7300D581A9 /* DictateViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75812F547D7300D581A9 /* DictateViewController.swift */; };
+		006F759B2F547D7300D581A9 /* CreateAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F757F2F547D7300D581A9 /* CreateAccountView.swift */; };
+		006F759C2F547D7300D581A9 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75892F547D7300D581A9 /* RootView.swift */; };
+		006F759D2F547D7300D581A9 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F758A2F547D7300D581A9 /* SceneDelegate.swift */; };
+		006F75B12F547D8800D581A9 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 006F75A52F547D8800D581A9 /* GoogleService-Info.plist */; };
+		006F75B22F547D8800D581A9 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 006F75A62F547D8800D581A9 /* Info.plist */; };
+		006F75B32F547D8800D581A9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 006F759F2F547D8800D581A9 /* Assets.xcassets */; };
+		006F75B42F547D8800D581A9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 006F75A82F547D8800D581A9 /* LaunchScreen.storyboard */; };
+		006F75B52F547D8800D581A9 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 006F75AA2F547D8800D581A9 /* Main.storyboard */; };
+		006F75B62F547D8800D581A9 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75AF2F547D8800D581A9 /* ViewController.swift */; };
+		006F75B72F547D8800D581A9 /* CreateAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75A12F547D8800D581A9 /* CreateAccountView.swift */; };
+		006F75B82F547D8800D581A9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F759E2F547D8800D581A9 /* AppDelegate.swift */; };
+		006F75B92F547D8800D581A9 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75AB2F547D8800D581A9 /* RootView.swift */; };
+		006F75BA2F547D8800D581A9 /* DictateViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75A32F547D8800D581A9 /* DictateViewController.swift */; };
+		006F75BB2F547D8800D581A9 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75A02F547D8800D581A9 /* AuthManager.swift */; };
+		006F75BC2F547D8800D581A9 /* ForgotPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75A42F547D8800D581A9 /* ForgotPasswordView.swift */; };
+		006F75BD2F547D8800D581A9 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75AD2F547D8800D581A9 /* SignInView.swift */; };
+		006F75BE2F547D8800D581A9 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75A22F547D8800D581A9 /* DesignSystem.swift */; };
+		006F75BF2F547D8800D581A9 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75AC2F547D8800D581A9 /* SceneDelegate.swift */; };
+		006F75D32F547D9C00D581A9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 006F75CA2F547D9C00D581A9 /* LaunchScreen.storyboard */; };
+		006F75D42F547D9C00D581A9 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 006F75CC2F547D9C00D581A9 /* Main.storyboard */; };
+		006F75D52F547D9C00D581A9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 006F75C12F547D9C00D581A9 /* Assets.xcassets */; };
+		006F75D62F547D9C00D581A9 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 006F75C72F547D9C00D581A9 /* GoogleService-Info.plist */; };
+		006F75D72F547D9C00D581A9 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 006F75C82F547D9C00D581A9 /* Info.plist */; };
+		006F75D82F547D9C00D581A9 /* DictateViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75C52F547D9C00D581A9 /* DictateViewController.swift */; };
+		006F75D92F547D9C00D581A9 /* ForgotPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75C62F547D9C00D581A9 /* ForgotPasswordView.swift */; };
+		006F75DA2F547D9C00D581A9 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75CD2F547D9C00D581A9 /* RootView.swift */; };
+		006F75DB2F547D9C00D581A9 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75C42F547D9C00D581A9 /* DesignSystem.swift */; };
+		006F75DC2F547D9C00D581A9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75C02F547D9C00D581A9 /* AppDelegate.swift */; };
+		006F75DD2F547D9C00D581A9 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75C22F547D9C00D581A9 /* AuthManager.swift */; };
+		006F75DE2F547D9C00D581A9 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75CF2F547D9C00D581A9 /* SignInView.swift */; };
+		006F75DF2F547D9C00D581A9 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75D12F547D9C00D581A9 /* ViewController.swift */; };
+		006F75E02F547D9C00D581A9 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75CE2F547D9C00D581A9 /* SceneDelegate.swift */; };
+		006F75E12F547D9C00D581A9 /* CreateAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75C32F547D9C00D581A9 /* CreateAccountView.swift */; };
+		006F75ED2F547E3500D581A9 /* TranslateHelperKeyboard.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 006F75E62F547E3500D581A9 /* TranslateHelperKeyboard.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		006F75EB2F547E3500D581A9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0031333D2F3DE56A00F7A418 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 006F75E52F547E3500D581A9;
+			remoteInfo = TranslateHelperKeyboard;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		006F75F22F547E3500D581A9 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				006F75ED2F547E3500D581A9 /* TranslateHelperKeyboard.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		003133452F3DE56A00F7A418 /* TranslateHelper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TranslateHelper.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		006F75162F547D2200D581A9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		006F75172F547D2200D581A9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		006F75182F547D2200D581A9 /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
+		006F75192F547D2200D581A9 /* CreateAccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateAccountView.swift; sourceTree = "<group>"; };
+		006F751A2F547D2200D581A9 /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
+		006F751B2F547D2200D581A9 /* DictateViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictateViewController.swift; sourceTree = "<group>"; };
+		006F751C2F547D2200D581A9 /* ForgotPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForgotPasswordView.swift; sourceTree = "<group>"; };
+		006F751D2F547D2200D581A9 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		006F751E2F547D2200D581A9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		006F751F2F547D2200D581A9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		006F75212F547D2200D581A9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		006F75232F547D2200D581A9 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		006F75242F547D2200D581A9 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		006F75252F547D2200D581A9 /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
+		006F75262F547D2200D581A9 /* TranslateHelper.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TranslateHelper.entitlements; sourceTree = "<group>"; };
+		006F75272F547D2200D581A9 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		006F75382F547D4A00D581A9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		006F75392F547D4A00D581A9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		006F753A2F547D4A00D581A9 /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
+		006F753B2F547D4A00D581A9 /* CreateAccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateAccountView.swift; sourceTree = "<group>"; };
+		006F753C2F547D4A00D581A9 /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
+		006F753D2F547D4A00D581A9 /* DictateViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictateViewController.swift; sourceTree = "<group>"; };
+		006F753E2F547D4A00D581A9 /* ForgotPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForgotPasswordView.swift; sourceTree = "<group>"; };
+		006F753F2F547D4A00D581A9 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		006F75402F547D4A00D581A9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		006F75412F547D4A00D581A9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		006F75432F547D4A00D581A9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		006F75452F547D4A00D581A9 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		006F75462F547D4A00D581A9 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		006F75472F547D4A00D581A9 /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
+		006F75482F547D4A00D581A9 /* TranslateHelper.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TranslateHelper.entitlements; sourceTree = "<group>"; };
+		006F75492F547D4A00D581A9 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		006F755A2F547D5B00D581A9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		006F755B2F547D5B00D581A9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		006F755C2F547D5B00D581A9 /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
+		006F755D2F547D5B00D581A9 /* CreateAccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateAccountView.swift; sourceTree = "<group>"; };
+		006F755E2F547D5B00D581A9 /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
+		006F755F2F547D5B00D581A9 /* DictateViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictateViewController.swift; sourceTree = "<group>"; };
+		006F75602F547D5B00D581A9 /* ForgotPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForgotPasswordView.swift; sourceTree = "<group>"; };
+		006F75612F547D5B00D581A9 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		006F75622F547D5B00D581A9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		006F75632F547D5B00D581A9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		006F75652F547D5B00D581A9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		006F75672F547D5B00D581A9 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		006F75682F547D5B00D581A9 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		006F75692F547D5B00D581A9 /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
+		006F756A2F547D5B00D581A9 /* TranslateHelper.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TranslateHelper.entitlements; sourceTree = "<group>"; };
+		006F756B2F547D5B00D581A9 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		006F757C2F547D7300D581A9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		006F757D2F547D7300D581A9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		006F757E2F547D7300D581A9 /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
+		006F757F2F547D7300D581A9 /* CreateAccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateAccountView.swift; sourceTree = "<group>"; };
+		006F75802F547D7300D581A9 /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
+		006F75812F547D7300D581A9 /* DictateViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictateViewController.swift; sourceTree = "<group>"; };
+		006F75822F547D7300D581A9 /* ForgotPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForgotPasswordView.swift; sourceTree = "<group>"; };
+		006F75832F547D7300D581A9 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		006F75842F547D7300D581A9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		006F75852F547D7300D581A9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		006F75872F547D7300D581A9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		006F75892F547D7300D581A9 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		006F758A2F547D7300D581A9 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		006F758B2F547D7300D581A9 /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
+		006F758C2F547D7300D581A9 /* TranslateHelper.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TranslateHelper.entitlements; sourceTree = "<group>"; };
+		006F758D2F547D7300D581A9 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		006F759E2F547D8800D581A9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		006F759F2F547D8800D581A9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		006F75A02F547D8800D581A9 /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
+		006F75A12F547D8800D581A9 /* CreateAccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateAccountView.swift; sourceTree = "<group>"; };
+		006F75A22F547D8800D581A9 /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
+		006F75A32F547D8800D581A9 /* DictateViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictateViewController.swift; sourceTree = "<group>"; };
+		006F75A42F547D8800D581A9 /* ForgotPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForgotPasswordView.swift; sourceTree = "<group>"; };
+		006F75A52F547D8800D581A9 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		006F75A62F547D8800D581A9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		006F75A72F547D8800D581A9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		006F75A92F547D8800D581A9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		006F75AB2F547D8800D581A9 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		006F75AC2F547D8800D581A9 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		006F75AD2F547D8800D581A9 /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
+		006F75AE2F547D8800D581A9 /* TranslateHelper.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TranslateHelper.entitlements; sourceTree = "<group>"; };
+		006F75AF2F547D8800D581A9 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		006F75C02F547D9C00D581A9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		006F75C12F547D9C00D581A9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		006F75C22F547D9C00D581A9 /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
+		006F75C32F547D9C00D581A9 /* CreateAccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateAccountView.swift; sourceTree = "<group>"; };
+		006F75C42F547D9C00D581A9 /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
+		006F75C52F547D9C00D581A9 /* DictateViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictateViewController.swift; sourceTree = "<group>"; };
+		006F75C62F547D9C00D581A9 /* ForgotPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForgotPasswordView.swift; sourceTree = "<group>"; };
+		006F75C72F547D9C00D581A9 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		006F75C82F547D9C00D581A9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		006F75C92F547D9C00D581A9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		006F75CB2F547D9C00D581A9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		006F75CD2F547D9C00D581A9 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		006F75CE2F547D9C00D581A9 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		006F75CF2F547D9C00D581A9 /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
+		006F75D02F547D9C00D581A9 /* TranslateHelper.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TranslateHelper.entitlements; sourceTree = "<group>"; };
+		006F75D12F547D9C00D581A9 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		006F75E62F547E3500D581A9 /* TranslateHelperKeyboard.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TranslateHelperKeyboard.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -17,6 +234,13 @@
 				Info.plist,
 			);
 			target = 003133442F3DE56A00F7A418 /* TranslateHelper */;
+		};
+		006F75F12F547E3500D581A9 /* Exceptions for "TranslateHelperKeyboard" folder in "TranslateHelperKeyboard" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 006F75E52F547E3500D581A9 /* TranslateHelperKeyboard */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -29,10 +253,27 @@
 			path = TranslateHelper;
 			sourceTree = "<group>";
 		};
+		006F75E72F547E3500D581A9 /* TranslateHelperKeyboard */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				006F75F12F547E3500D581A9 /* Exceptions for "TranslateHelperKeyboard" folder in "TranslateHelperKeyboard" target */,
+			);
+			path = TranslateHelperKeyboard;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		003133422F3DE56A00F7A418 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				006F75132F547CA800D581A9 /* FirebaseAuth in Frameworks */,
+				006F75152F547CA800D581A9 /* FirebaseFirestore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		006F75E32F547E3500D581A9 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -45,7 +286,14 @@
 		0031333C2F3DE56A00F7A418 = {
 			isa = PBXGroup;
 			children = (
+				006F75D22F547D9C00D581A9 /* TranslateHelper */,
+				006F75B02F547D8800D581A9 /* TranslateHelper */,
+				006F758E2F547D7300D581A9 /* TranslateHelper */,
+				006F756C2F547D5B00D581A9 /* TranslateHelper */,
+				006F754A2F547D4A00D581A9 /* TranslateHelper */,
+				006F75282F547D2200D581A9 /* TranslateHelper */,
 				003133472F3DE56A00F7A418 /* TranslateHelper */,
+				006F75E72F547E3500D581A9 /* TranslateHelperKeyboard */,
 				003133462F3DE56A00F7A418 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -54,8 +302,147 @@
 			isa = PBXGroup;
 			children = (
 				003133452F3DE56A00F7A418 /* TranslateHelper.app */,
+				006F75E62F547E3500D581A9 /* TranslateHelperKeyboard.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		006F75282F547D2200D581A9 /* TranslateHelper */ = {
+			isa = PBXGroup;
+			children = (
+				006F75162F547D2200D581A9 /* AppDelegate.swift */,
+				006F75172F547D2200D581A9 /* Assets.xcassets */,
+				006F75182F547D2200D581A9 /* AuthManager.swift */,
+				006F75192F547D2200D581A9 /* CreateAccountView.swift */,
+				006F751A2F547D2200D581A9 /* DesignSystem.swift */,
+				006F751B2F547D2200D581A9 /* DictateViewController.swift */,
+				006F751C2F547D2200D581A9 /* ForgotPasswordView.swift */,
+				006F751D2F547D2200D581A9 /* GoogleService-Info.plist */,
+				006F751E2F547D2200D581A9 /* Info.plist */,
+				006F75202F547D2200D581A9 /* LaunchScreen.storyboard */,
+				006F75222F547D2200D581A9 /* Main.storyboard */,
+				006F75232F547D2200D581A9 /* RootView.swift */,
+				006F75242F547D2200D581A9 /* SceneDelegate.swift */,
+				006F75252F547D2200D581A9 /* SignInView.swift */,
+				006F75262F547D2200D581A9 /* TranslateHelper.entitlements */,
+				006F75272F547D2200D581A9 /* ViewController.swift */,
+			);
+			path = TranslateHelper;
+			sourceTree = "<group>";
+		};
+		006F754A2F547D4A00D581A9 /* TranslateHelper */ = {
+			isa = PBXGroup;
+			children = (
+				006F75382F547D4A00D581A9 /* AppDelegate.swift */,
+				006F75392F547D4A00D581A9 /* Assets.xcassets */,
+				006F753A2F547D4A00D581A9 /* AuthManager.swift */,
+				006F753B2F547D4A00D581A9 /* CreateAccountView.swift */,
+				006F753C2F547D4A00D581A9 /* DesignSystem.swift */,
+				006F753D2F547D4A00D581A9 /* DictateViewController.swift */,
+				006F753E2F547D4A00D581A9 /* ForgotPasswordView.swift */,
+				006F753F2F547D4A00D581A9 /* GoogleService-Info.plist */,
+				006F75402F547D4A00D581A9 /* Info.plist */,
+				006F75422F547D4A00D581A9 /* LaunchScreen.storyboard */,
+				006F75442F547D4A00D581A9 /* Main.storyboard */,
+				006F75452F547D4A00D581A9 /* RootView.swift */,
+				006F75462F547D4A00D581A9 /* SceneDelegate.swift */,
+				006F75472F547D4A00D581A9 /* SignInView.swift */,
+				006F75482F547D4A00D581A9 /* TranslateHelper.entitlements */,
+				006F75492F547D4A00D581A9 /* ViewController.swift */,
+			);
+			path = TranslateHelper;
+			sourceTree = "<group>";
+		};
+		006F756C2F547D5B00D581A9 /* TranslateHelper */ = {
+			isa = PBXGroup;
+			children = (
+				006F755A2F547D5B00D581A9 /* AppDelegate.swift */,
+				006F755B2F547D5B00D581A9 /* Assets.xcassets */,
+				006F755C2F547D5B00D581A9 /* AuthManager.swift */,
+				006F755D2F547D5B00D581A9 /* CreateAccountView.swift */,
+				006F755E2F547D5B00D581A9 /* DesignSystem.swift */,
+				006F755F2F547D5B00D581A9 /* DictateViewController.swift */,
+				006F75602F547D5B00D581A9 /* ForgotPasswordView.swift */,
+				006F75612F547D5B00D581A9 /* GoogleService-Info.plist */,
+				006F75622F547D5B00D581A9 /* Info.plist */,
+				006F75642F547D5B00D581A9 /* LaunchScreen.storyboard */,
+				006F75662F547D5B00D581A9 /* Main.storyboard */,
+				006F75672F547D5B00D581A9 /* RootView.swift */,
+				006F75682F547D5B00D581A9 /* SceneDelegate.swift */,
+				006F75692F547D5B00D581A9 /* SignInView.swift */,
+				006F756A2F547D5B00D581A9 /* TranslateHelper.entitlements */,
+				006F756B2F547D5B00D581A9 /* ViewController.swift */,
+			);
+			path = TranslateHelper;
+			sourceTree = "<group>";
+		};
+		006F758E2F547D7300D581A9 /* TranslateHelper */ = {
+			isa = PBXGroup;
+			children = (
+				006F757C2F547D7300D581A9 /* AppDelegate.swift */,
+				006F757D2F547D7300D581A9 /* Assets.xcassets */,
+				006F757E2F547D7300D581A9 /* AuthManager.swift */,
+				006F757F2F547D7300D581A9 /* CreateAccountView.swift */,
+				006F75802F547D7300D581A9 /* DesignSystem.swift */,
+				006F75812F547D7300D581A9 /* DictateViewController.swift */,
+				006F75822F547D7300D581A9 /* ForgotPasswordView.swift */,
+				006F75832F547D7300D581A9 /* GoogleService-Info.plist */,
+				006F75842F547D7300D581A9 /* Info.plist */,
+				006F75862F547D7300D581A9 /* LaunchScreen.storyboard */,
+				006F75882F547D7300D581A9 /* Main.storyboard */,
+				006F75892F547D7300D581A9 /* RootView.swift */,
+				006F758A2F547D7300D581A9 /* SceneDelegate.swift */,
+				006F758B2F547D7300D581A9 /* SignInView.swift */,
+				006F758C2F547D7300D581A9 /* TranslateHelper.entitlements */,
+				006F758D2F547D7300D581A9 /* ViewController.swift */,
+			);
+			path = TranslateHelper;
+			sourceTree = "<group>";
+		};
+		006F75B02F547D8800D581A9 /* TranslateHelper */ = {
+			isa = PBXGroup;
+			children = (
+				006F759E2F547D8800D581A9 /* AppDelegate.swift */,
+				006F759F2F547D8800D581A9 /* Assets.xcassets */,
+				006F75A02F547D8800D581A9 /* AuthManager.swift */,
+				006F75A12F547D8800D581A9 /* CreateAccountView.swift */,
+				006F75A22F547D8800D581A9 /* DesignSystem.swift */,
+				006F75A32F547D8800D581A9 /* DictateViewController.swift */,
+				006F75A42F547D8800D581A9 /* ForgotPasswordView.swift */,
+				006F75A52F547D8800D581A9 /* GoogleService-Info.plist */,
+				006F75A62F547D8800D581A9 /* Info.plist */,
+				006F75A82F547D8800D581A9 /* LaunchScreen.storyboard */,
+				006F75AA2F547D8800D581A9 /* Main.storyboard */,
+				006F75AB2F547D8800D581A9 /* RootView.swift */,
+				006F75AC2F547D8800D581A9 /* SceneDelegate.swift */,
+				006F75AD2F547D8800D581A9 /* SignInView.swift */,
+				006F75AE2F547D8800D581A9 /* TranslateHelper.entitlements */,
+				006F75AF2F547D8800D581A9 /* ViewController.swift */,
+			);
+			path = TranslateHelper;
+			sourceTree = "<group>";
+		};
+		006F75D22F547D9C00D581A9 /* TranslateHelper */ = {
+			isa = PBXGroup;
+			children = (
+				006F75C02F547D9C00D581A9 /* AppDelegate.swift */,
+				006F75C12F547D9C00D581A9 /* Assets.xcassets */,
+				006F75C22F547D9C00D581A9 /* AuthManager.swift */,
+				006F75C32F547D9C00D581A9 /* CreateAccountView.swift */,
+				006F75C42F547D9C00D581A9 /* DesignSystem.swift */,
+				006F75C52F547D9C00D581A9 /* DictateViewController.swift */,
+				006F75C62F547D9C00D581A9 /* ForgotPasswordView.swift */,
+				006F75C72F547D9C00D581A9 /* GoogleService-Info.plist */,
+				006F75C82F547D9C00D581A9 /* Info.plist */,
+				006F75CA2F547D9C00D581A9 /* LaunchScreen.storyboard */,
+				006F75CC2F547D9C00D581A9 /* Main.storyboard */,
+				006F75CD2F547D9C00D581A9 /* RootView.swift */,
+				006F75CE2F547D9C00D581A9 /* SceneDelegate.swift */,
+				006F75CF2F547D9C00D581A9 /* SignInView.swift */,
+				006F75D02F547D9C00D581A9 /* TranslateHelper.entitlements */,
+				006F75D12F547D9C00D581A9 /* ViewController.swift */,
+			);
+			path = TranslateHelper;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -68,20 +455,46 @@
 				003133412F3DE56A00F7A418 /* Sources */,
 				003133422F3DE56A00F7A418 /* Frameworks */,
 				003133432F3DE56A00F7A418 /* Resources */,
+				006F75F22F547E3500D581A9 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				006F75EC2F547E3500D581A9 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				003133472F3DE56A00F7A418 /* TranslateHelper */,
 			);
 			name = TranslateHelper;
 			packageProductDependencies = (
+				006F75122F547CA800D581A9 /* FirebaseAuth */,
+				006F75142F547CA800D581A9 /* FirebaseFirestore */,
 			);
 			productName = TranslateHelper;
 			productReference = 003133452F3DE56A00F7A418 /* TranslateHelper.app */;
 			productType = "com.apple.product-type.application";
+		};
+		006F75E52F547E3500D581A9 /* TranslateHelperKeyboard */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 006F75EE2F547E3500D581A9 /* Build configuration list for PBXNativeTarget "TranslateHelperKeyboard" */;
+			buildPhases = (
+				006F75E22F547E3500D581A9 /* Sources */,
+				006F75E32F547E3500D581A9 /* Frameworks */,
+				006F75E42F547E3500D581A9 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				006F75E72F547E3500D581A9 /* TranslateHelperKeyboard */,
+			);
+			name = TranslateHelperKeyboard;
+			packageProductDependencies = (
+			);
+			productName = TranslateHelperKeyboard;
+			productReference = 006F75E62F547E3500D581A9 /* TranslateHelperKeyboard.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -90,11 +503,14 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2620;
+				LastSwiftUpdateCheck = 2630;
 				LastUpgradeCheck = 2620;
 				TargetAttributes = {
 					003133442F3DE56A00F7A418 = {
 						CreatedOnToolsVersion = 26.2;
+					};
+					006F75E52F547E3500D581A9 = {
+						CreatedOnToolsVersion = 26.3;
 					};
 				};
 			};
@@ -107,18 +523,59 @@
 			);
 			mainGroup = 0031333C2F3DE56A00F7A418;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				006F75112F547CA800D581A9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 003133462F3DE56A00F7A418 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				003133442F3DE56A00F7A418 /* TranslateHelper */,
+				006F75E52F547E3500D581A9 /* TranslateHelperKeyboard */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		003133432F3DE56A00F7A418 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				006F756D2F547D5B00D581A9 /* GoogleService-Info.plist in Resources */,
+				006F756E2F547D5B00D581A9 /* LaunchScreen.storyboard in Resources */,
+				006F756F2F547D5B00D581A9 /* Main.storyboard in Resources */,
+				006F75702F547D5B00D581A9 /* Info.plist in Resources */,
+				006F75712F547D5B00D581A9 /* Assets.xcassets in Resources */,
+				006F75D32F547D9C00D581A9 /* LaunchScreen.storyboard in Resources */,
+				006F75D42F547D9C00D581A9 /* Main.storyboard in Resources */,
+				006F75D52F547D9C00D581A9 /* Assets.xcassets in Resources */,
+				006F75D62F547D9C00D581A9 /* GoogleService-Info.plist in Resources */,
+				006F75D72F547D9C00D581A9 /* Info.plist in Resources */,
+				006F75292F547D2200D581A9 /* LaunchScreen.storyboard in Resources */,
+				006F752A2F547D2200D581A9 /* Main.storyboard in Resources */,
+				006F752B2F547D2200D581A9 /* GoogleService-Info.plist in Resources */,
+				006F752C2F547D2200D581A9 /* Info.plist in Resources */,
+				006F752D2F547D2200D581A9 /* Assets.xcassets in Resources */,
+				006F754B2F547D4A00D581A9 /* Info.plist in Resources */,
+				006F754C2F547D4A00D581A9 /* LaunchScreen.storyboard in Resources */,
+				006F754D2F547D4A00D581A9 /* Main.storyboard in Resources */,
+				006F758F2F547D7300D581A9 /* GoogleService-Info.plist in Resources */,
+				006F75902F547D7300D581A9 /* Main.storyboard in Resources */,
+				006F75912F547D7300D581A9 /* Assets.xcassets in Resources */,
+				006F75922F547D7300D581A9 /* Info.plist in Resources */,
+				006F75932F547D7300D581A9 /* LaunchScreen.storyboard in Resources */,
+				006F754E2F547D4A00D581A9 /* GoogleService-Info.plist in Resources */,
+				006F75B12F547D8800D581A9 /* GoogleService-Info.plist in Resources */,
+				006F75B22F547D8800D581A9 /* Info.plist in Resources */,
+				006F75B32F547D8800D581A9 /* Assets.xcassets in Resources */,
+				006F75B42F547D8800D581A9 /* LaunchScreen.storyboard in Resources */,
+				006F75B52F547D8800D581A9 /* Main.storyboard in Resources */,
+				006F754F2F547D4A00D581A9 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		006F75E42F547E3500D581A9 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -132,10 +589,184 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				006F75B62F547D8800D581A9 /* ViewController.swift in Sources */,
+				006F75B72F547D8800D581A9 /* CreateAccountView.swift in Sources */,
+				006F75B82F547D8800D581A9 /* AppDelegate.swift in Sources */,
+				006F75B92F547D8800D581A9 /* RootView.swift in Sources */,
+				006F75BA2F547D8800D581A9 /* DictateViewController.swift in Sources */,
+				006F75BB2F547D8800D581A9 /* AuthManager.swift in Sources */,
+				006F75BC2F547D8800D581A9 /* ForgotPasswordView.swift in Sources */,
+				006F75BD2F547D8800D581A9 /* SignInView.swift in Sources */,
+				006F75BE2F547D8800D581A9 /* DesignSystem.swift in Sources */,
+				006F75BF2F547D8800D581A9 /* SceneDelegate.swift in Sources */,
+				006F752E2F547D2200D581A9 /* CreateAccountView.swift in Sources */,
+				006F752F2F547D2200D581A9 /* RootView.swift in Sources */,
+				006F75302F547D2200D581A9 /* AppDelegate.swift in Sources */,
+				006F75312F547D2200D581A9 /* DesignSystem.swift in Sources */,
+				006F75322F547D2200D581A9 /* ForgotPasswordView.swift in Sources */,
+				006F75332F547D2200D581A9 /* ViewController.swift in Sources */,
+				006F75342F547D2200D581A9 /* DictateViewController.swift in Sources */,
+				006F75352F547D2200D581A9 /* SignInView.swift in Sources */,
+				006F75362F547D2200D581A9 /* SceneDelegate.swift in Sources */,
+				006F75372F547D2200D581A9 /* AuthManager.swift in Sources */,
+				006F75D82F547D9C00D581A9 /* DictateViewController.swift in Sources */,
+				006F75D92F547D9C00D581A9 /* ForgotPasswordView.swift in Sources */,
+				006F75DA2F547D9C00D581A9 /* RootView.swift in Sources */,
+				006F75DB2F547D9C00D581A9 /* DesignSystem.swift in Sources */,
+				006F75DC2F547D9C00D581A9 /* AppDelegate.swift in Sources */,
+				006F75DD2F547D9C00D581A9 /* AuthManager.swift in Sources */,
+				006F75DE2F547D9C00D581A9 /* SignInView.swift in Sources */,
+				006F75DF2F547D9C00D581A9 /* ViewController.swift in Sources */,
+				006F75E02F547D9C00D581A9 /* SceneDelegate.swift in Sources */,
+				006F75E12F547D9C00D581A9 /* CreateAccountView.swift in Sources */,
+				006F75502F547D4A00D581A9 /* DictateViewController.swift in Sources */,
+				006F75512F547D4A00D581A9 /* SceneDelegate.swift in Sources */,
+				006F75522F547D4A00D581A9 /* ViewController.swift in Sources */,
+				006F75722F547D5B00D581A9 /* SignInView.swift in Sources */,
+				006F75732F547D5B00D581A9 /* SceneDelegate.swift in Sources */,
+				006F75742F547D5B00D581A9 /* ForgotPasswordView.swift in Sources */,
+				006F75752F547D5B00D581A9 /* AppDelegate.swift in Sources */,
+				006F75762F547D5B00D581A9 /* DictateViewController.swift in Sources */,
+				006F75772F547D5B00D581A9 /* CreateAccountView.swift in Sources */,
+				006F75782F547D5B00D581A9 /* RootView.swift in Sources */,
+				006F75792F547D5B00D581A9 /* AuthManager.swift in Sources */,
+				006F757A2F547D5B00D581A9 /* ViewController.swift in Sources */,
+				006F757B2F547D5B00D581A9 /* DesignSystem.swift in Sources */,
+				006F75532F547D4A00D581A9 /* DesignSystem.swift in Sources */,
+				006F75542F547D4A00D581A9 /* ForgotPasswordView.swift in Sources */,
+				006F75552F547D4A00D581A9 /* SignInView.swift in Sources */,
+				006F75562F547D4A00D581A9 /* AppDelegate.swift in Sources */,
+				006F75572F547D4A00D581A9 /* RootView.swift in Sources */,
+				006F75582F547D4A00D581A9 /* AuthManager.swift in Sources */,
+				006F75592F547D4A00D581A9 /* CreateAccountView.swift in Sources */,
+				006F75942F547D7300D581A9 /* DesignSystem.swift in Sources */,
+				006F75952F547D7300D581A9 /* SignInView.swift in Sources */,
+				006F75962F547D7300D581A9 /* AppDelegate.swift in Sources */,
+				006F75972F547D7300D581A9 /* ViewController.swift in Sources */,
+				006F75982F547D7300D581A9 /* AuthManager.swift in Sources */,
+				006F75992F547D7300D581A9 /* ForgotPasswordView.swift in Sources */,
+				006F759A2F547D7300D581A9 /* DictateViewController.swift in Sources */,
+				006F759B2F547D7300D581A9 /* CreateAccountView.swift in Sources */,
+				006F759C2F547D7300D581A9 /* RootView.swift in Sources */,
+				006F759D2F547D7300D581A9 /* SceneDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		006F75E22F547E3500D581A9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		006F75EC2F547E3500D581A9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 006F75E52F547E3500D581A9 /* TranslateHelperKeyboard */;
+			targetProxy = 006F75EB2F547E3500D581A9 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		006F75202F547D2200D581A9 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				006F751F2F547D2200D581A9 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		006F75222F547D2200D581A9 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				006F75212F547D2200D581A9 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		006F75422F547D4A00D581A9 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				006F75412F547D4A00D581A9 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		006F75442F547D4A00D581A9 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				006F75432F547D4A00D581A9 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		006F75642F547D5B00D581A9 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				006F75632F547D5B00D581A9 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		006F75662F547D5B00D581A9 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				006F75652F547D5B00D581A9 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		006F75862F547D7300D581A9 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				006F75852F547D7300D581A9 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		006F75882F547D7300D581A9 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				006F75872F547D7300D581A9 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		006F75A82F547D8800D581A9 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				006F75A72F547D8800D581A9 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		006F75AA2F547D8800D581A9 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				006F75A92F547D8800D581A9 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		006F75CA2F547D9C00D581A9 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				006F75C92F547D9C00D581A9 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		006F75CC2F547D9C00D581A9 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				006F75CB2F547D9C00D581A9 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		003133592F3DE56B00F7A418 /* Debug */ = {
@@ -319,6 +950,60 @@
 			};
 			name = Release;
 		};
+		006F75EF2F547E3500D581A9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TranslateHelperKeyboard/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = TranslateHelperKeyboard;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jeffrey.TranslateHelper.Keyboard;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		006F75F02F547E3500D581A9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TranslateHelperKeyboard/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = TranslateHelperKeyboard;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jeffrey.TranslateHelper.Keyboard;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -340,7 +1025,40 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		006F75EE2F547E3500D581A9 /* Build configuration list for PBXNativeTarget "TranslateHelperKeyboard" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				006F75EF2F547E3500D581A9 /* Debug */,
+				006F75F02F547E3500D581A9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		006F75112F547CA800D581A9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.10.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		006F75122F547CA800D581A9 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 006F75112F547CA800D581A9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		006F75142F547CA800D581A9 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 006F75112F547CA800D581A9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 0031333D2F3DE56A00F7A418 /* Project object */;
 }
