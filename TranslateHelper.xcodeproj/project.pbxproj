@@ -95,6 +95,7 @@
 		006F75E12F547D9C00D581A9 /* CreateAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75C32F547D9C00D581A9 /* CreateAccountView.swift */; };
 		006F75ED2F547E3500D581A9 /* TranslateHelperKeyboard.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 006F75E62F547E3500D581A9 /* TranslateHelperKeyboard.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		006F769E2F54C7FA00D581A9 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 006F769D2F54C7FA00D581A9 /* GoogleSignIn */; };
+		A6728A9D362581C24272B7DA /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E5C787F74B49B3B71FC2D15 /* SettingsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -220,6 +221,7 @@
 		006F75D02F547D9C00D581A9 /* TranslateHelper.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TranslateHelper.entitlements; sourceTree = "<group>"; };
 		006F75D12F547D9C00D581A9 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		006F75E62F547E3500D581A9 /* TranslateHelperKeyboard.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TranslateHelperKeyboard.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		8E5C787F74B49B3B71FC2D15 /* SettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -438,6 +440,7 @@
 				006F75CF2F547D9C00D581A9 /* SignInView.swift */,
 				006F75D02F547D9C00D581A9 /* TranslateHelper.entitlements */,
 				006F75D12F547D9C00D581A9 /* ViewController.swift */,
+				8E5C787F74B49B3B71FC2D15 /* SettingsView.swift */,
 			);
 			path = TranslateHelper;
 			sourceTree = "<group>";
@@ -495,8 +498,6 @@
 				006F75E72F547E3500D581A9 /* TranslateHelperKeyboard */,
 			);
 			name = TranslateHelperKeyboard;
-			packageProductDependencies = (
-			);
 			productName = TranslateHelperKeyboard;
 			productReference = 006F75E62F547E3500D581A9 /* TranslateHelperKeyboard.appex */;
 			productType = "com.apple.product-type.app-extension";
@@ -649,6 +650,7 @@
 				006F759B2F547D7300D581A9 /* CreateAccountView.swift in Sources */,
 				006F759C2F547D7300D581A9 /* RootView.swift in Sources */,
 				006F759D2F547D7300D581A9 /* SceneDelegate.swift in Sources */,
+				A6728A9D362581C24272B7DA /* SettingsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

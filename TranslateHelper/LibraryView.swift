@@ -158,7 +158,7 @@ struct LibraryView: View {
                             .foregroundColor(.tsLabel)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 6)
-                            .overlay(Capsule().stroke(Color.white.opacity(0.2), lineWidth: 1))
+                            .overlay(Capsule().stroke(Color.tsBorder, lineWidth: 1))
                     }
                     .padding(16)
                     .background(Color.tsCard)

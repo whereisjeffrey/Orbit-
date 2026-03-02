@@ -69,7 +69,7 @@ struct LanguageSelectionView: View {
                     // Progress bar
                     ZStack(alignment: .leading) {
                         Capsule()
-                            .fill(Color.white.opacity(0.1))
+                            .fill(Color.tsLabel.opacity(0.1))
                             .frame(width: 128, height: 6)
                         Capsule()
                             .fill(Color.tsAccent)
@@ -191,7 +191,7 @@ struct LanguageSelectionView: View {
                     .padding(.horizontal, 24)
 
                     RoundedRectangle(cornerRadius: 3)
-                        .fill(Color.white.opacity(0.2))
+                        .fill(Color.tsLabel.opacity(0.2))
                         .frame(width: 128, height: 5)
                         .padding(.bottom, 8)
                 }

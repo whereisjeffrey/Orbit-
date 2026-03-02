@@ -13,13 +13,14 @@ struct MainTabView: View {
             Group {
                 switch selected {
                 case 0: LibraryView()
+                case 4: SettingsView()
                 default: LibraryView() // placeholder for other tabs
                 }
             }
 
             // ── Custom tab bar ─────────────────────────────────────────
             VStack(spacing: 0) {
-                Divider().background(Color.white.opacity(0.05))
+                Divider().background(Color.tsBorder)
                 HStack {
                     TabBarItem(icon: "square.stack.3d.up.fill", label: "Library",  tag: 0, selected: $selected)
                     TabBarItem(icon: "keyboard",                  label: "Keyboard", tag: 1, selected: $selected)
@@ -33,7 +34,7 @@ struct MainTabView: View {
                                 .shadow(color: Color.tsAccent.opacity(0.39), radius: 10, x: 0, y: 4)
                             Image(systemName: "plus")
                                 .font(.system(size: 28, weight: .semibold))
-                                .foregroundColor(.tsLabel)
+                                .foregroundColor(.white)
                         }
                     }
                     .offset(y: -20)
@@ -45,9 +46,8 @@ struct MainTabView: View {
                 .padding(.horizontal, 16)
                 .padding(.top, 12)
                 .padding(.bottom, 32)
-                .background(.ultraThinMaterial.opacity(0))
-                .background(Color.black.opacity(0.8))
             }
+            .background(Color.tsBackground)
         }
         .ignoresSafeArea(edges: .bottom)
     }
@@ -69,7 +69,7 @@ struct TabBarItem: View {
                 Text(label)
                     .font(.system(size: 10, weight: .medium))
             }
-            .foregroundColor(isActive ? .tsAccent : .tsSecondary.opacity(0.5))
+            .foregroundColor(isActive ? .tsAccent : .tsLabel)
             .frame(maxWidth: .infinity)
         }
     }

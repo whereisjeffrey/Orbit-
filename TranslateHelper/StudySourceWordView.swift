@@ -72,7 +72,7 @@ struct StudySourceWordView: View {
                         .padding(.vertical, 8)
                         .background(Color(.systemGray6).opacity(0.1))
                         .clipShape(Capsule())
-                        .overlay(Capsule().stroke(Color.white.opacity(0.1), lineWidth: 1))
+                        .overlay(Capsule().stroke(Color.tsBorder, lineWidth: 1))
                         .padding(.top, 24)
                         
                         Spacer()
@@ -110,7 +110,7 @@ struct StudySourceWordView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
                     .overlay(
                         RoundedRectangle(cornerRadius: 32, style: .continuous)
-                            .stroke(Color.white.opacity(0.05), lineWidth: 1)
+                            .stroke(Color.tsBorder, lineWidth: 1)
                     )
                     .padding(.horizontal, 16)
                     .padding(.top, 16)

@@ -71,7 +71,7 @@ struct StudyRevealedCardView: View {
                     .padding(.vertical, 8)
                     .background(Color(.systemGray6).opacity(0.1))
                     .clipShape(Capsule())
-                    .overlay(Capsule().stroke(Color.white.opacity(0.1), lineWidth: 1))
+                    .overlay(Capsule().stroke(Color.tsBorder, lineWidth: 1))
                     .padding(.top, 24)
                     
                     Spacer()
@@ -113,7 +113,6 @@ struct StudyRevealedCardView: View {
                                 .clipShape(Circle())
                         }
                     }
-                    
                     Spacer()
                     
                     // Context Box
@@ -130,15 +129,15 @@ struct StudyRevealedCardView: View {
                         
                         Text("A deep emotional state of nostalgic or profound melancholic longing for an absent something or someone that one cares for and/or loves.")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.white.opacity(0.9))
+                            .foregroundColor(.tsLabel.opacity(0.9))
                             .lineSpacing(4)
                     }
                     .padding(20)
-                    .background(Color(white: 0.14))
+                    .background(Color.tsBackground)
                     .clipShape(RoundedRectangle(cornerRadius: 16))
                     .overlay(
                         RoundedRectangle(cornerRadius: 16)
-                            .stroke(Color.white.opacity(0.05), lineWidth: 1)
+                            .stroke(Color.tsBorder, lineWidth: 1)
                     )
                     .padding(.horizontal, 20)
                     .padding(.bottom, 24)
@@ -148,7 +147,7 @@ struct StudyRevealedCardView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 32, style: .continuous)
-                        .stroke(Color.white.opacity(0.05), lineWidth: 1)
+                        .stroke(Color.tsBorder, lineWidth: 1)
                 )
                 .padding(.horizontal, 16)
                 .padding(.top, 16)

@@ -143,7 +143,7 @@ struct SignInView: View {
                     .padding(.bottom, 16)
 
                     RoundedRectangle(cornerRadius: 3)
-                        .fill(Color.white.opacity(0.2))
+                        .fill(Color.tsLabel.opacity(0.2))
                         .frame(width: 128, height: 5)
                         .padding(.bottom, 12)
                 }

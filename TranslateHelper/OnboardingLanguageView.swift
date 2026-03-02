@@ -70,7 +70,7 @@ struct OnboardingLanguageView: View {
                                         Text(flag).font(.system(size: 40))
                                         Text(name)
                                             .font(.system(size: 17, weight: .semibold))
-                                            .foregroundColor(isSelected ? .white : .white.opacity(0.8))
+                                            .foregroundColor(isSelected ? Color.white : Color.tsLabel.opacity(0.8))
                                     }
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 120)

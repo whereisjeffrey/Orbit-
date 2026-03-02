@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 // MARK: - Spacing Grid
 //
@@ -24,14 +25,51 @@ import SwiftUI
 //  padding(.vertical, 16)     ✅
 //  padding(.all, 13)          ❌ → use 12 or 16
 
+extension UIColor {
+    convenience init(hex: String) {
+        let h = hex.trimmingCharacters(in: CharacterSet(charactersIn: "#"))
+        var rgb: UInt64 = 0
+        Scanner(string: h).scanHexInt64(&rgb)
+        self.init(
+            red:   CGFloat((rgb >> 16) & 0xFF) / 255.0,
+            green: CGFloat((rgb >>  8) & 0xFF) / 255.0,
+            blue:  CGFloat( rgb        & 0xFF) / 255.0,
+            alpha: 1.0
+        )
+    }
+}
+
 // MARK: - Colours
 extension Color {
-    static let tsBackground  = Color(hex: "#000000")
-    static let tsCard        = Color(hex: "#1C1C1E")
-    static let tsBorder      = Color.white.opacity(0.08)
-    static let tsAccent      = Color(hex: "#007AFF")
-    static let tsAccentTeal  = Color(hex: "#00C7BE")
-    static let tsSecondary   = Color(hex: "#8E8E93")
+    static let tsBackground = Color(UIColor { trait in
+        trait.userInterfaceStyle == .dark ? UIColor(hex: "#000000") : UIColor(hex: "#FFFFFF")
+    })
+    
+    static let tsCard = Color(UIColor { trait in
+        trait.userInterfaceStyle == .dark ? UIColor(hex: "#1C1C1E") : UIColor(hex: "#F2F2F7")
+    })
+    
+    static let tsBorder = Color(UIColor { trait in
+        trait.userInterfaceStyle == .dark ? UIColor.white.withAlphaComponent(0.08) : UIColor(hex: "#C6C6C8")
+    })
+    
+    static let tsAccent = Color(hex: "#007AFF")
+    
+    static let tsAccentTeal = Color(UIColor { trait in
+        trait.userInterfaceStyle == .dark ? UIColor(hex: "#00C7BE") : UIColor(hex: "#5AC8FA")
+    })
+    
+    static let tsSecondary = Color(UIColor { trait in
+        trait.userInterfaceStyle == .dark ? UIColor(hex: "#8E8E93") : UIColor(hex: "#3C3C43").withAlphaComponent(0.6)
+    })
+    
+    static let tsLabel = Color(UIColor { trait in
+        trait.userInterfaceStyle == .dark ? UIColor(hex: "#FFFFFF") : UIColor(hex: "#000000")
+    })
+    
+    static let tsInputBg = Color(UIColor { trait in
+        trait.userInterfaceStyle == .dark ? UIColor(hex: "#787880").withAlphaComponent(0.12) : UIColor(hex: "#F2F2F7")
+    })
 
     init(hex: String) {
         let h = hex.trimmingCharacters(in: CharacterSet(charactersIn: "#"))
@@ -93,7 +131,7 @@ struct TSWordmark: View {
             Text("TalkSwitch")
                 .font(.custom("Sono-Regular", size: fontSize))
                 .kerning(fontSize * 0.01) // 1% letter spacing per Figma spec
-                .foregroundColor(.white)
+                .foregroundColor(.tsLabel)
         }
     }
 }

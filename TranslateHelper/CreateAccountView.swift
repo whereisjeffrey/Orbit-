@@ -78,7 +78,7 @@ struct CreateAccountView: View {
                                 .opacity(auth.isLoading ? 0 : 1)
                             
                             if auth.isLoading {
-                                ProgressView().tint(.white)
+                                ProgressView().tint(.tsLabel)
                             }
                         }
                         .frame(maxWidth: .infinity)
@@ -134,11 +134,11 @@ struct OnboardingField: View {
             .foregroundColor(.tsLabel)
             .padding(.horizontal, 16)
             .padding(.vertical, 16)
-            .background(Color.tsCard)
+            .background(Color.tsInputBg)
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.white.opacity(0.05), lineWidth: 1)
+                    .stroke(Color.tsBorder, lineWidth: 1)
             )
         }
     }

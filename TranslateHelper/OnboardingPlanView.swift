@@ -17,7 +17,7 @@ struct OnboardingPlanView: View {
                             .font(.system(size: 24, weight: .semibold))
                             .foregroundColor(.tsLabel)
                             .frame(width: 40, height: 40)
-                            .background(Color.white.opacity(0.1))
+                            .background(Color.tsLabel.opacity(0.1))
                             .clipShape(Circle())
                     }
                     Spacer()
@@ -110,7 +110,7 @@ struct OnboardingPlanView: View {
                                                 .font(.system(size: 20))
                                             Text("Basic")
                                                 .font(.system(size: 24, weight: .bold))
-                                                .foregroundColor(.white.opacity(0.9))
+                                                .foregroundColor(.tsLabel.opacity(0.9))
                                         }
                                         Text("Getting started")
                                             .font(.system(size: 14, weight: .medium))
@@ -120,7 +120,7 @@ struct OnboardingPlanView: View {
                                     VStack(alignment: .trailing, spacing: 2) {
                                         Text("Free")
                                             .font(.system(size: 30, weight: .bold))
-                                            .foregroundColor(.white.opacity(0.9))
+                                            .foregroundColor(.tsLabel.opacity(0.9))
                                         Text("FOREVER")
                                             .font(.system(size: 12, weight: .semibold))
                                             .foregroundColor(.gray)
@@ -133,9 +133,9 @@ struct OnboardingPlanView: View {
                                 }
                             }
                             .padding(24)
-                            .background(Color.white.opacity(0.03))
+                            .background(Color.tsLabel.opacity(0.03))
                             .clipShape(RoundedRectangle(cornerRadius: 24))
-                            .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.white.opacity(0.05), lineWidth: 1))
+                            .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.tsBorder, lineWidth: 1))
                             .onTapGesture {
                                 // Tapping free goes to library
                                 navigateToLibrary = true
@@ -191,7 +191,7 @@ struct PlanFeatureRow: View {
     var body: some View {
         HStack(spacing: 12) {
             Circle()
-                .fill(Color.white)
+                .fill(Color.tsLabel)
                 .frame(width: 20, height: 20)
                 .overlay(
                     Image(systemName: "checkmark")
@@ -200,7 +200,7 @@ struct PlanFeatureRow: View {
                 )
             Text(text)
                 .font(.system(size: 14, weight: .medium))
-                .foregroundColor(.white.opacity(0.9))
+                .foregroundColor(.tsLabel.opacity(0.9))
         }
     }
 }
