@@ -301,43 +301,53 @@ class KeyboardViewController: UIInputViewController {
             emptyBar.heightAnchor.constraint(equalToConstant: emptyHeight),
         ])
 
-        // Coaching language pill — tap to toggle between EN and PT
-        // This is NOT a keyboard language switcher (that's Apple's).
-        // This controls which language TalkSwitch coaches you in.
-        langPill.translatesAutoresizingMaskIntoConstraints = false
-        langPill.titleLabel?.font = UIFont.systemFont(ofSize: 13, weight: .semibold)
-        langPill.layer.cornerRadius = 14
-        langPill.clipsToBounds = true
-        langPill.addTarget(self, action: #selector(langPillTapped), for: .touchUpInside)
-        emptyBar.addSubview(langPill)
-        updateLangPill()
+        // TalkSwitch logo on the left
+        let logoImage = UIImage(named: "TalkSwitchLogo")
+        let logoView = UIImageView(image: logoImage)
+        logoView.translatesAutoresizingMaskIntoConstraints = false
+        logoView.contentMode = .scaleAspectFit
+        logoView.layer.cornerRadius = 10
+        logoView.clipsToBounds = true
+        emptyBar.addSubview(logoView)
 
+        // Center label
         emptyLabel.translatesAutoresizingMaskIntoConstraints = false
-        emptyLabel.text = "Copy text or tap 🎤"
-        emptyLabel.font = UIFont.systemFont(ofSize: 13)
+        emptyLabel.text = "Tap to translate"
+        emptyLabel.font = UIFont.systemFont(ofSize: 14, weight: .medium)
         emptyLabel.textColor = textSecondary
+        emptyLabel.textAlignment = .center
         emptyBar.addSubview(emptyLabel)
 
-        // Mic button
+        // Mic button on the right
         micButton.translatesAutoresizingMaskIntoConstraints = false
         micButton.setTitle("🎤", for: .normal)
-        micButton.titleLabel?.font = UIFont.systemFont(ofSize: 28)
+        micButton.titleLabel?.font = UIFont.systemFont(ofSize: 24)
         micButton.addTarget(self, action: #selector(micTapped), for: .touchUpInside)
         emptyBar.addSubview(micButton)
 
         NSLayoutConstraint.activate([
-            langPill.leadingAnchor.constraint(equalTo: emptyBar.leadingAnchor, constant: 12),
-            langPill.centerYAnchor.constraint(equalTo: emptyBar.centerYAnchor),
-            langPill.heightAnchor.constraint(equalToConstant: 28),
+            logoView.leadingAnchor.constraint(equalTo: emptyBar.leadingAnchor, constant: 16),
+            logoView.centerYAnchor.constraint(equalTo: emptyBar.centerYAnchor),
+            logoView.widthAnchor.constraint(equalToConstant: 45),
+            logoView.heightAnchor.constraint(equalToConstant: 45),
 
             emptyLabel.centerXAnchor.constraint(equalTo: emptyBar.centerXAnchor),
             emptyLabel.centerYAnchor.constraint(equalTo: emptyBar.centerYAnchor),
 
-            micButton.trailingAnchor.constraint(equalTo: emptyBar.trailingAnchor, constant: -12),
+            micButton.trailingAnchor.constraint(equalTo: emptyBar.trailingAnchor, constant: -16),
             micButton.centerYAnchor.constraint(equalTo: emptyBar.centerYAnchor),
             micButton.widthAnchor.constraint(equalToConstant: 44),
             micButton.heightAnchor.constraint(equalToConstant: 44),
         ])
+
+        // Tap anywhere on the bar to open the full panel
+        let tap = UITapGestureRecognizer(target: self, action: #selector(emptyBarTapped))
+        emptyBar.addGestureRecognizer(tap)
+        emptyBar.isUserInteractionEnabled = true
+    }
+
+    @objc private func emptyBarTapped() {
+        showPanel()
     }
 
     // MARK: - Globe (Next Keyboard) Button
