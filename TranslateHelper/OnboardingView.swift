@@ -16,14 +16,28 @@ struct OnboardingView: View {
                 step: 1,
                 totalSteps: 3,
                 selectedLanguage: $selectedLanguage,
-                onBack: {},           // no back on step 1
-                onSkip: { completeOnboarding() },
+                onBack: {},
+                onSkip: { step = 2 },
                 onContinue: { step = 2 }
             )
+        case 2:
+            OnboardingGoalsView(
+                step: 2,
+                totalSteps: 3,
+                onBack: { step = 1 },
+                onSkip: { step = 3 },
+                onContinue: { step = 3 }
+            )
+        case 3:
+            OnboardingLocationView(
+                step: 3,
+                totalSteps: 3,
+                onBack: { step = 2 },
+                onSkip: { completeOnboarding() },
+                onContinue: { completeOnboarding() }
+            )
         default:
-            // TODO: GoalSelectionView (step 2), PlanView (step 3)
-            Color.tsBackground.ignoresSafeArea()
-                .onAppear { completeOnboarding() }
+            EmptyView()
         }
     }
 

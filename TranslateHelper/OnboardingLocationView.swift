@@ -1,27 +1,19 @@
 //
-//  OnboardingGoalsView.swift
+//  OnboardingLocationView.swift
 //  TranslateHelper
 //
 
 import SwiftUI
 
-struct OnboardingGoalsView: View {
-    var step: Int = 2
+struct OnboardingLocationView: View {
+    var step: Int = 3
     var totalSteps: Int = 3
     let onBack: () -> Void
     let onSkip: () -> Void
     let onContinue: () -> Void
 
-    @State private var selectedGoals: Set<String> = []
-
-    let goals: [(String, String, Color)] = [
-        ("airplane",           "Travel",  Color(hex: "#007AFF")),
-        ("briefcase.fill",     "Work",    Color(hex: "#A2845E")),
-        ("face.smiling.fill",  "Casual",  Color(hex: "#FFCC00")),
-        ("heart.fill",         "Flirty",  Color(hex: "#FF3B30")),
-        ("building.columns.fill", "Culture", Color(hex: "#AF52DE")),
-        ("person.2.fill",      "Family",  Color(hex: "#34C759")),
-    ]
+    @State private var location: String = ""
+    @FocusState private var isFocused: Bool
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -62,53 +54,39 @@ struct OnboardingGoalsView: View {
                 .padding(.top, 8)
                 .padding(.bottom, 8)
 
+                // ── Content ────────────────────────────────────────────
                 ScrollView {
                     VStack(alignment: .leading, spacing: 24) {
+
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Why are you learning?")
+                            Text("Where are you learning?")
                                 .font(.system(size: 34, weight: .bold))
                                 .foregroundColor(.tsLabel)
-                            Text("Select all that apply. This helps us customize your study cards.")
+                            Text("This will help us deliver the most context-based slangs and phrases for your specific location.")
                                 .font(.system(size: 17))
                                 .foregroundColor(.tsSecondary)
                         }
                         .padding(.top, 16)
 
-                        LazyVGrid(
-                            columns: [GridItem(.flexible(), spacing: 16), GridItem(.flexible(), spacing: 16)],
-                            spacing: 16
-                        ) {
-                            ForEach(goals, id: \.1) { icon, name, color in
-                                let isSelected = selectedGoals.contains(name)
-                                Button(action: {
-                                    if isSelected { selectedGoals.remove(name) }
-                                    else { selectedGoals.insert(name) }
-                                }) {
-                                    VStack(spacing: 16) {
-                                        Circle()
-                                            .fill(color.opacity(0.2))
-                                            .frame(width: 48, height: 48)
-                                            .overlay(
-                                                Image(systemName: icon)
-                                                    .font(.system(size: 22))
-                                                    .foregroundColor(color)
-                                            )
-                                        Text(name)
-                                            .font(.system(size: 17, weight: .semibold))
-                                            .foregroundColor(.tsLabel)
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 148)
-                                    .background(Color.tsCard)
-                                    .cornerRadius(20)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 20)
-                                            .stroke(isSelected ? Color.tsAccent : Color.clear, lineWidth: 2)
-                                    )
-                                }
-                                .buttonStyle(ScaleButtonStyle())
-                            }
+                        // Location input
+                        HStack(spacing: 12) {
+                            Image(systemName: "location.fill")
+                                .font(.system(size: 16))
+                                .foregroundColor(.tsSecondary)
+                            TextField("Enter city or region", text: $location)
+                                .font(.system(size: 17))
+                                .foregroundColor(.tsLabel)
+                                .focused($isFocused)
                         }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 16)
+                        .background(Color.tsInputBg)
+                        .cornerRadius(12)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(isFocused ? Color.tsAccent : Color.tsBorder, lineWidth: isFocused ? 1.5 : 0.5)
+                        )
+                        .animation(.easeInOut(duration: 0.15), value: isFocused)
                     }
                     .padding(.horizontal, 24)
                     .padding(.bottom, 120)
@@ -150,5 +128,6 @@ struct OnboardingGoalsView: View {
                 .background(Color.tsBackground)
             }
         }
+        .onTapGesture { isFocused = false }
     }
 }
