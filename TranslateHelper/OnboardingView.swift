@@ -13,8 +13,7 @@ struct OnboardingView: View {
         switch step {
         case 1:
             LanguageSelectionView(
-                step: 1,
-                totalSteps: 3,
+                step: 1, totalSteps: 3,
                 selectedLanguage: $selectedLanguage,
                 onBack: {},
                 onSkip: { step = 2 },
@@ -22,19 +21,28 @@ struct OnboardingView: View {
             )
         case 2:
             OnboardingGoalsView(
-                step: 2,
-                totalSteps: 3,
+                step: 2, totalSteps: 3,
                 onBack: { step = 1 },
                 onSkip: { step = 3 },
                 onContinue: { step = 3 }
             )
         case 3:
             OnboardingLocationView(
-                step: 3,
-                totalSteps: 3,
+                step: 3, totalSteps: 3,
                 onBack: { step = 2 },
-                onSkip: { completeOnboarding() },
-                onContinue: { completeOnboarding() }
+                onSkip: { step = 4 },
+                onContinue: { step = 4 }
+            )
+        case 4:
+            OnboardingPlanView(
+                onBack: { step = 3 },
+                onFreePlan: { completeOnboarding() },
+                onProTrial: { step = 5 }
+            )
+        case 5:
+            OnboardingPaywallView(
+                onBack: { step = 4 },
+                onComplete: { completeOnboarding() }
             )
         default:
             EmptyView()

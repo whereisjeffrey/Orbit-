@@ -193,6 +193,34 @@ struct SettingsView: View {
                     }
                     .padding(.horizontal, 16)
                     
+                    // Debug
+                    VStack(spacing: 0) {
+                        Button(action: {
+                            UserDefaults.standard.removeObject(forKey: "onboarding_complete")
+                        }) {
+                            HStack {
+                                Image(systemName: "arrow.counterclockwise")
+                                    .foregroundColor(.orange)
+                                    .frame(width: 28, height: 28)
+                                    .background(Color.orange.opacity(0.15))
+                                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                                Text("Reset Onboarding")
+                                    .font(.system(size: 17))
+                                    .foregroundColor(.tsLabel)
+                                Spacer()
+                                Text("Debug")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.tsSecondary)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                        }
+                    }
+                    .background(Color.tsCard)
+                    .cornerRadius(12)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 8)
+
                     // Version info
                     Text("Version 2.4.1 (Build 890)")
                         .font(.system(size: 12))
