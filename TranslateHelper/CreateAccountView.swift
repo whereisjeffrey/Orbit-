@@ -7,7 +7,6 @@ struct CreateAccountView: View {
     @State private var fullName = ""
     @State private var email = ""
     @State private var password = ""
-    @State private var showLanguageSelection = false
 
     var body: some View {
         ZStack {
@@ -66,9 +65,7 @@ struct CreateAccountView: View {
                     Button(action: {
                         Task {
                             await auth.createAccount(fullName: fullName, email: email, password: password)
-                            if auth.errorMessage == nil {
-                                showLanguageSelection = true
-                            }
+                            // RootView routes to OnboardingView once auth.isSignedIn becomes true
                         }
                     }) {
                         ZStack {
@@ -103,9 +100,7 @@ struct CreateAccountView: View {
             }
         }
         .navigationBarHidden(true)
-        .navigationDestination(isPresented: $showLanguageSelection) {
-            OnboardingLanguageView()
-        }
+
     }
 }
 
