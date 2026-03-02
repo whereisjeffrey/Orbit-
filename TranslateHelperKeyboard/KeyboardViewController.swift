@@ -369,15 +369,7 @@ class KeyboardViewController: UIInputViewController {
     }
 
     private func updateLangPill() {
-        if selectedLanguage == "pt" {
-            langPill.setTitle("🎯 Coach: 🇧🇷 PT", for: .normal)
-            langPill.backgroundColor = UIColor.systemBlue
-            langPill.setTitleColor(.white, for: .normal)
-        } else {
-            langPill.setTitle("🎯 Coach: 🇺🇸 EN", for: .normal)
-            langPill.backgroundColor = UIColor.systemGreen
-            langPill.setTitleColor(.white, for: .normal)
-        }
+        // langPill removed from empty bar — language toggle lives in panel top bar
     }
 
     // MARK: - Panel
