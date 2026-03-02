@@ -7,7 +7,24 @@ import SwiftUI
 
 struct LibraryView: View {
     @EnvironmentObject var auth: AuthManager
+    @StateObject private var store = SharedPhraseStore.shared
     @State private var searchText = ""
+    @State private var showingGoalSheet = false
+    @AppStorage("daily_goal") private var dailyGoal: Int = 20
+    @AppStorage("phrases_reviewed_today") private var reviewedToday: Int = 0
+
+    var goalProgress: Double {
+        guard dailyGoal > 0 else { return 0 }
+        return min(Double(reviewedToday) / Double(dailyGoal), 1.0)
+    }
+
+    var filteredPhrases: [SavedPhrase] {
+        guard !searchText.isEmpty else { return store.phrases }
+        return store.phrases.filter {
+            $0.sourceText.localizedCaseInsensitiveContains(searchText) ||
+            $0.translatedText.localizedCaseInsensitiveContains(searchText)
+        }
+    }
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -31,9 +48,7 @@ struct LibraryView: View {
                                         .foregroundColor(.tsAccent)
                                         .font(.system(size: 16))
                                 )
-                            Button(action: {
-                                auth.signOut()
-                            }) {
+                            Button(action: { auth.signOut() }) {
                                 Circle()
                                     .fill(Color(red: 1.0, green: 0.84, blue: 0.75))
                                     .frame(width: 36, height: 36)
@@ -49,12 +64,12 @@ struct LibraryView: View {
                     .padding(.top, 16)
                     .padding(.bottom, 12)
 
-                    // ── Search bar ─────────────────────────────────────
+                    // ── Search ─────────────────────────────────────────
                     HStack {
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(.tsSecondary)
                             .font(.system(size: 16))
-                        TextField("Search your decks...", text: $searchText)
+                        TextField("Search phrases...", text: $searchText)
                             .foregroundColor(.tsLabel)
                             .autocorrectionDisabled()
                     }
@@ -65,7 +80,7 @@ struct LibraryView: View {
                     .padding(.horizontal, 16)
                     .padding(.bottom, 24)
 
-                    // ── ACTIVE section ─────────────────────────────────
+                    // ── ACTIVE ─────────────────────────────────────────
                     Text("ACTIVE")
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundColor(.tsSecondary)
@@ -88,26 +103,32 @@ struct LibraryView: View {
                                 }
                             }
                             Spacer()
-                            Text("124 Phrases")
+                            // Live count badge
+                            Text(store.phrases.isEmpty ? "0 Phrases" : "\(store.phrases.count) Phrase\(store.phrases.count == 1 ? "" : "s")")
                                 .font(.system(size: 11, weight: .bold))
-                                .foregroundColor(.tsAccent)
+                                .foregroundColor(store.phrases.isEmpty ? .tsSecondary : .tsAccent)
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 4)
-                                .background(Color.tsAccent.opacity(0.1))
+                                .background(store.phrases.isEmpty ? Color.tsCard : Color.tsAccent.opacity(0.1))
                                 .clipShape(Capsule())
                         }
 
                         Spacer()
 
                         HStack {
-                            // Language bubbles
+                            // Languages: EN + PT only
                             HStack(spacing: -8) {
                                 LanguageBubble(label: "EN", color: .blue)
                                 LanguageBubble(label: "PT", color: .green)
-                                LanguageBubble(label: "ES", color: Color(red: 0.9, green: 0.7, blue: 0))
                             }
                             Spacer()
-                            TSGradientPill(title: "Study", icon: "graduationcap.fill") {}
+                            if store.phrases.isEmpty {
+                                Text("Save phrases from the keyboard")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.tsSecondary)
+                            } else {
+                                TSGradientPill(title: "Study", icon: "graduationcap.fill") {}
+                            }
                         }
                     }
                     .padding(20)
@@ -115,9 +136,28 @@ struct LibraryView: View {
                     .background(Color.tsCard)
                     .cornerRadius(24)
                     .padding(.horizontal, 16)
-                    .padding(.bottom, 24)
+                    .padding(.bottom, store.phrases.isEmpty ? 24 : 0)
 
-                    // ── MY DECKS section ───────────────────────────────
+                    // ── Saved phrases list (when there are phrases) ────
+                    if !store.phrases.isEmpty {
+                        VStack(spacing: 0) {
+                            ForEach(filteredPhrases.prefix(5)) { phrase in
+                                PhraseRow(phrase: phrase) {
+                                    store.delete(phrase)
+                                }
+                                if phrase.id != filteredPhrases.prefix(5).last?.id {
+                                    Divider().background(Color.tsBorder).padding(.leading, 16)
+                                }
+                            }
+                        }
+                        .background(Color.tsCard)
+                        .cornerRadius(16)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 8)
+                        .padding(.bottom, 24)
+                    }
+
+                    // ── MY DECKS ───────────────────────────────────────
                     HStack {
                         Text("MY DECKS")
                             .font(.system(size: 13, weight: .semibold))
@@ -132,54 +172,138 @@ struct LibraryView: View {
                     .padding(.bottom, 10)
 
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-                        DeckCard(emoji: "☀️", title: "Summer 2026",   count: 42, tint: .orange)
-                        DeckCard(emoji: "🍳", title: "Food & Cooking", count: 86, tint: .green)
+                        DeckCard(emoji: "❄️", title: "Winter 2026",    count: 0, tint: .blue)
+                        DeckCard(emoji: "🍳", title: "Food & Cooking", count: 0, tint: .green)
                     }
                     .padding(.horizontal, 16)
                     .padding(.bottom, 24)
 
                     // ── Daily Goal ─────────────────────────────────────
                     HStack(spacing: 16) {
-                        TSProgressRing(progress: 0.75, size: 44)
+                        TSProgressRing(progress: goalProgress, size: 44)
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Daily Goal")
                                 .font(.system(size: 15, weight: .bold))
                                 .foregroundColor(.tsLabel)
-                            Text("15 / 20 phrases reviewed")
+                            Text(dailyGoal == 0
+                                 ? "No goal set yet"
+                                 : "\(reviewedToday) / \(dailyGoal) phrases reviewed")
                                 .font(.system(size: 13))
                                 .foregroundColor(.tsSecondary)
                         }
 
                         Spacer()
 
-                        Button("Keep Going") {}
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundColor(.tsLabel)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 6)
-                            .overlay(Capsule().stroke(Color.tsBorder, lineWidth: 1))
+                        Button(action: { showingGoalSheet = true }) {
+                            Text("Set Daily Goal")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundColor(.tsAccent)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 6)
+                                .overlay(Capsule().stroke(Color.tsAccent.opacity(0.4), lineWidth: 1))
+                        }
                     }
                     .padding(16)
                     .background(Color.tsCard)
                     .cornerRadius(24)
                     .padding(.horizontal, 16)
-                    .padding(.bottom, 120) // space for tab bar
+                    .padding(.bottom, 120)
                 }
+            }
+        }
+        .onAppear { store.load() }
+        .sheet(isPresented: $showingGoalSheet) {
+            SetDailyGoalSheet(dailyGoal: $dailyGoal)
+        }
+    }
+}
+
+// MARK: - Set Daily Goal Sheet
+struct SetDailyGoalSheet: View {
+    @Binding var dailyGoal: Int
+    @Environment(\.dismiss) var dismiss
+    let options = [5, 10, 15, 20, 30, 50]
+
+    var body: some View {
+        VStack(spacing: 24) {
+            Text("Set Daily Goal")
+                .font(.system(size: 20, weight: .bold))
+                .foregroundColor(.tsLabel)
+                .padding(.top, 24)
+
+            Text("How many phrases do you want to review each day?")
+                .font(.system(size: 15))
+                .foregroundColor(.tsSecondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 24)
+
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                ForEach(options, id: \.self) { n in
+                    Button(action: { dailyGoal = n; dismiss() }) {
+                        Text("\(n)")
+                            .font(.system(size: 22, weight: .bold))
+                            .foregroundColor(dailyGoal == n ? .white : .tsLabel)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 56)
+                            .background(dailyGoal == n ? Color.tsAccent : Color.tsCard)
+                            .cornerRadius(16)
+                    }
+                }
+            }
+            .padding(.horizontal, 24)
+
+            Spacer()
+        }
+        .background(Color.tsBackground.ignoresSafeArea())
+        .presentationDetents([.medium])
+    }
+}
+
+// MARK: - Phrase Row
+struct PhraseRow: View {
+    let phrase: SavedPhrase
+    let onDelete: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(phrase.translatedText)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(.tsLabel)
+                    .lineLimit(1)
+                Text(phrase.sourceText)
+                    .font(.system(size: 13))
+                    .foregroundColor(.tsSecondary)
+                    .lineLimit(1)
+            }
+            Spacer()
+            Text(phrase.targetLang.uppercased())
+                .font(.system(size: 10, weight: .bold))
+                .foregroundColor(.tsAccent)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.tsAccent.opacity(0.1))
+                .clipShape(Capsule())
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .swipeActions(edge: .trailing) {
+            Button(role: .destructive, action: onDelete) {
+                Label("Delete", systemImage: "trash")
             }
         }
     }
 }
 
 // MARK: - Sub-components
-
 struct LanguageBubble: View {
     let label: String
     let color: Color
     var body: some View {
         Text(label)
             .font(.system(size: 10, weight: .bold))
-            .foregroundColor(.tsLabel)
+            .foregroundColor(.white)
             .frame(width: 32, height: 32)
             .background(color)
             .clipShape(Circle())
@@ -206,7 +330,7 @@ struct DeckCard: View {
                 Text(title)
                     .font(.system(size: 17, weight: .bold))
                     .foregroundColor(.tsLabel)
-                Text("\(count) phrases")
+                Text(count == 0 ? "No phrases yet" : "\(count) phrases")
                     .font(.system(size: 13))
                     .foregroundColor(.tsSecondary)
             }

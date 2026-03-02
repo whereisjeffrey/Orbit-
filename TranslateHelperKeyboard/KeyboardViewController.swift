@@ -880,6 +880,32 @@ class KeyboardViewController: UIInputViewController {
     }
 
     @objc private func saveTapped() {
+        let source      = inputTextLabel.text ?? ""
+        let translation = outputTextLabel.text ?? ""
+        guard !source.isEmpty, !translation.isEmpty else { return }
+
+        // Determine languages from current direction
+        let sourceLang = selectedLanguage == "pt" ? "en" : "pt"
+        let targetLang = selectedLanguage
+
+        // Save to App Group shared container
+        let appGroup = "group.com.jeff.translatehelper"
+        if let defaults = UserDefaults(suiteName: appGroup) {
+            let key = "talkswitch_saved_phrases"
+            let newEntry: [String: String] = [
+                "id":          UUID().uuidString,
+                "sourceText":  source,
+                "translation": translation,
+                "sourceLang":  sourceLang,
+                "targetLang":  targetLang,
+                "savedAt":     ISO8601DateFormatter().string(from: Date())
+            ]
+            var existing = defaults.array(forKey: key) as? [[String: String]] ?? []
+            existing.insert(newEntry, at: 0)
+            defaults.set(existing, forKey: key)
+            defaults.synchronize()
+        }
+
         flashActionButton(index: 2, tempTitle: "Saved! ✅", originalTitle: "Save 💾")
     }
 
