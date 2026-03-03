@@ -39,6 +39,54 @@ extension UIColor {
     }
 }
 
+
+// MARK: - Gradient Background (Revolut-style dark navy)
+//
+// Dark mode: deep navy base (#060D1B) with a radial blue glow
+// blooming from the upper-center — matches Revolut Business aesthetic.
+// Light mode: plain tsBackground (white).
+
+struct TSGradientBackground: View {
+    @Environment(\.colorScheme) var colorScheme
+
+    var body: some View {
+        if colorScheme == .dark {
+            ZStack {
+                // Base — very dark navy
+                Color(hex: "#060D1B")
+                    .ignoresSafeArea()
+
+                // Radial blue glow — upper center
+                RadialGradient(
+                    colors: [
+                        Color(hex: "#0D3460").opacity(0.85),
+                        Color(hex: "#091B38").opacity(0.5),
+                        Color.clear
+                    ],
+                    center: UnitPoint(x: 0.5, y: 0.05),
+                    startRadius: 0,
+                    endRadius: UIScreen.main.bounds.width * 1.1
+                )
+                .ignoresSafeArea()
+
+                // Subtle secondary glow — lower left (depth)
+                RadialGradient(
+                    colors: [
+                        Color(hex: "#07213D").opacity(0.4),
+                        Color.clear
+                    ],
+                    center: UnitPoint(x: 0.1, y: 0.85),
+                    startRadius: 0,
+                    endRadius: UIScreen.main.bounds.width * 0.8
+                )
+                .ignoresSafeArea()
+            }
+        } else {
+            Color.tsBackground.ignoresSafeArea()
+        }
+    }
+}
+
 // MARK: - Colours
 extension Color {
     static let tsBackground = Color(UIColor { trait in

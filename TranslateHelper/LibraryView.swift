@@ -32,7 +32,7 @@ struct LibraryView: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            Color.tsBackground.ignoresSafeArea()
+            TSGradientBackground()
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
@@ -265,7 +265,7 @@ struct SetDailyGoalSheet: View {
 
             Spacer()
         }
-        .background(Color.tsBackground.ignoresSafeArea())
+        .background(TSGradientBackground())
         .presentationDetents([.medium])
     }
 }
