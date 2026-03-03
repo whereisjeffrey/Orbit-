@@ -37,7 +37,7 @@ class KeyboardViewController: UIInputViewController {
     private var inputText: String = ""
     private var detectedLanguage: String = ""
     private var currentTone: String = "casual"
-    private var selectedLanguage: String = "pt" // persisted preference (v1 default: Portuguese)
+    private var selectedLanguage: String = "es" // persisted preference (default: Spanish)
     private var lastSourceWasSpeech: Bool = false
 
     // MARK: - UI Elements
@@ -156,7 +156,7 @@ class KeyboardViewController: UIInputViewController {
         // Restore persisted language preference
         let appGroup = "group.com.jeff.translatehelper"
         let defaults = UserDefaults(suiteName: appGroup)
-        let saved = defaults?.string(forKey: "talkswitch_lang") ?? "pt"
+        let saved = defaults?.string(forKey: "talkswitch_lang") ?? "es"
         selectedLanguage = saved
         updateLangPill()
 
@@ -211,7 +211,7 @@ class KeyboardViewController: UIInputViewController {
 
         let appGroup = "group.com.jeff.translatehelper"
         let defaults = UserDefaults(suiteName: appGroup)
-        let targetCode = defaults?.string(forKey: "talkswitch_target_lang") ?? "pt"
+        let targetCode = defaults?.string(forKey: "talkswitch_target_lang") ?? "es"
         
         let isSourceTarget = (detected.code == targetCode)
         let inProf = isSourceTarget ? (TSProfiles[targetCode] ?? TSProfiles["es"]!) : TSProfiles["en"]!
@@ -271,7 +271,7 @@ class KeyboardViewController: UIInputViewController {
                             original: text,
                             deeplTranslation: translation,
                             sourceLang: langCode,
-                            targetLang: langCode == "pt" ? "en" : "pt",
+                            targetLang: langCode == "es" ? "en" : "es",
                             tone: tone
                         ) { [weak self] refineResult in
                             DispatchQueue.main.async {
@@ -324,7 +324,7 @@ class KeyboardViewController: UIInputViewController {
         
         let detected = detectLanguage(original)
         let sourceLang = detected.code
-        let targetLang = sourceLang == "pt" ? "en" : "pt"
+        let targetLang = sourceLang == "es" ? "en" : "es"
         let tone = Tone(rawValue: currentTone) ?? .casual
         
         // Add pronunciation context if we have low-confidence words from speech
@@ -518,7 +518,7 @@ class KeyboardViewController: UIInputViewController {
         guard let lang = textInputMode?.primaryLanguage else { return }
         let appGroup = "group.com.jeff.translatehelper"
         let defaults = UserDefaults(suiteName: appGroup)
-        let targetCode = defaults?.string(forKey: "talkswitch_target_lang") ?? "pt"
+        let targetCode = defaults?.string(forKey: "talkswitch_target_lang") ?? "es"
         
         let newLang = lang.hasPrefix(targetCode) ? targetCode : "en"
         guard newLang != selectedLanguage else { return }
@@ -532,7 +532,7 @@ class KeyboardViewController: UIInputViewController {
     @objc private func langPillTapped() {
         let appGroup = "group.com.jeff.translatehelper"
         let defaults = UserDefaults(suiteName: appGroup)
-        let targetCode = defaults?.string(forKey: "talkswitch_target_lang") ?? "pt"
+        let targetCode = defaults?.string(forKey: "talkswitch_target_lang") ?? "es"
         
         selectedLanguage = (selectedLanguage == targetCode) ? "en" : targetCode
         defaults?.set(selectedLanguage, forKey: "talkswitch_lang")
@@ -981,7 +981,7 @@ class KeyboardViewController: UIInputViewController {
         let prof = TSProfiles[baseCode] ?? TSProfiles["en"]!
         
         let appGroup = "group.com.jeff.translatehelper"
-        let targetCode = UserDefaults(suiteName: appGroup)?.string(forKey: "talkswitch_target_lang") ?? "pt"
+        let targetCode = UserDefaults(suiteName: appGroup)?.string(forKey: "talkswitch_target_lang") ?? "es"
         
         // If detector isn't sure and text is short, default to current selected Language
         if text.count < 3 && prof.code != targetCode && prof.code != "en" {
@@ -1223,7 +1223,7 @@ class KeyboardViewController: UIInputViewController {
 
         // Determine languages from current direction
         let appGroup = "group.com.jeff.translatehelper"
-        let targetCode = UserDefaults(suiteName: appGroup)?.string(forKey: "talkswitch_target_lang") ?? "pt"
+        let targetCode = UserDefaults(suiteName: appGroup)?.string(forKey: "talkswitch_target_lang") ?? "es"
         
         let targetLang = selectedLanguage
         let sourceLang = selectedLanguage == targetCode ? "en" : targetCode
@@ -1350,7 +1350,7 @@ extension KeyboardViewController: SpeechServiceDelegate {
         
         let appGroup = "group.com.jeff.translatehelper"
         let defaults = UserDefaults(suiteName: appGroup)
-        let targetCode = defaults?.string(forKey: "talkswitch_target_lang") ?? "pt"
+        let targetCode = defaults?.string(forKey: "talkswitch_target_lang") ?? "es"
         
         // Match baseCode to target exactly or assume 'en'
         selectedLanguage = (prof.code == targetCode) ? targetCode : "en"
