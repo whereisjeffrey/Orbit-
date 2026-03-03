@@ -5,32 +5,43 @@
 
 import SwiftUI
 
-struct Language: Identifiable, Hashable {
-    let id = UUID()
+struct Language: Identifiable, Hashable, Codable {
+    let id: UUID
     let flag: String
     let name: String
+    let code: String
+    
+    init(id: UUID = UUID(), flag: String, name: String, code: String) {
+        self.id = id
+        self.flag = flag
+        self.name = name
+        self.code = code
+    }
 }
 
+// v1 Launch: Spanish is the only selectable language.
+// All others are shown dimmed with "Coming Soon" and cannot be tapped.
+let spanishLanguage = Language(flag: "\u{1F1EA}\u{1F1F8}", name: "Spanish", code: "es")
+
 let allLanguages: [Language] = [
-    Language(flag: "\u{1F1F8}\u{1F1E6}", name: "Arabic"),
-    Language(flag: "\u{1F1E7}\u{1F1F7}", name: "Portuguese"),
-    Language(flag: "\u{1F1EA}\u{1F1F8}", name: "Spanish"),
-    Language(flag: "\u{1F1EB}\u{1F1F7}", name: "French"),
-    Language(flag: "\u{1F1E9}\u{1F1EA}", name: "German"),
-    Language(flag: "\u{1F1EE}\u{1F1F9}", name: "Italian"),
-    Language(flag: "\u{1F1EF}\u{1F1F5}", name: "Japanese"),
-    Language(flag: "\u{1F1F0}\u{1F1F7}", name: "Korean"),
+    spanishLanguage,                                                                  // ← Available in v1
+    Language(flag: "\u{1F1E7}\u{1F1F7}", name: "Portuguese", code: "pt"),
+    Language(flag: "\u{1F1EB}\u{1F1F7}", name: "French", code: "fr"),
+    Language(flag: "\u{1F1E9}\u{1F1EA}", name: "German", code: "de"),
+    Language(flag: "\u{1F1EE}\u{1F1F9}", name: "Italian", code: "it"),
+    Language(flag: "\u{1F1EF}\u{1F1F5}", name: "Japanese", code: "ja"),
+    Language(flag: "\u{1F1F0}\u{1F1F7}", name: "Korean", code: "ko"),
 ]
 
 let nativeLanguages: [Language] = [
-    Language(flag: "\u{1F1FA}\u{1F1F8}", name: "English"),
-    Language(flag: "\u{1F1E7}\u{1F1F7}", name: "Portuguese"),
-    Language(flag: "\u{1F1EA}\u{1F1F8}", name: "Spanish"),
-    Language(flag: "\u{1F1EB}\u{1F1F7}", name: "French"),
-    Language(flag: "\u{1F1E9}\u{1F1EA}", name: "German"),
-    Language(flag: "\u{1F1EE}\u{1F1F9}", name: "Italian"),
-    Language(flag: "\u{1F1EF}\u{1F1F5}", name: "Japanese"),
-    Language(flag: "\u{1F1F0}\u{1F1F7}", name: "Korean"),
+    Language(flag: "\u{1F1FA}\u{1F1F8}", name: "English", code: "en"),
+    Language(flag: "\u{1F1E7}\u{1F1F7}", name: "Portuguese", code: "pt"),
+    Language(flag: "\u{1F1EA}\u{1F1F8}", name: "Spanish", code: "es"),
+    Language(flag: "\u{1F1EB}\u{1F1F7}", name: "French", code: "fr"),
+    Language(flag: "\u{1F1E9}\u{1F1EA}", name: "German", code: "de"),
+    Language(flag: "\u{1F1EE}\u{1F1F9}", name: "Italian", code: "it"),
+    Language(flag: "\u{1F1EF}\u{1F1F5}", name: "Japanese", code: "ja"),
+    Language(flag: "\u{1F1F0}\u{1F1F7}", name: "Korean", code: "ko"),
 ]
 
 struct LanguageSelectionView: View {
@@ -41,8 +52,18 @@ struct LanguageSelectionView: View {
     let onSkip: () -> Void
     let onContinue: () -> Void
 
-    @State private var nativeLanguage: Language = nativeLanguages[0] // Default: English
+    @State private var nativeLanguage: Language = {
+        let localeCode = Locale.current.language.languageCode?.identifier ?? "en"
+        let baseCode = localeCode.components(separatedBy: "-").first ?? "en"
+        return nativeLanguages.first(where: { $0.code == baseCode }) ?? nativeLanguages[0]
+    }()
+
     @State private var showNativePicker = false
+
+    /// Returns true if this language is available in v1 (Spanish only).
+    private func isAvailable(_ language: Language) -> Bool {
+        language.code == "es"
+    }
 
     let columns = [
         GridItem(.flexible(), spacing: 16),
@@ -142,16 +163,31 @@ struct LanguageSelectionView: View {
                         .padding(.bottom, 24)
 
                         // Language grid — 2 columns
+                        // v1: Spanish only. Others are dimmed + "Coming Soon".
                         LazyVGrid(columns: columns, spacing: 16) {
                             ForEach(allLanguages) { language in
+                                let available = isAvailable(language)
                                 LanguageCard(
                                     language: language,
-                                    isSelected: selectedLanguage?.name == language.name
+                                    isSelected: selectedLanguage?.name == language.name,
+                                    isComingSoon: !available
                                 ) {
-                                    selectedLanguage = language
+                                    if available { selectedLanguage = language }
                                 }
                             }
                         }
+
+                        // Coming soon note
+                        HStack(spacing: 6) {
+                            Image(systemName: "clock")
+                                .font(.system(size: 13))
+                                .foregroundColor(.tsSecondary)
+                            Text("More languages coming soon")
+                                .font(.system(size: 13))
+                                .foregroundColor(.tsSecondary)
+                        }
+                        .padding(.top, 8)
+                        .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.bottom, 120)
                     }
                     .padding(.horizontal, 24)
@@ -172,7 +208,7 @@ struct LanguageSelectionView: View {
                     Button(action: onContinue) {
                         Text("Continue")
                             .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(.tsLabel)
+                            .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
                             .background(
@@ -205,6 +241,7 @@ struct LanguageSelectionView: View {
 struct LanguageCard: View {
     let language: Language
     let isSelected: Bool
+    var isComingSoon: Bool = false
     let onTap: () -> Void
 
     var body: some View {
@@ -213,19 +250,23 @@ struct LanguageCard: View {
                 VStack(spacing: 8) {
                     Text(language.flag)
                         .font(.system(size: 40))
+                        .opacity(isComingSoon ? 0.45 : 1)
                     Text(language.name)
                         .font(.system(size: 17, weight: .semibold))
-                        .foregroundColor(.tsLabel)
+                        .foregroundColor(isComingSoon ? .tsSecondary : .tsLabel)
                         .multilineTextAlignment(.center)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 24)
                 .padding(.horizontal, 8)
-                .background(Color.tsCard)
+                .background(Color.tsCard.opacity(isComingSoon ? 0.5 : 1))
                 .cornerRadius(16)
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(isSelected ? Color.tsAccent : Color.clear, lineWidth: 2)
+                        .stroke(
+                            isSelected ? Color.tsAccent : Color.tsBorder.opacity(isComingSoon ? 0.4 : 1),
+                            lineWidth: isSelected ? 2 : 1
+                        )
                 )
 
                 if isSelected {
@@ -239,16 +280,23 @@ struct LanguageCard: View {
                     }
                     .padding(8)
                 }
+
+                // "Coming Soon" pill overlaid on top-right
+                if isComingSoon {
+                    Text("Soon")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 3)
+                        .background(Color.tsSecondary.opacity(0.7))
+                        .clipShape(Capsule())
+                        .padding(8)
+                }
             }
         }
         .buttonStyle(ScaleButtonStyle())
+        .disabled(isComingSoon)
     }
 }
 
-struct ScaleButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
-            .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
-    }
-}
+

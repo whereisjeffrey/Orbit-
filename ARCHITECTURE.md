@@ -88,11 +88,11 @@ Compare with nativeLanguage
 ├─────────────────────────────────┤
 │ YES → Compose Mode              │
 │       (native → target)         │
-│       Example: en → pt          │
+│       Example: en → es          │
 │                                 │
 │ NO  → Understand Mode           │
 │       (detected → native)       │
-│       Example: pt → en          │
+│       Example: es → en          │
 └─────────────────────────────────┘
     ↓
 Update direction label
@@ -165,7 +165,7 @@ KeyboardViewController Properties:
 ├── currentTone: Tone
 ├── lastTranslationResult: TranslationResponse?
 ├── nativeLanguage: String (default: "en")
-└── targetLanguage: String (default: "pt")
+└── targetLanguage: String (default: "es")
 
 UI State:
 ├── TopBarView
@@ -275,15 +275,15 @@ Shared between keyboard + main app
    ├── Type text: "Hello world"
    ├── Tap TalkSwitch
    ├── Verify: Panel expands
-   ├── Verify: Shows "[Composed] Translation of: 'Hello world' (en → pt)"
+   ├── Verify: Shows "[Composed] Translation of: 'Hello world' (en → es)"
    ├── Tap tone button
    ├── Verify: Re-translates with new tone
    ├── Tap Replace
    └── Verify: Text inserted into Notes
 
 4. Test Language Detection
-   ├── Type Portuguese text
-   ├── Verify: Direction changes to "pt → en"
+   ├── Type Spanish text
+   ├── Verify: Direction changes to "es → en"
    ├── Tap TalkSwitch
    └── Verify: Shows "[Understood]" mode
 ```

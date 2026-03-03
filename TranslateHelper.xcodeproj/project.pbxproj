@@ -96,6 +96,7 @@
 		006F75ED2F547E3500D581A9 /* TranslateHelperKeyboard.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 006F75E62F547E3500D581A9 /* TranslateHelperKeyboard.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		006F769E2F54C7FA00D581A9 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 006F769D2F54C7FA00D581A9 /* GoogleSignIn */; };
 		A6728A9D362581C24272B7DA /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E5C787F74B49B3B71FC2D15 /* SettingsView.swift */; };
+		D679EC47DAD2AFB2E72A22F4 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = B40E93BABBB610917935465D /* Localizable.xcstrings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -222,6 +223,7 @@
 		006F75D12F547D9C00D581A9 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		006F75E62F547E3500D581A9 /* TranslateHelperKeyboard.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TranslateHelperKeyboard.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		8E5C787F74B49B3B71FC2D15 /* SettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		B40E93BABBB610917935465D /* Localizable.xcstrings */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -441,6 +443,7 @@
 				006F75D02F547D9C00D581A9 /* TranslateHelper.entitlements */,
 				006F75D12F547D9C00D581A9 /* ViewController.swift */,
 				8E5C787F74B49B3B71FC2D15 /* SettingsView.swift */,
+				B40E93BABBB610917935465D /* Localizable.xcstrings */,
 			);
 			path = TranslateHelper;
 			sourceTree = "<group>";
@@ -526,6 +529,8 @@
 			knownRegions = (
 				en,
 				Base,
+				ar,
+				"es-419",
 			);
 			mainGroup = 0031333C2F3DE56A00F7A418;
 			minimizedProjectReferenceProxies = 1;
@@ -573,6 +578,7 @@
 				006F75B42F547D8800D581A9 /* LaunchScreen.storyboard in Resources */,
 				006F75B52F547D8800D581A9 /* Main.storyboard in Resources */,
 				006F754F2F547D4A00D581A9 /* Assets.xcassets in Resources */,
+				D679EC47DAD2AFB2E72A22F4 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -776,6 +782,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = TranslateHelper/TranslateHelper.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = RRPLC27C5P;
@@ -800,6 +807,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				USE_COMPILER_TO_EXTRACT_SWIFT_STRINGS = YES;
 			};
 			name = Debug;
 		};
@@ -808,6 +816,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = TranslateHelper/TranslateHelper.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = RRPLC27C5P;
@@ -832,6 +841,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				USE_COMPILER_TO_EXTRACT_SWIFT_STRINGS = YES;
 			};
 			name = Release;
 		};
@@ -957,6 +967,7 @@
 		006F75EF2F547E3500D581A9 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = TranslateHelperKeyboard/TranslateHelperKeyboard.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = RRPLC27C5P;
@@ -985,6 +996,7 @@
 		006F75F02F547E3500D581A9 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = TranslateHelperKeyboard/TranslateHelperKeyboard.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = RRPLC27C5P;

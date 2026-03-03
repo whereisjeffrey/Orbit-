@@ -98,6 +98,11 @@ extension LinearGradient {
         colors: [.tsAccent, .tsAccentTeal],
         startPoint: .leading, endPoint: .trailing
     )
+    
+    static let tsBluePrimary = LinearGradient(
+        colors: [Color(hex: "#3B99FC"), Color(hex: "#007AFF")],
+        startPoint: .topLeading, endPoint: .bottomTrailing
+    )
 }
 
 // MARK: - Shared Components
@@ -220,7 +225,7 @@ struct TSGradientPill: View {
             .foregroundColor(.white)
             .padding(.horizontal, 20)
             .padding(.vertical, 10)
-            .background(LinearGradient.tsVibrant)
+            .background(LinearGradient.tsBluePrimary)
             .clipShape(Capsule())
             .shadow(color: Color.tsAccent.opacity(0.39), radius: 10, x: 0, y: 4)
         }
@@ -235,14 +240,16 @@ struct TSProgressRing: View {
     var body: some View {
         ZStack {
             Circle()
-                .stroke(Color.white.opacity(0.1), lineWidth: 3)
+                .fill(Color.tsBackground)
+            Circle()
+                .stroke(Color.tsBorder.opacity(0.5), lineWidth: 3)
             Circle()
                 .trim(from: 0, to: progress)
                 .stroke(Color.tsAccent, style: StrokeStyle(lineWidth: 3, lineCap: .round))
                 .rotationEffect(.degrees(-90))
             Text("\(Int(progress * 100))%")
                 .font(.system(size: 10, weight: .bold))
-                .foregroundColor(.white)
+                .foregroundColor(.tsSecondary)
         }
         .frame(width: size, height: size)
     }

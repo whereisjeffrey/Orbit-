@@ -10,6 +10,8 @@ struct LibraryView: View {
     @StateObject private var store = SharedPhraseStore.shared
     @State private var searchText = ""
     @State private var showingGoalSheet = false
+    @State private var showingStudyMode = false
+    @State private var showMyDecks = false
     @AppStorage("daily_goal") private var dailyGoal: Int = 20
     @AppStorage("phrases_reviewed_today") private var reviewedToday: Int = 0
 
@@ -50,12 +52,12 @@ struct LibraryView: View {
                                 )
                             Button(action: { auth.signOut() }) {
                                 Circle()
-                                    .fill(Color(red: 1.0, green: 0.84, blue: 0.75))
+                                    .fill(Color.tsCard)
                                     .frame(width: 36, height: 36)
                                     .overlay(
                                         Image(systemName: "rectangle.portrait.and.arrow.right")
-                                            .foregroundColor(.black)
-                                            .font(.system(size: 14, weight: .bold))
+                                            .foregroundColor(.tsAccent)
+                                            .font(.system(size: 16))
                                     )
                             }
                         }
@@ -127,7 +129,9 @@ struct LibraryView: View {
                                     .font(.system(size: 12))
                                     .foregroundColor(.tsSecondary)
                             } else {
-                                TSGradientPill(title: "Study", icon: "graduationcap.fill") {}
+                                TSGradientPill(title: "Study", icon: "graduationcap.fill") {
+                                    showingStudyMode = true
+                                }
                             }
                         }
                     }
@@ -136,25 +140,12 @@ struct LibraryView: View {
                     .background(Color.tsCard)
                     .cornerRadius(24)
                     .padding(.horizontal, 16)
-                    .padding(.bottom, store.phrases.isEmpty ? 24 : 0)
-
-                    // ── Saved phrases list (when there are phrases) ────
-                    if !store.phrases.isEmpty {
-                        VStack(spacing: 0) {
-                            ForEach(filteredPhrases.prefix(5)) { phrase in
-                                PhraseRow(phrase: phrase) {
-                                    store.delete(phrase)
-                                }
-                                if phrase.id != filteredPhrases.prefix(5).last?.id {
-                                    Divider().background(Color.tsBorder).padding(.leading, 16)
-                                }
-                            }
+                    .padding(.bottom, 24)
+                    .fullScreenCover(isPresented: $showingStudyMode) {
+                        NavigationView {
+                            let duePhrases = store.phrases.filter { $0.nextReviewDate <= Date() }
+                            StudySourceWordView(phrases: duePhrases, listName: "Clipboard List")
                         }
-                        .background(Color.tsCard)
-                        .cornerRadius(16)
-                        .padding(.horizontal, 16)
-                        .padding(.top, 8)
-                        .padding(.bottom, 24)
                     }
 
                     // ── MY DECKS ───────────────────────────────────────
@@ -164,9 +155,7 @@ struct LibraryView: View {
                             .foregroundColor(.tsSecondary)
                             .tracking(1.2)
                         Spacer()
-                        Button("See All") {}
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(.tsAccent)
+                    Button("See All") { showMyDecks = true }
                     }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 10)
@@ -216,6 +205,9 @@ struct LibraryView: View {
         .sheet(isPresented: $showingGoalSheet) {
             SetDailyGoalSheet(dailyGoal: $dailyGoal)
         }
+        .navigationDestination(isPresented: $showMyDecks) {
+            MyDecksView()
+        }
     }
 }
 
@@ -260,41 +252,7 @@ struct SetDailyGoalSheet: View {
     }
 }
 
-// MARK: - Phrase Row
-struct PhraseRow: View {
-    let phrase: SavedPhrase
-    let onDelete: () -> Void
 
-    var body: some View {
-        HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(phrase.translatedText)
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(.tsLabel)
-                    .lineLimit(1)
-                Text(phrase.sourceText)
-                    .font(.system(size: 13))
-                    .foregroundColor(.tsSecondary)
-                    .lineLimit(1)
-            }
-            Spacer()
-            Text(phrase.targetLang.uppercased())
-                .font(.system(size: 10, weight: .bold))
-                .foregroundColor(.tsAccent)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(Color.tsAccent.opacity(0.1))
-                .clipShape(Capsule())
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .swipeActions(edge: .trailing) {
-            Button(role: .destructive, action: onDelete) {
-                Label("Delete", systemImage: "trash")
-            }
-        }
-    }
-}
 
 // MARK: - Sub-components
 struct LanguageBubble: View {

@@ -4,6 +4,8 @@
 //
 
 import SwiftUI
+import MapKit
+import Combine
 
 struct OnboardingLocationView: View {
     var step: Int = 3
@@ -12,8 +14,14 @@ struct OnboardingLocationView: View {
     let onSkip: () -> Void
     let onContinue: () -> Void
 
-    @State private var location: String = ""
+    @StateObject private var searchVM = LocationSearchViewModel()
+    @StateObject private var locStore = UserLocationsStore.shared
     @FocusState private var isFocused: Bool
+    @State private var showOrderTip = false
+    @State private var isEditMode: EditMode = .inactive
+
+    // Max locations a user can add
+    private let maxLocations = 4
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -62,31 +70,135 @@ struct OnboardingLocationView: View {
                             Text("Where are you learning?")
                                 .font(.system(size: 34, weight: .bold))
                                 .foregroundColor(.tsLabel)
-                            Text("This will help us deliver the most context-based slangs and phrases for your specific location.")
+                            Text("We'll tailor slang and phrases to where you spend time. Add up to \(maxLocations) locations — your top one gets the most weight.")
                                 .font(.system(size: 17))
                                 .foregroundColor(.tsSecondary)
                         }
                         .padding(.top, 16)
 
-                        // Location input
-                        HStack(spacing: 12) {
-                            Image(systemName: "location.fill")
-                                .font(.system(size: 16))
-                                .foregroundColor(.tsSecondary)
-                            TextField("Enter city or region", text: $location)
-                                .font(.system(size: 17))
-                                .foregroundColor(.tsLabel)
-                                .focused($isFocused)
+                        // ── Saved Location Pills ───────────────────────
+                        if !locStore.locations.isEmpty {
+                            VStack(alignment: .leading, spacing: 8) {
+                                ForEach(Array(locStore.locations.enumerated()), id: \.element.id) { index, loc in
+                                    LocationPill(
+                                        location: loc,
+                                        isPrimary: index == 0,
+                                        onRemove: {
+                                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                                if let i = locStore.locations.firstIndex(where: { $0.id == loc.id }) {
+                                                    locStore.locations.remove(at: i)
+                                                    locStore.persist()
+                                                }
+                                            }
+                                        }
+                                    )
+                                }
+                            }
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 16)
-                        .background(Color.tsInputBg)
-                        .cornerRadius(12)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(isFocused ? Color.tsAccent : Color.tsBorder, lineWidth: isFocused ? 1.5 : 0.5)
-                        )
-                        .animation(.easeInOut(duration: 0.15), value: isFocused)
+
+                        // ── Search Field ───────────────────────────────
+                        if locStore.locations.count < maxLocations {
+                            VStack(alignment: .leading, spacing: 0) {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "location.fill")
+                                        .font(.system(size: 16))
+                                        .foregroundColor(.tsSecondary)
+
+                                    TextField(
+                                        locStore.locations.isEmpty ? "Search a city or region…" : "+ Add another location",
+                                        text: $searchVM.searchQuery
+                                    )
+                                    .font(.system(size: 17))
+                                    .foregroundColor(.tsLabel)
+                                    .focused($isFocused)
+
+                                    if !searchVM.searchQuery.isEmpty {
+                                        Button(action: {
+                                            searchVM.searchQuery = ""
+                                            searchVM.completions = []
+                                        }) {
+                                            Image(systemName: "xmark.circle.fill")
+                                                .foregroundColor(.tsSecondary)
+                                        }
+                                    }
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 16)
+                                .background(Color.tsInputBg)
+                                .cornerRadius(12)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(isFocused ? Color.tsAccent : Color.tsBorder, lineWidth: isFocused ? 1.5 : 0.5)
+                                )
+                                .animation(.easeInOut(duration: 0.15), value: isFocused)
+
+                                // Autocomplete dropdown
+                                if !searchVM.completions.isEmpty {
+                                    VStack(alignment: .leading, spacing: 0) {
+                                        ForEach(searchVM.completions.prefix(5), id: \.self) { completion in
+                                            Button(action: {
+                                                let fullLocation = [completion.title, completion.subtitle]
+                                                    .filter { !$0.isEmpty }
+                                                    .joined(separator: ", ")
+                                                let newLoc = UserLearningLocation(
+                                                    displayName: fullLocation,
+                                                    city: completion.title,
+                                                    country: completion.subtitle
+                                                )
+                                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                                    locStore.add(newLoc)
+                                                }
+                                                searchVM.searchQuery = ""
+                                                searchVM.completions = []
+                                                isFocused = false
+
+                                                // Show order tip once more than 1 location exists
+                                                if locStore.locations.count > 1 && !showOrderTip {
+                                                    withAnimation(.spring()) {
+                                                        showOrderTip = true
+                                                    }
+                                                }
+                                            }) {
+                                                VStack(alignment: .leading, spacing: 4) {
+                                                    Text(completion.title)
+                                                        .font(.system(size: 16, weight: .medium))
+                                                        .foregroundColor(.tsLabel)
+                                                    if !completion.subtitle.isEmpty {
+                                                        Text(completion.subtitle)
+                                                            .font(.system(size: 14))
+                                                            .foregroundColor(.tsSecondary)
+                                                    }
+                                                }
+                                                .padding(.horizontal, 16)
+                                                .padding(.vertical, 12)
+                                                .frame(maxWidth: .infinity, alignment: .leading)
+                                                .background(Color.tsInputBg)
+                                            }
+
+                                            if completion != searchVM.completions.prefix(5).last {
+                                                Divider()
+                                                    .background(Color.tsBorder)
+                                                    .padding(.horizontal, 16)
+                                            }
+                                        }
+                                    }
+                                    .background(Color.tsInputBg)
+                                    .cornerRadius(12)
+                                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsBorder, lineWidth: 0.5))
+                                    .padding(.top, 4)
+                                }
+                            }
+                        }
+
+                        // ── Order Tip Banner ───────────────────────────
+                        if locStore.locations.count > 1 {
+                            OrderTipBanner(onDismiss: {
+                                withAnimation { showOrderTip = false }
+                            })
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                        }
+
+                        Spacer(minLength: 0)
                     }
                     .padding(.horizontal, 24)
                     .padding(.bottom, 120)
@@ -103,22 +215,33 @@ struct OnboardingLocationView: View {
                 .allowsHitTesting(false)
 
                 VStack(spacing: 16) {
-                    Button(action: onContinue) {
-                        Text("Continue")
+                    Button(action: {
+                        // Save to shared defaults for legacy compatibility
+                        if let primary = locStore.locations.first,
+                           let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper") {
+                            defaults.set(primary.displayName, forKey: "talkswitch_location")
+                            defaults.synchronize()
+                        }
+                        onContinue()
+                    }) {
+                        Text(locStore.locations.isEmpty ? "Skip for Now" : "Continue")
                             .font(.system(size: 18, weight: .bold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
                             .background(
                                 LinearGradient(
-                                    colors: [Color(hex: "#3B99FC"), Color(hex: "#007AFF")],
+                                    colors: locStore.locations.isEmpty
+                                        ? [Color(hex: "#636366"), Color(hex: "#48484A")]
+                                        : [Color(hex: "#3B99FC"), Color(hex: "#007AFF")],
                                     startPoint: .topLeading, endPoint: .bottomTrailing
                                 )
                             )
                             .clipShape(Capsule())
-                            .shadow(color: Color.tsAccent.opacity(0.3), radius: 16, x: 0, y: 4)
+                            .shadow(color: locStore.locations.isEmpty ? .clear : Color.tsAccent.opacity(0.3), radius: 16, x: 0, y: 4)
                     }
                     .padding(.horizontal, 24)
+                    .animation(.easeInOut(duration: 0.2), value: locStore.locations.isEmpty)
 
                     RoundedRectangle(cornerRadius: 3)
                         .fill(Color.white.opacity(0.2))
@@ -130,4 +253,130 @@ struct OnboardingLocationView: View {
         }
         .onTapGesture { isFocused = false }
     }
+}
+
+// MARK: - Location Pill
+
+private struct LocationPill: View {
+    let location: UserLearningLocation
+    let isPrimary: Bool
+    let onRemove: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            // Drag handle
+            Image(systemName: "line.3.horizontal")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(.tsSecondary)
+                .frame(width: 24)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(location.displayName)
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(.tsLabel)
+                if isPrimary {
+                    Text("Primary — highest slang weight")
+                        .font(.system(size: 12))
+                        .foregroundColor(.tsAccent)
+                }
+            }
+
+            Spacer()
+
+            Button(action: onRemove) {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.system(size: 20))
+                    .foregroundColor(Color.tsSecondary.opacity(0.6))
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(isPrimary ? Color.tsAccent.opacity(0.08) : Color.tsInputBg)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(isPrimary ? Color.tsAccent.opacity(0.3) : Color.tsBorder, lineWidth: isPrimary ? 1 : 0.5)
+        )
+    }
+}
+
+// MARK: - Order Tip Banner
+
+private struct OrderTipBanner: View {
+    let onDismiss: () -> Void
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: "info.circle.fill")
+                .font(.system(size: 18))
+                .foregroundColor(.tsAccent)
+                .padding(.top, 1)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Order matters")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.tsLabel)
+                Text("Your first location gets the most slang weight. Drag to reorder by where you spend the most time.")
+                    .font(.system(size: 13))
+                    .foregroundColor(.tsSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer()
+
+            Button(action: onDismiss) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.tsSecondary)
+            }
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.tsAccent.opacity(0.06))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.tsAccent.opacity(0.2), lineWidth: 1)
+        )
+    }
+}
+
+// MARK: - Location Search View Model
+
+class LocationSearchViewModel: NSObject, ObservableObject, MKLocalSearchCompleterDelegate {
+    @Published var searchQuery = ""
+    @Published var completions: [MKLocalSearchCompletion] = []
+
+    private var completer: MKLocalSearchCompleter
+    private var cancellables = Set<AnyCancellable>()
+
+    override init() {
+        completer = MKLocalSearchCompleter()
+        super.init()
+        completer.delegate = self
+        if #available(iOS 13.0, *) {
+            completer.resultTypes = .address
+        }
+
+        $searchQuery
+            .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
+            .removeDuplicates()
+            .sink { [weak self] query in
+                if query.isEmpty {
+                    self?.completions = []
+                } else {
+                    self?.completer.queryFragment = query
+                }
+            }
+            .store(in: &cancellables)
+    }
+
+    func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
+        completions = completer.results.filter { !$0.title.isEmpty }
+    }
+
+    func completer(_ completer: MKLocalSearchCompleter, didFailWithError error: Error) {}
 }

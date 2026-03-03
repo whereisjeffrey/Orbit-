@@ -29,7 +29,7 @@ struct MainTabView: View {
                     Button {} label: {
                         ZStack {
                             Circle()
-                                .fill(LinearGradient.tsVibrant)
+                                .fill(LinearGradient.tsBluePrimary)
                                 .frame(width: 64, height: 64)
                                 .shadow(color: Color.tsAccent.opacity(0.39), radius: 10, x: 0, y: 4)
                             Image(systemName: "plus")
@@ -37,7 +37,7 @@ struct MainTabView: View {
                                 .foregroundColor(.white)
                         }
                     }
-                    .offset(y: -20)
+                    .offset(y: -44)
                     .frame(maxWidth: .infinity)
 
                     TabBarItem(icon: "chart.line.uptrend.xyaxis", label: "Stats",    tag: 3, selected: $selected)
