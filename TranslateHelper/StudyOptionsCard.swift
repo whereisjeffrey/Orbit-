@@ -4,13 +4,25 @@ struct StudyOptionsCard: View {
     @Environment(\.dismiss) var dismiss
     let listName: String
 
+    // Callbacks — parent wires these up
+    var onEdit:      (() -> Void)? = nil
+    var onDelete:    (() -> Void)? = nil
+    var onAddNew:    (() -> Void)? = nil
+    var onSeeList:   (() -> Void)? = nil
+
     var body: some View {
         VStack(spacing: 0) {
-            // Header
+            // Drag handle
+            Capsule()
+                .fill(Color.tsBorder)
+                .frame(width: 36, height: 4)
+                .padding(.top, 12)
+
+            // Header — deck name in bold
             Text(listName)
                 .font(.system(size: 22, weight: .bold))
                 .foregroundColor(.tsLabel)
-                .padding(.top, 24)
+                .padding(.top, 16)
                 .padding(.bottom, 16)
 
             Divider()
@@ -18,17 +30,17 @@ struct StudyOptionsCard: View {
 
             // Options
             VStack(spacing: 12) {
-                OptionButton(title: "Edit", icon: "pencil") {
-                    dismiss()
-                }
-                OptionButton(title: "Delete", icon: "trash", isDestructive: true) {
-                    dismiss()
+                OptionButton(title: "See My List", icon: "list.bullet") {
+                    fire(onSeeList)
                 }
                 OptionButton(title: "Add New", icon: "plus") {
-                    dismiss()
+                    fire(onAddNew)
                 }
-                OptionButton(title: "See My List", icon: "list.bullet") {
-                    dismiss()
+                OptionButton(title: "Edit", icon: "pencil") {
+                    fire(onEdit)
+                }
+                OptionButton(title: "Delete", icon: "trash", isDestructive: true) {
+                    fire(onDelete)
                 }
             }
             .padding(.horizontal, 24)
@@ -37,6 +49,16 @@ struct StudyOptionsCard: View {
             Spacer()
         }
         .background(Color.tsBackground.ignoresSafeArea())
+    }
+
+    /// Dismisses the sheet first, then fires the callback after the sheet
+    /// has had time to animate away (so navigation works cleanly).
+    private func fire(_ action: (() -> Void)?) {
+        dismiss()
+        guard let action else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            action()
+        }
     }
 }
 

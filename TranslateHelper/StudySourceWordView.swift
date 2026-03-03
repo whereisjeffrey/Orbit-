@@ -8,6 +8,7 @@ struct StudySourceWordView: View {
     @State private var currentIndex: Int = 0
     @State private var isFlipped: Bool = false
     @State private var showingOptions: Bool = false
+    @State private var showPhraseList: Bool = false
     @State private var showConfetti: Bool = false
     @State private var sessionJustCompleted: Bool = false
 
@@ -201,9 +202,15 @@ struct StudySourceWordView: View {
             }
         }
         .sheet(isPresented: $showingOptions) {
-            StudyOptionsCard(listName: listName)
-                .presentationDetents([.height(440)])
-                .presentationDragIndicator(.visible)
+            StudyOptionsCard(
+                listName: listName,
+                onSeeList: { showPhraseList = true }
+            )
+            .presentationDetents([.height(440)])
+            .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showPhraseList) {
+            DeckPhraseListView(phrases: phrases, deckName: listName)
         }
         .navigationBarHidden(true)
     }
@@ -444,7 +451,7 @@ struct BackCardView: View {
                     
                     let targetText = swapLanguage ? phrase.sourceText : phrase.translatedText
                     let targetLangCode = swapLanguage ? phrase.sourceLang : phrase.targetLang
-                    let langCode = targetLangCode == "en" ? "en-US" : "pt-BR"
+                    let langCode = targetLangCode == "en" ? "en-US" : "es-MX"
                     
                     TTSService.shared.speak(targetText, language: langCode)
                 }) {
@@ -470,7 +477,7 @@ struct BackCardView: View {
                         .tracking(1.5)
                 }
                 
-                Text("A deep emotional state of nostalgic or profound melancholic longing for an absent something or someone that one cares for and/or loves.")
+                Text(phrase.notes ?? "Cultural and slang context for this Spanish phrase will appear here.")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.tsLabel.opacity(0.9))
                     .lineSpacing(4)
@@ -501,8 +508,8 @@ struct LanguageSwitchPill: View {
         HStack(spacing: 8) {
             HStack(spacing: 4) {
                 let leftLang = swapLanguage ? phrase.targetLang : phrase.sourceLang
-                Text(leftLang == "en" ? "🇺🇸" : "🇧🇷").font(.system(size: 16))
-                Text(leftLang == "en" ? "English" : "Portuguese")
+                Text(leftLang == "en" ? "🇺🇸" : "🇲🇽").font(.system(size: 16))
+                Text(leftLang == "en" ? "English" : "Spanish")
                     .font(.system(size: 12, weight: .semibold)).foregroundColor(.tsLabel)
             }
             
@@ -512,8 +519,8 @@ struct LanguageSwitchPill: View {
             
             HStack(spacing: 4) {
                 let rightLang = swapLanguage ? phrase.sourceLang : phrase.targetLang
-                Text(rightLang == "en" ? "🇺🇸" : "🇧🇷").font(.system(size: 16))
-                Text(rightLang == "en" ? "English" : "Portuguese")
+                Text(rightLang == "en" ? "🇺🇸" : "🇲🇽").font(.system(size: 16))
+                Text(rightLang == "en" ? "English" : "Spanish")
                     .font(.system(size: 12, weight: .semibold)).foregroundColor(.tsLabel)
             }
             

@@ -152,7 +152,7 @@ class TalkSwitchAPI {
             return
         }
         
-        let langName = language == "pt" ? "Brazilian Portuguese" : "English"
+        let langName = language == "es" ? "Mexican Spanish" : "English"
         let toneDesc = tone.displayName.lowercased()
         
         let systemPrompt = """
@@ -171,8 +171,8 @@ class TalkSwitchAPI {
         \
         Keep explanations short and friendly. If they did great, say so! \
         "mistakes" can be empty if there are none. Always provide at least one tip. \
-        For Portuguese, pay attention to: preposition contractions (de+o=do, em+a=na, etc), \
-        verb conjugation, gender agreement, and informal vs formal register.
+        For Spanish, pay attention to: preposition contractions, ser vs estar, gender agreement, \
+        verb conjugation, subjunctive mood, and informal (tú/vos) vs formal (usted) register.
         """
         
         let userPrompt = """
@@ -264,7 +264,7 @@ class TalkSwitchAPI {
                 for m in mistakes { notes += "• \(m)\n" }
                 notes += "\n"
             }
-            notes += "🇧🇷 Native version:\n\"\(native)\"\n\n"
+            notes += "🇲🇽 Native version:\n\"\(native)\"\n\n"
             if !tips.isEmpty {
                 notes += "💡 Tips:\n"
                 for t in tips { notes += "• \(t)\n" }
@@ -314,42 +314,42 @@ class TalkSwitchAPI {
             return
         }
         
-        let sourceName = sourceLang == "pt" ? "Brazilian Portuguese" : "English"
-        let targetName = targetLang == "pt" ? "Brazilian Portuguese" : "English"
+        let sourceName = sourceLang == "es" ? "Mexican Spanish" : "English"
+        let targetName = targetLang == "es" ? "Mexican Spanish" : "English"
         let toneDesc = tone.displayName.lowercased()
         
         // Different coaching based on direction
         let systemPrompt: String
-        if sourceLang == "pt" {
-            // User wrote/spoke in Portuguese → coach their Portuguese
+        if sourceLang == "es" {
+            // User wrote/spoke in Spanish → coach their Spanish
             systemPrompt = """
-            You are a friendly Brazilian Portuguese coach. A student wrote something in Portuguese. \
-            Analyze their Portuguese and provide helpful, concise coaching notes. \
+            You are a friendly Mexican Spanish coach. A student wrote something in Spanish. \
+            Analyze their Spanish and provide helpful, concise coaching notes. \
             \
             Your notes should include: \
             1. If there are grammar mistakes, point them out briefly with corrections \
-            2. How a native Brazilian would more naturally say it (especially for \(toneDesc) tone) \
+            2. How a native Mexican would more naturally say it (especially for \(toneDesc) tone) \
             3. One cultural/usage tip about a word or phrase they used \
             \
             Keep it SHORT — max 3-4 lines. Use emoji sparingly. Be encouraging. \
-            If their Portuguese is perfect, say so and teach them an alternative expression or slang. \
-            Write in English (they're learning Portuguese, they need to understand the notes). \
+            If their Spanish is perfect, say so and teach them an alternative expression or slang. \
+            Write in English (they're learning Spanish, they need to understand the notes). \
             Do NOT use JSON. Write plain text only.
             """
         } else {
-            // User wrote in English → teach them the Portuguese cultural context
+            // User wrote in English → teach them the Spanish cultural context
             systemPrompt = """
             You are a bilingual cultural coach for \(sourceName) → \(targetName) translation. \
             A user just translated something. Provide brief, insightful notes about the translation. \
             \
             Your notes should include: \
             1. A more natural/\(toneDesc) alternative if the translation is too literal \
-            2. Cultural context — how natives actually say this in conversation \
+            2. Cultural context — how natives actually say this in Mexico or Latin America \
             3. One useful expression, idiom, or slang related to what they said \
             \
             Keep it SHORT — max 3-4 lines. Use emoji sparingly. \
-            If there's an idiom or expression that fits, teach it to them. \
-            Write in English with Portuguese examples in quotes. \
+            If there’s an idiom or expression that fits, teach it to them. \
+            Write in English with Spanish examples in quotes. \
             Do NOT use JSON. Write plain text only.
             """
         }
@@ -449,8 +449,8 @@ class TalkSwitchAPI {
             return
         }
         
-        let sourceName = sourceLang == "pt" ? "Brazilian Portuguese" : "English"
-        let targetName = targetLang == "pt" ? "Brazilian Portuguese" : "English"
+        let sourceName = sourceLang == "es" ? "Mexican Spanish" : "English"
+        let targetName = targetLang == "es" ? "Mexican Spanish" : "English"
         
         let systemPrompt = """
         You are a bilingual language extraction assistant specializing in \(sourceName) and \(targetName).
@@ -540,9 +540,9 @@ class TalkSwitchAPI {
     // MARK: - Prompt Building
     
     private func buildSystemPrompt(sourceLang: String, targetLang: String, tone: Tone) -> String {
-        let langPair = sourceLang == "pt"
-            ? "Brazilian Portuguese to American English"
-            : "American English to Brazilian Portuguese"
+        let langPair = sourceLang == "es"
+            ? "Mexican Spanish to American English"
+            : "American English to Mexican Spanish"
 
         // Fetch user persona if it exists
         var personaInstruction = ""
@@ -590,7 +590,7 @@ class TalkSwitchAPI {
             return """
             You are a bilingual translation expert specializing in \(langPair) street slang and colloquial speech. \
             Your job is to refine translations using real slang, gírias, and informal expressions. \
-            For Portuguese: use real Brazilian gírias (mano, véi, tá ligado, suave, de boa, etc). \
+            For Spanish: use real Mexican slang (güey/wey, órale, ¿qué onda?, chido, chingón, etc). \
             For English: use real American casual/street expressions. \
             Don't sanitize — keep it authentic. But don't add profanity that wasn't in the original. \(personaInstruction)\
             \(locationInstruction)\
@@ -626,7 +626,7 @@ class TalkSwitchAPI {
         The user is primarily learning in \(primary.displayName). \
         When choosing slang expressions, distribute them across these 4 tiers:\
         1. UNIVERSAL (🌐): ~40% — expressions understood in both Spain AND all Latin America.\
-        2. PAN-REGIONAL (🌎): ~30% — expressions common across all Spanish-speaking countries (or all Brazilian Portuguese speakers).\
+        2. PAN-REGIONAL (🌎): ~30% — expressions common across all Spanish-speaking countries.\
         3. COUNTRY-SPECIFIC (🇦🇷): ~20% — expressions specific to \(primary.country). Label these as "Used in \(primary.country)".\
         4. CITY-SPECIFIC (📍): ~10% max — expressions specific to \(primary.city). Label these as "Used in \(primary.city)".\
         IMPORTANT: Never give more than 30% city-specific slang. The user needs broad, transferable language skills — local flavor is a bonus, not the focus.
@@ -716,9 +716,9 @@ class TalkSwitchAPI {
         variation: Int,
         completion: @escaping (Result<RefinedTranslation, Error>) -> Void
     ) {
-        let langPair = sourceLang == "pt"
-            ? "Brazilian Portuguese to American English"
-            : "American English to Brazilian Portuguese"
+        let langPair = sourceLang == "es"
+            ? "Mexican Spanish to American English"
+            : "American English to Mexican Spanish"
 
         let variationHints = [
             "Use completely different vocabulary and sentence structure.",

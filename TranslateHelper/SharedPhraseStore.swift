@@ -13,7 +13,7 @@ struct SavedPhrase: Codable, Identifiable {
     let id: UUID
     let sourceText: String
     let translatedText: String
-    let sourceLang: String   // "en" or "pt"
+    let sourceLang: String   // "en" or "es"
     let targetLang: String
     let savedAt: Date
     var notes: String?

@@ -12,6 +12,8 @@ struct LibraryView: View {
     @State private var showingGoalSheet = false
     @State private var showingStudyMode = false
     @State private var showMyDecks = false
+    @State private var showDeckStudy = false
+    @State private var activeDeckStudyName = ""
     @AppStorage("daily_goal") private var dailyGoal: Int = 20
     @AppStorage("phrases_reviewed_today") private var reviewedToday: Int = 0
 
@@ -161,8 +163,14 @@ struct LibraryView: View {
                     .padding(.bottom, 10)
 
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-                        DeckCard(emoji: "❄️", title: "Winter 2026",    count: 0, tint: .blue)
-                        DeckCard(emoji: "🍳", title: "Food & Cooking", count: 0, tint: .green)
+                        DeckCard(emoji: "❄️", title: "Winter 2026",    count: 0, tint: .blue) {
+                            activeDeckStudyName = "Winter 2026"
+                            showDeckStudy = true
+                        }
+                        DeckCard(emoji: "🍳", title: "Food & Cooking", count: 0, tint: .green) {
+                            activeDeckStudyName = "Food & Cooking"
+                            showDeckStudy = true
+                        }
                     }
                     .padding(.horizontal, 16)
                     .padding(.bottom, 24)
@@ -207,6 +215,16 @@ struct LibraryView: View {
         }
         .navigationDestination(isPresented: $showMyDecks) {
             MyDecksView()
+        }
+        .fullScreenCover(isPresented: $showDeckStudy) {
+            NavigationView {
+                let all = store.phrases
+                let due = all.filter { $0.nextReviewDate <= Date() }
+                StudySourceWordView(
+                    phrases: due.isEmpty ? all : due,
+                    listName: activeDeckStudyName
+                )
+            }
         }
     }
 }
@@ -274,29 +292,42 @@ struct DeckCard: View {
     let title: String
     let count: Int
     let tint: Color
+    var onTap: (() -> Void)? = nil
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(tint.opacity(0.1))
-                    .frame(width: 40, height: 40)
-                Text(emoji).font(.system(size: 18))
+        Button(action: { onTap?() }) {
+            VStack(alignment: .leading, spacing: 0) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(tint.opacity(0.1))
+                        .frame(width: 40, height: 40)
+                    Text(emoji).font(.system(size: 18))
+                }
+                Spacer()
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.system(size: 17, weight: .bold))
+                        .foregroundColor(.tsLabel)
+                    Text(count == 0 ? "No phrases yet" : "\(count) phrases")
+                        .font(.system(size: 13))
+                        .foregroundColor(.tsSecondary)
+
+                    HStack(spacing: 4) {
+                        Image(systemName: "graduationcap.fill")
+                            .font(.system(size: 10))
+                        Text("Study")
+                            .font(.system(size: 11, weight: .semibold))
+                    }
+                    .foregroundColor(.tsAccent)
+                    .padding(.top, 4)
+                }
             }
-            Spacer()
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.system(size: 17, weight: .bold))
-                    .foregroundColor(.tsLabel)
-                Text(count == 0 ? "No phrases yet" : "\(count) phrases")
-                    .font(.system(size: 13))
-                    .foregroundColor(.tsSecondary)
-            }
+            .padding(16)
+            .frame(height: 176)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.tsCard)
+            .cornerRadius(24)
         }
-        .padding(16)
-        .frame(height: 176)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.tsCard)
-        .cornerRadius(24)
+        .buttonStyle(DeckTapStyle())
     }
 }

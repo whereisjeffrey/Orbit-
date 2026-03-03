@@ -13,7 +13,7 @@ class DictateViewController: UIViewController {
     private var audioEngine   = AVAudioEngine()
     private var currentRequest: SFSpeechAudioBufferRecognitionRequest?
     private var currentTask:    SFSpeechRecognitionTask?
-    private var ptText        = ""
+    private var esText        = ""
     private var enText        = ""
     private var committed     = false
     private var isRecording   = false
@@ -59,7 +59,7 @@ class DictateViewController: UIViewController {
         view.addSubview(statusLabel)
 
         transcriptLabel.translatesAutoresizingMaskIntoConstraints = false
-        transcriptLabel.text = "Speak in English or Portuguese"
+        transcriptLabel.text = "Speak in English or Spanish"
         transcriptLabel.font = .systemFont(ofSize: 18)
         transcriptLabel.textColor = .secondaryLabel
         transcriptLabel.textAlignment = .center
@@ -134,16 +134,16 @@ class DictateViewController: UIViewController {
             DispatchQueue.main.async {
                 guard let self = self, status == .authorized else { return }
                 AVAudioApplication.requestRecordPermission { granted in
-                    DispatchQueue.main.async { if granted { self.startPtBR() } }
+                    DispatchQueue.main.async { if granted { self.startEsMX() } }
                 }
             }
         }
     }
 
-    // MARK: - Step 1: Try pt-BR first
-    private func startPtBR() {
+    // MARK: - Step 1: Try es-MX first
+    private func startEsMX() {
         guard !committed else { return }
-        guard let recognizer = SFSpeechRecognizer(locale: Locale(identifier: "pt-BR")) else {
+        guard let recognizer = SFSpeechRecognizer(locale: Locale(identifier: "es-MX")) else {
             startEnUS(); return
         }
 
@@ -151,44 +151,44 @@ class DictateViewController: UIViewController {
         isRecording = true
         startPulse()
 
-        NSLog("🎤 [Dictate] pt-BR recognizer starting")
+        NSLog("🎤 [Dictate] es-MX recognizer starting")
         currentTask = recognizer.recognitionTask(with: request) { [weak self] result, error in
             DispatchQueue.main.async {
                 guard let self = self, !self.committed else { return }
                 if let r = result {
                     let text = r.bestTranscription.formattedString
-                    NSLog("🎤 [Dictate] pt-BR partial: '\(text)' isFinal=\(r.isFinal)")
+                    NSLog("🎤 [Dictate] es-MX partial: '\(text)' isFinal=\(r.isFinal)")
                     if !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                        self.ptText = text
+                        self.esText = text
                         self.transcriptLabel.text = text
                         self.transcriptLabel.textColor = .label
                         self.switchTimer?.invalidate()
                         self.switchTimer = nil
                     }
                     if r.isFinal {
-                        NSLog("🎤 [Dictate] pt-BR final: '\(text)'")
-                        if self.ptText.isEmpty { self.switchToEnUS() }
-                        else { self.commitWith(text: self.ptText, lang: "pt") }
+                        NSLog("🎤 [Dictate] es-MX final: '\(text)'")
+                        if self.esText.isEmpty { self.switchToEnUS() }
+                        else { self.commitWith(text: self.esText, lang: "es") }
                     }
                 }
                 if let error = error {
-                    NSLog("🎤 [Dictate] pt-BR error: \(error.localizedDescription) — ptText='\(self.ptText)'")
-                    if self.ptText.isEmpty && !self.triedEnglish { self.switchToEnUS() }
-                    else if !self.ptText.isEmpty { self.commitWith(text: self.ptText, lang: "pt") }
+                    NSLog("🎤 [Dictate] es-MX error: \(error.localizedDescription) — esText='\(self.esText)'")
+                    if self.esText.isEmpty && !self.triedEnglish { self.switchToEnUS() }
+                    else if !self.esText.isEmpty { self.commitWith(text: self.esText, lang: "es") }
                 }
             }
         }
 
-        // If pt-BR produces nothing in 2.5s → English speaker → switch
+        // If es-MX produces nothing in 2.5s → English speaker → switch
         switchTimer = Timer.scheduledTimer(withTimeInterval: 2.5, repeats: false) { [weak self] _ in
-            guard let self = self, self.ptText.isEmpty, !self.triedEnglish else { return }
-            NSLog("🎤 [Dictate] pt-BR timeout — no text after 2.5s, switching to en-US")
+            guard let self = self, self.esText.isEmpty, !self.triedEnglish else { return }
+            NSLog("🎤 [Dictate] es-MX timeout — no text after 2.5s, switching to en-US")
             self.statusLabel.text = "Switching to English…"
             self.switchToEnUS()
         }
     }
 
-    // MARK: - Step 2: Switch to en-US if pt-BR produced nothing
+    // MARK: - Step 2: Switch to en-US if es-MX produced nothing
     private func switchToEnUS() {
         guard !triedEnglish, !committed else { return }
         NSLog("🎤 [Dictate] Switching to en-US")
@@ -314,11 +314,11 @@ class DictateViewController: UIViewController {
     // MARK: - Button actions
     @objc private func doneTapped() {
         let current = transcriptLabel.text ?? ""
-        let isPlaceholder = current == "Speak in English or Portuguese" || current.isEmpty
+        let isPlaceholder = current == "Speak in English or Spanish" || current.isEmpty
         guard !isPlaceholder else { stopAll(); dismiss(animated: true); return }
 
-        let lang = ptText.isEmpty ? "en" : "pt"
-        let text = ptText.isEmpty ? enText : ptText
+        let lang = esText.isEmpty ? "en" : "es"
+        let text = esText.isEmpty ? enText : esText
         commitWith(text: text.isEmpty ? current : text, lang: lang)
     }
 

@@ -58,8 +58,8 @@ struct StudyRevealedCardView: View {
                         HStack(spacing: 8) {
                             HStack(spacing: 4) {
                                 let leftLang = swapLanguage ? phrase.targetLang : phrase.sourceLang
-                                Text(leftLang == "en" ? "🇺🇸" : "🇧🇷").font(.system(size: 16))
-                                Text(leftLang == "en" ? "English" : "Portuguese")
+                                Text(leftLang == "en" ? "🇺🇸" : "🇲🇽").font(.system(size: 16))
+                                Text(leftLang == "en" ? "English" : "Spanish")
                                     .font(.system(size: 12, weight: .semibold)).foregroundColor(.tsLabel)
                             }
                             
@@ -69,8 +69,8 @@ struct StudyRevealedCardView: View {
                             
                             HStack(spacing: 4) {
                                 let rightLang = swapLanguage ? phrase.sourceLang : phrase.targetLang
-                                Text(rightLang == "en" ? "🇺🇸" : "🇧🇷").font(.system(size: 16))
-                                Text(rightLang == "en" ? "English" : "Portuguese")
+                                Text(rightLang == "en" ? "🇺🇸" : "🇲🇽").font(.system(size: 16))
+                                Text(rightLang == "en" ? "English" : "Spanish")
                                     .font(.system(size: 12, weight: .semibold)).foregroundColor(.tsLabel)
                             }
                             
@@ -133,7 +133,7 @@ struct StudyRevealedCardView: View {
                                 
                                 let targetText = swapLanguage ? phrase.sourceText : phrase.translatedText
                                 let targetLangCode = swapLanguage ? phrase.sourceLang : phrase.targetLang
-                                let langCode = targetLangCode == "en" ? "en-US" : "pt-BR"
+                                let langCode = targetLangCode == "en" ? "en-US" : "es-MX"
                                 
                                 TTSService.shared.speak(targetText, language: langCode)
                             }) {

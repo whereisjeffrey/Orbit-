@@ -6,7 +6,6 @@ class TranslationService {
     
     enum Language: String {
         case english = "EN"
-        case portugueseBR = "PT-BR"
         case spanish = "ES"
         case french = "FR"
         case german = "DE"

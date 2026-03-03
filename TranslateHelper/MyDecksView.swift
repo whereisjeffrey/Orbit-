@@ -43,6 +43,9 @@ struct MyDecksView: View {
     @State private var showCreateSheet = false
     @State private var showFlirtySheet = false
     @State private var flirtyDeckAdded = false
+    @State private var showStudyMode = false
+    @State private var activeDeckName = ""
+    @StateObject private var store = SharedPhraseStore.shared
     @AppStorage("ts_flirty_context_set") private var flirtyContextSet: Bool = false
 
     // TODO: Replace with @StateObject var deckStore = DeckStore()
@@ -124,7 +127,9 @@ struct MyDecksView: View {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 16) {
                             ForEach(autoDecksSample) { deck in
-                                AutoDeckCard(deck: deck)
+                                AutoDeckCard(deck: deck) {
+                                    launchStudy(name: deck.title)
+                                }
                             }
                         }
                         .padding(.horizontal, 24)
@@ -143,7 +148,9 @@ struct MyDecksView: View {
                         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())],
                                   spacing: 16) {
                             ForEach(userDecksSample) { deck in
-                                UserDeckCard(deck: deck)
+                                UserDeckCard(deck: deck) {
+                                    launchStudy(name: deck.title)
+                                }
                             }
                             // "Create new" card always at end
                             CreateDeckCell { showCreateSheet = true }
@@ -211,6 +218,20 @@ struct MyDecksView: View {
                 print("Generated \(cards.count) flirting cards")
             }
         }
+        .fullScreenCover(isPresented: $showStudyMode) {
+            NavigationView {
+                let duePhrases = store.phrases.filter { $0.nextReviewDate <= Date() }
+                StudySourceWordView(
+                    phrases: duePhrases.isEmpty ? store.phrases : duePhrases,
+                    listName: activeDeckName
+                )
+            }
+        }
+    }
+
+    private func launchStudy(name: String) {
+        activeDeckName = name
+        showStudyMode  = true
     }
 }
 
@@ -242,32 +263,46 @@ struct SectionHeader: View {
 
 struct AutoDeckCard: View {
     let deck: DeckModel
+    var onTap: (() -> Void)? = nil
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(deck.tint.opacity(0.15))
-                    .frame(width: 40, height: 40)
-                Text(deck.emoji).font(.system(size: 20))
+        Button(action: { onTap?() }) {
+            VStack(alignment: .leading, spacing: 0) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(deck.tint.opacity(0.15))
+                        .frame(width: 40, height: 40)
+                    Text(deck.emoji).font(.system(size: 20))
+                }
+                Spacer()
+                Text(deck.title)
+                    .font(.system(size: 17, weight: .bold))
+                    .foregroundColor(.tsLabel)
+                Text(deck.cardCount == 0 ? "No phrases yet" : "\(deck.cardCount) phrases")
+                    .font(.system(size: 12))
+                    .foregroundColor(.tsSecondary)
+                    .padding(.top, 2)
+
+                // Study chevron hint
+                HStack(spacing: 4) {
+                    Image(systemName: "graduationcap.fill")
+                        .font(.system(size: 10))
+                    Text("Study")
+                        .font(.system(size: 11, weight: .semibold))
+                }
+                .foregroundColor(.tsAccent)
+                .padding(.top, 8)
             }
-            Spacer()
-            Text(deck.title)
-                .font(.system(size: 17, weight: .bold))
-                .foregroundColor(.tsLabel)
-            Text(deck.cardCount == 0 ? "No phrases yet" : "\(deck.cardCount) phrases")
-                .font(.system(size: 12))
-                .foregroundColor(.tsSecondary)
-                .padding(.top, 2)
+            .padding(16)
+            .frame(width: 148, height: 148)
+            .background(Color.tsCard)
+            .cornerRadius(20)
+            .overlay(
+                RoundedRectangle(cornerRadius: 20)
+                    .stroke(deck.tint.opacity(0.2), lineWidth: 1)
+            )
         }
-        .padding(16)
-        .frame(width: 148, height: 148)
-        .background(Color.tsCard)
-        .cornerRadius(20)
-        .overlay(
-            RoundedRectangle(cornerRadius: 20)
-                .stroke(deck.tint.opacity(0.2), lineWidth: 1)
-        )
+        .buttonStyle(DeckTapStyle())
     }
 }
 
@@ -275,38 +310,62 @@ struct AutoDeckCard: View {
 
 struct UserDeckCard: View {
     let deck: DeckModel
+    var onTap: (() -> Void)? = nil
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(deck.tint.opacity(0.12))
-                        .frame(width: 36, height: 36)
-                    Text(deck.emoji).font(.system(size: 16))
+        Button(action: { onTap?() }) {
+            VStack(alignment: .leading, spacing: 0) {
+                HStack {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(deck.tint.opacity(0.12))
+                            .frame(width: 36, height: 36)
+                        Text(deck.emoji).font(.system(size: 16))
+                    }
+                    Spacer()
+                    if deck.isAI {
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(.tsAccent.opacity(0.7))
+                    }
                 }
                 Spacer()
-                if deck.isAI {
-                    Image(systemName: "sparkles")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(.tsAccent.opacity(0.7))
+                Text(deck.title)
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(.tsLabel)
+                    .lineLimit(2)
+                Text(deck.cardCount == 0 ? "Empty" : "\(deck.cardCount) cards")
+                    .font(.system(size: 12))
+                    .foregroundColor(.tsSecondary)
+                    .padding(.top, 2)
+
+                // Study chevron hint
+                HStack(spacing: 4) {
+                    Image(systemName: "graduationcap.fill")
+                        .font(.system(size: 10))
+                    Text("Study")
+                        .font(.system(size: 11, weight: .semibold))
                 }
+                .foregroundColor(.tsAccent)
+                .padding(.top, 8)
             }
-            Spacer()
-            Text(deck.title)
-                .font(.system(size: 16, weight: .bold))
-                .foregroundColor(.tsLabel)
-                .lineLimit(2)
-            Text(deck.cardCount == 0 ? "Empty" : "\(deck.cardCount) cards")
-                .font(.system(size: 12))
-                .foregroundColor(.tsSecondary)
-                .padding(.top, 2)
+            .padding(16)
+            .frame(height: 172)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.tsCard)
+            .cornerRadius(20)
         }
-        .padding(16)
-        .frame(height: 152)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.tsCard)
-        .cornerRadius(20)
+        .buttonStyle(DeckTapStyle())
+    }
+}
+
+// MARK: - Shared press-scale style for deck cards
+
+struct DeckTapStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.96 : 1.0)
+            .animation(.easeInOut(duration: 0.12), value: configuration.isPressed)
     }
 }
 

@@ -23,7 +23,7 @@ class SpeechService {
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
     private var recognitionTimeout: DispatchWorkItem?
-    private var currentLanguage: String = "pt-BR"
+    private var currentLanguage: String = "es-MX"
 
     private(set) var isListening = false
     private(set) var detectedLanguage: String = "en"
@@ -58,7 +58,7 @@ class SpeechService {
 
     func startListening() {
         if isListening { stopListening() }
-        // Use en-US for initial test — avoids pt-BR fallback restart timing issues
+        // Use en-US for initial test — avoids es-MX fallback restart timing issues
         startRecording(language: "en-US")
     }
 
@@ -182,7 +182,7 @@ class SpeechService {
                 if result.isFinal {
                     self.recognitionTimeout?.cancel()
                     self.recognitionTimeout = nil
-                    let lang = language.hasPrefix("pt") ? "pt" : "en"
+                    let lang = language.hasPrefix("es") ? "es" : "en"
                     self.detectedLanguage = lang
                     var lowConfidence: [String] = []
                     for segment in result.bestTranscription.segments {
@@ -298,7 +298,7 @@ class SpeechService {
 
     private let synthesizer = AVSpeechSynthesizer()
 
-    func speak(_ text: String, language: String = "pt-BR") {
+    func speak(_ text: String, language: String = "es-MX") {
         let utterance = AVSpeechUtterance(string: text)
         utterance.voice = SpeechService.bestVoice(for: language)
         utterance.rate = 0.48

@@ -12,9 +12,9 @@ struct MainTabView: View {
         ZStack(alignment: .bottom) {
             Group {
                 switch selected {
-                case 0: LibraryView()
-                case 4: SettingsView()
-                default: LibraryView() // placeholder for other tabs
+                case 0: NavigationStack { LibraryView() }
+                case 4: NavigationStack { SettingsView() }
+                default: NavigationStack { LibraryView() } // placeholder for other tabs
                 }
             }
 

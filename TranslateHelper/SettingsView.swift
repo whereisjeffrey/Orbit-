@@ -85,7 +85,7 @@ struct SettingsView: View {
                                     .font(.system(size: 17))
                                     .foregroundColor(.tsLabel)
                                 Spacer()
-                                Text("Portuguese")
+                                Text("Spanish")
                                     .font(.system(size: 17))
                                     .foregroundColor(Color.tsSecondary)
                                 Image(systemName: "chevron.right")
