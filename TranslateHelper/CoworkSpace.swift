@@ -30,8 +30,8 @@ struct CoworkSpace: Identifiable {
         return location.distance(from: coordinate) / 1000.0  // km
     }
 
-    func distanceLabel(from location: CLLocation?) -> String {
-        guard let km = distance(from: location) else { return "" }
+    func distanceLabel(from location: CLLocation?) -> String? {
+        guard let km = distance(from: location) else { return nil }
         return km < 1.0 ? String(format: "%.0fm", km * 1000) : String(format: "%.1fkm", km)
     }
 }
