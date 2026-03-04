@@ -95,8 +95,36 @@
 		006F75E12F547D9C00D581A9 /* CreateAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75C32F547D9C00D581A9 /* CreateAccountView.swift */; };
 		006F75ED2F547E3500D581A9 /* TranslateHelperKeyboard.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 006F75E62F547E3500D581A9 /* TranslateHelperKeyboard.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		006F769E2F54C7FA00D581A9 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 006F769D2F54C7FA00D581A9 /* GoogleSignIn */; };
+		0851017EA7D569DB7B793183 /* StudySourceWordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B7DDD7DACC2B26628632458 /* StudySourceWordView.swift */; };
+		0A536490DFE056A5AA52FE9C /* CityModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93834FA2F33A8EBFE4B053E5 /* CityModel.swift */; };
+		0E128240CECCCB88C69D578E /* TTSService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10B7D83A76412AF0CE97BB3 /* TTSService.swift */; };
+		32748F58ACC1D068146338FF /* StudyRevealedCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7BCC4D19FBB7CCB35DEFB36 /* StudyRevealedCardView.swift */; };
+		373143C18345D2C26681476B /* StudyOptionsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 701E42686590C2360A8BDE9E /* StudyOptionsCard.swift */; };
+		3FDE143AC4601CE3AC8B15E2 /* SharedPhraseStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2111A26039606CBFB2DC5F96 /* SharedPhraseStore.swift */; };
+		5C4EF48D41050AF96AE488B1 /* UserLocationsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B06F69CBF0E7D5F064F666BC /* UserLocationsStore.swift */; };
+		5E42D4212BC7916E47FD047B /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70676833227F3272CB102236 /* Config.swift */; };
+		6252250843EA34A8DDFDE489 /* OnboardingPlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 451A6F929AD5C20B592589F0 /* OnboardingPlanView.swift */; };
+		9479CB32831558A74D7F8A51 /* CommunityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471F186ED6F55E5C3B83ED96 /* CommunityView.swift */; };
+		9C10EEFBB37EC898AD006B2E /* DeckGenerationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66950B49E530F7E461383FB4 /* DeckGenerationService.swift */; };
 		A6728A9D362581C24272B7DA /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E5C787F74B49B3B71FC2D15 /* SettingsView.swift */; };
+		A7451A4F54ABC5417F084DE7 /* DeckPhraseListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E4CDAE7CCAE5AB261FA919A /* DeckPhraseListView.swift */; };
+		A85E2EB0B0B1EEC19CA3BB45 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC65C434C4B19B941C69BC70 /* LibraryView.swift */; };
+		B05FCF32D6D0A7308763F680 /* DeckStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4FA7A587F0CCC98AE5D5CC6 /* DeckStore.swift */; };
+		B9AA423B388610BD520491E6 /* OnboardingPaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6645235449EC772517A19CF /* OnboardingPaywallView.swift */; };
+		BD7EC3254FC66D6CC12F9959 /* FlirtyContextSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F615F7271A5D10592C66CDCC /* FlirtyContextSheet.swift */; };
+		D050ECE5BD70709FDA4FC04B /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CCCB62F99F464B7F3FB39D6 /* MainTabView.swift */; };
 		D679EC47DAD2AFB2E72A22F4 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = B40E93BABBB610917935465D /* Localizable.xcstrings */; };
+		DB91849C6A8449C2D08FBA65 /* AppleSignInHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51220AA1E01BAC95E7A6DE13 /* AppleSignInHelper.swift */; };
+		DDA054E5703065AF5B8A6955 /* LanguageSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7FDC3F2AB5601574ACCEED0 /* LanguageSelectionView.swift */; };
+		E01C8B061F276D5BB380A4EA /* KeyboardSetupBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E8447306AE1244029E4FE8D /* KeyboardSetupBanner.swift */; };
+		E4BC44C5F39E1F4577AF82AF /* OnboardingGoalsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C8D915ECE4E6C56FC9D2349 /* OnboardingGoalsView.swift */; };
+		E6D877506BBB3C631FA7EB5F /* KeyboardSetupSplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D029A7EA24A4D19ACF579EB /* KeyboardSetupSplashView.swift */; };
+		E7BD1C7662AC01491CCB250C /* QuickAddSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CF0203081627899390A9ED7 /* QuickAddSheet.swift */; };
+		EC4C549C2C7410850E1D2676 /* OnboardingLocationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FC723A32F4D1936AE809E74 /* OnboardingLocationView.swift */; };
+		EDBC54D35ACD71EF429A4F78 /* MyDecksView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6208DE9355A180B87E6E9655 /* MyDecksView.swift */; };
+		F304AF071C9CE13B9BBD0257 /* KitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13721C7308918D79F62CB559 /* KitView.swift */; };
+		F5AC187F5E0308639395913A /* AddCardSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 907A36084F3DDD8ED22F49CA /* AddCardSheet.swift */; };
+		F84EE25FE5E411D5EE098FF6 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C9C1B33D0F41361EBB664B4 /* OnboardingView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -222,8 +250,36 @@
 		006F75D02F547D9C00D581A9 /* TranslateHelper.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TranslateHelper.entitlements; sourceTree = "<group>"; };
 		006F75D12F547D9C00D581A9 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		006F75E62F547E3500D581A9 /* TranslateHelperKeyboard.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TranslateHelperKeyboard.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		13721C7308918D79F62CB559 /* KitView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KitView.swift; sourceTree = "<group>"; };
+		1CF0203081627899390A9ED7 /* QuickAddSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = QuickAddSheet.swift; sourceTree = "<group>"; };
+		2111A26039606CBFB2DC5F96 /* SharedPhraseStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SharedPhraseStore.swift; sourceTree = "<group>"; };
+		3C9C1B33D0F41361EBB664B4 /* OnboardingView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		3CCCB62F99F464B7F3FB39D6 /* MainTabView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		3E4CDAE7CCAE5AB261FA919A /* DeckPhraseListView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DeckPhraseListView.swift; sourceTree = "<group>"; };
+		451A6F929AD5C20B592589F0 /* OnboardingPlanView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OnboardingPlanView.swift; sourceTree = "<group>"; };
+		471F186ED6F55E5C3B83ED96 /* CommunityView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CommunityView.swift; sourceTree = "<group>"; };
+		51220AA1E01BAC95E7A6DE13 /* AppleSignInHelper.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppleSignInHelper.swift; sourceTree = "<group>"; };
+		6208DE9355A180B87E6E9655 /* MyDecksView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MyDecksView.swift; sourceTree = "<group>"; };
+		66950B49E530F7E461383FB4 /* DeckGenerationService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DeckGenerationService.swift; sourceTree = "<group>"; };
+		6B7DDD7DACC2B26628632458 /* StudySourceWordView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StudySourceWordView.swift; sourceTree = "<group>"; };
+		701E42686590C2360A8BDE9E /* StudyOptionsCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StudyOptionsCard.swift; sourceTree = "<group>"; };
+		70676833227F3272CB102236 /* Config.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
+		7D029A7EA24A4D19ACF579EB /* KeyboardSetupSplashView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KeyboardSetupSplashView.swift; sourceTree = "<group>"; };
 		8E5C787F74B49B3B71FC2D15 /* SettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		8E8447306AE1244029E4FE8D /* KeyboardSetupBanner.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KeyboardSetupBanner.swift; sourceTree = "<group>"; };
+		8FC723A32F4D1936AE809E74 /* OnboardingLocationView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OnboardingLocationView.swift; sourceTree = "<group>"; };
+		907A36084F3DDD8ED22F49CA /* AddCardSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AddCardSheet.swift; sourceTree = "<group>"; };
+		93834FA2F33A8EBFE4B053E5 /* CityModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CityModel.swift; sourceTree = "<group>"; };
+		9C8D915ECE4E6C56FC9D2349 /* OnboardingGoalsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OnboardingGoalsView.swift; sourceTree = "<group>"; };
+		B06F69CBF0E7D5F064F666BC /* UserLocationsStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UserLocationsStore.swift; sourceTree = "<group>"; };
 		B40E93BABBB610917935465D /* Localizable.xcstrings */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		B6645235449EC772517A19CF /* OnboardingPaywallView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OnboardingPaywallView.swift; sourceTree = "<group>"; };
+		C4FA7A587F0CCC98AE5D5CC6 /* DeckStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DeckStore.swift; sourceTree = "<group>"; };
+		DC65C434C4B19B941C69BC70 /* LibraryView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
+		F10B7D83A76412AF0CE97BB3 /* TTSService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TTSService.swift; sourceTree = "<group>"; };
+		F615F7271A5D10592C66CDCC /* FlirtyContextSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FlirtyContextSheet.swift; sourceTree = "<group>"; };
+		F7BCC4D19FBB7CCB35DEFB36 /* StudyRevealedCardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StudyRevealedCardView.swift; sourceTree = "<group>"; };
+		F7FDC3F2AB5601574ACCEED0 /* LanguageSelectionView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LanguageSelectionView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -444,6 +500,34 @@
 				006F75D12F547D9C00D581A9 /* ViewController.swift */,
 				8E5C787F74B49B3B71FC2D15 /* SettingsView.swift */,
 				B40E93BABBB610917935465D /* Localizable.xcstrings */,
+				3CCCB62F99F464B7F3FB39D6 /* MainTabView.swift */,
+				8E8447306AE1244029E4FE8D /* KeyboardSetupBanner.swift */,
+				1CF0203081627899390A9ED7 /* QuickAddSheet.swift */,
+				907A36084F3DDD8ED22F49CA /* AddCardSheet.swift */,
+				701E42686590C2360A8BDE9E /* StudyOptionsCard.swift */,
+				F7BCC4D19FBB7CCB35DEFB36 /* StudyRevealedCardView.swift */,
+				F7FDC3F2AB5601574ACCEED0 /* LanguageSelectionView.swift */,
+				451A6F929AD5C20B592589F0 /* OnboardingPlanView.swift */,
+				7D029A7EA24A4D19ACF579EB /* KeyboardSetupSplashView.swift */,
+				93834FA2F33A8EBFE4B053E5 /* CityModel.swift */,
+				70676833227F3272CB102236 /* Config.swift */,
+				F10B7D83A76412AF0CE97BB3 /* TTSService.swift */,
+				F615F7271A5D10592C66CDCC /* FlirtyContextSheet.swift */,
+				8FC723A32F4D1936AE809E74 /* OnboardingLocationView.swift */,
+				DC65C434C4B19B941C69BC70 /* LibraryView.swift */,
+				C4FA7A587F0CCC98AE5D5CC6 /* DeckStore.swift */,
+				2111A26039606CBFB2DC5F96 /* SharedPhraseStore.swift */,
+				13721C7308918D79F62CB559 /* KitView.swift */,
+				51220AA1E01BAC95E7A6DE13 /* AppleSignInHelper.swift */,
+				471F186ED6F55E5C3B83ED96 /* CommunityView.swift */,
+				B6645235449EC772517A19CF /* OnboardingPaywallView.swift */,
+				66950B49E530F7E461383FB4 /* DeckGenerationService.swift */,
+				6B7DDD7DACC2B26628632458 /* StudySourceWordView.swift */,
+				9C8D915ECE4E6C56FC9D2349 /* OnboardingGoalsView.swift */,
+				6208DE9355A180B87E6E9655 /* MyDecksView.swift */,
+				3E4CDAE7CCAE5AB261FA919A /* DeckPhraseListView.swift */,
+				3C9C1B33D0F41361EBB664B4 /* OnboardingView.swift */,
+				B06F69CBF0E7D5F064F666BC /* UserLocationsStore.swift */,
 			);
 			path = TranslateHelper;
 			sourceTree = "<group>";
@@ -523,7 +607,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 003133402F3DE56A00F7A418 /* Build configuration list for PBXProject "TranslateHelper" */;
+			buildConfigurationList = 003133402F3DE56A00F7A418 /* Build configuration list for PBXProject "TalkSwitch" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -657,6 +741,34 @@
 				006F759C2F547D7300D581A9 /* RootView.swift in Sources */,
 				006F759D2F547D7300D581A9 /* SceneDelegate.swift in Sources */,
 				A6728A9D362581C24272B7DA /* SettingsView.swift in Sources */,
+				D050ECE5BD70709FDA4FC04B /* MainTabView.swift in Sources */,
+				E01C8B061F276D5BB380A4EA /* KeyboardSetupBanner.swift in Sources */,
+				E7BD1C7662AC01491CCB250C /* QuickAddSheet.swift in Sources */,
+				F5AC187F5E0308639395913A /* AddCardSheet.swift in Sources */,
+				373143C18345D2C26681476B /* StudyOptionsCard.swift in Sources */,
+				32748F58ACC1D068146338FF /* StudyRevealedCardView.swift in Sources */,
+				DDA054E5703065AF5B8A6955 /* LanguageSelectionView.swift in Sources */,
+				6252250843EA34A8DDFDE489 /* OnboardingPlanView.swift in Sources */,
+				E6D877506BBB3C631FA7EB5F /* KeyboardSetupSplashView.swift in Sources */,
+				0A536490DFE056A5AA52FE9C /* CityModel.swift in Sources */,
+				5E42D4212BC7916E47FD047B /* Config.swift in Sources */,
+				0E128240CECCCB88C69D578E /* TTSService.swift in Sources */,
+				BD7EC3254FC66D6CC12F9959 /* FlirtyContextSheet.swift in Sources */,
+				EC4C549C2C7410850E1D2676 /* OnboardingLocationView.swift in Sources */,
+				A85E2EB0B0B1EEC19CA3BB45 /* LibraryView.swift in Sources */,
+				B05FCF32D6D0A7308763F680 /* DeckStore.swift in Sources */,
+				3FDE143AC4601CE3AC8B15E2 /* SharedPhraseStore.swift in Sources */,
+				F304AF071C9CE13B9BBD0257 /* KitView.swift in Sources */,
+				DB91849C6A8449C2D08FBA65 /* AppleSignInHelper.swift in Sources */,
+				9479CB32831558A74D7F8A51 /* CommunityView.swift in Sources */,
+				B9AA423B388610BD520491E6 /* OnboardingPaywallView.swift in Sources */,
+				9C10EEFBB37EC898AD006B2E /* DeckGenerationService.swift in Sources */,
+				0851017EA7D569DB7B793183 /* StudySourceWordView.swift in Sources */,
+				E4BC44C5F39E1F4577AF82AF /* OnboardingGoalsView.swift in Sources */,
+				EDBC54D35ACD71EF429A4F78 /* MyDecksView.swift in Sources */,
+				A7451A4F54ABC5417F084DE7 /* DeckPhraseListView.swift in Sources */,
+				F84EE25FE5E411D5EE098FF6 /* OnboardingView.swift in Sources */,
+				5C4EF48D41050AF96AE488B1 /* UserLocationsStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1025,7 +1137,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		003133402F3DE56A00F7A418 /* Build configuration list for PBXProject "TranslateHelper" */ = {
+		003133402F3DE56A00F7A418 /* Build configuration list for PBXProject "TalkSwitch" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				0031335B2F3DE56B00F7A418 /* Debug */,
