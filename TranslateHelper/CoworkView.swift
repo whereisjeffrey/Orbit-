@@ -1,6 +1,7 @@
 //  CoworkView.swift
 
 import SwiftUI
+import Combine
 import CoreLocation
 
 // MARK: - Location Manager
