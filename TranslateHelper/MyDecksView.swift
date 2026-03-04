@@ -45,27 +45,27 @@ struct MyDecksView: View {
     @State private var flirtyDeckAdded = false
     @State private var showStudyMode = false
     @State private var activeDeckName = ""
+    @State private var activeDeckPhrases: [SavedPhrase] = []
     @StateObject private var store = SharedPhraseStore.shared
+    @ObservedObject private var deckStore = DeckStore.shared
     @AppStorage("ts_flirty_context_set") private var flirtyContextSet: Bool = false
 
-    // TODO: Replace with @StateObject var deckStore = DeckStore()
-    let autoDecksSample: [DeckModel] = [
-        DeckModel(id: "conquered", emoji: "🏆", title: "Conquered",
-                  description: "Words recalled 3× in a row", cardCount: 0,
-                  tint: .yellow),
-        DeckModel(id: "spring26", emoji: "🌸", title: "Spring 2026",
-                  description: "Auto-saved from your clipboard", cardCount: 0,
-                  tint: .green)
-    ]
+    // ── Real auto deck data ─────────────────────────────────────────────────
+    var conqueredCount: Int {
+        deckStore.allConqueredDeckCards.count + store.conqueredPhrases.count
+    }
+    var clipboardCount: Int { store.activePhrases.count }
 
-    let userDecksSample: [DeckModel] = [
-        DeckModel(id: "1", emoji: "❄️", title: "Winter 2026",
-                  description: "Seasonal clipboard phrases", cardCount: 0,
-                  tint: .blue),
-        DeckModel(id: "2", emoji: "🍳", title: "Food & Cooking",
-                  description: "Market, kitchen, restaurants", cardCount: 0,
-                  tint: .orange)
-    ]
+    var autoDecks: [DeckModel] {
+        [
+            DeckModel(id: "conquered", emoji: "🏆", title: "Conquered",
+                      description: "Words recalled 3× in a row", cardCount: conqueredCount,
+                      tint: .yellow),
+            DeckModel(id: "clipboard", emoji: "🌸", title: "Spring 2026",
+                      description: "Auto-saved from your clipboard", cardCount: clipboardCount,
+                      tint: .green)
+        ]
+    }
 
     let featuredSample: [FeaturedDeckModel] = [
         FeaturedDeckModel(id: "f1", emoji: "🌆", title: "Mexico City Slang",
@@ -126,11 +126,13 @@ struct MyDecksView: View {
 
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 16) {
-                            ForEach(autoDecksSample) { deck in
+                            ForEach(autoDecks) { deck in
                                 AutoDeckCard(deck: deck) {
                                     launchStudy(name: deck.title)
                                 }
                             }
+                            // New Deck lives here — same card size as auto decks
+                            CreateDeckCell { showCreateSheet = true }
                         }
                         .padding(.horizontal, 24)
                     }
@@ -141,22 +143,21 @@ struct MyDecksView: View {
                         // TODO: navigate to full deck list
                     }
 
-                    if userDecksSample.isEmpty {
-                        EmptyDecksPrompt { showCreateSheet = true }
-                            .padding(.horizontal, 24)
-                    } else {
-                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())],
-                                  spacing: 16) {
-                            ForEach(userDecksSample) { deck in
-                                UserDeckCard(deck: deck) {
-                                    launchStudy(name: deck.title)
-                                }
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())],
+                              spacing: 16) {
+                        ForEach(deckStore.decks) { deck in
+                            let dm = DeckModel(
+                                id: deck.id.uuidString, emoji: deck.emoji,
+                                title: deck.name, description: deck.deckDescription,
+                                cardCount: deck.activeCards.count,
+                                tint: deck.tintColor, isAI: deck.isAI
+                            )
+                            UserDeckCard(deck: dm) {
+                                launchDeckStudy(deck)
                             }
-                            // "Create new" card always at end
-                            CreateDeckCell { showCreateSheet = true }
                         }
-                        .padding(.horizontal, 24)
                     }
+                    .padding(.horizontal, 24)
 
                     // ── BROWSE FEATURED ──────────────────────────────────
                     SectionHeader(title: "BROWSE FEATURED", action: nil)
@@ -180,33 +181,6 @@ struct MyDecksView: View {
                 }
             }
 
-            // ── FAB: Create Deck ────────────────────────────────────────
-            VStack(spacing: 0) {
-                LinearGradient(
-                    colors: [Color.tsBackground.opacity(0), Color.tsBackground],
-                    startPoint: .top, endPoint: .bottom
-                )
-                .frame(height: 32)
-                .allowsHitTesting(false)
-
-                Button(action: { showCreateSheet = true }) {
-                    HStack(spacing: 10) {
-                        Image(systemName: "sparkles")
-                            .font(.system(size: 18, weight: .semibold))
-                        Text("Create Deck")
-                            .font(.system(size: 17, weight: .bold))
-                    }
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .background(LinearGradient.tsBluePrimary)
-                    .clipShape(Capsule())
-                    .shadow(color: Color.tsAccent.opacity(0.4), radius: 16, x: 0, y: 4)
-                }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 32)
-                .background(Color.tsBackground)
-            }
         }
         .sheet(isPresented: $showCreateSheet) {
             CreateDeckSheet()
@@ -220,18 +194,39 @@ struct MyDecksView: View {
         }
         .fullScreenCover(isPresented: $showStudyMode) {
             NavigationView {
-                let duePhrases = store.phrases.filter { $0.nextReviewDate <= Date() }
                 StudySourceWordView(
-                    phrases: duePhrases.isEmpty ? store.phrases : duePhrases,
+                    phrases: activeDeckPhrases,
                     listName: activeDeckName
                 )
             }
         }
     }
 
+    /// Launch study for an auto-deck (Conquered or Clipboard).
     private func launchStudy(name: String) {
-        activeDeckName = name
-        showStudyMode  = true
+        let all: [SavedPhrase]
+        if name == "Conquered" {
+            // Conquered auto-deck: clipboard conquered + all deck conquered cards
+            let fromClipboard = store.conqueredPhrases
+            let fromDecks     = deckStore.allConqueredDeckCards.map { $0.toSavedPhrase() }
+            all = fromClipboard + fromDecks
+        } else {
+            // Clipboard / Spring deck
+            let due = store.activePhrases.filter { $0.nextReviewDate <= Date() }
+            all = due.isEmpty ? store.activePhrases : due
+        }
+        activeDeckPhrases = all
+        activeDeckName    = name
+        showStudyMode     = true
+    }
+
+    /// Launch study for a real user deck from DeckStore.
+    private func launchDeckStudy(_ deck: Deck) {
+        let all = deck.activeCards.map { $0.toSavedPhrase() }
+        let due = all.filter { $0.nextReviewDate <= Date() }
+        activeDeckPhrases = due.isEmpty ? all : due
+        activeDeckName    = deck.name
+        showStudyMode     = true
     }
 }
 
@@ -282,16 +277,6 @@ struct AutoDeckCard: View {
                     .font(.system(size: 12))
                     .foregroundColor(.tsSecondary)
                     .padding(.top, 2)
-
-                // Study chevron hint
-                HStack(spacing: 4) {
-                    Image(systemName: "graduationcap.fill")
-                        .font(.system(size: 10))
-                    Text("Study")
-                        .font(.system(size: 11, weight: .semibold))
-                }
-                .foregroundColor(.tsAccent)
-                .padding(.top, 8)
             }
             .padding(16)
             .frame(width: 148, height: 148)
@@ -338,19 +323,9 @@ struct UserDeckCard: View {
                     .font(.system(size: 12))
                     .foregroundColor(.tsSecondary)
                     .padding(.top, 2)
-
-                // Study chevron hint
-                HStack(spacing: 4) {
-                    Image(systemName: "graduationcap.fill")
-                        .font(.system(size: 10))
-                    Text("Study")
-                        .font(.system(size: 11, weight: .semibold))
-                }
-                .foregroundColor(.tsAccent)
-                .padding(.top, 8)
             }
             .padding(16)
-            .frame(height: 172)
+            .frame(height: 152)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color.tsCard)
             .cornerRadius(20)
@@ -369,35 +344,43 @@ struct DeckTapStyle: ButtonStyle {
     }
 }
 
-// MARK: - Create Deck Cell (end of grid)
+// MARK: - Create Deck Cell
+// Matches AutoDeckCard dimensions (148×148) so it sits consistently in the
+// same horizontal scroll row as the auto decks.
 
 struct CreateDeckCell: View {
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 8) {
+            VStack(alignment: .leading, spacing: 0) {
                 ZStack {
-                    Circle()
-                        .stroke(Color.tsAccent.opacity(0.4), style: StrokeStyle(lineWidth: 1.5, dash: [5]))
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.tsAccent.opacity(0.1))
                         .frame(width: 40, height: 40)
                     Image(systemName: "plus")
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(.tsAccent)
                 }
+                Spacer()
                 Text("New Deck")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(size: 17, weight: .bold))
                     .foregroundColor(.tsAccent)
+                Text("Create your own")
+                    .font(.system(size: 12))
+                    .foregroundColor(.tsAccent.opacity(0.6))
+                    .padding(.top, 2)
             }
-            .frame(height: 152)
-            .frame(maxWidth: .infinity)
-            .background(Color.tsAccent.opacity(0.04))
+            .padding(16)
+            .frame(width: 148, height: 148)
+            .background(Color.tsAccent.opacity(0.06))
             .cornerRadius(20)
             .overlay(
                 RoundedRectangle(cornerRadius: 20)
-                    .stroke(Color.tsAccent.opacity(0.15), lineWidth: 1)
+                    .stroke(Color.tsAccent.opacity(0.2), lineWidth: 1)
             )
         }
+        .buttonStyle(DeckTapStyle())
     }
 }
 
@@ -556,12 +539,25 @@ struct EmptyDecksPrompt: View {
 
 struct CreateDeckSheet: View {
     @Environment(\.dismiss) var dismiss
-    @State private var deckName = ""
-    @State private var deckDescription = ""
-    @State private var useAI = true
-    @State private var isGenerating = false
+    @ObservedObject private var deckStore = DeckStore.shared
 
-    var canCreate: Bool { !deckName.trimmingCharacters(in: .whitespaces).isEmpty }
+    @State private var deckName        = ""
+    @State private var deckDescription = ""
+    @State private var useAI           = true
+    @State private var isGenerating    = false
+    @State private var errorMessage: String? = nil
+    @State private var selectedEmoji   = "📚"
+    @State private var selectedTint    = "blue"
+
+    let emojiOptions = ["📚","🎯","💼","🏥","🍽️","✈️","💬","🎵","⚽","🌆","💡","🛒","🎭","🏋️","🌍","🔬"]
+    let tintOptions: [(name: String, color: Color)] = [
+        ("blue", .blue), ("green", .green), ("orange", .orange),
+        ("purple", .purple), ("pink", .pink), ("red", .red),
+        ("yellow", .yellow), ("mint", .mint)
+    ]
+
+    var canCreate: Bool    { !deckName.trimmingCharacters(in: .whitespaces).isEmpty }
+    var aiLimitReached: Bool { useAI && !deckStore.canCreateAIDeck }
 
     var body: some View {
         NavigationStack {
@@ -571,13 +567,83 @@ struct CreateDeckSheet: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 24) {
 
+                        // ── AI Limit Warning ─────────────────────────────
+                        if aiLimitReached {
+                            HStack(spacing: 12) {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                    .foregroundColor(.orange)
+                                    .font(.system(size: 16))
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("AI deck limit reached (\(deckStore.aiDeckCount)/\(DeckStore.maxAIDecks))")
+                                        .font(.system(size: 14, weight: .bold))
+                                        .foregroundColor(.tsLabel)
+                                    Text("Switch to Manual to create another deck, or delete an existing AI deck first.")
+                                        .font(.system(size: 12))
+                                        .foregroundColor(.tsSecondary)
+                                }
+                            }
+                            .padding(16)
+                            .background(Color.orange.opacity(0.08))
+                            .cornerRadius(14)
+                            .overlay(RoundedRectangle(cornerRadius: 14)
+                                .stroke(Color.orange.opacity(0.25), lineWidth: 1))
+                        }
+
+                        // ── Emoji Picker ─────────────────────────────────
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("CHOOSE AN EMOJI")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(.tsSecondary)
+                                .tracking(1.0)
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 8) {
+                                    ForEach(emojiOptions, id: \.self) { emoji in
+                                        Button(action: { selectedEmoji = emoji }) {
+                                            Text(emoji)
+                                                .font(.system(size: 22))
+                                                .frame(width: 44, height: 44)
+                                                .background(selectedEmoji == emoji
+                                                    ? Color.tsAccent.opacity(0.15) : Color.tsCard)
+                                                .cornerRadius(12)
+                                                .overlay(RoundedRectangle(cornerRadius: 12)
+                                                    .stroke(selectedEmoji == emoji
+                                                        ? Color.tsAccent.opacity(0.6) : Color.clear,
+                                                            lineWidth: 1.5))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // ── Tint Picker ──────────────────────────────────
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("COLOUR")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(.tsSecondary)
+                                .tracking(1.0)
+                            HStack(spacing: 10) {
+                                ForEach(tintOptions, id: \.name) { opt in
+                                    Button(action: { selectedTint = opt.name }) {
+                                        Circle()
+                                            .fill(opt.color)
+                                            .frame(width: 30, height: 30)
+                                            .overlay(Circle()
+                                                .stroke(Color.white.opacity(0.9), lineWidth: 2)
+                                                .scaleEffect(selectedTint == opt.name ? 1 : 0))
+                                            .scaleEffect(selectedTint == opt.name ? 1.15 : 1.0)
+                                            .animation(.spring(response: 0.2), value: selectedTint)
+                                    }
+                                }
+                                Spacer()
+                            }
+                        }
+
                         // ── Deck Name ────────────────────────────────────
                         VStack(alignment: .leading, spacing: 8) {
                             Text("DECK NAME")
                                 .font(.system(size: 12, weight: .semibold))
                                 .foregroundColor(.tsSecondary)
                                 .tracking(1.0)
-
                             TextField("e.g. Medical Radiology, Sports Slang...", text: $deckName)
                                 .font(.system(size: 17))
                                 .foregroundColor(.tsLabel)
@@ -588,17 +654,15 @@ struct CreateDeckSheet: View {
                                     .stroke(Color.tsBorder, lineWidth: 1))
                         }
 
-                        // ── Description / Context ────────────────────────
+                        // ── Description ──────────────────────────────────
                         VStack(alignment: .leading, spacing: 8) {
                             Text("DESCRIBE WHAT YOU WANT TO LEARN")
                                 .font(.system(size: 12, weight: .semibold))
                                 .foregroundColor(.tsSecondary)
                                 .tracking(1.0)
-
                             TextField(
                                 "e.g. Vocabulary for a radiology resident — anatomy terms and imaging procedures",
-                                text: $deckDescription,
-                                axis: .vertical
+                                text: $deckDescription, axis: .vertical
                             )
                             .lineLimit(3...6)
                             .font(.system(size: 15))
@@ -608,7 +672,6 @@ struct CreateDeckSheet: View {
                             .cornerRadius(14)
                             .overlay(RoundedRectangle(cornerRadius: 14)
                                 .stroke(Color.tsBorder, lineWidth: 1))
-
                             Text("The more detail you give, the better your cards will be.")
                                 .font(.system(size: 12))
                                 .foregroundColor(.tsSecondary.opacity(0.7))
@@ -620,34 +683,23 @@ struct CreateDeckSheet: View {
                                 .font(.system(size: 12, weight: .semibold))
                                 .foregroundColor(.tsSecondary)
                                 .tracking(1.0)
-
                             HStack(spacing: 12) {
-                                ModeToggleCard(
-                                    icon: "sparkles",
-                                    title: "Generate with AI",
-                                    subtitle: "~25 cards created instantly",
-                                    isSelected: useAI,
-                                    action: { useAI = true }
-                                )
-                                ModeToggleCard(
-                                    icon: "pencil",
-                                    title: "Add Manually",
-                                    subtitle: "Build your own card by card",
-                                    isSelected: !useAI,
-                                    action: { useAI = false }
-                                )
+                                ModeToggleCard(icon: "sparkles", title: "Generate with AI",
+                                               subtitle: "~50 cards created instantly",
+                                               isSelected: useAI, action: { useAI = true })
+                                ModeToggleCard(icon: "pencil", title: "Add Manually",
+                                               subtitle: "Build your own card by card",
+                                               isSelected: !useAI, action: { useAI = false })
                             }
                         }
 
-                        // ── AI info banner ───────────────────────────────
-                        if useAI {
+                        // ── Info / error banners ─────────────────────────
+                        if useAI && !aiLimitReached {
                             HStack(spacing: 12) {
                                 Image(systemName: "info.circle.fill")
-                                    .foregroundColor(.tsAccent)
-                                    .font(.system(size: 16))
-                                Text("AI will generate Spanish–English flashcard pairs tailored to your description. You can add or edit cards after.")
-                                    .font(.system(size: 13))
-                                    .foregroundColor(.tsSecondary)
+                                    .foregroundColor(.tsAccent).font(.system(size: 16))
+                                Text("AI will generate up to 50 Spanish–English flashcard pairs. You can add more cards after.")
+                                    .font(.system(size: 13)).foregroundColor(.tsSecondary)
                             }
                             .padding(16)
                             .background(Color.tsAccent.opacity(0.06))
@@ -656,13 +708,18 @@ struct CreateDeckSheet: View {
                                 .stroke(Color.tsAccent.opacity(0.15), lineWidth: 1))
                         }
 
+                        if let err = errorMessage {
+                            HStack(spacing: 10) {
+                                Image(systemName: "xmark.circle.fill").foregroundColor(.red)
+                                Text(err).font(.system(size: 13)).foregroundColor(.red)
+                            }
+                            .padding(14).background(Color.red.opacity(0.07)).cornerRadius(12)
+                        }
+
                         Spacer(minLength: 40)
 
                         // ── CTA ──────────────────────────────────────────
-                        Button(action: {
-                            // TODO: call DeckStore.createDeck(name:, description:, useAI:)
-                            isGenerating = true
-                        }) {
+                        Button(action: handleCreate) {
                             ZStack {
                                 HStack(spacing: 10) {
                                     Image(systemName: useAI ? "sparkles" : "plus")
@@ -670,37 +727,64 @@ struct CreateDeckSheet: View {
                                     Text(useAI ? "Generate My Deck" : "Create Empty Deck")
                                         .font(.system(size: 17, weight: .bold))
                                 }
-                                .foregroundColor(.white)
-                                .opacity(isGenerating ? 0 : 1)
-
-                                if isGenerating {
-                                    ProgressView().tint(.white)
-                                }
+                                .foregroundColor(.white).opacity(isGenerating ? 0 : 1)
+                                if isGenerating { ProgressView().tint(.white) }
                             }
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 56)
-                            .background(canCreate
+                            .frame(maxWidth: .infinity).frame(height: 56)
+                            .background(canCreate && !aiLimitReached
                                 ? LinearGradient.tsBluePrimary
                                 : LinearGradient(colors: [Color.tsCard], startPoint: .leading, endPoint: .trailing))
                             .clipShape(Capsule())
-                            .shadow(color: canCreate ? Color.tsAccent.opacity(0.35) : .clear, radius: 14, x: 0, y: 4)
+                            .shadow(color: canCreate && !aiLimitReached
+                                ? Color.tsAccent.opacity(0.35) : .clear, radius: 14, x: 0, y: 4)
                         }
-                        .disabled(!canCreate || isGenerating)
+                        .disabled(!canCreate || isGenerating || aiLimitReached)
                     }
-                    .padding(.horizontal, 24)
-                    .padding(.top, 24)
-                    .padding(.bottom, 40)
+                    .padding(.horizontal, 24).padding(.top, 24).padding(.bottom, 40)
                 }
             }
             .navigationTitle("Create Deck")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                        .foregroundColor(.tsAccent)
+                    Button("Cancel") { dismiss() }.foregroundColor(.tsAccent)
                 }
             }
             .toolbarColorScheme(.dark, for: .navigationBar)
+        }
+    }
+
+    // MARK: - handleCreate
+
+    private func handleCreate() {
+        guard canCreate else { return }
+        errorMessage = nil
+        if useAI {
+            isGenerating = true
+            Task {
+                do {
+                    let generated = try await DeckGenerationService.shared.generateCustomDeck(
+                        name: deckName, description: deckDescription, cardCount: 50
+                    )
+                    let deckCards = generated.map {
+                        DeckCard(english: $0.sourceText, spanish: $0.translatedText, notes: $0.notes)
+                    }
+                    let deck = Deck(emoji: selectedEmoji,
+                                   name: deckName.trimmingCharacters(in: .whitespaces),
+                                   deckDescription: deckDescription,
+                                   isAI: true, tintName: selectedTint, cards: deckCards)
+                    await MainActor.run { DeckStore.shared.addDeck(deck); isGenerating = false; dismiss() }
+                } catch {
+                    await MainActor.run { isGenerating = false; errorMessage = error.localizedDescription }
+                }
+            }
+        } else {
+            let deck = Deck(emoji: selectedEmoji,
+                            name: deckName.trimmingCharacters(in: .whitespaces),
+                            deckDescription: deckDescription,
+                            isAI: false, tintName: selectedTint, cards: [])
+            DeckStore.shared.addDeck(deck)
+            dismiss()
         }
     }
 }

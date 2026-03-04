@@ -1,6 +1,6 @@
 //
 //  PhraseStore.swift
-//  TranslateHelperKeyboard
+//  TalkSwitch
 //
 //  Created by TalkSwitch on 15/02/26.
 //

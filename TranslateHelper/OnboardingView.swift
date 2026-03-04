@@ -37,13 +37,17 @@ struct OnboardingView: View {
         case 4:
             OnboardingPlanView(
                 onBack: { step = 3 },
-                onFreePlan: { completeOnboarding() },
+                onFreePlan: { step = 6 },
                 onProTrial: { step = 5 }
             )
         case 5:
             OnboardingPaywallView(
                 onBack: { step = 4 },
-                onComplete: { completeOnboarding() }
+                onComplete: { step = 6 }
+            )
+        case 6:
+            KeyboardSetupSplashView(
+                onSkip: { completeOnboarding() }
             )
         default:
             EmptyView()

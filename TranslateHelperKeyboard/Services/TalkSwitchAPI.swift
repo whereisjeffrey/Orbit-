@@ -1,6 +1,6 @@
 //
 //  TalkSwitchAPI.swift
-//  TranslateHelperKeyboard
+//  TalkSwitch
 //
 //  Created by TalkSwitch on 15/02/26.
 //
@@ -317,24 +317,30 @@ class TalkSwitchAPI {
         let sourceName = sourceLang == "es" ? "Mexican Spanish" : "English"
         let targetName = targetLang == "es" ? "Mexican Spanish" : "English"
         let toneDesc = tone.displayName.lowercased()
-        
+
+        // Pull location context — same 4-tier slang distribution used in translation prompts
+        let locationInstruction = buildLocationInstruction()
+        let locationBlock = locationInstruction.isEmpty
+            ? ""
+            : "\n\n\(locationInstruction)"
+
         // Different coaching based on direction
         let systemPrompt: String
         if sourceLang == "es" {
             // User wrote/spoke in Spanish → coach their Spanish
             systemPrompt = """
-            You are a friendly Mexican Spanish coach. A student wrote something in Spanish. \
+            You are a friendly Spanish coach. A student wrote something in Spanish. \
             Analyze their Spanish and provide helpful, concise coaching notes. \
             \
             Your notes should include: \
             1. If there are grammar mistakes, point them out briefly with corrections \
-            2. How a native Mexican would more naturally say it (especially for \(toneDesc) tone) \
-            3. One cultural/usage tip about a word or phrase they used \
+            2. How a native speaker would more naturally say it (especially for \(toneDesc) tone) \
+            3. One cultural/usage tip or slang expression related to what they wrote \
             \
             Keep it SHORT — max 3-4 lines. Use emoji sparingly. Be encouraging. \
             If their Spanish is perfect, say so and teach them an alternative expression or slang. \
             Write in English (they're learning Spanish, they need to understand the notes). \
-            Do NOT use JSON. Write plain text only.
+            Do NOT use JSON. Write plain text only.\(locationBlock)
             """
         } else {
             // User wrote in English → teach them the Spanish cultural context
@@ -344,13 +350,13 @@ class TalkSwitchAPI {
             \
             Your notes should include: \
             1. A more natural/\(toneDesc) alternative if the translation is too literal \
-            2. Cultural context — how natives actually say this in Mexico or Latin America \
-            3. One useful expression, idiom, or slang related to what they said \
+            2. Cultural context — how natives actually say this in their region \
+            3. One useful expression, idiom, or local slang related to what they said \
             \
             Keep it SHORT — max 3-4 lines. Use emoji sparingly. \
             If there’s an idiom or expression that fits, teach it to them. \
             Write in English with Spanish examples in quotes. \
-            Do NOT use JSON. Write plain text only.
+            Do NOT use JSON. Write plain text only.\(locationBlock)
             """
         }
         
@@ -576,10 +582,26 @@ class TalkSwitchAPI {
             If there is no location context, set "localityTag" to null.
             """
         case .casual, .work:
+            let toneLabel = tone == .work ? "professional business" : "casual conversational"
+            let workExtra = tone == .work
+                ? "For business tone: treat phrases like 'circle back', 'heads-down', 'loop you in', 'take this offline', 'bandwidth', 'move the needle', 'in the weeds', etc. as idioms that need cultural equivalents — not literal translations. In Spanish/Portuguese, business people use different fixed expressions to convey these ideas. \\"
+                : ""
             return """
             You are a bilingual translation expert specializing in \(langPair). \
-            Refine the translation to sound natural and conversational. \(personaInstruction)\
+            Refine the translation to sound natural with a \(toneLabel) tone. \(personaInstruction)\
             \(locationInstruction)\
+            \
+            IDIOM AWARENESS — CRITICAL RULE: \
+            If the source text contains a recognizable idiom, proverb, or fixed expression \
+            (e.g. "between a rock and a hard place", "not my cup of tea", "hit the ground running", \
+            "circle back", "heads-down", "bite the bullet", "under the weather", "cost an arm and a leg"), \
+            do NOT translate it word-for-word. Instead, identify the culturally equivalent expression \
+            that a native \(targetLang == "pt" ? "Brazilian Portuguese" : "Spanish") speaker would actually use, \
+            and substitute it naturally in the translation. \
+            \(workExtra)\
+            Always explain the swap in the "notes" field so the user learns both sides — \
+            e.g. "Note: 'not my cup of tea' → 'não é minha praia' (literally 'not my beach') in Brazilian Portuguese." \
+            If no idiom is present, simply refine for natural tone as usual. \
             \
             Respond ONLY with valid JSON: {"translation": "...", "notes": "...", "localityTag": "..."}
             The "localityTag" field should describe the geographic scope, e.g. \

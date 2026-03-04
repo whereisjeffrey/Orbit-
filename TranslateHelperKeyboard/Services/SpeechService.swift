@@ -1,6 +1,6 @@
 //
 //  SpeechService.swift
-//  TranslateHelperKeyboard
+//  TalkSwitch
 //
 
 import Foundation

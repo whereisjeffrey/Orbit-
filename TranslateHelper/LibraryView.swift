@@ -68,6 +68,10 @@ struct LibraryView: View {
                     .padding(.top, 16)
                     .padding(.bottom, 12)
 
+                    // ── Keyboard setup banner (hidden once keyboard is active) ──
+                    KeyboardSetupBanner()
+                        .padding(.bottom, 12)
+
                     // ── Search ─────────────────────────────────────────
                     HStack {
                         Image(systemName: "magnifyingglass")
@@ -108,12 +112,12 @@ struct LibraryView: View {
                             }
                             Spacer()
                             // Live count badge
-                            Text(store.phrases.isEmpty ? "0 Phrases" : "\(store.phrases.count) Phrase\(store.phrases.count == 1 ? "" : "s")")
+                            Text(store.activePhrases.isEmpty ? "0 Phrases" : "\(store.activePhrases.count) Phrase\(store.activePhrases.count == 1 ? "" : "s")")
                                 .font(.system(size: 11, weight: .bold))
-                                .foregroundColor(store.phrases.isEmpty ? .tsSecondary : .tsAccent)
+                                .foregroundColor(store.activePhrases.isEmpty ? .tsSecondary : .tsAccent)
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 4)
-                                .background(store.phrases.isEmpty ? Color.tsCard : Color.tsAccent.opacity(0.1))
+                                .background(store.activePhrases.isEmpty ? Color.tsCard : Color.tsAccent.opacity(0.1))
                                 .clipShape(Capsule())
                         }
 
@@ -126,7 +130,7 @@ struct LibraryView: View {
                                 LanguageBubble(label: "PT", color: .green)
                             }
                             Spacer()
-                            if store.phrases.isEmpty {
+                            if store.activePhrases.isEmpty {
                                 Text("Save phrases from the keyboard")
                                     .font(.system(size: 12))
                                     .foregroundColor(.tsSecondary)
@@ -145,8 +149,8 @@ struct LibraryView: View {
                     .padding(.bottom, 24)
                     .fullScreenCover(isPresented: $showingStudyMode) {
                         NavigationView {
-                            let duePhrases = store.phrases.filter { $0.nextReviewDate <= Date() }
-                            StudySourceWordView(phrases: duePhrases, listName: "Clipboard List")
+                            let duePhrases = store.activePhrases.filter { $0.nextReviewDate <= Date() }
+                            StudySourceWordView(phrases: duePhrases.isEmpty ? store.activePhrases : duePhrases, listName: "Clipboard List")
                         }
                     }
 
@@ -163,11 +167,11 @@ struct LibraryView: View {
                     .padding(.bottom, 10)
 
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-                        DeckCard(emoji: "❄️", title: "Winter 2026",    count: 0, tint: .blue) {
+                        LibraryDeckCard(emoji: "❄️", title: "Winter 2026",    count: 0, tint: .blue) {
                             activeDeckStudyName = "Winter 2026"
                             showDeckStudy = true
                         }
-                        DeckCard(emoji: "🍳", title: "Food & Cooking", count: 0, tint: .green) {
+                        LibraryDeckCard(emoji: "🍳", title: "Food & Cooking", count: 0, tint: .green) {
                             activeDeckStudyName = "Food & Cooking"
                             showDeckStudy = true
                         }
@@ -287,7 +291,7 @@ struct LanguageBubble: View {
     }
 }
 
-struct DeckCard: View {
+struct LibraryDeckCard: View {
     let emoji: String
     let title: String
     let count: Int

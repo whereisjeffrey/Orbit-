@@ -1,53 +1,33 @@
-//
 //  MainTabView.swift
-//  TranslateHelper
-//
 
 import SwiftUI
 
 struct MainTabView: View {
-    @State private var selected = 0
+    @State private var selectedTab = 0
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            Group {
-                switch selected {
-                case 0: NavigationStack { LibraryView() }
-                case 4: NavigationStack { SettingsView() }
-                default: NavigationStack { LibraryView() } // placeholder for other tabs
-                }
+            TabView(selection: $selectedTab) {
+                LibraryView()    .tag(0)
+                CommunityView()  .tag(1)
+                KitView()        .tag(2)
+                SettingsView()   .tag(3)
             }
 
-            // ── Custom tab bar ─────────────────────────────────────────
-            VStack(spacing: 0) {
-                Divider().background(Color.tsBorder)
-                HStack {
-                    TabBarItem(icon: "square.stack.3d.up.fill", label: "Library",  tag: 0, selected: $selected)
-                    TabBarItem(icon: "keyboard",                  label: "Keyboard", tag: 1, selected: $selected)
-
-                    // FAB
-                    Button {} label: {
-                        ZStack {
-                            Circle()
-                                .fill(LinearGradient.tsBluePrimary)
-                                .frame(width: 64, height: 64)
-                                .shadow(color: Color.tsAccent.opacity(0.39), radius: 10, x: 0, y: 4)
-                            Image(systemName: "plus")
-                                .font(.system(size: 28, weight: .semibold))
-                                .foregroundColor(.white)
-                        }
-                    }
-                    .offset(y: -44)
-                    .frame(maxWidth: .infinity)
-
-                    TabBarItem(icon: "chart.line.uptrend.xyaxis", label: "Stats",    tag: 3, selected: $selected)
-                    TabBarItem(icon: "gearshape",                  label: "Settings", tag: 4, selected: $selected)
-                }
-                .padding(.horizontal, 16)
-                .padding(.top, 12)
-                .padding(.bottom, 32)
+            // Custom tab bar
+            HStack(spacing: 0) {
+                TabBarItem(icon: "books.vertical",  label: "Library",   tag: 0, selected: $selectedTab)
+                TabBarItem(icon: "person.2",         label: "Community", tag: 1, selected: $selectedTab)
+                TabBarItem(icon: "square.grid.2x2",  label: "Kit",       tag: 2, selected: $selectedTab)
+                TabBarItem(icon: "gearshape",        label: "Settings",  tag: 3, selected: $selectedTab)
             }
-            .background(Color.tsBackground)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(.ultraThinMaterial)
+            .cornerRadius(24)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 24)
+            .shadow(color: .black.opacity(0.15), radius: 16, x: 0, y: 4)
         }
         .ignoresSafeArea(edges: .bottom)
     }
@@ -59,17 +39,18 @@ struct TabBarItem: View {
     let tag: Int
     @Binding var selected: Int
 
-    var isActive: Bool { selected == tag }
+    var isSelected: Bool { selected == tag }
 
     var body: some View {
-        Button { selected = tag } label: {
+        Button(action: { selected = tag }) {
             VStack(spacing: 4) {
-                Image(systemName: icon)
-                    .font(.system(size: 22))
+                Image(systemName: isSelected ? icon + ".fill" : icon)
+                    .font(.system(size: 20))
+                    .foregroundColor(isSelected ? .tsAccent : .tsSecondary)
                 Text(label)
-                    .font(.system(size: 10, weight: .medium))
+                    .font(.system(size: 10, weight: isSelected ? .semibold : .regular))
+                    .foregroundColor(isSelected ? .tsAccent : .tsSecondary)
             }
-            .foregroundColor(isActive ? .tsAccent : .tsLabel)
             .frame(maxWidth: .infinity)
         }
     }

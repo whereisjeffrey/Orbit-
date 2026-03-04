@@ -143,6 +143,7 @@ struct StudyRevealedCardView: View {
                                     .frame(width: 56, height: 56)
                                     .background(Color.tsAccent.opacity(0.15))
                                     .clipShape(Circle())
+                                    .overlay(Circle().stroke(Color.tsAccent, lineWidth: 1.5))
                             }
                         }
                         // Context Box

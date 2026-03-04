@@ -57,19 +57,20 @@ final class DeckGenerationService {
     // MARK: - Generic AI Deck
 
     /// Generates a deck from a free-form name + description (Create Deck flow).
-    func generateCustomDeck(name: String, description: String) async throws -> [GeneratedCard] {
+    func generateCustomDeck(name: String, description: String, cardCount: Int = 25) async throws -> [GeneratedCard] {
+        let count = min(max(cardCount, 5), DeckStore.maxCardsPerDeck) // clamp 5–100
         let system = """
         You are a Spanish–English language learning expert. \
-        Generate exactly 25 flashcard pairs based on the user's deck topic. \
+        Generate exactly \(count) flashcard pairs based on the user's deck topic. \
         Each card should be a natural, useful phrase or word pair — not overly academic. \
         Return ONLY valid JSON as an array: \
-        [{"sourceText": "English phrase", "translatedText": "Spanish phrase", "notes": "brief usage note"}, ...]
+        [{"sourceText": "English phrase", "translatedText": "Spanish phrase", "notes": "brief usage note"}, ...]\
         Do not include any text outside the JSON array.
         """
         let user = """
         Deck topic: \(name)
         Additional context: \(description.isEmpty ? "None provided." : description)
-        Generate 25 Spanish–English flashcard pairs for this topic.
+        Generate \(count) Spanish–English flashcard pairs for this topic.
         """
         let raw = try await callOpenAI(systemPrompt: system, userPrompt: user)
         return try parseCards(from: raw)

@@ -10,12 +10,12 @@ The implementation is complete, but Xcode doesn't automatically detect new files
 
 1. **Open the project**
    ```
-   Open TranslateHelper.xcodeproj in Xcode
+   Open TalkSwitch.xcodeproj in Xcode
    ```
 
 2. **Add Models folder**
    - In Project Navigator (left sidebar), right-click on `TranslateHelperKeyboard` folder
-   - Select "Add Files to 'TranslateHelper'..."
+   - Select "Add Files to 'TalkSwitch'..."
    - Navigate to: `TranslateHelperKeyboard/Models`
    - Select the `Models` folder
    - ✅ Check "Copy items if needed" (if prompted)
@@ -54,7 +54,7 @@ The implementation is complete, but Xcode doesn't automatically detect new files
 
 If you prefer to add files one by one:
 
-1. Right-click `TranslateHelperKeyboard` → "Add Files to 'TranslateHelper'..."
+1. Right-click `TranslateHelperKeyboard` → "Add Files to 'TalkSwitch'..."
 2. Select each file individually:
    - `Models/Tone.swift`
    - `Services/LanguageDetector.swift`
@@ -99,10 +99,10 @@ Then:
 1. Open Settings app
 2. Go to: General → Keyboard → Keyboards
 3. Tap "Add New Keyboard..."
-4. Select "TranslateHelper"
+4. Select "TalkSwitch"
 5. Open Notes app
 6. Tap in a text field
-7. Tap globe icon to switch to TranslateHelper keyboard
+7. Tap globe icon to switch to TalkSwitch keyboard
 8. Type some text
 9. Tap "🔄 TalkSwitch" button
 10. Watch the result panel expand with translation!
@@ -111,18 +111,19 @@ Then:
 
 ### Build Errors?
 - Make sure all files are added to the **TranslateHelperKeyboard** target (not the main app target)
-- Check that file references are correct (not red in Project Navigator)
-- Clean build folder: `Cmd + Shift + K`, then rebuild
+-   Make sure all files are added to the **TalkSwitchKeyboard** target (not the main app target)
+-   Check that file references are correct (not red in Project Navigator)
+-   Clean build folder: `Cmd + Shift + K`, then rebuild
 
 ### Files appear red in Xcode?
-- The file reference is broken
-- Remove the file from Xcode (right-click → Delete → Remove Reference)
-- Re-add the file using "Add Files to 'TranslateHelper'..."
+-   The file reference is broken
+-   Remove the file from Xcode (right-click → Delete → Remove Reference)
+-   Re-add the file using "Add Files to 'TalkSwitch'..."
 
 ### Keyboard doesn't appear in Settings?
-- Make sure the keyboard extension is properly embedded
-- Check Info.plist in TranslateHelperKeyboard
-- Rebuild and reinstall the app
+-   Make sure the keyboard extension is properly embedded
+-   Check Info.plist in TalkSwitchKeyboard
+-   Rebuild and reinstall the app
 
 ### No translation happens?
 - Check Console logs (Cmd + Shift + Y)

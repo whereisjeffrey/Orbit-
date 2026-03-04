@@ -1,4 +1,4 @@
-# CLAUDE.md — TranslateHelper / TalkSwitch
+# CLAUDE.md — TalkSwitch
 
 > Read this file every session before touching any code. It is the single source of truth.
 
@@ -47,30 +47,37 @@ All screens designed in Google Stitch. Implementation order below.
 | Backend | Firebase (Auth + Firestore) |
 | Translation | DeepL API (primary), OpenAI gpt-4o-mini (refinement) |
 | TTS | AVSpeechSynthesizer (Apple Enhanced/Premium voices) |
-| Inter-process | App Group: `group.com.jeff.translatehelper` |
+| Inter-process | App Group: `group.com.jeff.translatehelper` *(legacy name — see TODO below)* |
 
 ---
 
 ## Bundle IDs & Identifiers
 
-- Main app: `com.jeffrey.TranslateHelper`
-- Keyboard extension: `com.jeffrey.TranslateHelper.Keyboard`
-- App Group: `group.com.jeff.translatehelper`
-- URL scheme: `translatehelper://` (in main app Info.plist)
+- Main app: `com.jeffrey.TranslateHelper` *(legacy — see TODO below)*
+- Keyboard extension: `com.jeffrey.TranslateHelper.Keyboard` *(legacy — see TODO below)*
+- App Group: `group.com.jeff.translatehelper` *(legacy — see TODO below)*
+- URL scheme: `translatehelper://` (in main app Info.plist) *(legacy — see TODO below)*
+
+> **📅 TODO — Bundle ID Rename (do after first App Store submission)**
+> Renaming bundle IDs before your first submission creates provisioning headaches.
+> Once the app is live on the App Store (or after your first TestFlight external build is stable),
+> create a NEW App ID `com.jeffrey.TalkSwitch` in the developer portal and migrate.
+> Steps: new App ID → new provisioning profile → update Xcode project → update App Group.
+> Reminder set: ~5 days after first TestFlight external tester invite goes out.
 
 ---
 
 ## Project Structure
 
 ```
-TranslateHelper/
+TalkSwitch/                            ← root (TalkSwitch.xcodeproj)
 ├── CLAUDE.md                          ← you are here
 ├── Config.swift                       ← API keys (gitignored — never commit keys)
-├── TranslateHelper/                   ← Main app
+├── TranslateHelper/                   ← Main app target (Xcode target name, legacy)
 │   ├── DictateViewController.swift    ← Voice recording (sequential pt-BR → en-US)
 │   └── Assets.xcassets/
 │       └── AppIcon.appiconset/        ← TalkSwitch icon
-└── TranslateHelperKeyboard/           ← Keyboard extension
+└── TranslateHelperKeyboard/           ← Keyboard extension target (Xcode target name, legacy)
     ├── KeyboardViewController.swift   ← ALL keyboard UI + translation logic (~1300 lines)
     ├── Services/
     │   ├── TalkSwitchAPI.swift        ← DeepL + OpenAI API calls
@@ -78,6 +85,10 @@ TranslateHelper/
     └── Assets.xcassets/
         └── TalkSwitchLogo.imageset/
 ```
+
+> **Note for collaborators:** The Xcode target names (`TranslateHelper`, `TranslateHelperKeyboard`)
+> and bundle IDs are legacy names from early development. The product is **TalkSwitch**.
+> Do not be confused by the internal target names — they will be migrated post-launch.
 
 ---
 

@@ -52,6 +52,8 @@ class KeyboardViewController: UIInputViewController {
     private let contentStack = UIStackView()
     private var enhancedVoiceBanner: UIView?
     private var translationVersion: Int = 0
+    private var translationHistory: [String] = []
+    private var currentHistoryIndex: Int = -1
     private let swipeHintLabel = UILabel()
 
     // Recording bar controls (WhatsApp-style)
@@ -160,6 +162,21 @@ class KeyboardViewController: UIInputViewController {
         selectedLanguage = saved
         updateLangPill()
 
+        // Signal to the main app that the keyboard has been activated at least once.
+        // LibraryView's KeyboardSetupBanner reads this to auto-hide itself.
+        if defaults?.bool(forKey: "keyboard_has_launched") != true {
+            defaults?.set(true, forKey: "keyboard_has_launched")
+            defaults?.synchronize()
+        }
+
+        #if DEBUG
+        // Reset the Natural Voice banner counter on every launch in debug builds
+        // so the purple card is always testable without having to reinstall.
+        UserDefaults.standard.removeObject(forKey: Self.kVoiceBannerCount)
+        UserDefaults.standard.removeObject(forKey: Self.kVoiceBannerDismissed)
+        #endif
+
+
         heightConstraint = view.heightAnchor.constraint(equalToConstant: emptyHeight)
         heightConstraint.priority = .required
         heightConstraint.isActive = true
@@ -257,9 +274,13 @@ class KeyboardViewController: UIInputViewController {
                 switch result {
                 case .success(let translation):
                     self.translationVersion = 0
-                    self.swipeHintLabel.text = "swipe for another version →"
-                    // For slang/flirty: refine with OpenAI
-                    let needsRefinement = self.currentTone == "slang" || self.currentTone == "flirty"
+                    self.translationHistory = []
+                    self.currentHistoryIndex = -1
+                    // Slang/Flirty/Casual all get OpenAI refinement so location-aware
+                    // slang distribution is active for every conversational tone.
+                    let needsRefinement = self.currentTone == "slang"
+                        || self.currentTone == "flirty"
+                        || self.currentTone == "casual"
                     
                     if needsRefinement {
                         self.outputTextLabel.text = "✨ Refining..."
@@ -278,11 +299,18 @@ class KeyboardViewController: UIInputViewController {
                                 guard let self = self else { return }
                                 switch refineResult {
                                 case .success(let refined):
+                                    self.translationHistory = [refined.output]
+                                    self.currentHistoryIndex = 0
                                     self.outputTextLabel.text = refined.output
-                                    self.swipeHintLabel.isHidden = false
+                                    self.updateSwipeHint()
                                     if let notes = refined.notes {
                                         self.notesCard.isHidden = false
-                                        let icon = self.currentTone == "flirty" ? "😏" : "🔥"
+                                        let icon: String
+                                        switch self.currentTone {
+                                        case "flirty": icon = "😏"
+                                        case "slang":  icon = "🔥"
+                                        default:       icon = "💬"  // casual / work
+                                        }
                                         self.notesTextLabel.text = "\(icon) \(notes)"
                                     } else {
                                         self.notesCard.isHidden = true
@@ -300,8 +328,10 @@ class KeyboardViewController: UIInputViewController {
                             }
                         }
                     } else {
+                        self.translationHistory = [translation]
+                        self.currentHistoryIndex = 0
                         self.outputTextLabel.text = translation
-                        self.swipeHintLabel.isHidden = false
+                        self.updateSwipeHint()
                         self.updateNotes(original: text, translated: translation)
                         TalkSwitchAPI.shared.recordTranslationForPersona(original: text, translated: translation, tone: Tone(rawValue: self.currentTone) ?? .casual)
                         NSLog("TSKBD_TRANSLATED: \(text) → \(translation)")
@@ -737,20 +767,32 @@ class KeyboardViewController: UIInputViewController {
 
     @objc private func outputCardPanned(_ gesture: UIPanGestureRecognizer) {
         let tx = gesture.translation(in: outputCard).x
+        let canGoBack    = currentHistoryIndex > 0
+        let canGoForward = true // always: either advance index or fetch new
+
         switch gesture.state {
         case .changed:
-            // Only track rightward swipes
-            let clamped = max(0, tx)
-            outputCard.transform = CGAffineTransform(translationX: clamped, y: 0)
-                .rotated(by: clamped / 800)
-            // Tint card green as swipe progresses
-            let progress = min(clamped / 120, 1.0)
-            outputCard.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.1)
-                .blend(with: UIColor.systemGreen.withAlphaComponent(0.18), ratio: progress)
+            if tx > 0 && canGoForward {
+                // Rightward swipe → new version
+                let clamped = max(0, tx)
+                outputCard.transform = CGAffineTransform(translationX: clamped, y: 0)
+                    .rotated(by: clamped / 800)
+                let progress = min(clamped / 120, 1.0)
+                outputCard.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.1)
+                    .blend(with: UIColor.systemGreen.withAlphaComponent(0.18), ratio: progress)
+            } else if tx < 0 && canGoBack {
+                // Leftward swipe → go back in history
+                let clamped = min(0, tx)
+                outputCard.transform = CGAffineTransform(translationX: clamped, y: 0)
+                    .rotated(by: clamped / 800)
+                let progress = min(abs(clamped) / 120, 1.0)
+                outputCard.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.1)
+                    .blend(with: UIColor.systemOrange.withAlphaComponent(0.18), ratio: progress)
+            }
 
         case .ended, .cancelled:
             if tx > 90 {
-                // Committed swipe — fly card off right, fetch alternative
+                // Committed right swipe — fly card off right, fetch/advance
                 UIView.animate(withDuration: 0.22, animations: {
                     self.outputCard.transform = CGAffineTransform(translationX: 500, y: 0)
                         .rotated(by: 0.18)
@@ -759,7 +801,19 @@ class KeyboardViewController: UIInputViewController {
                     self.outputCard.transform = .identity
                     self.outputCard.alpha = 1
                     self.outputCard.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.1)
-                    self.generateAlternativeTranslation()
+                    self.advanceForward()
+                }
+            } else if tx < -90 && canGoBack {
+                // Committed left swipe — fly card off left, go back
+                UIView.animate(withDuration: 0.22, animations: {
+                    self.outputCard.transform = CGAffineTransform(translationX: -500, y: 0)
+                        .rotated(by: -0.18)
+                    self.outputCard.alpha = 0
+                }) { _ in
+                    self.outputCard.transform = .identity
+                    self.outputCard.alpha = 1
+                    self.outputCard.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.1)
+                    self.goBack()
                 }
             } else {
                 // Snap back
@@ -772,10 +826,48 @@ class KeyboardViewController: UIInputViewController {
         }
     }
 
+    /// Move to the next translation — use cached history if possible, otherwise fetch a new one.
+    private func advanceForward() {
+        let nextIndex = currentHistoryIndex + 1
+        if nextIndex < translationHistory.count {
+            // Already have this version cached — show instantly
+            currentHistoryIndex = nextIndex
+            let cached = translationHistory[nextIndex]
+            showHistoryEntry(cached, slideFromLeft: false)
+            updateSwipeHint()
+        } else {
+            // Need to generate a new alternative
+            generateAlternativeTranslation()
+        }
+    }
+
+    /// Go back one step in translation history (no API call needed).
+    private func goBack() {
+        guard currentHistoryIndex > 0 else { return }
+        currentHistoryIndex -= 1
+        let previous = translationHistory[currentHistoryIndex]
+        showHistoryEntry(previous, slideFromLeft: true)
+        updateSwipeHint()
+        let generator = UIImpactFeedbackGenerator(style: .light)
+        generator.impactOccurred()
+        NSLog("TSKBD_HISTORY_BACK: v\(currentHistoryIndex + 1)")
+    }
+
+    /// Animate the output card sliding in and update its text.
+    private func showHistoryEntry(_ text: String, slideFromLeft: Bool) {
+        outputTextLabel.text = text
+        let startX: CGFloat = slideFromLeft ? -400 : 400
+        outputCard.transform = CGAffineTransform(translationX: startX, y: 0)
+        UIView.animate(withDuration: 0.28, delay: 0, usingSpringWithDamping: 0.82,
+                       initialSpringVelocity: 0.5) {
+            self.outputCard.transform = .identity
+        }
+    }
+
     private func generateAlternativeTranslation() {
         translationVersion += 1
         let version = translationVersion
-        let previousTranslation = outputTextLabel.text ?? ""
+        let previousTranslation = translationHistory.last ?? outputTextLabel.text ?? ""
         outputTextLabel.text = "✨ Getting version \(version + 1)…"
         swipeHintLabel.isHidden = true
         outputCard.isHidden = false
@@ -792,24 +884,27 @@ class KeyboardViewController: UIInputViewController {
                 guard let self = self else { return }
                 switch result {
                 case .success(let refined):
-                    self.outputTextLabel.text = refined.output
+                    // Append to history and advance index
+                    self.translationHistory.append(refined.output)
+                    self.currentHistoryIndex = self.translationHistory.count - 1
                     if let notes = refined.notes, !notes.isEmpty {
                         self.notesCard.isHidden = false
                         self.notesTextLabel.text = notes
                     }
-                    self.swipeHintLabel.text = "v\(version + 1) · swipe for another →"
-                    self.swipeHintLabel.isHidden = false
-                    // Slide card in from left
-                    self.outputCard.transform = CGAffineTransform(translationX: -400, y: 0)
-                    UIView.animate(withDuration: 0.28, delay: 0, usingSpringWithDamping: 0.8,
-                                   initialSpringVelocity: 0.5) {
-                        self.outputCard.transform = .identity
-                    }
+                    self.showHistoryEntry(refined.output, slideFromLeft: false)
+                    self.updateSwipeHint()
                 case .failure:
                     self.outputTextLabel.text = "Couldn't get another version — try again"
+                    self.updateSwipeHint()
                 }
             }
         }
+    }
+
+    /// Update the swipe hint label to reflect current position in history.
+    private func updateSwipeHint() {
+        swipeHintLabel.isHidden = false
+        swipeHintLabel.text = "swipe for another version →"
     }
 
     private func setupNotesCard() {
@@ -1155,9 +1250,9 @@ class KeyboardViewController: UIInputViewController {
         let generator = UIImpactFeedbackGenerator(style: .light)
         generator.impactOccurred()
 
-        // Show voice quality nudge every time if no enhanced voice for this language
+        // Show voice quality nudge with smart frequency logic
         let langPrefix = lang.hasPrefix("es") ? "es" : "en"
-        if !SpeechService.hasEnhancedVoice(for: langPrefix) {
+        if !SpeechService.hasEnhancedVoice(for: langPrefix) && shouldShowNaturalVoiceBanner() {
             showEnhancedVoiceBanner(language: langPrefix)
         }
     }
@@ -1373,6 +1468,26 @@ extension KeyboardViewController: SpeechServiceDelegate {
 
     // MARK: - Enhanced Voice Banner
 
+    // UserDefaults keys for banner frequency logic
+    private static let kVoiceBannerCount     = "natural_voice_prompt_count"
+    private static let kVoiceBannerDismissed = "natural_voice_prompt_dismissed"
+
+    /// Returns true when the banner should appear, and increments its counter.
+    /// Shows on the 1st, 10th, and 20th speaker tap with no premium voice —
+    /// 3 gentle nudges total, then permanently stops unless user reinstalls.
+    private func shouldShowNaturalVoiceBanner() -> Bool {
+        #if DEBUG
+        // Always show in debug builds so the UI is easy to test.
+        // Counter is also reset at launch (see viewDidLoad debug block).
+        return true
+        #else
+        if UserDefaults.standard.bool(forKey: Self.kVoiceBannerDismissed) { return false }
+        let count = UserDefaults.standard.integer(forKey: Self.kVoiceBannerCount) + 1
+        UserDefaults.standard.set(count, forKey: Self.kVoiceBannerCount)
+        return count == 1 || count == 10 || count == 20
+        #endif
+    }
+
     private func showEnhancedVoiceBanner(language: String = "es") {
         guard enhancedVoiceBanner == nil else { return }
 
@@ -1385,39 +1500,58 @@ extension KeyboardViewController: SpeechServiceDelegate {
         banner.layer.borderColor = UIColor.systemIndigo.withAlphaComponent(0.45).cgColor
         banner.clipsToBounds = true
 
-        // ── Talk icon ──────────────────────────────────────────────
+        // ── Top row: 🗣️ icon + "Natural Voice" title ───────────────
         let iconLabel = UILabel()
         iconLabel.translatesAutoresizingMaskIntoConstraints = false
         iconLabel.text = "🗣️"
         iconLabel.font = UIFont.systemFont(ofSize: 18)
 
-        // ── Title: "Natural Voice" ─────────────────────────────────
         let titleLabel = UILabel()
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.text = "Natural Voice"
         titleLabel.font = UIFont.systemFont(ofSize: 13, weight: .bold)
         titleLabel.textColor = UIColor.systemIndigo
 
-        // ── Instructions ───────────────────────────────────────────
-        let langName = language == "es" ? "English or Spanish" : "English"
+        // ── Instruction ────────────────────────────────────────────
         let instructionsLabel = UILabel()
         instructionsLabel.translatesAutoresizingMaskIntoConstraints = false
-        instructionsLabel.text = "Go to Settings → Accessibility → Spoken Content → Voices → choose \(langName) → tap a voice with a ★ to download."
+        instructionsLabel.text = "In Settings tap TalkSwitch Keyboard → Allow Full Access. Then: Accessibility → Spoken Content → Voices → Spanish → pick a voice with ★."
         instructionsLabel.font = UIFont.systemFont(ofSize: 11.5, weight: .regular)
-        instructionsLabel.textColor = UIColor.label.withAlphaComponent(0.75)
+        instructionsLabel.textColor = UIColor.label.withAlphaComponent(0.72)
         instructionsLabel.numberOfLines = 0
 
-        // ── Swipe-to-dismiss hint ──────────────────────────────────
+        // ── "Open Keyboard Settings →" button ─────────────────────────
+        let goBtn = UIButton(type: .system)
+        goBtn.translatesAutoresizingMaskIntoConstraints = false
+        goBtn.setTitle("Open Keyboard Settings →", for: .normal)
+        goBtn.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
+        goBtn.tintColor = .white
+        goBtn.backgroundColor = UIColor.systemIndigo
+        goBtn.layer.cornerRadius = 8
+        goBtn.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
+        goBtn.addTarget(self, action: #selector(openSpokenContentSettings), for: .touchUpInside)
+
+        // ── Bottom row: "Don't show again" (left) + "swipe to dismiss →" (right) ──
+        let dontShowBtn = UIButton(type: .system)
+        dontShowBtn.translatesAutoresizingMaskIntoConstraints = false
+        dontShowBtn.setTitle("Don't show again", for: .normal)
+        dontShowBtn.titleLabel?.font = UIFont.systemFont(ofSize: 10, weight: .regular)
+        dontShowBtn.tintColor = UIColor.systemIndigo.withAlphaComponent(0.5)
+        dontShowBtn.addTarget(self, action: #selector(dontShowVoiceBannerAgain), for: .touchUpInside)
+        dontShowBtn.contentEdgeInsets = .zero
+
         let swipeLabel = UILabel()
         swipeLabel.translatesAutoresizingMaskIntoConstraints = false
         swipeLabel.text = "swipe to dismiss →"
         swipeLabel.font = UIFont.systemFont(ofSize: 10, weight: .regular)
-        swipeLabel.textColor = UIColor.systemIndigo.withAlphaComponent(0.55)
+        swipeLabel.textColor = UIColor.systemIndigo.withAlphaComponent(0.45)
         swipeLabel.textAlignment = .right
 
         banner.addSubview(iconLabel)
         banner.addSubview(titleLabel)
         banner.addSubview(instructionsLabel)
+        banner.addSubview(goBtn)
+        banner.addSubview(dontShowBtn)
         banner.addSubview(swipeLabel)
 
         NSLayoutConstraint.activate([
@@ -1432,14 +1566,21 @@ extension KeyboardViewController: SpeechServiceDelegate {
             titleLabel.trailingAnchor.constraint(equalTo: banner.trailingAnchor, constant: -12),
 
             // Instructions below icon
-            instructionsLabel.topAnchor.constraint(equalTo: iconLabel.bottomAnchor, constant: 6),
+            instructionsLabel.topAnchor.constraint(equalTo: iconLabel.bottomAnchor, constant: 5),
             instructionsLabel.leadingAnchor.constraint(equalTo: banner.leadingAnchor, constant: 12),
             instructionsLabel.trailingAnchor.constraint(equalTo: banner.trailingAnchor, constant: -12),
 
-            // Swipe hint at bottom-right
-            swipeLabel.topAnchor.constraint(equalTo: instructionsLabel.bottomAnchor, constant: 6),
+            // Go to Settings button
+            goBtn.topAnchor.constraint(equalTo: instructionsLabel.bottomAnchor, constant: 8),
+            goBtn.leadingAnchor.constraint(equalTo: banner.leadingAnchor, constant: 12),
+
+            // Bottom row
+            dontShowBtn.topAnchor.constraint(equalTo: goBtn.bottomAnchor, constant: 7),
+            dontShowBtn.leadingAnchor.constraint(equalTo: banner.leadingAnchor, constant: 12),
+            dontShowBtn.bottomAnchor.constraint(equalTo: banner.bottomAnchor, constant: -8),
+
+            swipeLabel.centerYAnchor.constraint(equalTo: dontShowBtn.centerYAnchor),
             swipeLabel.trailingAnchor.constraint(equalTo: banner.trailingAnchor, constant: -12),
-            swipeLabel.bottomAnchor.constraint(equalTo: banner.bottomAnchor, constant: -8),
         ])
 
         // ── Swipe right to dismiss ─────────────────────────────────
@@ -1452,7 +1593,34 @@ extension KeyboardViewController: SpeechServiceDelegate {
         enhancedVoiceBanner = banner
     }
 
-    /// Swipe the Natural Voice card right to dismiss it.
+    /// Opens General → Keyboard settings — where TalkSwitch Keyboard appears
+    /// with its two toggles (enable keyboard + Allow Full Access).
+    @objc private func openSpokenContentSettings() {
+        // Try candidates in order — first one that opens wins.
+        // App-Prefs:root= format is required (not App-Prefs:General directly).
+        let candidates = [
+            "App-Prefs:root=General&path=Keyboard",  // iOS 14+ → General > Keyboard
+            "prefs:root=General&path=Keyboard",       // iOS 13 fallback
+            "App-Prefs:root=General",                 // worst case: just General page
+        ]
+        for urlString in candidates {
+            if let url = URL(string: urlString) {
+                openURLViaResponder(url)
+                return
+            }
+        }
+    }
+
+    /// Permanently suppresses the Natural Voice banner ("Don't show again").
+    @objc private func dontShowVoiceBannerAgain() {
+        UserDefaults.standard.set(true, forKey: Self.kVoiceBannerDismissed)
+        dismissEnhancedVoiceBanner()
+        let generator = UIImpactFeedbackGenerator(style: .light)
+        generator.impactOccurred()
+        NSLog("TSKBD_VOICE_BANNER: permanently dismissed by user")
+    }
+
+    /// Swipe the Natural Voice card right to dismiss it (temporary — will resurface).
     @objc private func naturalVoiceBannerPanned(_ gesture: UIPanGestureRecognizer) {
         guard let banner = enhancedVoiceBanner else { return }
         let tx = gesture.translation(in: banner).x
@@ -1479,13 +1647,11 @@ extension KeyboardViewController: SpeechServiceDelegate {
         }
     }
 
-    // openVoiceSettings is no longer needed — instructions live in the banner itself.
-    // Kept as a no-op stub in case it's referenced elsewhere.
-    @objc private func openVoiceSettings() { /* instructions are shown in the Natural Voice card */ }
+    @objc private func openVoiceSettings() { /* no-op — kept for safety */ }
 
     @objc private func dismissEnhancedVoiceBanner() {
         enhancedVoiceBanner?.removeFromSuperview()
-        enhancedVoiceBanner = nil   // allow re-show on next speaker tap
+        enhancedVoiceBanner = nil
     }
 
 }

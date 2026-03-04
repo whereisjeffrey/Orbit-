@@ -10,6 +10,7 @@ struct StudySourceWordView: View {
     @State private var showingOptions: Bool = false
     @State private var showPhraseList: Bool = false
     @State private var showConfetti: Bool = false
+    @State private var showCompletionUI: Bool = false
     @State private var sessionJustCompleted: Bool = false
 
     var currentPhrase: SavedPhrase? {
@@ -115,7 +116,7 @@ struct StudySourceWordView: View {
                 }
             } else {
                 ZStack {
-                    // Confetti layer
+                    // Confetti layer — stays alive on its own; doesn't control UI visibility
                     if showConfetti {
                         ConfettiView()
                             .ignoresSafeArea()
@@ -124,6 +125,7 @@ struct StudySourceWordView: View {
 
                     VStack(spacing: 20) {
                         // Animated trophy icon
+                        // Uses showCompletionUI so it is NEVER hidden again after appearing
                         ZStack {
                             Circle()
                                 .fill(
@@ -137,25 +139,25 @@ struct StudySourceWordView: View {
                                 .frame(width: 140, height: 140)
                             Text("🏆")
                                 .font(.system(size: 72))
-                                .scaleEffect(showConfetti ? 1.12 : 0.6)
-                                .opacity(showConfetti ? 1 : 0)
-                                .animation(.spring(response: 0.5, dampingFraction: 0.55).delay(0.1), value: showConfetti)
+                                .scaleEffect(showCompletionUI ? 1.12 : 0.6)
+                                .opacity(showCompletionUI ? 1 : 0)
+                                .animation(.spring(response: 0.5, dampingFraction: 0.55).delay(0.1), value: showCompletionUI)
                         }
 
                         Text("Session Complete!")
                             .font(.system(size: 28, weight: .bold))
                             .foregroundColor(.tsLabel)
-                            .opacity(showConfetti ? 1 : 0)
-                            .offset(y: showConfetti ? 0 : 20)
-                            .animation(.easeOut(duration: 0.45).delay(0.25), value: showConfetti)
+                            .opacity(showCompletionUI ? 1 : 0)
+                            .offset(y: showCompletionUI ? 0 : 20)
+                            .animation(.easeOut(duration: 0.45).delay(0.25), value: showCompletionUI)
 
                         Text("You've reviewed all phrases. 🎉")
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.tsSecondary)
                             .multilineTextAlignment(.center)
-                            .opacity(showConfetti ? 1 : 0)
-                            .offset(y: showConfetti ? 0 : 16)
-                            .animation(.easeOut(duration: 0.45).delay(0.38), value: showConfetti)
+                            .opacity(showCompletionUI ? 1 : 0)
+                            .offset(y: showCompletionUI ? 0 : 16)
+                            .animation(.easeOut(duration: 0.45).delay(0.38), value: showCompletionUI)
 
                         Button(action: { dismiss() }) {
                             Text("Done")
@@ -167,17 +169,20 @@ struct StudySourceWordView: View {
                                 .clipShape(Capsule())
                         }
                         .padding(.top, 16)
-                        .opacity(showConfetti ? 1 : 0)
-                        .scaleEffect(showConfetti ? 1 : 0.85)
-                        .animation(.spring(response: 0.4, dampingFraction: 0.7).delay(0.5), value: showConfetti)
+                        .opacity(showCompletionUI ? 1 : 0)
+                        .scaleEffect(showCompletionUI ? 1 : 0.85)
+                        .animation(.spring(response: 0.4, dampingFraction: 0.7).delay(0.5), value: showCompletionUI)
                     }
                 }
                 .onAppear {
                     guard !sessionJustCompleted else { return }
                     sessionJustCompleted = true
 
-                    // Trigger confetti
-                    withAnimation { showConfetti = true }
+                    // Animate the completion UI in — this never goes back to false
+                    withAnimation { showCompletionUI = true }
+
+                    // Start confetti — ConfettiView self-stops its emitter after 3.5 s
+                    showConfetti = true
 
                     // Victory haptics
                     let notify = UINotificationFeedbackGenerator()
@@ -192,12 +197,7 @@ struct StudySourceWordView: View {
                     }
 
                     // Victory sound (system fanfare)
-                    AudioServicesPlaySystemSound(1394) // short fanfare chime
-
-                    // Stop confetti emitting after 3.5 s (particles drift away naturally)
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 3.5) {
-                        showConfetti = false
-                    }
+                    AudioServicesPlaySystemSound(1394)
                 }
             }
         }
@@ -312,6 +312,13 @@ struct ConfettiView: UIViewRepresentable {
             emitter.emitterSize = CGSize(width: bounds.width * 1.2, height: 1)
         }
 
+        // Self-stop the emitter after 3.5 s — existing particles keep falling until
+        // their lifetime expires, then everything is naturally gone. No state change
+        // needed on the SwiftUI side, so the Done button stays fully visible.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.5) {
+            emitter.birthRate = 0
+        }
+
         return view
     }
 
@@ -362,7 +369,15 @@ struct ConfettiView: UIViewRepresentable {
 struct FrontCardView: View {
     let phrase: SavedPhrase
     @AppStorage("studyModeSwapLanguage") private var swapLanguage: Bool = false
-    
+
+    /// The language code and text currently shown as the "source" (question side)
+    private var displaySourceLang: String {
+        swapLanguage ? phrase.targetLang : phrase.sourceLang
+    }
+    private var displaySourceText: String {
+        swapLanguage ? phrase.translatedText : phrase.sourceText
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             // Language Switch Pill
@@ -372,13 +387,18 @@ struct FrontCardView: View {
             Spacer()
             
             // Source Word
-            VStack(spacing: 8) {
+            VStack(spacing: 6) {
                 Text("SOURCE WORD")
                     .font(.system(size: 10, weight: .bold))
                     .foregroundColor(.tsSecondary)
                     .tracking(1.5)
-                
-                Text(swapLanguage ? phrase.translatedText : phrase.sourceText)
+
+                // Explicit language label so there's never any ambiguity
+                Text(displaySourceLang == "en" ? "English" : "Spanish")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundColor(.tsAccent.opacity(0.75))
+
+                Text(displaySourceText)
                     .font(.system(size: 36, weight: .bold))
                     .foregroundColor(.tsLabel)
                     .multilineTextAlignment(.center)
@@ -406,7 +426,23 @@ struct FrontCardView: View {
 struct BackCardView: View {
     let phrase: SavedPhrase
     @AppStorage("studyModeSwapLanguage") private var swapLanguage: Bool = false
-    
+
+    /// Language code of the text currently shown as "source" (question side)
+    private var displaySourceLang: String {
+        swapLanguage ? phrase.targetLang : phrase.sourceLang
+    }
+    private var displaySourceText: String {
+        swapLanguage ? phrase.translatedText : phrase.sourceText
+    }
+
+    /// Language code of the text currently shown as "translation" (answer side)
+    private var displayTranslationLang: String {
+        swapLanguage ? phrase.sourceLang : phrase.targetLang
+    }
+    private var displayTranslationText: String {
+        swapLanguage ? phrase.sourceText : phrase.translatedText
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             // Language Switch Pill
@@ -417,13 +453,17 @@ struct BackCardView: View {
             
             VStack(spacing: 40) {
                 // Source Word
-                VStack(spacing: 8) {
+                VStack(spacing: 6) {
                     Text("SOURCE WORD")
                         .font(.system(size: 10, weight: .bold))
                         .foregroundColor(.tsSecondary)
                         .tracking(1.5)
+
+                    Text(displaySourceLang == "en" ? "English" : "Spanish")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(.tsAccent.opacity(0.75))
                     
-                    Text(swapLanguage ? phrase.translatedText : phrase.sourceText)
+                    Text(displaySourceText)
                         .font(.system(size: 24, weight: .bold))
                         .foregroundColor(.tsLabel)
                         .multilineTextAlignment(.center)
@@ -431,29 +471,31 @@ struct BackCardView: View {
                 }
                 
                 // Translation
-                VStack(spacing: 8) {
+                VStack(spacing: 6) {
                     Text("TRANSLATION")
                         .font(.system(size: 10, weight: .bold))
                         .foregroundColor(.tsSecondary)
                         .tracking(1.5)
+
+                    Text(displayTranslationLang == "en" ? "English" : "Spanish")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(.tsAccent.opacity(0.75))
                     
-                    Text(swapLanguage ? phrase.sourceText : phrase.translatedText)
+                    Text(displayTranslationText)
                         .font(.system(size: 24, weight: .semibold))
                         .foregroundColor(.tsLabel)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                 }
                 
-                // Audio Button
+                // Audio Button — speaks the TRANSLATION (answer side) in its correct language
                 Button(action: {
                     let generator = UIImpactFeedbackGenerator(style: .medium)
                     generator.impactOccurred()
-                    
-                    let targetText = swapLanguage ? phrase.sourceText : phrase.translatedText
-                    let targetLangCode = swapLanguage ? phrase.sourceLang : phrase.targetLang
-                    let langCode = targetLangCode == "en" ? "en-US" : "es-MX"
-                    
-                    TTSService.shared.speak(targetText, language: langCode)
+
+                    // Always speak the translation (answer) in its own language
+                    let langCode = displayTranslationLang == "en" ? "en-US" : "es-MX"
+                    TTSService.shared.speak(displayTranslationText, language: langCode)
                 }) {
                     Image(systemName: "speaker.wave.2.fill")
                         .font(.system(size: 24))

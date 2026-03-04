@@ -40,50 +40,10 @@ extension UIColor {
 }
 
 
-// MARK: - Gradient Background (Revolut-style dark navy)
-//
-// Dark mode: deep navy base (#060D1B) with a radial blue glow
-// blooming from the upper-center — matches Revolut Business aesthetic.
-// Light mode: plain tsBackground (white).
-
+// MARK: - Background
 struct TSGradientBackground: View {
-    @Environment(\.colorScheme) var colorScheme
-
     var body: some View {
-        if colorScheme == .dark {
-            ZStack {
-                // Base — very dark navy
-                Color(hex: "#060D1B")
-                    .ignoresSafeArea()
-
-                // Radial blue glow — upper center
-                RadialGradient(
-                    colors: [
-                        Color(hex: "#0D3460").opacity(0.85),
-                        Color(hex: "#091B38").opacity(0.5),
-                        Color.clear
-                    ],
-                    center: UnitPoint(x: 0.5, y: 0.05),
-                    startRadius: 0,
-                    endRadius: UIScreen.main.bounds.width * 1.1
-                )
-                .ignoresSafeArea()
-
-                // Subtle secondary glow — lower left (depth)
-                RadialGradient(
-                    colors: [
-                        Color(hex: "#07213D").opacity(0.4),
-                        Color.clear
-                    ],
-                    center: UnitPoint(x: 0.1, y: 0.85),
-                    startRadius: 0,
-                    endRadius: UIScreen.main.bounds.width * 0.8
-                )
-                .ignoresSafeArea()
-            }
-        } else {
-            Color.tsBackground.ignoresSafeArea()
-        }
+        Color.tsBackground.ignoresSafeArea()
     }
 }
 
@@ -117,6 +77,13 @@ extension Color {
     
     static let tsInputBg = Color(UIColor { trait in
         trait.userInterfaceStyle == .dark ? UIColor(hex: "#787880").withAlphaComponent(0.12) : UIColor(hex: "#F2F2F7")
+    })
+
+    /// Footer / tab bar background.
+    /// Dark:  #141416 — lifted near-black with a subtle warm haze (à la TestFlight banner).
+    /// Light: #FFFFFF — standard white to match system tab bar convention.
+    static let tsFooter = Color(UIColor { trait in
+        trait.userInterfaceStyle == .dark ? UIColor(hex: "#141416") : UIColor(hex: "#FFFFFF")
     })
 
     init(hex: String) {
@@ -189,27 +156,111 @@ struct TSWordmark: View {
     }
 }
 
+/// Vertical variant — icon stacked above "TalkSwitch" text.
+/// Text colour is tsLabel (black in light mode, white in dark mode).
+/// Use on splash / intro screens where the brand mark is the hero.
+/// `spacing` controls the gap between icon and text (default 10).
+struct TSVerticalWordmark: View {
+    var iconSize: CGFloat = 56
+    var fontSize: CGFloat = 28
+    var spacing: CGFloat  = 10  // pass a tighter value on large-icon screens
+
+    var body: some View {
+        VStack(spacing: spacing) {
+            TSLogoIcon(size: iconSize)
+            Text("TalkSwitch")
+                .font(.custom("Sono-Regular", size: fontSize))
+                .kerning(fontSize * 0.01)
+                .foregroundColor(.tsLabel) // black in light, white in dark ✅
+        }
+    }
+}
+
 struct TSTextField: View {
     let placeholder: String
     @Binding var text: String
     var isSecure = false
 
+    // @State (not @FocusState) so computed properties always reliably trigger re-renders.
+    // TextField uses onEditingChanged — the most reliable focus callback in UIKit/SwiftUI.
+    // SecureField has no onEditingChanged, so we pair @FocusState with onChange(of:).
+    @State private var isFocused = false
+    @FocusState private var secureFocused: Bool
+
     var body: some View {
         Group {
             if isSecure {
                 SecureField(placeholder, text: $text)
+                    .focused($secureFocused)
+                    .onChange(of: secureFocused) { focused in
+                        withAnimation(.easeInOut(duration: 0.2)) { isFocused = focused }
+                    }
             } else {
-                TextField(placeholder, text: $text)
-                    .keyboardType(placeholder.lowercased().contains("email") ? .emailAddress : .default)
-                    .autocapitalization(.none)
-                    .autocorrectionDisabled()
+                TextField(placeholder, text: $text, onEditingChanged: { editing in
+                    withAnimation(.easeInOut(duration: 0.2)) { isFocused = editing }
+                })
+                .keyboardType(placeholder.lowercased().contains("email") ? .emailAddress : .default)
+                .autocapitalization(.none)
+                .autocorrectionDisabled()
             }
         }
         .foregroundColor(.tsLabel)
         .padding()
         .background(Color.tsInputBg)
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsBorder, lineWidth: 1))
         .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(isFocused ? Color.tsAccent : Color.tsBorder,
+                        lineWidth: isFocused ? 1.5 : 1)
+        )
+        // Soft blue glow blooms in when the keyboard is active
+        .shadow(color: Color.tsAccent.opacity(isFocused ? 0.35 : 0), radius: 6, x: 0, y: 0)
+    }
+}
+
+// MARK: - TSPickerField
+//
+// A styled dropdown trigger that wraps SwiftUI's Menu.
+// Shows the selected label in tsLabel (white in dark mode) with a permanent blue chevron.
+//
+// Note: SwiftUI's Menu has no open/close callback, so open-state glow is not possible
+// without private API. The blue chevron is the primary visual differentiator.
+//
+// Usage:
+//   TSPickerField(label: selectedItem.name) {
+//       ForEach(items) { item in Button(item.name) { selectedItem = item } }
+//   }
+
+struct TSPickerField<MenuContent: View>: View {
+    /// The text displayed inside the field (e.g. the currently selected option).
+    let label: String
+    /// The menu items built by the caller.
+    @ViewBuilder let menuContent: () -> MenuContent
+
+    var body: some View {
+        Menu {
+            menuContent()
+        } label: {
+            HStack(spacing: 0) {
+                Text(label)
+                    .font(.system(size: 17, weight: .medium))
+                    .foregroundColor(.tsLabel)   // white in dark mode ✅
+                    .lineLimit(1)
+                Spacer()
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.tsAccent)  // always blue ✅
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .background(Color.tsInputBg)
+            .cornerRadius(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.tsBorder, lineWidth: 1)
+            )
+            .contentShape(Rectangle()) // ensures full row is tappable
+        }
     }
 }
 

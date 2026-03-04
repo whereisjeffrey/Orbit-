@@ -21,14 +21,21 @@ struct SavedPhrase: Codable, Identifiable {
     /// "Common across Latin America", "Understood in Spain & Latin America".
     /// Populated for slang/flirty/casual modes when location context is available.
     var localityTag: String?
-    
+
     // Spaced Repetition (SM-2) variables
     var repetitions: Int
     var easinessFactor: Double
     var interval: Int // in minutes for now
     var nextReviewDate: Date
 
-    init(id: UUID = UUID(), sourceText: String, translatedText: String, sourceLang: String, targetLang: String, savedAt: Date, notes: String? = nil, localityTag: String? = nil, repetitions: Int = 0, easinessFactor: Double = 2.5, interval: Int = 0, nextReviewDate: Date = Date()) {
+    // Conquered tracking
+    /// True once the learner has recalled this phrase 3× in a row.
+    /// Conquered clipboard phrases disappear from the active list and graduate
+    /// to the Conquered auto-deck.
+    var isConquered: Bool
+    var conqueredAt: Date?
+
+    init(id: UUID = UUID(), sourceText: String, translatedText: String, sourceLang: String, targetLang: String, savedAt: Date, notes: String? = nil, localityTag: String? = nil, repetitions: Int = 0, easinessFactor: Double = 2.5, interval: Int = 0, nextReviewDate: Date = Date(), isConquered: Bool = false, conqueredAt: Date? = nil) {
         self.id = id
         self.sourceText = sourceText
         self.translatedText = translatedText
@@ -41,6 +48,8 @@ struct SavedPhrase: Codable, Identifiable {
         self.easinessFactor = easinessFactor
         self.interval = interval
         self.nextReviewDate = nextReviewDate
+        self.isConquered = isConquered
+        self.conqueredAt = conqueredAt
     }
 
     static let userDefaultsKey = "talkswitch_saved_phrases"
@@ -50,6 +59,13 @@ class SharedPhraseStore: ObservableObject {
     static let shared = SharedPhraseStore()
 
     @Published private(set) var phrases: [SavedPhrase] = []
+
+    /// Clipboard phrases that are still in active study rotation.
+    var activePhrases: [SavedPhrase] { phrases.filter { !$0.isConquered } }
+
+    /// Clipboard phrases the learner has conquered (recalled 3×). These are
+    /// removed from the clipboard display and shown only in the Conquered auto-deck.
+    var conqueredPhrases: [SavedPhrase] { phrases.filter { $0.isConquered } }
 
     private let defaults: UserDefaults?
 
@@ -76,15 +92,18 @@ class SharedPhraseStore: ObservableObject {
                 
                 let notes = d["notes"]
                 let localityTag = d["localityTag"]
-                
+
                 // For existing phrases that don't have these keys, we use defaults.
                 let reps = Int(d["repetitions"] ?? "0") ?? 0
                 let ef = Double(d["easinessFactor"] ?? "2.5") ?? 2.5
                 let interval = Int(d["interval"] ?? "0") ?? 0
-                
+
                 let nextReviewStr = d["nextReviewDate"] ?? dateStr
                 let nextReview = formatter.date(from: nextReviewStr) ?? date
-                
+
+                let isConquered = d["isConquered"] == "true"
+                let conqueredAt = d["conqueredAt"].flatMap { formatter.date(from: $0) }
+
                 return SavedPhrase(
                     id:             UUID(uuidString: idStr) ?? UUID(),
                     sourceText:     source,
@@ -97,7 +116,9 @@ class SharedPhraseStore: ObservableObject {
                     repetitions:    reps,
                     easinessFactor: ef,
                     interval:       interval,
-                    nextReviewDate: nextReview
+                    nextReviewDate: nextReview,
+                    isConquered:    isConquered,
+                    conqueredAt:    conqueredAt
                 )
             }.sorted { $0.savedAt > $1.savedAt }
         } else {
@@ -133,6 +154,15 @@ class SharedPhraseStore: ObservableObject {
         persist()
     }
 
+    /// Mark a clipboard phrase as conquered. It will no longer appear in the
+    /// active clipboard list and will graduate to the Conquered auto-deck.
+    func markConquered(_ phrase: SavedPhrase) {
+        guard let index = phrases.firstIndex(where: { $0.id == phrase.id }) else { return }
+        phrases[index].isConquered = true
+        phrases[index].conqueredAt = Date()
+        persist()
+    }
+
     private func persist() {
         let formatter = ISO8601DateFormatter()
         let dicts = phrases.map { p -> [String: String] in
@@ -146,14 +176,12 @@ class SharedPhraseStore: ObservableObject {
                 "repetitions": "\(p.repetitions)",
                 "easinessFactor": "\(p.easinessFactor)",
                 "interval": "\(p.interval)",
-                "nextReviewDate": formatter.string(from: p.nextReviewDate)
+                "nextReviewDate": formatter.string(from: p.nextReviewDate),
+                "isConquered": p.isConquered ? "true" : "false"
             ]
-            if let notes = p.notes {
-                d["notes"] = notes
-            }
-            if let tag = p.localityTag {
-                d["localityTag"] = tag
-            }
+            if let notes = p.notes { d["notes"] = notes }
+            if let tag = p.localityTag { d["localityTag"] = tag }
+            if let ca = p.conqueredAt { d["conqueredAt"] = formatter.string(from: ca) }
             return d
         }
         defaults?.set(dicts, forKey: SavedPhrase.userDefaultsKey)

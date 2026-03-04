@@ -1,4 +1,4 @@
-# TranslateHelper - Authentication Information Architecture
+# TalkSwitch - Authentication Information Architecture
 
 Here is the map of the screens related to Authentication and how a user transitions between them.
 

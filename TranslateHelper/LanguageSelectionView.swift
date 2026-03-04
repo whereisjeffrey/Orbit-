@@ -58,7 +58,7 @@ struct LanguageSelectionView: View {
         return nativeLanguages.first(where: { $0.code == baseCode }) ?? nativeLanguages[0]
     }()
 
-    @State private var showNativePicker = false
+    // nativePickerOpen removed — TSPickerField no longer needs an isOpen binding
 
     /// Returns true if this language is available in v1 (Spanish only).
     private func isAvailable(_ language: Language) -> Bool {
@@ -125,7 +125,7 @@ struct LanguageSelectionView: View {
                         .padding(.bottom, 24)
 
                         // Native language picker
-                        Menu {
+                        TSPickerField(label: "\(nativeLanguage.flag) \(nativeLanguage.name)") {
                             ForEach(nativeLanguages) { lang in
                                 Button {
                                     nativeLanguage = lang
@@ -133,21 +133,6 @@ struct LanguageSelectionView: View {
                                     Label("\(lang.flag) \(lang.name)", systemImage: "")
                                 }
                             }
-                        } label: {
-                            HStack {
-                                Text("\(nativeLanguage.flag) \(nativeLanguage.name)")
-                                    .font(.system(size: 17, weight: .medium))
-                                    .foregroundColor(.tsLabel)
-                                Spacer()
-                                Image(systemName: "chevron.down")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.tsSecondary)
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 14)
-                            .background(Color.tsCard)
-                            .cornerRadius(12)
-                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsBorder, lineWidth: 1))
                         }
                         .padding(.bottom, 32)
 
