@@ -98,6 +98,7 @@
 		0851017EA7D569DB7B793183 /* StudySourceWordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B7DDD7DACC2B26628632458 /* StudySourceWordView.swift */; };
 		0A536490DFE056A5AA52FE9C /* CityModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93834FA2F33A8EBFE4B053E5 /* CityModel.swift */; };
 		0E128240CECCCB88C69D578E /* TTSService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10B7D83A76412AF0CE97BB3 /* TTSService.swift */; };
+		275FAE5BC493FC6FF8EC0BCE /* CoworkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 955608648AFEBBB3AEADB31C /* CoworkView.swift */; };
 		32748F58ACC1D068146338FF /* StudyRevealedCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7BCC4D19FBB7CCB35DEFB36 /* StudyRevealedCardView.swift */; };
 		373143C18345D2C26681476B /* StudyOptionsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 701E42686590C2360A8BDE9E /* StudyOptionsCard.swift */; };
 		3FDE143AC4601CE3AC8B15E2 /* SharedPhraseStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2111A26039606CBFB2DC5F96 /* SharedPhraseStore.swift */; };
@@ -125,6 +126,7 @@
 		F304AF071C9CE13B9BBD0257 /* KitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13721C7308918D79F62CB559 /* KitView.swift */; };
 		F5AC187F5E0308639395913A /* AddCardSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 907A36084F3DDD8ED22F49CA /* AddCardSheet.swift */; };
 		F84EE25FE5E411D5EE098FF6 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C9C1B33D0F41361EBB664B4 /* OnboardingView.swift */; };
+		FEE4F96E93E9E1E38013EDD5 /* CoworkSpace.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA374B85B1F404E8B29F71AA /* CoworkSpace.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -270,7 +272,9 @@
 		8FC723A32F4D1936AE809E74 /* OnboardingLocationView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OnboardingLocationView.swift; sourceTree = "<group>"; };
 		907A36084F3DDD8ED22F49CA /* AddCardSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AddCardSheet.swift; sourceTree = "<group>"; };
 		93834FA2F33A8EBFE4B053E5 /* CityModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CityModel.swift; sourceTree = "<group>"; };
+		955608648AFEBBB3AEADB31C /* CoworkView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoworkView.swift; sourceTree = "<group>"; };
 		9C8D915ECE4E6C56FC9D2349 /* OnboardingGoalsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OnboardingGoalsView.swift; sourceTree = "<group>"; };
+		AA374B85B1F404E8B29F71AA /* CoworkSpace.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoworkSpace.swift; sourceTree = "<group>"; };
 		B06F69CBF0E7D5F064F666BC /* UserLocationsStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UserLocationsStore.swift; sourceTree = "<group>"; };
 		B40E93BABBB610917935465D /* Localizable.xcstrings */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		B6645235449EC772517A19CF /* OnboardingPaywallView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OnboardingPaywallView.swift; sourceTree = "<group>"; };
@@ -528,6 +532,8 @@
 				3E4CDAE7CCAE5AB261FA919A /* DeckPhraseListView.swift */,
 				3C9C1B33D0F41361EBB664B4 /* OnboardingView.swift */,
 				B06F69CBF0E7D5F064F666BC /* UserLocationsStore.swift */,
+				955608648AFEBBB3AEADB31C /* CoworkView.swift */,
+				AA374B85B1F404E8B29F71AA /* CoworkSpace.swift */,
 			);
 			path = TranslateHelper;
 			sourceTree = "<group>";
@@ -769,6 +775,8 @@
 				A7451A4F54ABC5417F084DE7 /* DeckPhraseListView.swift in Sources */,
 				F84EE25FE5E411D5EE098FF6 /* OnboardingView.swift in Sources */,
 				5C4EF48D41050AF96AE488B1 /* UserLocationsStore.swift in Sources */,
+				275FAE5BC493FC6FF8EC0BCE /* CoworkView.swift in Sources */,
+				FEE4F96E93E9E1E38013EDD5 /* CoworkSpace.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

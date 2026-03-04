@@ -8,20 +8,31 @@ struct KitTool: Identifiable {
     let name: String
     let description: String
     let color: Color
+    let destination: KitDestination
+}
+
+enum KitDestination {
+    case cowork
+    case currency
+    case sim
+    case neighbourhoods
+    case bureaucracy
+    case scamRadar
 }
 
 struct KitView: View {
     @AppStorage("selected_city_id") private var selectedCityId: String = "mx_cdmx"
     var selectedCity: City { CityStore.city(id: selectedCityId) ?? CityStore.defaultCity }
 
-    @State private var activeTool: KitTool? = nil
+    @State private var activeDestination: KitDestination? = nil
 
     let tools: [KitTool] = [
-        KitTool(icon: "dollarsign.arrow.circlepath", name: "Currency Pulse",  description: "Live rates + quick converter",      color: Color(hex: "#34C759")),
-        KitTool(icon: "simcard",                     name: "SIM Guide",        description: "Best carriers, plans & cost",        color: Color(hex: "#007AFF")),
-        KitTool(icon: "map",                         name: "Neighbourhoods",   description: "Find your area by vibe",             color: Color(hex: "#FF9500")),
-        KitTool(icon: "doc.plaintext",               name: "Bureaucracy",      description: "Banking, visa & healthcare tips",    color: Color(hex: "#AF52DE")),
-        KitTool(icon: "exclamationmark.shield",      name: "Scam Radar",       description: "What to watch out for locally",      color: Color(hex: "#FF3B30")),
+        KitTool(icon: "laptopcomputer",              name: "Cowork",        description: "Find spaces with call rooms & fast WiFi", color: Color(hex: "#007AFF"), destination: .cowork),
+        KitTool(icon: "dollarsign.arrow.circlepath", name: "Currency",      description: "Live rates + quick converter",            color: Color(hex: "#34C759"), destination: .currency),
+        KitTool(icon: "simcard",                     name: "SIM Guide",     description: "Best carriers, plans & cost",             color: Color(hex: "#FF9500"), destination: .sim),
+        KitTool(icon: "map",                         name: "Neighbourhoods",description: "Find your area by vibe",                  color: Color(hex: "#AF52DE"), destination: .neighbourhoods),
+        KitTool(icon: "doc.plaintext",               name: "Bureaucracy",   description: "Banking, visa & healthcare tips",         color: Color(hex: "#5856D6"), destination: .bureaucracy),
+        KitTool(icon: "exclamationmark.shield",      name: "Scam Radar",    description: "What to watch out for locally",           color: Color(hex: "#FF3B30"), destination: .scamRadar),
     ]
 
     let columns = [GridItem(.flexible(), spacing: 16), GridItem(.flexible(), spacing: 16)]
@@ -47,7 +58,7 @@ struct KitView: View {
 
                     LazyVGrid(columns: columns, spacing: 16) {
                         ForEach(tools) { tool in
-                            KitToolCard(tool: tool) { activeTool = tool }
+                            KitToolCard(tool: tool) { activeDestination = tool.destination }
                         }
                     }
                     .padding(.horizontal, 16)
@@ -55,7 +66,18 @@ struct KitView: View {
                 }
             }
         }
-        .sheet(item: $activeTool) { tool in KitToolDetailView(tool: tool) }
+        .sheet(isPresented: Binding(
+            get: { activeDestination == .cowork },
+            set: { if !$0 { activeDestination = nil } }
+        )) { CoworkView() }
+        .sheet(isPresented: Binding(
+            get: { activeDestination != nil && activeDestination != .cowork },
+            set: { if !$0 { activeDestination = nil } }
+        )) {
+            if let dest = activeDestination {
+                KitPlaceholderView(name: tools.first { $0.destination == dest }?.name ?? "")
+            }
+        }
     }
 }
 
@@ -93,28 +115,25 @@ struct KitToolCard: View {
     }
 }
 
-struct KitToolDetailView: View {
-    let tool: KitTool
+struct KitPlaceholderView: View {
+    let name: String
     @Environment(\.dismiss) var dismiss
     var body: some View {
         NavigationStack {
             ZStack { TSGradientBackground()
-                VStack {
-                    Image(systemName: tool.icon)
+                VStack(spacing: 12) {
+                    Text("⚒️")
                         .font(.system(size: 48))
-                        .foregroundColor(tool.color)
                         .padding(.top, 48)
-                    Text(tool.name)
+                    Text(name)
                         .font(.system(size: 24, weight: .bold))
                         .foregroundColor(.tsLabel)
-                        .padding(.top, 16)
                     Text("Coming soon")
                         .foregroundColor(.tsSecondary)
-                        .padding(.top, 8)
                     Spacer()
                 }
             }
-            .navigationTitle(tool.name).navigationBarTitleDisplayMode(.inline)
+            .navigationTitle(name).navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .cancellationAction) {
                 Button("Done") { dismiss() }
             }}
