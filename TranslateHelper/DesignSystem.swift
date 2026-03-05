@@ -291,7 +291,7 @@ struct TSDivider: View {
     var body: some View {
         HStack {
             Rectangle().frame(height: 1).foregroundColor(Color.tsBorder)
-            Text("or").font(.caption).foregroundColor(.tsSecondary).padding(.horizontal, 8)
+            Text("or").font(.custom("HelveticaNeue", size: 12)).foregroundColor(.tsSecondary).padding(.horizontal, 8)
             Rectangle().frame(height: 1).foregroundColor(Color.tsBorder)
         }
     }

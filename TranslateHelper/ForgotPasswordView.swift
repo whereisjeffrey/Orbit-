@@ -59,7 +59,7 @@ struct ForgotPasswordView: View {
 
                     if let err = auth.errorMessage {
                         Text(err)
-                            .font(.caption)
+                            .font(.custom("HelveticaNeue", size: 12))
                             .foregroundColor(.red)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }

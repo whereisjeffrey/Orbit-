@@ -68,7 +68,7 @@ struct SignInView: View {
                         .padding(.bottom, 16)
 
                         if let err = auth.errorMessage {
-                            Text(err).font(.caption).foregroundColor(.red).padding(.bottom, 8)
+                            Text(err).font(.custom("HelveticaNeue", size: 12)).foregroundColor(.red).padding(.bottom, 8)
                         }
 
                         TSButton(title: "Sign In", isLoading: auth.isLoading) {
