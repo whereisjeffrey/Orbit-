@@ -116,6 +116,10 @@ struct CommunityView: View {
                     .padding(.horizontal, 16)
                     .padding(.bottom, 16)
 
+                    // ── New in town ─────────────────────────────────────
+                    NewInTownSection()
+                        .padding(.bottom, 16)
+
                     // ── Post type filter ───────────────────────────────
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
@@ -274,26 +278,8 @@ struct CommunityPostCard: View {
 }
 
 // MARK: - Placeholder sheets
-struct GroupDirectoryView: View {
-    var body: some View {
-        NavigationStack {
-            ZStack { TSGradientBackground()
-                Text("Group Directory coming soon").foregroundColor(.tsSecondary)
-            }
-            .navigationTitle("Groups").navigationBarTitleDisplayMode(.inline)
-        }
-    }
-}
-struct AskALocalView: View {
-    var body: some View {
-        NavigationStack {
-            ZStack { TSGradientBackground()
-                Text("Ask a Local coming soon").foregroundColor(.tsSecondary)
-            }
-            .navigationTitle("Ask a Local").navigationBarTitleDisplayMode(.inline)
-        }
-    }
-}
+
+
 struct CityPickerView: View {
     @Binding var selectedId: String
     @Environment(\.dismiss) var dismiss
@@ -325,6 +311,17 @@ struct NewPostView: View {
             .toolbar { ToolbarItem(placement: .cancellationAction) {
                 Button("Cancel") { dismiss() }
             }}
+        }
+    }
+}
+
+struct GroupDirectoryView: View {
+    var body: some View {
+        NavigationStack {
+            ZStack { TSGradientBackground()
+                Text("Group Directory coming soon").foregroundColor(.tsSecondary)
+            }
+            .navigationTitle("Groups").navigationBarTitleDisplayMode(.inline)
         }
     }
 }

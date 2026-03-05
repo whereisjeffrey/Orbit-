@@ -1,0 +1,204 @@
+//  NewInTownSection.swift
+
+import SwiftUI
+
+struct NewInTownSection: View {
+    @AppStorage("selected_city_id")   private var cityId      = "mx_cdmx"
+    @AppStorage("new_in_town_opt_in") private var optedIn     = false
+    @AppStorage("user_expat_status")  private var myStatus    = ""
+    @State private var showOptInCard  = false
+    @State private var selectedUser: CommunityUser? = nil
+
+    var newArrivals: [CommunityUser] {
+        seedCommunityUsers.filter {
+            $0.cityId == cityId &&
+            $0.isVisibleNewInTown &&
+            ($0.statusRaw == "just_arrived" || $0.statusRaw == "settling")
+        }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+
+            HStack {
+                Text("New in town")
+                    .font(.system(size: 17, weight: .bold))
+                    .foregroundColor(.tsLabel)
+                Spacer()
+                Text("\(newArrivals.count) people")
+                    .font(.system(size: 13))
+                    .foregroundColor(.tsSecondary)
+            }
+            .padding(.horizontal, 16)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+
+                    // Opt-in card for eligible users
+                    if !optedIn && (myStatus == "just_arrived" || myStatus == "settling") {
+                        NewInTownOptInCard { showOptInCard = true }
+                    }
+
+                    ForEach(newArrivals) { user in
+                        NewArrivalCard(user: user) { selectedUser = user }
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 2)
+            }
+        }
+        .sheet(isPresented: $showOptInCard) { NewInTownOptInSheet(optedIn: $optedIn) }
+        .sheet(item: $selectedUser)         { user in CommunityUserProfileView(user: user) }
+    }
+}
+
+// MARK: - Arrival card
+struct NewArrivalCard: View {
+    let user: CommunityUser
+    let onTap: () -> Void
+
+    var body: some View {
+        Button(action: onTap) {
+            VStack(spacing: 8) {
+                // Avatar
+                ZStack {
+                    Circle()
+                        .fill(user.initialsColor)
+                        .frame(width: 56, height: 56)
+                    Text(user.initials)
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(.white)
+                }
+                .overlay(alignment: .bottomTrailing) {
+                    Circle()
+                        .fill(Color(hex: "#34C759"))
+                        .frame(width: 14, height: 14)
+                        .overlay(Circle().stroke(Color.tsCard, lineWidth: 2))
+                }
+
+                Text(user.firstName)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.tsLabel)
+
+                Text(user.timeInCityLabel)
+                    .font(.system(size: 11))
+                    .foregroundColor(.tsSecondary)
+
+                TrustBadge(level: user.trustLevel, compact: true)
+            }
+            .frame(width: 80)
+            .padding(.vertical, 12)
+            .padding(.horizontal, 8)
+            .background(Color.tsCard)
+            .cornerRadius(16)
+        }
+        .buttonStyle(ScaleButtonStyle())
+    }
+}
+
+// MARK: - Opt-in prompt card
+struct NewInTownOptInCard: View {
+    let onTap: () -> Void
+    var body: some View {
+        Button(action: onTap) {
+            VStack(spacing: 8) {
+                ZStack {
+                    Circle()
+                        .fill(Color.tsAccent.opacity(0.12))
+                        .frame(width: 56, height: 56)
+                    Image(systemName: "person.badge.plus")
+                        .font(.system(size: 22))
+                        .foregroundColor(.tsAccent)
+                }
+                Text("Show up")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.tsAccent)
+                Text("Let locals\nfind you")
+                    .font(.system(size: 11))
+                    .foregroundColor(.tsSecondary)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(width: 80)
+            .padding(.vertical, 12)
+            .padding(.horizontal, 8)
+            .background(Color.tsAccent.opacity(0.07))
+            .cornerRadius(16)
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(Color.tsAccent.opacity(0.3), style: StrokeStyle(lineWidth: 1.5, dash: [4]))
+            )
+        }
+    }
+}
+
+// MARK: - Opt-in sheet
+struct NewInTownOptInSheet: View {
+    @Binding var optedIn: Bool
+    @Environment(\.dismiss) var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ZStack { TSGradientBackground()
+                VStack(spacing: 24) {
+                    Spacer()
+                    Image(systemName: "person.2.fill")
+                        .font(.system(size: 48))
+                        .foregroundColor(.tsAccent)
+
+                    VStack(spacing: 8) {
+                        Text("Let the community\nknow you\'re here")
+                            .font(.system(size: 26, weight: .bold))
+                            .foregroundColor(.tsLabel)
+                            .multilineTextAlignment(.center)
+                        Text("Locals and fellow newcomers can see\nyou arrived recently and say hi.")
+                            .font(.system(size: 15))
+                            .foregroundColor(.tsSecondary)
+                            .multilineTextAlignment(.center)
+                    }
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        OptInBenefit(icon: "hand.wave.fill",    text: "Locals welcome you and share tips")
+                        OptInBenefit(icon: "person.2",          text: "Meet others who just arrived too")
+                        OptInBenefit(icon: "lock.fill",         text: "You control who can message you")
+                        OptInBenefit(icon: "xmark.circle",      text: "Turn it off any time in Settings")
+                    }
+                    .padding(.horizontal, 32)
+
+                    Spacer()
+
+                    VStack(spacing: 12) {
+                        TSButton(title: "Yes, show me in New Arrivals") {
+                            optedIn = true
+                            dismiss()
+                        }
+                        Button("Not right now") { dismiss() }
+                            .font(.system(size: 15))
+                            .foregroundColor(.tsSecondary)
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 48)
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar { ToolbarItem(placement: .cancellationAction) {
+                Button("Cancel") { dismiss() }
+            }}
+        }
+    }
+}
+
+struct OptInBenefit: View {
+    let icon: String
+    let text: String
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 16))
+                .foregroundColor(.tsAccent)
+                .frame(width: 24)
+            Text(text)
+                .font(.system(size: 15))
+                .foregroundColor(.tsLabel)
+        }
+    }
+}
