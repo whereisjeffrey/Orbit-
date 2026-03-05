@@ -124,7 +124,9 @@ struct WhyInsuranceCard: View {
                 RoundedRectangle(cornerRadius: 16)
                     .fill(Color(hex: "#FF3B30").opacity(0.12))
                     .frame(width: 56, height: 56)
-                Text("🏥").font(.system(size: 28))
+                Image(systemName: "cross.fill")
+                    .font(.system(size: 24, weight: .medium))
+                    .foregroundColor(Color(hex: "#FF3B30"))
             }
             VStack(alignment: .leading, spacing: 4) {
                 Text("Don't skip this one")
@@ -348,11 +350,11 @@ struct ExclusionsCard: View {
 
 // MARK: - Mexico tips
 struct MexicoTipsCard: View {
-    let tips = [
-        ("IMSS private hospitals are solid in CDMX — Hospital Angeles and ABC are the top picks."),
-        ("Keep digital copies of your policy in your Notes app and email."),
-        ("File the claim the same day if possible — waiting hurts your case."),
-        ("Some Mexican clinics offer pay-up-front then reimburse — get itemised receipts."),
+    let tips: [(icon: String, color: String, text: String)] = [
+        ("building.2.fill",           "#0099FF", "Hospital Ángeles and ABC Hospital are the top private picks in CDMX — consistently expat-recommended."),
+        ("icloud.and.arrow.down.fill", "#34C759", "Keep digital copies of your policy in Notes, email, and iCloud — somewhere you can reach even without data."),
+        ("clock.badge.exclamationmark.fill", "#FF9500", "File the claim the same day if possible. Waiting even 24 hours can seriously hurt your case."),
+        ("doc.text.fill",             "#AF52DE", "Many clinics ask you to pay upfront and reimburse later — always get an itemised receipt (factura)."),
     ]
 
     var body: some View {
@@ -360,18 +362,25 @@ struct MexicoTipsCard: View {
             SectionLabel("FOR MEXICO SPECIFICALLY")
             VStack(spacing: 0) {
                 ForEach(Array(tips.enumerated()), id: \.offset) { i, tip in
-                    HStack(alignment: .top, spacing: 12) {
-                        Text("🇲🇽").font(.system(size: 16))
-                        Text(tip)
+                    HStack(alignment: .top, spacing: 14) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color(hex: tip.color).opacity(0.12))
+                                .frame(width: 36, height: 36)
+                            Image(systemName: tip.icon)
+                                .font(.system(size: 14))
+                                .foregroundColor(Color(hex: tip.color))
+                        }
+                        Text(tip.text)
                             .font(.custom("HelveticaNeue", size: 13))
                             .foregroundColor(.tsLabel)
                             .fixedSize(horizontal: false, vertical: true)
                         Spacer()
                     }
                     .padding(.horizontal, 16)
-                    .padding(.vertical, 11)
+                    .padding(.vertical, 12)
                     if i < tips.count - 1 {
-                        Divider().background(Color.tsAccent.opacity(0.06)).padding(.leading, 44)
+                        Divider().background(Color.tsAccent.opacity(0.06)).padding(.leading, 66)
                     }
                 }
             }
