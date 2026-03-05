@@ -35,7 +35,7 @@ final class SoundEngine {
     func play(_ sound: Sound) {
         guard ready else { return }
         switch sound {
-        case .flip:  scheduleNotes([(880,0.04,0.22),(440,0.04,0.16),(220,0.05,0.10)], gap: 0.0,  wave: .square)
+        case .flip:  playChirp(startHz: 1800, endHz: 90, duration: 0.13, volume: 0.13)
         case .again: scheduleNotes([(180,0.07,0.30),(150,0.07,0.24),(130,0.10,0.18)], gap: 0.0,  wave: .square)
         case .hard:  scheduleNotes([(330,0.10,0.22),(294,0.14,0.16)],                 gap: 0.06, wave: .square)
         case .good:  scheduleNotes([(523,0.08,0.24),(659,0.08,0.24),(784,0.14,0.26)], gap: 0.07, wave: .square)
@@ -83,4 +83,41 @@ final class SoundEngine {
         }
         node.play()
     }
+    // MARK: - Chirp (smooth frequency glide — skeuomorphic page-flip whoosh)
+    private func playChirp(startHz: Double, endHz: Double, duration: Double, volume: Float) {
+        let fmt = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1)!
+        let frameCount = AVAudioFrameCount(sampleRate * duration)
+        guard let buf = AVAudioPCMBuffer(pcmFormat: fmt, frameCapacity: frameCount),
+              let data = buf.floatChannelData?[0] else { return }
+        buf.frameLength = frameCount
+
+        var phase: Double = 0
+        for i in 0..<Int(frameCount) {
+            let t   = Double(i) / sampleRate
+            let p   = t / duration                          // 0 → 1 progress
+            // Exponential frequency sweep feels more natural than linear
+            let freq = startHz * pow(endHz / startHz, p)
+            let dPhase = 2.0 * .pi * freq / sampleRate
+            phase += dPhase
+
+            // Envelope: 3% attack, then smooth exponential decay
+            let env: Double = p < 0.03
+                ? p / 0.03
+                : exp(-4.5 * (p - 0.03))
+
+            data[i] = Float(sin(phase) * env * Double(volume))
+        }
+
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self else { return }
+            let node = AVAudioPlayerNode()
+            self.engine.attach(node)
+            self.engine.connect(node, to: self.mixer, format: fmt)
+            node.scheduleBuffer(buf, at: nil, options: []) { [weak self] in
+                DispatchQueue.main.async { self?.engine.detach(node) }
+            }
+            node.play()
+        }
+    }
+
 }
