@@ -46,6 +46,7 @@ struct CommunityPost: Identifiable {
     var linkPreviewTitle: String? = nil
     var linkPreviewSite: String? = nil
     var linkURL: String? = nil
+    var isPreset: Bool = false
 }
 
 struct CommunityView: View {
@@ -65,20 +66,21 @@ struct CommunityView: View {
         CommunityPost(author: "Marco R.", neighbourhood: "Condesa", type: .question,
                       body: "Anyone know a good English-speaking dentist in Roma Norte?",
                       likes: 7, comments: 3, timeAgo: "2h", isVerifiedLocal: false,
-                      avatarInitials: "MR", avatarColor: Color(hex: "#FF9500"), avatarURL: "https://i.pravatar.cc/150?img=68"),
+                      avatarInitials: "MR", avatarColor: Color(hex: "#FF9500"), avatarURL: "https://i.pravatar.cc/150?img=68", isPreset: true),
         CommunityPost(author: "Sarah K.", neighbourhood: "Polanco", type: .rec,
                       body: "Highly recommend Café Toscano for remote work — fast wifi, great coffee, never too crowded before noon.",
                       likes: 24, comments: 6, timeAgo: "5h", isVerifiedLocal: true,
                       avatarInitials: "SK", avatarColor: Color(hex: "#AF52DE"), avatarURL: "https://i.pravatar.cc/150?img=44",
-                      imageURL: "https://picsum.photos/id/431/700/520"),
+                      imageURL: "https://picsum.photos/id/431/700/520", isPreset: true),
         CommunityPost(author: "Diego M.", neighbourhood: "Roma Norte", type: .warning,
                       body: "Watch out for fake taxi overcharges outside Benito Juárez airport. Always use DIDI or Uber from inside.",
                       likes: 89, comments: 12, timeAgo: "1d", isVerifiedLocal: true,
-                      avatarInitials: "DM", avatarColor: Color(hex: "#34C759"), avatarURL: "https://i.pravatar.cc/150?img=12"),
+                      avatarInitials: "DM", avatarColor: Color(hex: "#34C759"), avatarURL: "https://i.pravatar.cc/150?img=12", isPreset: true),
         CommunityPost(author: "Lena W.", neighbourhood: "Coyoacán", type: .event,
                       body: "Expat meetup Friday night at Jardín Pushkin — 7pm. DM me if you\'re coming!",
                       likes: 31, comments: 8, timeAgo: "3h", isVerifiedLocal: false,
-                      avatarInitials: "LW", avatarColor: Color(hex: "#FF2D55")),
+                      avatarInitials: "LW", avatarColor: Color(hex: "#FF2D55"),
+                      imageURL: "https://picsum.photos/id/718/700/520", isPreset: true),
     ]
 
     var body: some View {
@@ -389,13 +391,17 @@ struct CommunityPostCard: View {
             .padding(.top, 14)
             .padding(.bottom, 14)
         }
-        .background(Color.tsCard)
+        .background(post.isPreset ? Color(UIColor.systemGray6) : Color.tsCard)
         .cornerRadius(16)
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5)
+            Group {
+                if !post.isPreset {
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5)
+                }
+            }
         )
-        .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
+        .shadow(color: Color.black.opacity(post.isPreset ? 0 : 0.04), radius: 8, x: 0, y: 2)
     }
 }
 
