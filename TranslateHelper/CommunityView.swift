@@ -259,7 +259,7 @@ struct CommunityPostCard: View {
     }
 
     @ViewBuilder var authorRow: some View {
-        HStack(alignment: .center, spacing: 10) {
+        HStack(alignment: .top, spacing: 10) {
             // Avatar — real photo or initials
             Group {
                 if let urlStr = post.avatarURL, let url = URL(string: urlStr) {
