@@ -2,6 +2,22 @@ import SwiftUI
 import FirebaseAuth
 import MapKit
 
+@ViewBuilder
+private func initialsCircle(auth: AuthManager) -> some View {
+    let initials = String(auth.displayName.prefix(2)).uppercased()
+    ZStack {
+        Circle()
+            .fill(LinearGradient(
+                stops: [.init(color: Color(hex: "#69B6C1").opacity(0.10), location: 0.3),
+                        .init(color: Color(hex: "#0079C6").opacity(0.10), location: 1.0)],
+                startPoint: .top, endPoint: .bottom))
+            .frame(width: 64, height: 64)
+        Text(initials)
+            .font(.custom("HelveticaNeue-Bold", size: 22))
+            .foregroundColor(.tsLabel)
+    }
+}
+
 struct SettingsView: View {
     @EnvironmentObject var auth: AuthManager
     @StateObject private var locStore = UserLocationsStore.shared
@@ -19,15 +35,41 @@ struct SettingsView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     
-                    // Header
-                    HStack {
-                        Text("Settings")
-                            .font(.custom("HelveticaNeue-Bold", size: 30))
-                            .foregroundColor(.tsLabel)
+                    // ── Profile Header ─────────────────────────────
+                    HStack(spacing: 16) {
+                        // Avatar
+                        Group {
+                            if let url = auth.photoURL {
+                                AsyncImage(url: url) { phase in
+                                    if let img = phase.image {
+                                        img.resizable().scaledToFill()
+                                            .frame(width: 64, height: 64)
+                                            .clipShape(Circle())
+                                    } else {
+                                        initialsCircle(auth: auth)
+                                    }
+                                }
+                            } else {
+                                initialsCircle(auth: auth)
+                            }
+                        }
+                        .frame(width: 64, height: 64)
+
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(auth.displayName)
+                                .font(.custom("HelveticaNeue-Bold", size: 20))
+                                .foregroundColor(.tsLabel)
+                            if !auth.email.isEmpty {
+                                Text(auth.email)
+                                    .font(.custom("HelveticaNeue", size: 14))
+                                    .foregroundColor(.tsSecondary)
+                                    .lineLimit(1)
+                            }
+                        }
                         Spacer()
                     }
                     .padding(.horizontal, 16)
-                    .padding(.top, 16)
+                    .padding(.top, 24)
                     .padding(.bottom, 24)
                     
                     // Appearance Section
@@ -69,7 +111,7 @@ struct SettingsView: View {
                     }
                     .background(Color.tsCard)
                     .cornerRadius(12)
-                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                     .padding(.horizontal, 16)
                     
                     Text("Choose your preferred interface style for optimal learning.")
@@ -144,7 +186,7 @@ struct SettingsView: View {
                     }
                     .background(Color.tsCard)
                     .cornerRadius(12)
-                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                     .padding(.horizontal, 16)
                     .padding(.bottom, 32)
                     
@@ -210,7 +252,7 @@ struct SettingsView: View {
                     }
                     .background(Color.tsCard)
                     .cornerRadius(12)
-                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                     .padding(.horizontal, 16)
                     .padding(.bottom, 32)
                     
@@ -235,7 +277,7 @@ struct SettingsView: View {
                     }
                     .background(Color.tsCard)
                     .cornerRadius(12)
-                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                     .padding(.horizontal, 16)
                     .padding(.bottom, 32)
 
@@ -250,7 +292,7 @@ struct SettingsView: View {
                             .frame(height: 52)
                             .background(Color.tsCard)
                             .cornerRadius(12)
-                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
+                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                     }
                     .padding(.horizontal, 16)
                     
@@ -279,7 +321,7 @@ struct SettingsView: View {
                     }
                     .background(Color.tsCard)
                     .cornerRadius(12)
-                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                     .padding(.horizontal, 16)
                     .padding(.bottom, 8)
 

@@ -70,9 +70,9 @@ struct MyDecksView: View {
 
     let featuredSample: [FeaturedDeckModel] = [
         FeaturedDeckModel(id: "f1", emoji: "🌆", title: "Mexico City Slang",
-                          subtitle: "Street Spanish, CDMX style", cardCount: 48, tint: .red),
+                          subtitle: "Street Spanish, CDMX style", cardCount: 48, tint: .orange),
         FeaturedDeckModel(id: "f2", emoji: "💃", title: "Romantic Phrases",
-                          subtitle: "Flirting, love & relationships", cardCount: 32, tint: .pink),
+                          subtitle: "Flirting, love & relationships", cardCount: 32, tint: .red),
         FeaturedDeckModel(id: "f3", emoji: "🏥", title: "Medical Spanish",
                           subtitle: "Clinic, pharmacy & emergencies", cardCount: 60, tint: .mint),
         FeaturedDeckModel(id: "f4", emoji: "🍽️", title: "Food & Markets",
@@ -127,7 +127,7 @@ struct MyDecksView: View {
                     .frame(height: 44)
                     .background(Color.tsCard)
                     .cornerRadius(14)
-                    .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
+                    .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                     .padding(.horizontal, 24)
                     .padding(.bottom, 32)
 
@@ -141,8 +141,6 @@ struct MyDecksView: View {
                                     launchStudy(name: deck.title)
                                 }
                             }
-                            // New Deck lives here — same card size as auto decks
-                            CreateDeckCell { showCreateSheet = true }
                         }
                         .padding(.horizontal, 24)
                     }
@@ -153,21 +151,24 @@ struct MyDecksView: View {
                         // TODO: navigate to full deck list
                     }
 
-                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())],
-                              spacing: 16) {
-                        ForEach(deckStore.decks) { deck in
-                            let dm = DeckModel(
-                                id: deck.id.uuidString, emoji: deck.emoji,
-                                title: deck.name, description: deck.deckDescription,
-                                cardCount: deck.activeCards.count,
-                                tint: deck.tintColor, isAI: deck.isAI
-                            )
-                            UserDeckCard(deck: dm) {
-                                launchDeckStudy(deck)
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 16) {
+                            CreateDeckCell { showCreateSheet = true }
+                            ForEach(deckStore.decks) { deck in
+                                let dm = DeckModel(
+                                    id: deck.id.uuidString, emoji: deck.emoji,
+                                    title: deck.name, description: deck.deckDescription,
+                                    cardCount: deck.activeCards.count,
+                                    tint: deck.tintColor, isAI: deck.isAI
+                                )
+                                UserDeckCard(deck: dm) {
+                                    launchDeckStudy(deck)
+                                }
                             }
                         }
+                        .padding(.horizontal, 24)
                     }
-                    .padding(.horizontal, 24)
+                    .padding(.bottom, 32)
 
                     // ── BROWSE FEATURED ──────────────────────────────────
                     SectionHeader(title: "BROWSE FEATURED", action: nil)
@@ -312,10 +313,10 @@ struct UserDeckCard: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     ZStack {
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(deck.tint.opacity(0.12))
-                            .frame(width: 36, height: 36)
-                        Text(deck.emoji).font(.custom("HelveticaNeue", size: 16))
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(deck.tint.opacity(0.15))
+                            .frame(width: 40, height: 40)
+                        Text(deck.emoji).font(.custom("HelveticaNeue", size: 18))
                     }
                     Spacer()
                     if deck.isAI {
@@ -335,11 +336,10 @@ struct UserDeckCard: View {
                     .padding(.top, 2)
             }
             .padding(16)
-            .frame(height: 152)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(width: 148, height: 148)
             .background(Color.tsCard)
             .cornerRadius(20)
-            .overlay(RoundedRectangle(cornerRadius: 20).stroke(deck.tint.opacity(0.25), lineWidth: 1))
+            .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
         }
         .buttonStyle(DeckTapStyle())
     }
@@ -438,7 +438,7 @@ struct FeaturedDeckRow: View {
         .padding(16)
         .background(Color.tsCard)
         .cornerRadius(16)
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(deck.tint.opacity(0.25), lineWidth: 1))
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
     }
 }
 
@@ -518,7 +518,7 @@ struct LockedFlirtingRow: View {
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(isAdded ? Color.green.opacity(0.2) : Color.tsBorder, lineWidth: 1)
+                .stroke(deck.tint.opacity(0.25), lineWidth: 1)
         )
     }
 }
@@ -544,7 +544,7 @@ struct EmptyDecksPrompt: View {
         .padding(32)
         .background(Color.tsCard)
         .cornerRadius(20)
-        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
+        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
     }
 }
 

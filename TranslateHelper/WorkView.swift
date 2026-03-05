@@ -96,20 +96,26 @@ struct WorkView: View {
                         Button(action: { withAnimation(.easeInOut(duration: 0.2)) { activeTab = tab } }) {
                             Text(tab.rawValue)
                                 .font(.custom("HelveticaNeue-Medium", size: 15))
-                                .foregroundColor(activeTab == tab ? .tsLabel : .tsSecondary)
+                                .foregroundColor(activeTab == tab ? .tsAccent : .tsSecondary)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 10)
                                 .background(
-                                    activeTab == tab ?
-                                    Color.tsCard.cornerRadius(10) :
-                                    Color.clear.cornerRadius(10)
+                                    activeTab == tab
+                                    ? Color.tsAccent.opacity(0.12).cornerRadius(10)
+                                    : Color.clear.cornerRadius(10)
+                                )
+                                .overlay(
+                                    activeTab == tab
+                                    ? RoundedRectangle(cornerRadius: 10).stroke(Color.tsAccent.opacity(0.35), lineWidth: 1)
+                                    : nil
                                 )
                         }
                     }
                 }
-                .padding(3)
-                .background(Color.tsCard.opacity(0.5))
-                .cornerRadius(12)
+                .padding(4)
+                .background(Color.tsCard)
+                .cornerRadius(13)
+                .overlay(RoundedRectangle(cornerRadius: 13).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                 .padding(.horizontal, 16)
                 .padding(.bottom, 12)
 
@@ -260,69 +266,64 @@ struct CafeCard: View {
 
     var body: some View {
         Button(action: onTap) {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(cafe.name)
-                            .font(.custom("HelveticaNeue-Bold", size: 16))
-                            .foregroundColor(.tsLabel)
-                        Text(cafe.neighbourhood)
-                            .font(.custom("HelveticaNeue", size: 13))
-                            .foregroundColor(.tsSecondary)
-                    }
-                    Spacer()
-                    if let dist = cafe.distanceLabel(from: userLocation) {
-                        HStack(spacing: 3) {
-                            Image(systemName: "location.fill").font(.custom("HelveticaNeue", size: 10)).foregroundColor(.tsAccent)
-                            Text(dist).font(.custom("HelveticaNeue-Medium", size: 13)).foregroundColor(.tsAccent)
+            VStack(alignment: .leading, spacing: 0) {
+                PlacePhotoCarousel(placeId: cafe.id, seedPhotos: cafe.photoURLs)
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(cafe.name)
+                                .font(.custom("HelveticaNeue-Bold", size: 16))
+                                .foregroundColor(.tsLabel)
+                            Text(cafe.neighbourhood)
+                                .font(.custom("HelveticaNeue", size: 13))
+                                .foregroundColor(.tsSecondary)
+                        }
+                        Spacer()
+                        if let dist = cafe.distanceLabel(from: userLocation) {
+                            HStack(spacing: 3) {
+                                Image(systemName: "location.fill").font(.custom("HelveticaNeue", size: 10)).foregroundColor(.tsAccent)
+                                Text(dist).font(.custom("HelveticaNeue-Medium", size: 13)).foregroundColor(.tsAccent)
+                            }
                         }
                     }
-                }
-
-                HStack(spacing: 4) {
-                    Image(systemName: "clock").font(.custom("HelveticaNeue", size: 11)).foregroundColor(.tsSecondary)
-                    Text("\(cafe.hoursDisplay) · \(cafe.hoursDays)")
-                        .font(.custom("HelveticaNeue", size: 12)).foregroundColor(.tsSecondary)
-                }
-
-                HStack(spacing: 12) {
-                    // Noise
                     HStack(spacing: 4) {
-                        Image(systemName: cafe.noiseLevel.icon).font(.custom("HelveticaNeue", size: 12))
-                            .foregroundColor(Color(hex: cafe.noiseLevel.color))
-                        Text(cafe.noiseLevel.rawValue).font(.custom("HelveticaNeue", size: 12))
-                            .foregroundColor(.tsSecondary)
+                        Image(systemName: "clock").font(.custom("HelveticaNeue", size: 11)).foregroundColor(.tsSecondary)
+                        Text("\(cafe.hoursDisplay) · \(cafe.hoursDays)")
+                            .font(.custom("HelveticaNeue", size: 12)).foregroundColor(.tsSecondary)
                     }
-                    // Outlets
-                    HStack(spacing: 4) {
-                        Image(systemName: "bolt.fill").font(.custom("HelveticaNeue", size: 12))
-                            .foregroundColor(cafe.outlets != .none ? Color(hex: "#FF9500") : Color.tsSecondary.opacity(0.4))
-                        Text(cafe.outlets.rawValue).font(.custom("HelveticaNeue", size: 12))
-                            .foregroundColor(.tsSecondary)
+                    HStack(spacing: 12) {
+                        HStack(spacing: 4) {
+                            Image(systemName: cafe.noiseLevel.icon).font(.custom("HelveticaNeue", size: 12))
+                                .foregroundColor(Color(hex: cafe.noiseLevel.color))
+                            Text(cafe.noiseLevel.rawValue).font(.custom("HelveticaNeue", size: 12))
+                                .foregroundColor(.tsSecondary)
+                        }
+                        HStack(spacing: 4) {
+                            Image(systemName: "bolt.fill").font(.custom("HelveticaNeue", size: 12))
+                                .foregroundColor(cafe.outlets != .none ? Color(hex: "#FF9500") : Color.tsSecondary.opacity(0.4))
+                            Text(cafe.outlets.rawValue).font(.custom("HelveticaNeue", size: 12))
+                                .foregroundColor(.tsSecondary)
+                        }
+                        HStack(spacing: 4) {
+                            Image(systemName: "wifi").font(.custom("HelveticaNeue", size: 12))
+                                .foregroundColor(cafe.hasFastWifi ? Color.tsAccent : Color.tsSecondary.opacity(0.4))
+                            Text(cafe.wifiSpeed ?? (cafe.hasFastWifi ? "Fast" : "Slow")).font(.custom("HelveticaNeue", size: 12))
+                                .foregroundColor(.tsSecondary)
+                        }
+                        Spacer()
+                        Text(cafe.timeLimitLabel)
+                            .font(.custom("HelveticaNeue-Medium", size: 11))
+                            .foregroundColor(cafe.hasNoTimeLimit ? Color(hex: "#34C759") : Color(hex: "#FF9500"))
+                            .padding(.horizontal, 8).padding(.vertical, 3)
+                            .background((cafe.hasNoTimeLimit ? Color(hex: "#34C759") : Color(hex: "#FF9500")).opacity(0.12))
+                            .clipShape(Capsule())
                     }
-                    // WiFi
-                    HStack(spacing: 4) {
-                        Image(systemName: "wifi").font(.custom("HelveticaNeue", size: 12))
-                            .foregroundColor(cafe.hasFastWifi ? Color.tsAccent : Color.tsSecondary.opacity(0.4))
-                        Text(cafe.wifiSpeed ?? (cafe.hasFastWifi ? "Fast" : "Slow")).font(.custom("HelveticaNeue", size: 12))
-                            .foregroundColor(.tsSecondary)
-                    }
-                    Spacer()
-                    // Time limit pill
-                    Text(cafe.timeLimitLabel)
-                        .font(.custom("HelveticaNeue-Medium", size: 11))
-                        .foregroundColor(cafe.hasNoTimeLimit ? Color(hex: "#34C759") : Color(hex: "#FF9500"))
-                        .padding(.horizontal, 8).padding(.vertical, 3)
-                        .background(
-                            (cafe.hasNoTimeLimit ? Color(hex: "#34C759") : Color(hex: "#FF9500")).opacity(0.12)
-                        )
-                        .clipShape(Capsule())
                 }
+                .padding(16)
             }
-            .padding(16)
             .background(Color.tsCard)
             .cornerRadius(16)
-            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
         }
         .buttonStyle(ScaleButtonStyle())
     }
@@ -426,8 +427,7 @@ struct CafeDetailView: View {
                                     Text("Get Directions").fontWeight(.bold)
                                 }
                                 .foregroundColor(.white).frame(maxWidth: .infinity).frame(height: 52)
-                                .background(LinearGradient(colors: [Color.tsAccent, Color(hex: "#004775")],
-                                    startPoint: .topLeading, endPoint: .bottomTrailing))
+                                .background(Color.tsAccent)
                                 .cornerRadius(14)
                             }
                             if let site = cafe.website {

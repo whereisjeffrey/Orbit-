@@ -75,7 +75,7 @@ struct KeyboardSetupBanner: View {
             .padding(.vertical, 10)
             .background(
                 RoundedRectangle(cornerRadius: 14)
-                    .fill(Color.tsAccent.opacity(0.07))
+                    .fill(Color.tsAccent.opacity(0.08))
                     .overlay(
                         RoundedRectangle(cornerRadius: 14)
                             .stroke(Color.tsAccent.opacity(0.20), lineWidth: 1)

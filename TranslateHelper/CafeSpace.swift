@@ -33,7 +33,7 @@ enum OutletAvailability: String, Codable, CaseIterable {
     var icon: String { "bolt.fill" }
 }
 
-struct CafeSpace: Identifiable, Codable {
+struct CafeSpace: Identifiable {
     let id:           String
     let name:         String
     let neighbourhood: String
@@ -50,6 +50,8 @@ struct CafeSpace: Identifiable, Codable {
     let website:      String?
     let latitude:     Double
     let longitude:    Double
+    var photoURLs:    [String] = []
+
 
     var hasNoTimeLimit: Bool { timeLimitHrs == nil }
 
@@ -82,7 +84,8 @@ let cdmxCafeSpaces: [CafeSpace] = [
         noiseLevel: .moderate, outlets: .some, hasFastWifi: false, wifiSpeed: nil,
         timeLimitHrs: nil, hoursDisplay: "7am – 11pm", hoursDays: "Mon–Sun",
         notes: "CDMX institution. Cash only, famously cheap espresso. No WiFi but the vibe makes up for it. Go early.",
-        website: nil, latitude: 19.3507, longitude: -99.1618
+        website: nil, latitude: 19.3507, longitude: -99.1618,
+        photoURLs: ["https://picsum.photos/id/431/400/220","https://picsum.photos/id/312/400/220","https://picsum.photos/id/766/400/220"]
     ),
     CafeSpace(
         id: "cafe_avellaneda", name: "Café Avellaneda", neighbourhood: "Coyoacán",
@@ -90,7 +93,8 @@ let cdmxCafeSpaces: [CafeSpace] = [
         noiseLevel: .quiet, outlets: .some, hasFastWifi: true, wifiSpeed: "~45 Mbps",
         timeLimitHrs: nil, hoursDisplay: "8am – 10pm", hoursDays: "Mon–Sun",
         notes: "Specialty coffee, single origin, relaxed about laptops. Two outlet strips near the back wall.",
-        website: nil, latitude: 19.3512, longitude: -99.1625
+        website: nil, latitude: 19.3512, longitude: -99.1625,
+        photoURLs: ["https://picsum.photos/id/1060/400/220","https://picsum.photos/id/225/400/220","https://picsum.photos/id/425/400/220"]
     ),
     CafeSpace(
         id: "cafe_once", name: "Once Café", neighbourhood: "Roma Norte",
@@ -98,7 +102,8 @@ let cdmxCafeSpaces: [CafeSpace] = [
         noiseLevel: .quiet, outlets: .plenty, hasFastWifi: true, wifiSpeed: "~80 Mbps",
         timeLimitHrs: nil, hoursDisplay: "8am – 9pm", hoursDays: "Mon–Fri",
         notes: "Nomad favourite. Plenty of outlets, reliably fast WiFi, staff don't rush you. Gets busy 10am–1pm.",
-        website: "oncecafe.mx", latitude: 19.4167, longitude: -99.1612
+        website: "oncecafe.mx", latitude: 19.4167, longitude: -99.1612,
+        photoURLs: ["https://picsum.photos/id/659/400/220","https://picsum.photos/id/452/400/220","https://picsum.photos/id/1053/400/220"]
     ),
     CafeSpace(
         id: "cafe_negro", name: "Café Negro", neighbourhood: "Roma Norte",
@@ -106,7 +111,8 @@ let cdmxCafeSpaces: [CafeSpace] = [
         noiseLevel: .moderate, outlets: .some, hasFastWifi: true, wifiSpeed: "~55 Mbps",
         timeLimitHrs: nil, hoursDisplay: "8am – 10pm", hoursDays: "Mon–Sun",
         notes: "Bright, airy corner spot. Good espresso, laptop crowd is normal here. Ask for WiFi password.",
-        website: nil, latitude: 19.4178, longitude: -99.1598
+        website: nil, latitude: 19.4178, longitude: -99.1598,
+        photoURLs: ["https://picsum.photos/id/1021/400/220","https://picsum.photos/id/240/400/220","https://picsum.photos/id/585/400/220"]
     ),
     CafeSpace(
         id: "cafe_quentin", name: "Café Quentin", neighbourhood: "Condesa",
@@ -114,7 +120,8 @@ let cdmxCafeSpaces: [CafeSpace] = [
         noiseLevel: .quiet, outlets: .plenty, hasFastWifi: true, wifiSpeed: "~70 Mbps",
         timeLimitHrs: nil, hoursDisplay: "8am – 9pm", hoursDays: "Mon–Sat",
         notes: "Tree-lined Ámsterdam street, massive windows, very quiet on weekday mornings. Nomad-friendly default.",
-        website: nil, latitude: 19.4135, longitude: -99.1712
+        website: nil, latitude: 19.4135, longitude: -99.1712,
+        photoURLs: ["https://picsum.photos/id/1015/400/220","https://picsum.photos/id/156/400/220","https://picsum.photos/id/164/400/220"]
     ),
     CafeSpace(
         id: "cafe_buna", name: "Buna 42", neighbourhood: "Polanco",
@@ -122,7 +129,8 @@ let cdmxCafeSpaces: [CafeSpace] = [
         noiseLevel: .moderate, outlets: .some, hasFastWifi: true, wifiSpeed: "~90 Mbps",
         timeLimitHrs: nil, hoursDisplay: "7am – 8pm", hoursDays: "Mon–Fri",
         notes: "Best WiFi speeds we've tested in Polanco. Specialty roasts, business crowd. Gets louder at lunch.",
-        website: "buna.coffee", latitude: 19.4322, longitude: -99.1942
+        website: "buna.coffee", latitude: 19.4322, longitude: -99.1942,
+        photoURLs: ["https://picsum.photos/id/669/400/220","https://picsum.photos/id/1080/400/220","https://picsum.photos/id/367/400/220"]
     ),
     CafeSpace(
         id: "cafe_almanegra", name: "Almanegra Café", neighbourhood: "Juárez",
@@ -130,7 +138,8 @@ let cdmxCafeSpaces: [CafeSpace] = [
         noiseLevel: .quiet, outlets: .plenty, hasFastWifi: true, wifiSpeed: "~65 Mbps",
         timeLimitHrs: nil, hoursDisplay: "8am – 9pm", hoursDays: "Mon–Sun",
         notes: "Low-key, long tables with built-in outlets, ambient music. Regulars are mostly remote workers.",
-        website: "almanegra.mx", latitude: 19.4268, longitude: -99.1632
+        website: "almanegra.mx", latitude: 19.4268, longitude: -99.1632,
+        photoURLs: ["https://picsum.photos/id/1063/400/220","https://picsum.photos/id/376/400/220","https://picsum.photos/id/292/400/220"]
     ),
     CafeSpace(
         id: "cafe_paramo", name: "Páramo", neighbourhood: "Roma Sur",
@@ -138,6 +147,7 @@ let cdmxCafeSpaces: [CafeSpace] = [
         noiseLevel: .lively, outlets: .none, hasFastWifi: true, wifiSpeed: "~40 Mbps",
         timeLimitHrs: 2, hoursDisplay: "8am – 11pm", hoursDays: "Mon–Sun",
         notes: "Great coffee and cocktails, excellent vibe. Better for afternoons than deep work. Weekends get very loud.",
-        website: nil, latitude: 19.4121, longitude: -99.1573
+        website: nil, latitude: 19.4121, longitude: -99.1573,
+        photoURLs: ["https://picsum.photos/id/175/400/220","https://picsum.photos/id/493/400/220","https://picsum.photos/id/674/400/220"]
     ),
 ]

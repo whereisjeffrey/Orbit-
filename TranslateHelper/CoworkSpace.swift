@@ -20,6 +20,7 @@ struct CoworkSpace: Identifiable {
     let wifiSpeed: String?     // e.g. "~80 Mbps"
     let website: String?
     let notes: String?
+    var photoURLs: [String] = []
     let latitude: Double
     let longitude: Double
 
@@ -40,7 +41,7 @@ struct CoworkSpace: Identifiable {
 let cdmxCoworkSpaces: [CoworkSpace] = [
     CoworkSpace(
         id: "homework_condesa",
-        name: "Homework Condesa",
+        name: "Coworker Condesa",
         neighbourhood: "Condesa",
         cityId: "mx_cdmx",
         address: "Tamaulipas 66, Condesa, CDMX",
@@ -49,11 +50,12 @@ let cdmxCoworkSpaces: [CoworkSpace] = [
         hasCallRooms: true, hasCoffee: true, hasFastWifi: true, hasLateHours: true,
         wifiSpeed: "~80 Mbps", website: "homework.com.mx",
         notes: "2 soundproof call booths, great natural light, lively crowd.",
+        photoURLs: ["https://picsum.photos/id/260/400/220","https://picsum.photos/id/1082/400/220","https://picsum.photos/id/3183/400/220"],
         latitude: 19.4133, longitude: -99.1707
     ),
     CoworkSpace(
         id: "homework_polanco",
-        name: "Homework Polanco",
+        name: "Coworker Polanco",
         neighbourhood: "Polanco",
         cityId: "mx_cdmx",
         address: "Virgilio 10, Polanco, CDMX",
@@ -62,6 +64,7 @@ let cdmxCoworkSpaces: [CoworkSpace] = [
         hasCallRooms: true, hasCoffee: true, hasFastWifi: true, hasLateHours: false,
         wifiSpeed: "~100 Mbps", website: "homework.com.mx",
         notes: "Upscale crowd, quieter than Condesa location, 3 call rooms.",
+        photoURLs: ["https://picsum.photos/id/430/400/220","https://picsum.photos/id/1181/400/220","https://picsum.photos/id/683/400/220"],
         latitude: 19.4322, longitude: -99.1952
     ),
     CoworkSpace(
@@ -75,6 +78,7 @@ let cdmxCoworkSpaces: [CoworkSpace] = [
         hasCallRooms: true, hasCoffee: true, hasFastWifi: true, hasLateHours: true,
         wifiSpeed: "~150 Mbps", website: "wework.com",
         notes: "Multiple private offices and phone booths. Premium price, premium kit.",
+        photoURLs: ["https://picsum.photos/id/1076/400/220","https://picsum.photos/id/447/400/220","https://picsum.photos/id/1080/400/220"],
         latitude: 19.4284, longitude: -99.1709
     ),
     CoworkSpace(
@@ -88,6 +92,7 @@ let cdmxCoworkSpaces: [CoworkSpace] = [
         hasCallRooms: false, hasCoffee: true, hasFastWifi: true, hasLateHours: false,
         wifiSpeed: "~60 Mbps", website: "selina.com",
         notes: "Open plan only — no private rooms. Good vibe, international crowd, rooftop.",
+        photoURLs: ["https://picsum.photos/id/3760/400/220","https://picsum.photos/id/225/400/220","https://picsum.photos/id/669/400/220"],
         latitude: 19.4163, longitude: -99.1594
     ),
     CoworkSpace(
@@ -101,6 +106,7 @@ let cdmxCoworkSpaces: [CoworkSpace] = [
         hasCallRooms: true, hasCoffee: false, hasFastWifi: true, hasLateHours: false,
         wifiSpeed: "~70 Mbps", website: "mexico.impacthub.net",
         notes: "Startup / NGO crowd. 1 phone booth. Coffee nearby but not included.",
+        photoURLs: ["https://picsum.photos/id/366/400/220","https://picsum.photos/id/1060/400/220","https://picsum.photos/id/2041/400/220"],
         latitude: 19.4168, longitude: -99.1631
     ),
     CoworkSpace(
@@ -114,6 +120,7 @@ let cdmxCoworkSpaces: [CoworkSpace] = [
         hasCallRooms: false, hasCoffee: true, hasFastWifi: true, hasLateHours: false,
         wifiSpeed: "~55 Mbps", website: nil,
         notes: "Budget-friendly. Open plan, good WiFi, coffee bar on-site.",
+        photoURLs: ["https://picsum.photos/id/159/400/220","https://picsum.photos/id/164/400/220","https://picsum.photos/id/204/400/220"],
         latitude: 19.4078, longitude: -99.1712
     ),
     CoworkSpace(
@@ -127,6 +134,7 @@ let cdmxCoworkSpaces: [CoworkSpace] = [
         hasCallRooms: true, hasCoffee: true, hasFastWifi: false, hasLateHours: false,
         wifiSpeed: "~30 Mbps", website: nil,
         notes: "Cozy, design-forward space. WiFi can be slow at peak hours — not ideal for video.",
+        photoURLs: ["https://picsum.photos/id/667/400/220","https://picsum.photos/id/1080/400/220","https://picsum.photos/id/376/400/220"],
         latitude: 19.4155, longitude: -99.1601
     ),
     CoworkSpace(
@@ -140,6 +148,7 @@ let cdmxCoworkSpaces: [CoworkSpace] = [
         hasCallRooms: true, hasCoffee: true, hasFastWifi: true, hasLateHours: true,
         wifiSpeed: "~90 Mbps", website: "bordocoworking.com",
         notes: "Two dedicated call pods. Late hours great for US East Coast timezones.",
+        photoURLs: ["https://picsum.photos/id/403/400/220","https://picsum.photos/id/1067/400/220","https://picsum.photos/id/236/400/220"],
         latitude: 19.4271, longitude: -99.1658
     ),
     CoworkSpace(
@@ -153,6 +162,7 @@ let cdmxCoworkSpaces: [CoworkSpace] = [
         hasCallRooms: true, hasCoffee: true, hasFastWifi: true, hasLateHours: false,
         wifiSpeed: "~120 Mbps", website: nil,
         notes: "Corporate feel. Quiet, fast, reliable. Closes early — not for night owls.",
+        photoURLs: ["https://picsum.photos/id/1082/400/220","https://picsum.photos/id/2041/400/220","https://picsum.photos/id/430/400/220"],
         latitude: 19.4340, longitude: -99.1984
     ),
     CoworkSpace(
@@ -166,6 +176,7 @@ let cdmxCoworkSpaces: [CoworkSpace] = [
         hasCallRooms: false, hasCoffee: true, hasFastWifi: true, hasLateHours: false,
         wifiSpeed: "~65 Mbps", website: nil,
         notes: "Bright, plant-filled, chill. No call rooms but tucked corners exist for quick calls.",
+        photoURLs: ["https://picsum.photos/id/225/400/220","https://picsum.photos/id/366/400/220","https://picsum.photos/id/3183/400/220"],
         latitude: 19.4121, longitude: -99.1732
     ),
 ]

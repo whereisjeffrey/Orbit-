@@ -321,54 +321,57 @@ struct CoworkCard: View {
 
     var body: some View {
         Button(action: onTap) {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(space.name)
-                            .font(.custom("HelveticaNeue-Bold", size: 16))
-                            .foregroundColor(.tsLabel)
-                        Text(space.neighbourhood)
-                            .font(.custom("HelveticaNeue", size: 13))
-                            .foregroundColor(.tsSecondary)
-                    }
-                    Spacer()
-                    VStack(alignment: .trailing, spacing: 2) {
-                        if let dist = space.distanceLabel(from: userLocation) {
-                            HStack(spacing: 3) {
-                                Image(systemName: "location.fill")
-                                    .font(.custom("HelveticaNeue", size: 10))
-                                    .foregroundColor(.tsAccent)
-                                Text(dist)
-                                    .font(.custom("HelveticaNeue-Medium", size: 13))
-                                    .foregroundColor(.tsAccent)
-                            }
-                        }
-                        if let day = space.dayRate {
-                            Text("$\(day) MXN/day")
-                                .font(.custom("HelveticaNeue", size: 12))
+            VStack(alignment: .leading, spacing: 0) {
+                PlacePhotoCarousel(placeId: space.id, seedPhotos: space.photoURLs)
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(space.name)
+                                .font(.custom("HelveticaNeue-Bold", size: 16))
+                                .foregroundColor(.tsLabel)
+                            Text(space.neighbourhood)
+                                .font(.custom("HelveticaNeue", size: 13))
                                 .foregroundColor(.tsSecondary)
                         }
+                        Spacer()
+                        VStack(alignment: .trailing, spacing: 2) {
+                            if let dist = space.distanceLabel(from: userLocation) {
+                                HStack(spacing: 3) {
+                                    Image(systemName: "location.fill")
+                                        .font(.custom("HelveticaNeue", size: 10))
+                                        .foregroundColor(.tsAccent)
+                                    Text(dist)
+                                        .font(.custom("HelveticaNeue-Medium", size: 13))
+                                        .foregroundColor(.tsAccent)
+                                }
+                            }
+                            if let day = space.dayRate {
+                                Text("$\(day) MXN/day")
+                                    .font(.custom("HelveticaNeue", size: 12))
+                                    .foregroundColor(.tsSecondary)
+                            }
+                        }
+                    }
+                    HStack(spacing: 4) {
+                        Image(systemName: "clock").font(.custom("HelveticaNeue", size: 11)).foregroundColor(.tsSecondary)
+                        Text("\(space.hoursDisplay) · \(space.hoursDays)")
+                            .font(.custom("HelveticaNeue", size: 12)).foregroundColor(.tsSecondary)
+                    }
+                    HStack(spacing: 12) {
+                        AmenityBadge(icon: "phone.fill",          label: space.hasCallRooms ? "Call rooms" : "No rooms",     active: space.hasCallRooms,  color: Color(hex: "#34C759"))
+                        AmenityBadge(icon: "cup.and.saucer.fill", label: space.hasCoffee    ? "Coffee"     : "No coffee",    active: space.hasCoffee,    color: Color(hex: "#7B4F2E"))
+                        AmenityBadge(icon: "bolt.fill",           label: space.hasFastWifi  ? "Fast WiFi"  : "Standard",     active: space.hasFastWifi,  color: Color(hex: "#FFD60A"))
+                        AmenityBadge(icon: "moon.fill",           label: space.hasLateHours ? "Open late"  : "Closes early", active: space.hasLateHours, color: Color(hex: "#AF52DE"))
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.custom("HelveticaNeue", size: 12)).foregroundColor(.tsSecondary)
                     }
                 }
-                HStack(spacing: 4) {
-                    Image(systemName: "clock").font(.custom("HelveticaNeue", size: 11)).foregroundColor(.tsSecondary)
-                    Text("\(space.hoursDisplay) · \(space.hoursDays)")
-                        .font(.custom("HelveticaNeue", size: 12)).foregroundColor(.tsSecondary)
-                }
-                HStack(spacing: 12) {
-                    AmenityBadge(icon: "phone.fill",          label: space.hasCallRooms ? "Call rooms" : "No rooms",     active: space.hasCallRooms,  color: Color(hex: "#34C759"))
-                    AmenityBadge(icon: "cup.and.saucer.fill", label: space.hasCoffee    ? "Coffee"     : "No coffee",    active: space.hasCoffee,    color: Color(hex: "#FF9500"))
-                    AmenityBadge(icon: "bolt.fill",           label: space.hasFastWifi  ? "Fast WiFi"  : "Standard",     active: space.hasFastWifi,  color: Color.tsAccent)
-                    AmenityBadge(icon: "moon.fill",           label: space.hasLateHours ? "Open late"  : "Closes early", active: space.hasLateHours, color: Color(hex: "#AF52DE"))
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .font(.custom("HelveticaNeue", size: 12)).foregroundColor(.tsSecondary)
-                }
+                .padding(16)
             }
-            .padding(16)
             .background(Color.tsCard)
             .cornerRadius(16)
-            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
         }
         .buttonStyle(ScaleButtonStyle())
     }
@@ -471,8 +474,7 @@ struct CoworkDetailView: View {
                                     Text("Get Directions").fontWeight(.bold)
                                 }
                                 .foregroundColor(.white).frame(maxWidth: .infinity).frame(height: 52)
-                                .background(LinearGradient(colors: [Color.tsAccent, Color(hex: "#004775")],
-                                    startPoint: .topLeading, endPoint: .bottomTrailing))
+                                .background(Color.tsAccent)
                                 .cornerRadius(14)
                             }
                             if let site = space.website {

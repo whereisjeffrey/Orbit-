@@ -77,17 +77,20 @@ struct LibraryView: View {
                     // ── Search ─────────────────────────────────────────
                     HStack {
                         Image(systemName: "magnifyingglass")
-                            .foregroundColor(.tsSecondary)
+                            .foregroundColor(.tsLabel.opacity(0.7))
                             .font(.custom("HelveticaNeue", size: 16))
-                        TextField("Search phrases...", text: $searchText)
+                        TextField("", text: $searchText, prompt: Text("Search phrases...")
+                            .font(.custom("HelveticaNeue", size: 16))
+                            .foregroundColor(.tsLabel.opacity(0.5)))
                             .foregroundColor(.tsLabel)
+                            .tint(.tsAccent)
                             .autocorrectionDisabled()
                     }
                     .padding(.horizontal, 12)
                     .frame(height: 40)
                     .background(Color.tsCard)
                     .cornerRadius(12)
-                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                     .padding(.horizontal, 16)
                     .padding(.bottom, 24)
 
@@ -129,17 +132,9 @@ struct LibraryView: View {
 
                         HStack {
                             // Languages: EN + PT only
-                            HStack(spacing: -10) {
-                                Text("🇺🇸")
-                                    .font(.system(size: 22))
-                                    .frame(width: 34, height: 34)
-                                    .clipShape(Circle())
-                                    .overlay(Circle().stroke(Color.tsBackground, lineWidth: 2.5))
-                                Text("🇪🇸")
-                                    .font(.system(size: 22))
-                                    .frame(width: 34, height: 34)
-                                    .clipShape(Circle())
-                                    .overlay(Circle().stroke(Color.tsBackground, lineWidth: 2.5))
+                            HStack(spacing: 4) {
+                                Text("🇺🇸").font(.system(size: 24))
+                                Text("🇪🇸").font(.system(size: 24))
                             }
                             Spacer()
                             if store.activePhrases.isEmpty {
@@ -157,7 +152,7 @@ struct LibraryView: View {
                     .frame(height: 148)
                     .background(Color.tsCard)
                     .cornerRadius(24)
-                    .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
+                    .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                     }
                     .buttonStyle(ScaleButtonStyle())
                     .padding(.horizontal, 16)
@@ -230,7 +225,7 @@ struct LibraryView: View {
                     .padding(16)
                     .background(Color.tsCard)
                     .cornerRadius(24)
-                    .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
+                    .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                     .padding(.horizontal, 16)
                     .padding(.bottom, 120)
                 }
@@ -354,7 +349,7 @@ struct LibraryDeckCard: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color.tsCard)
             .cornerRadius(24)
-            .overlay(RoundedRectangle(cornerRadius: 24).stroke(tint.opacity(0.25), lineWidth: 1))
+            .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
         }
         .buttonStyle(DeckTapStyle())
     }

@@ -43,7 +43,7 @@ struct DeckPhraseListView: View {
                     .frame(height: 42)
                     .background(Color.tsCard)
                     .cornerRadius(14)
-                    .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
+                    .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
 

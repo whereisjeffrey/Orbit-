@@ -91,7 +91,7 @@ struct NewArrivalCard: View {
             .padding(.horizontal, 8)
             .background(Color.tsCard)
             .cornerRadius(16)
-            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
         }
         .buttonStyle(ScaleButtonStyle())
     }
@@ -118,11 +118,12 @@ struct NewInTownOptInCard: View {
                     .font(.custom("HelveticaNeue", size: 11))
                     .foregroundColor(.tsSecondary)
                     .multilineTextAlignment(.center)
+                Spacer()
             }
-            .frame(width: 80)
+            .frame(width: 80).frame(maxHeight: .infinity)
             .padding(.vertical, 12)
             .padding(.horizontal, 8)
-            .background(Color.tsAccent.opacity(0.07))
+            .background(Color.tsAccent.opacity(0.08))
             .cornerRadius(16)
             .overlay(
                 RoundedRectangle(cornerRadius: 16)

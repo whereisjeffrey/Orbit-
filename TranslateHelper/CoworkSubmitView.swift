@@ -53,7 +53,7 @@ struct CoworkSubmitView: View {
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                         .padding(14)
-                        .background(Color.tsAccent.opacity(0.07))
+                        .background(Color.tsAccent.opacity(0.08))
                         .cornerRadius(12)
 
                         // ── Basic info ─────────────────────────────
@@ -159,7 +159,7 @@ struct SubmitField: View {
                 .padding(12)
                 .background(Color.tsCard)
                 .cornerRadius(10)
-                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
+                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                 .focused($focused)
         }
     }
@@ -189,6 +189,6 @@ struct AmenityToggleRow: View {
         .padding(12)
         .background(Color.tsCard)
         .cornerRadius(10)
-        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
     }
 }

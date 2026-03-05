@@ -41,6 +41,7 @@ struct CommunityPost: Identifiable {
     var isVerifiedLocal: Bool = false
     var avatarInitials: String = ""
     var avatarColor: Color = .tsAccent
+    var avatarURL: String? = nil
 }
 
 struct CommunityView: View {
@@ -58,15 +59,15 @@ struct CommunityView: View {
         CommunityPost(author: "Marco R.", neighbourhood: "Condesa", type: .question,
                       body: "Anyone know a good English-speaking dentist in Roma Norte?",
                       likes: 7, comments: 3, timeAgo: "2h", isVerifiedLocal: false,
-                      avatarInitials: "MR", avatarColor: Color(hex: "#FF9500")),
+                      avatarInitials: "MR", avatarColor: Color(hex: "#FF9500"), avatarURL: "https://i.pravatar.cc/150?img=68"),
         CommunityPost(author: "Sarah K.", neighbourhood: "Polanco", type: .rec,
                       body: "Highly recommend Café Toscano for remote work — fast wifi, great coffee, never too crowded before noon.",
                       likes: 24, comments: 6, timeAgo: "5h", isVerifiedLocal: true,
-                      avatarInitials: "SK", avatarColor: Color(hex: "#AF52DE")),
+                      avatarInitials: "SK", avatarColor: Color(hex: "#AF52DE"), avatarURL: "https://i.pravatar.cc/150?img=44"),
         CommunityPost(author: "Diego M.", neighbourhood: "Roma Norte", type: .warning,
                       body: "Watch out for fake taxi overcharges outside Benito Juárez airport. Always use DIDI or Uber from inside.",
                       likes: 89, comments: 12, timeAgo: "1d", isVerifiedLocal: true,
-                      avatarInitials: "DM", avatarColor: Color(hex: "#34C759")),
+                      avatarInitials: "DM", avatarColor: Color(hex: "#34C759"), avatarURL: "https://i.pravatar.cc/150?img=12"),
         CommunityPost(author: "Lena W.", neighbourhood: "Coyoacán", type: .event,
                       body: "Expat meetup Friday night at Jardín Pushkin — 7pm. DM me if you\'re coming!",
                       likes: 31, comments: 8, timeAgo: "3h", isVerifiedLocal: false,
@@ -96,7 +97,7 @@ struct CommunityView: View {
                                     .font(.custom("HelveticaNeue-Medium", size: 13))
                                 Text(selectedCity.name)
                                     .font(.custom("HelveticaNeue-Medium", size: 14))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(.tsLabel)
                                 Image(systemName: "chevron.down")
                                     .font(.system(size: 11, weight: .medium))
                                     .foregroundColor(.tsAccent)
@@ -159,12 +160,7 @@ struct CommunityView: View {
                     .font(.custom("HelveticaNeue-Bold", size: 20))
                     .foregroundColor(.white)
                     .frame(width: 56, height: 56)
-                    .background(
-                        LinearGradient(
-                            colors: [Color.tsAccent, Color.tsAccent.opacity(0.7)],
-                            startPoint: .topLeading, endPoint: .bottomTrailing
-                        )
-                    )
+                    .background(Color.tsAccent)
                     .clipShape(Circle())
                     .shadow(color: Color.tsAccent.opacity(0.4), radius: 12, x: 0, y: 4)
             }
@@ -224,23 +220,41 @@ struct FilterChip: View {
 
 struct CommunityPostCard: View {
     let post: CommunityPost
+
+    @ViewBuilder var initialsCircle: some View {
+        ZStack {
+            Circle().fill(post.avatarColor).frame(width: 40, height: 40)
+            if post.avatarInitials.isEmpty {
+                Image(systemName: "person.fill")
+                    .font(.custom("HelveticaNeue-Medium", size: 16))
+                    .foregroundColor(.white)
+            } else {
+                Text(post.avatarInitials)
+                    .font(.custom("HelveticaNeue-Bold", size: 14))
+                    .foregroundColor(.white)
+            }
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 10) {
-                ZStack {
-                    Circle()
-                        .fill(post.avatarColor)
-                        .frame(width: 40, height: 40)
-                    if post.avatarInitials.isEmpty {
-                        Image(systemName: "person.fill")
-                            .font(.custom("HelveticaNeue-Medium", size: 16))
-                            .foregroundColor(.white)
+            HStack(alignment: .top, spacing: 10) {
+                Group {
+                    if let urlStr = post.avatarURL, let url = URL(string: urlStr) {
+                        AsyncImage(url: url) { phase in
+                            if let img = phase.image {
+                                img.resizable().scaledToFill()
+                                    .frame(width: 40, height: 40)
+                                    .clipShape(Circle())
+                            } else {
+                                initialsCircle
+                            }
+                        }
                     } else {
-                        Text(post.avatarInitials)
-                            .font(.custom("HelveticaNeue-Bold", size: 14))
-                            .foregroundColor(.white)
+                        initialsCircle
                     }
                 }
+                .frame(width: 40, height: 40)
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 4) {
                         Text(post.author)
@@ -286,7 +300,7 @@ struct CommunityPostCard: View {
         .padding(16)
         .background(Color.tsCard)
         .cornerRadius(16)
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
     }
 }
 
@@ -301,15 +315,28 @@ struct CityPickerView: View {
             List(CityStore.all) { city in
                 Button(action: { selectedId = city.id; dismiss() }) {
                     HStack {
-                        Text(city.emoji + " " + city.name).foregroundColor(.tsLabel)
+                        Text(city.emoji + " " + city.name)
+                            .font(.custom("HelveticaNeue", size: 16))
+                            .foregroundColor(.tsLabel)
                         Spacer()
                         if city.id == selectedId {
-                            Image(systemName: "checkmark").foregroundColor(.tsAccent)
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.tsAccent)
                         }
                     }
                 }
+                .listRowBackground(Color.tsCard)
             }
-            .navigationTitle("Choose City").navigationBarTitleDisplayMode(.inline)
+            .scrollContentBackground(.hidden)
+            .background(Color.tsBackground)
+            .navigationTitle("Choose City")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                        .foregroundColor(.tsAccent)
+                }
+            }
         }
     }
 }

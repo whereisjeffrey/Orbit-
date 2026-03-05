@@ -53,7 +53,7 @@ struct KitView: View {
                                     .font(.custom("HelveticaNeue-Medium", size: 13))
                                 Text(selectedCity.name)
                                     .font(.custom("HelveticaNeue-Medium", size: 14))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(.tsLabel)
                                 Image(systemName: "chevron.down")
                                     .font(.system(size: 11, weight: .medium))
                                     .foregroundColor(.tsAccent)
@@ -121,7 +121,7 @@ struct KitToolCard: View {
             .frame(maxWidth: .infinity, minHeight: 148, alignment: .leading)
             .background(Color.tsCard)
             .cornerRadius(20)
-            .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
+            .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
         }
         .buttonStyle(ScaleButtonStyle())
     }

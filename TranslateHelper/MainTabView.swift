@@ -51,7 +51,7 @@ struct TabBarItem: View {
         Button(action: { selected = tag }) {
             VStack(spacing: 4) {
                 Image(systemName: isSelected ? icon + ".fill" : icon)
-                    .font(.custom("HelveticaNeue", size: 20))
+                    .font(.system(size: 22))
                 Text(label)
                     .font(.system(size: 10, weight: isSelected ? .semibold : .regular))
             }

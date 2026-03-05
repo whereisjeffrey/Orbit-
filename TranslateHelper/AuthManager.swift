@@ -31,6 +31,9 @@ class AuthManager: ObservableObject {
     }
 
     var isSignedIn: Bool { user != nil }
+    var photoURL: URL?   { user?.photoURL }
+    var displayName: String { user?.displayName ?? user?.email?.components(separatedBy: "@").first ?? "Traveller" }
+    var email: String { user?.email ?? "" }
 
     // MARK: - Email/Password
 

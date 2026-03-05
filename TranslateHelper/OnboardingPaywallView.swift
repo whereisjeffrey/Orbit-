@@ -109,7 +109,7 @@ struct OnboardingPaywallView: View {
                         .padding(16)
                         .background(Color.tsCard)
                         .cornerRadius(16)
-                        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
+                        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                         .padding(.top, 8)
                     }
                     .padding(.horizontal, 24)

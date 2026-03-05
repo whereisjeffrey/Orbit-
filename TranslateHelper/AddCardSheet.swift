@@ -68,7 +68,7 @@ struct AddCardSheet: View {
                                 .padding(16)
                                 .background(Color.tsCard)
                                 .cornerRadius(14)
-                                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
+                                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                             } else {
                                 VStack(spacing: 8) {
                                     ForEach(deckStore.decks) { deck in
@@ -172,7 +172,7 @@ struct DeckPickerRow: View {
                 }
             }
             .padding(14)
-            .background(isSelected ? Color.tsAccent.opacity(0.07) : Color.tsCard)
+            .background(isSelected ? Color.tsAccent.opacity(0.08) : Color.tsCard)
             .cornerRadius(14)
             .overlay(
                 RoundedRectangle(cornerRadius: 14)

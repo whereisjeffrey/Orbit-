@@ -204,3 +204,31 @@ TranslateHelper/AddCardSheet.swift TranslateHelper/AskALocalView.swift Translate
  M TranslateHelper/WorkView.swift
 ### Files
 TranslateHelper/AddCardSheet.swift TranslateHelper/AskALocalView.swift TranslateHelper/CommunityUserProfileView.swift TranslateHelper/CommunityView.swift TranslateHelper/CoworkSubmitView.swift TranslateHelper/CoworkView.swift TranslateHelper/DeckPhraseListView.swift TranslateHelper/DesignSystem.swift TranslateHelper/KitView.swift TranslateHelper/LibraryView.swift TranslateHelper/MainTabView.swift TranslateHelper/MyDecksView.swift TranslateHelper/NewInTownSection.swift TranslateHelper/OnboardingGoalsView.swift TranslateHelper/OnboardingLocationView.swift TranslateHelper/OnboardingPaywallView.swift TranslateHelper/SettingsView.swift TranslateHelper/WorkTipStore.swift TranslateHelper/WorkView.swift 
+
+## 2026-03-05 16:44 — Auto-handoff (auto-heartbeat)
+### Changed (uncommitted)
+ M TranslateHelper/AddCardSheet.swift
+ M TranslateHelper/AskALocalView.swift
+ M TranslateHelper/AuthManager.swift
+ M TranslateHelper/CafeSpace.swift
+ M TranslateHelper/CommunityUserProfileView.swift
+ M TranslateHelper/CommunityView.swift
+ M TranslateHelper/CoworkSpace.swift
+ M TranslateHelper/CoworkSubmitView.swift
+ M TranslateHelper/CoworkView.swift
+ M TranslateHelper/DeckPhraseListView.swift
+ M TranslateHelper/DesignSystem.swift
+ M TranslateHelper/KeyboardSetupBanner.swift
+ M TranslateHelper/KitView.swift
+ M TranslateHelper/LibraryView.swift
+ M TranslateHelper/Localizable.xcstrings
+ M TranslateHelper/MainTabView.swift
+ M TranslateHelper/MyDecksView.swift
+ M TranslateHelper/NewInTownSection.swift
+ M TranslateHelper/OnboardingPaywallView.swift
+ M TranslateHelper/SettingsView.swift
+ M TranslateHelper/WorkView.swift
+?? TranslateHelper/PlacePhotoCarousel.swift
+?? TranslateHelper/PlacePhotoStore.swift
+### Files
+TranslateHelper/AddCardSheet.swift TranslateHelper/AskALocalView.swift TranslateHelper/AuthManager.swift TranslateHelper/CafeSpace.swift TranslateHelper/CommunityUserProfileView.swift TranslateHelper/CommunityView.swift TranslateHelper/CoworkSpace.swift TranslateHelper/CoworkSubmitView.swift TranslateHelper/CoworkView.swift TranslateHelper/DeckPhraseListView.swift TranslateHelper/DesignSystem.swift TranslateHelper/KeyboardSetupBanner.swift TranslateHelper/KitView.swift TranslateHelper/LibraryView.swift TranslateHelper/Localizable.xcstrings TranslateHelper/MainTabView.swift TranslateHelper/MyDecksView.swift TranslateHelper/NewInTownSection.swift TranslateHelper/OnboardingPaywallView.swift TranslateHelper/SettingsView.swift TranslateHelper/WorkView.swift TranslateHelper/PlacePhotoCarousel.swift TranslateHelper/PlacePhotoStore.swift 
