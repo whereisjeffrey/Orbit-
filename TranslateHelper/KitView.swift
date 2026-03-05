@@ -69,7 +69,7 @@ struct KitView: View {
         .sheet(isPresented: Binding(
             get: { activeDestination == .cowork },
             set: { if !$0 { activeDestination = nil } }
-        )) { CoworkView() }
+        )) { WorkView() }
         .sheet(isPresented: Binding(
             get: { activeDestination != nil && activeDestination != .cowork },
             set: { if !$0 { activeDestination = nil } }

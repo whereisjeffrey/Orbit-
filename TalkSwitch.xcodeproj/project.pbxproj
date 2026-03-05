@@ -95,6 +95,7 @@
 		006F75E12F547D9C00D581A9 /* CreateAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006F75C32F547D9C00D581A9 /* CreateAccountView.swift */; };
 		006F75ED2F547E3500D581A9 /* TranslateHelperKeyboard.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 006F75E62F547E3500D581A9 /* TranslateHelperKeyboard.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		006F769E2F54C7FA00D581A9 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 006F769D2F54C7FA00D581A9 /* GoogleSignIn */; };
+		019625D837DFB7DB4B19F958 /* CafeSpace.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE79DC13073D572CDAD5FBCA /* CafeSpace.swift */; };
 		0851017EA7D569DB7B793183 /* StudySourceWordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B7DDD7DACC2B26628632458 /* StudySourceWordView.swift */; };
 		0A536490DFE056A5AA52FE9C /* CityModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93834FA2F33A8EBFE4B053E5 /* CityModel.swift */; };
 		0E128240CECCCB88C69D578E /* TTSService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10B7D83A76412AF0CE97BB3 /* TTSService.swift */; };
@@ -121,6 +122,7 @@
 		D050ECE5BD70709FDA4FC04B /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CCCB62F99F464B7F3FB39D6 /* MainTabView.swift */; };
 		D679EC47DAD2AFB2E72A22F4 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = B40E93BABBB610917935465D /* Localizable.xcstrings */; };
 		DB91849C6A8449C2D08FBA65 /* AppleSignInHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51220AA1E01BAC95E7A6DE13 /* AppleSignInHelper.swift */; };
+		DC50E166FAB59FDB664811FE /* WorkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E06677359F1BC154293D11 /* WorkView.swift */; };
 		DDA054E5703065AF5B8A6955 /* LanguageSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7FDC3F2AB5601574ACCEED0 /* LanguageSelectionView.swift */; };
 		E01C8B061F276D5BB380A4EA /* KeyboardSetupBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E8447306AE1244029E4FE8D /* KeyboardSetupBanner.swift */; };
 		E3CC70291D4915828CF3B1FF /* NewInTownSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A394AAACBDA3524A3E99F30B /* NewInTownSection.swift */; };
@@ -287,8 +289,10 @@
 		A394AAACBDA3524A3E99F30B /* NewInTownSection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NewInTownSection.swift; sourceTree = "<group>"; };
 		AA374B85B1F404E8B29F71AA /* CoworkSpace.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoworkSpace.swift; sourceTree = "<group>"; };
 		B06F69CBF0E7D5F064F666BC /* UserLocationsStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UserLocationsStore.swift; sourceTree = "<group>"; };
+		B3E06677359F1BC154293D11 /* WorkView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkView.swift; sourceTree = "<group>"; };
 		B40E93BABBB610917935465D /* Localizable.xcstrings */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		B6645235449EC772517A19CF /* OnboardingPaywallView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OnboardingPaywallView.swift; sourceTree = "<group>"; };
+		BE79DC13073D572CDAD5FBCA /* CafeSpace.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CafeSpace.swift; sourceTree = "<group>"; };
 		C4FA7A587F0CCC98AE5D5CC6 /* DeckStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DeckStore.swift; sourceTree = "<group>"; };
 		D03FBC7ABDA39DF4E9E70732 /* CoworkSubmitView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoworkSubmitView.swift; sourceTree = "<group>"; };
 		DC65C434C4B19B941C69BC70 /* LibraryView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
@@ -555,6 +559,8 @@
 				4495980D41F88AC21D1D7562 /* CommunityUserProfileView.swift */,
 				647BAB9AC3A9720C933F9EEF /* BadgeSystem.swift */,
 				D03FBC7ABDA39DF4E9E70732 /* CoworkSubmitView.swift */,
+				B3E06677359F1BC154293D11 /* WorkView.swift */,
+				BE79DC13073D572CDAD5FBCA /* CafeSpace.swift */,
 			);
 			path = TranslateHelper;
 			sourceTree = "<group>";
@@ -805,6 +811,8 @@
 				E5E95B21BF5B725B7A4BF044 /* CommunityUserProfileView.swift in Sources */,
 				5ECCF5C0DA9158F1D161FB32 /* BadgeSystem.swift in Sources */,
 				30AE24600E8F6E58D60519A1 /* CoworkSubmitView.swift in Sources */,
+				DC50E166FAB59FDB664811FE /* WorkView.swift in Sources */,
+				019625D837DFB7DB4B19F958 /* CafeSpace.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

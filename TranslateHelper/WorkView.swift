@@ -1,0 +1,476 @@
+//  WorkView.swift — replaces KitView's CoworkView sheet
+//  Tab: Coworking | Cafés
+
+import SwiftUI
+import CoreLocation
+
+enum WorkTab: String, CaseIterable {
+    case coworking = "Coworking"
+    case cafes     = "Cafés"
+}
+
+struct WorkView: View {
+    @StateObject private var locationMgr = CoworkLocationManager()
+    @AppStorage("selected_city_id")      private var cityId        = "mx_cdmx"
+    @AppStorage("cowork_location_asked") private var locationAsked = false
+
+    @State private var activeTab: WorkTab = .coworking
+
+    // Cowork filters
+    @State private var filterCallRoom = false
+    @State private var filterCoffee   = false
+    @State private var filterFastWifi = false
+    @State private var filterLate     = false
+
+    // Café filters
+    @State private var filterQuiet    = false
+    @State private var filterOutlets  = false
+    @State private var filterCafeWifi = false
+    @State private var filterNoLimit  = false
+
+    @State private var selectedSpace:  CoworkSpace? = nil
+    @State private var selectedCafe:   CafeSpace?   = nil
+    @State private var showSubmit:     Bool          = false
+
+    // MARK: - Cowork list
+    var filteredSpaces: [CoworkSpace] {
+        var list = cdmxCoworkSpaces.filter { $0.cityId == cityId }
+        if filterCallRoom { list = list.filter { $0.hasCallRooms } }
+        if filterCoffee   { list = list.filter { $0.hasCoffee } }
+        if filterFastWifi { list = list.filter { $0.hasFastWifi } }
+        if filterLate     { list = list.filter { $0.hasLateHours } }
+        if let loc = locationMgr.userLocation {
+            list = list.sorted { ($0.distance(from: loc) ?? 999999) < ($1.distance(from: loc) ?? 999999) }
+        }
+        return list
+    }
+
+    // MARK: - Café list
+    var filteredCafes: [CafeSpace] {
+        var list = cdmxCafeSpaces.filter { $0.cityId == cityId }
+        if filterQuiet   { list = list.filter { $0.noiseLevel == .quiet } }
+        if filterOutlets { list = list.filter { $0.outlets != .none } }
+        if filterCafeWifi { list = list.filter { $0.hasFastWifi } }
+        if filterNoLimit { list = list.filter { $0.hasNoTimeLimit } }
+        if let loc = locationMgr.userLocation {
+            list = list.sorted { ($0.distance(from: loc) ?? 999999) < ($1.distance(from: loc) ?? 999999) }
+        }
+        return list
+    }
+
+    var hasLocation: Bool {
+        locationMgr.authStatus == .authorizedWhenInUse ||
+        locationMgr.authStatus == .authorizedAlways
+    }
+
+    var body: some View {
+        ZStack { TSGradientBackground()
+            VStack(spacing: 0) {
+
+                // ── Header ─────────────────────────────────────────
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Work")
+                            .font(.system(size: 28, weight: .bold))
+                            .foregroundColor(.tsLabel)
+                        Text("Mexico City")
+                            .font(.system(size: 13))
+                            .foregroundColor(.tsSecondary)
+                    }
+                    Spacer()
+                    if hasLocation {
+                        HStack(spacing: 4) {
+                            Circle().fill(Color(hex: "#34C759")).frame(width: 7, height: 7)
+                            Text("Nearby").font(.system(size: 12)).foregroundColor(.tsSecondary)
+                        }
+                        .padding(.top, 6)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 16)
+                .padding(.bottom, 12)
+
+                // ── Segmented control ───────────────────────────────
+                HStack(spacing: 0) {
+                    ForEach(WorkTab.allCases, id: \.self) { tab in
+                        Button(action: { withAnimation(.easeInOut(duration: 0.2)) { activeTab = tab } }) {
+                            Text(tab.rawValue)
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundColor(activeTab == tab ? .tsLabel : .tsSecondary)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 10)
+                                .background(
+                                    activeTab == tab ?
+                                    Color.tsCard.cornerRadius(10) :
+                                    Color.clear.cornerRadius(10)
+                                )
+                        }
+                    }
+                }
+                .padding(3)
+                .background(Color.tsCard.opacity(0.5))
+                .cornerRadius(12)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 12)
+
+                // ── One-time location card ──────────────────────────
+                if !locationAsked && !hasLocation {
+                    CoworkLocationCard {
+                        locationAsked = true
+                        locationMgr.requestLocation()
+                    } onDismiss: {
+                        locationAsked = true
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 12)
+                }
+
+                // ── Tab content ─────────────────────────────────────
+                if activeTab == .coworking {
+                    CoworkingTabContent(
+                        spaces: filteredSpaces,
+                        userLocation: locationMgr.userLocation,
+                        filterCallRoom: $filterCallRoom,
+                        filterCoffee:   $filterCoffee,
+                        filterFastWifi: $filterFastWifi,
+                        filterLate:     $filterLate,
+                        onSelect: { selectedSpace = $0 },
+                        onSubmit: { showSubmit = true }
+                    )
+                } else {
+                    CafeTabContent(
+                        cafes: filteredCafes,
+                        userLocation: locationMgr.userLocation,
+                        filterQuiet:   $filterQuiet,
+                        filterOutlets: $filterOutlets,
+                        filterFastWifi: $filterCafeWifi,
+                        filterNoLimit: $filterNoLimit,
+                        onSelect: { selectedCafe = $0 },
+                        onSubmit: { showSubmit = true }
+                    )
+                }
+            }
+        }
+        .onAppear { if hasLocation { locationMgr.requestLocation() } }
+        .sheet(item: $selectedSpace) { CoworkDetailView(space: $0, userLocation: locationMgr.userLocation) }
+        .sheet(item: $selectedCafe)  { CafeDetailView(cafe: $0, userLocation: locationMgr.userLocation) }
+        .sheet(isPresented: $showSubmit) {
+            CoworkSubmitView(type: .newSpace)
+        }
+    }
+}
+
+// MARK: - Coworking tab
+struct CoworkingTabContent: View {
+    let spaces: [CoworkSpace]
+    let userLocation: CLLocation?
+    @Binding var filterCallRoom: Bool
+    @Binding var filterCoffee:   Bool
+    @Binding var filterFastWifi: Bool
+    @Binding var filterLate:     Bool
+    let onSelect: (CoworkSpace) -> Void
+    let onSubmit: () -> Void
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 0) {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        CoworkFilterChip(icon: "phone.fill",          label: "Call rooms", active: $filterCallRoom)
+                        CoworkFilterChip(icon: "cup.and.saucer.fill", label: "Coffee",     active: $filterCoffee)
+                        CoworkFilterChip(icon: "bolt.fill",           label: "Fast WiFi",  active: $filterFastWifi)
+                        CoworkFilterChip(icon: "moon.fill",           label: "Late hours", active: $filterLate)
+                    }
+                    .padding(.horizontal, 16)
+                }
+                .padding(.bottom, 12)
+
+                LazyVStack(spacing: 12) {
+                    ForEach(spaces) { space in
+                        CoworkCard(space: space, userLocation: userLocation) { onSelect(space) }
+                    }
+                }
+                .padding(.horizontal, 16)
+
+                WorkFooterNote(onSubmit: onSubmit)
+            }
+        }
+    }
+}
+
+// MARK: - Cafés tab
+struct CafeTabContent: View {
+    let cafes: [CafeSpace]
+    let userLocation: CLLocation?
+    @Binding var filterQuiet:    Bool
+    @Binding var filterOutlets:  Bool
+    @Binding var filterFastWifi: Bool
+    @Binding var filterNoLimit:  Bool
+    let onSelect: (CafeSpace) -> Void
+    let onSubmit: () -> Void
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 0) {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        CoworkFilterChip(icon: "speaker.slash.fill", label: "Quiet",          active: $filterQuiet)
+                        CoworkFilterChip(icon: "bolt.fill",          label: "Power outlets",  active: $filterOutlets)
+                        CoworkFilterChip(icon: "wifi",               label: "Fast WiFi",      active: $filterFastWifi)
+                        CoworkFilterChip(icon: "timer",              label: "No time limit",  active: $filterNoLimit)
+                    }
+                    .padding(.horizontal, 16)
+                }
+                .padding(.bottom, 12)
+
+                if cafes.isEmpty {
+                    VStack(spacing: 12) {
+                        Image(systemName: "cup.and.saucer").font(.system(size: 36)).foregroundColor(.tsSecondary)
+                        Text("No cafés match those filters").font(.system(size: 15)).foregroundColor(.tsSecondary)
+                    }
+                    .frame(maxWidth: .infinity).padding(.top, 48)
+                } else {
+                    LazyVStack(spacing: 12) {
+                        ForEach(cafes) { cafe in
+                            CafeCard(cafe: cafe, userLocation: userLocation) { onSelect(cafe) }
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                }
+
+                WorkFooterNote(onSubmit: onSubmit)
+            }
+        }
+    }
+}
+
+// MARK: - Café card
+struct CafeCard: View {
+    let cafe: CafeSpace
+    let userLocation: CLLocation?
+    let onTap: () -> Void
+
+    var body: some View {
+        Button(action: onTap) {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(cafe.name)
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(.tsLabel)
+                        Text(cafe.neighbourhood)
+                            .font(.system(size: 13))
+                            .foregroundColor(.tsSecondary)
+                    }
+                    Spacer()
+                    if let dist = cafe.distanceLabel(from: userLocation) {
+                        HStack(spacing: 3) {
+                            Image(systemName: "location.fill").font(.system(size: 10)).foregroundColor(.tsAccent)
+                            Text(dist).font(.system(size: 13, weight: .semibold)).foregroundColor(.tsAccent)
+                        }
+                    }
+                }
+
+                HStack(spacing: 4) {
+                    Image(systemName: "clock").font(.system(size: 11)).foregroundColor(.tsSecondary)
+                    Text("\(cafe.hoursDisplay) · \(cafe.hoursDays)")
+                        .font(.system(size: 12)).foregroundColor(.tsSecondary)
+                }
+
+                HStack(spacing: 12) {
+                    // Noise
+                    HStack(spacing: 4) {
+                        Image(systemName: cafe.noiseLevel.icon).font(.system(size: 12))
+                            .foregroundColor(Color(hex: cafe.noiseLevel.color))
+                        Text(cafe.noiseLevel.rawValue).font(.system(size: 12))
+                            .foregroundColor(.tsSecondary)
+                    }
+                    // Outlets
+                    HStack(spacing: 4) {
+                        Image(systemName: "bolt.fill").font(.system(size: 12))
+                            .foregroundColor(cafe.outlets != .none ? Color(hex: "#FF9500") : Color.tsSecondary.opacity(0.4))
+                        Text(cafe.outlets.rawValue).font(.system(size: 12))
+                            .foregroundColor(.tsSecondary)
+                    }
+                    // WiFi
+                    HStack(spacing: 4) {
+                        Image(systemName: "wifi").font(.system(size: 12))
+                            .foregroundColor(cafe.hasFastWifi ? Color(hex: "#007AFF") : Color.tsSecondary.opacity(0.4))
+                        Text(cafe.wifiSpeed ?? (cafe.hasFastWifi ? "Fast" : "Slow")).font(.system(size: 12))
+                            .foregroundColor(.tsSecondary)
+                    }
+                    Spacer()
+                    // Time limit pill
+                    Text(cafe.timeLimitLabel)
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(cafe.hasNoTimeLimit ? Color(hex: "#34C759") : Color(hex: "#FF9500"))
+                        .padding(.horizontal, 8).padding(.vertical, 3)
+                        .background(
+                            (cafe.hasNoTimeLimit ? Color(hex: "#34C759") : Color(hex: "#FF9500")).opacity(0.12)
+                        )
+                        .clipShape(Capsule())
+                }
+            }
+            .padding(16)
+            .background(Color.tsCard)
+            .cornerRadius(16)
+        }
+        .buttonStyle(ScaleButtonStyle())
+    }
+}
+
+// MARK: - Café detail view
+struct CafeDetailView: View {
+    let cafe: CafeSpace
+    let userLocation: CLLocation?
+    @Environment(\.dismiss) var dismiss
+    @State private var showEdit = false
+
+    var body: some View {
+        NavigationStack {
+            ZStack { TSGradientBackground()
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(cafe.name)
+                                .font(.system(size: 26, weight: .bold)).foregroundColor(.tsLabel)
+                            Text(cafe.neighbourhood + " · Mexico City")
+                                .font(.system(size: 14)).foregroundColor(.tsSecondary)
+                            if let dist = cafe.distanceLabel(from: userLocation) {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "location.fill").font(.system(size: 12))
+                                    Text(dist + " from you").font(.system(size: 13, weight: .medium))
+                                }
+                                .foregroundColor(.tsAccent)
+                            }
+                        }
+                        .padding(20)
+
+                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                            DetailAmenityCard(
+                                icon: cafe.noiseLevel.icon,
+                                label: "Noise level",
+                                value: cafe.noiseLevel.rawValue,
+                                active: cafe.noiseLevel == .quiet,
+                                color: Color(hex: cafe.noiseLevel.color)
+                            )
+                            DetailAmenityCard(
+                                icon: "bolt.fill",
+                                label: "Power outlets",
+                                value: cafe.outlets.rawValue,
+                                active: cafe.outlets != .none,
+                                color: Color(hex: "#FF9500")
+                            )
+                            DetailAmenityCard(
+                                icon: "wifi",
+                                label: "WiFi",
+                                value: cafe.wifiSpeed ?? (cafe.hasFastWifi ? "Fast" : "Standard"),
+                                active: cafe.hasFastWifi,
+                                color: Color(hex: "#007AFF")
+                            )
+                            DetailAmenityCard(
+                                icon: "timer",
+                                label: "Time limit",
+                                value: cafe.timeLimitLabel,
+                                active: cafe.hasNoTimeLimit,
+                                color: Color(hex: "#34C759")
+                            )
+                        }
+                        .padding(.horizontal, 16).padding(.bottom, 20)
+
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Hours").font(.system(size: 17, weight: .bold)).foregroundColor(.tsLabel)
+                            HStack(spacing: 8) {
+                                Image(systemName: "clock.fill").foregroundColor(.tsSecondary)
+                                Text(cafe.hoursDisplay).foregroundColor(.tsLabel)
+                                Text("·").foregroundColor(.tsSecondary)
+                                Text(cafe.hoursDays).foregroundColor(.tsSecondary)
+                            }
+                            .font(.system(size: 15))
+                        }
+                        .padding(.horizontal, 16).padding(.bottom, 20)
+
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Address").font(.system(size: 17, weight: .bold)).foregroundColor(.tsLabel)
+                            Text(cafe.address).font(.system(size: 15)).foregroundColor(.tsSecondary)
+                        }
+                        .padding(.horizontal, 16).padding(.bottom, 20)
+
+                        if let notes = cafe.notes {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("The lowdown").font(.system(size: 17, weight: .bold)).foregroundColor(.tsLabel)
+                                Text(notes).font(.system(size: 15)).foregroundColor(.tsSecondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            .padding(.horizontal, 16).padding(.bottom, 28)
+                        }
+
+                        VStack(spacing: 12) {
+                            Button(action: { openMaps() }) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "map.fill")
+                                    Text("Get Directions").fontWeight(.bold)
+                                }
+                                .foregroundColor(.white).frame(maxWidth: .infinity).frame(height: 52)
+                                .background(LinearGradient(colors: [Color(hex: "#3B99FC"), Color(hex: "#007AFF")],
+                                    startPoint: .topLeading, endPoint: .bottomTrailing))
+                                .cornerRadius(14)
+                            }
+                            if let site = cafe.website {
+                                Button(action: { openWebsite(site) }) {
+                                    HStack(spacing: 6) {
+                                        Image(systemName: "safari")
+                                        Text(site)
+                                    }
+                                    .font(.system(size: 14)).foregroundColor(.tsAccent)
+                                }
+                            }
+                            Button(action: { showEdit = true }) {
+                                HStack(spacing: 5) {
+                                    Image(systemName: "pencil")
+                                    Text("Suggest an edit")
+                                }
+                                .font(.system(size: 13)).foregroundColor(.tsSecondary)
+                            }
+                            .padding(.top, 4)
+                        }
+                        .padding(.horizontal, 16).padding(.bottom, 48)
+                    }
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Done") { dismiss() } } }
+            .sheet(isPresented: $showEdit) { CoworkSubmitView(type: .newSpace) }
+        }
+    }
+
+    private func openMaps() {
+        let q = cafe.address.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        if let url = URL(string: "maps://?q=\(q)") { UIApplication.shared.open(url) }
+    }
+    private func openWebsite(_ site: String) {
+        let s = site.hasPrefix("http") ? site : "https://\(site)"
+        if let url = URL(string: s) { UIApplication.shared.open(url) }
+    }
+}
+
+// MARK: - Shared footer
+struct WorkFooterNote: View {
+    let onSubmit: () -> Void
+    var body: some View {
+        VStack(spacing: 4) {
+            Text("Data is community-verified. Hours and amenities change.")
+                .font(.system(size: 12)).foregroundColor(.tsSecondary).multilineTextAlignment(.center)
+            Button(action: onSubmit) {
+                HStack(spacing: 5) {
+                    Image(systemName: "plus.circle")
+                    Text("Add a place or fix outdated info")
+                }
+                .font(.system(size: 14, weight: .medium)).foregroundColor(.tsAccent)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 20)
+        .padding(.bottom, 32)
+    }
+}
