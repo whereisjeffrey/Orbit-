@@ -391,7 +391,7 @@ struct CommunityPostCard: View {
             .padding(.top, 14)
             .padding(.bottom, 14)
         }
-        .background(post.isPreset ? Color(UIColor.systemGray6) : Color.tsCard)
+        .background(post.isPreset ? Color(UIColor.systemGray6).opacity(0.5) : Color.tsCard)
         .cornerRadius(16)
         .overlay(
             Group {
