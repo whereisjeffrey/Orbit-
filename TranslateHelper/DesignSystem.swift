@@ -253,11 +253,11 @@ struct TSPickerField<MenuContent: View>: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
-            .background(Color.tsInputBg)
+            .background(Color(UIColor.systemBackground))
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.tsBorder, lineWidth: 1)
+                    .stroke(Color.tsAccent.opacity(0.25), lineWidth: 1)
             )
             .contentShape(Rectangle()) // ensures full row is tappable
         }
@@ -268,15 +268,6 @@ struct TSButton: View {
     let title: String
     var isLoading = false
     let action: () -> Void
-
-    private let gradient = LinearGradient(
-        colors: [
-            Color(hex: "#5BA8FF"),  // lighter blue — top highlight
-            Color(hex: "#005C99"),  // action navy — bottom
-        ],
-        startPoint: .top,
-        endPoint: .bottom
-    )
 
     var body: some View {
         Button(action: action) {
@@ -289,9 +280,8 @@ struct TSButton: View {
             }
             .frame(maxWidth: .infinity)
             .frame(height: 52)
-            .background(gradient)
+            .background(Color.tsAccent)
             .cornerRadius(14)
-            .shadow(color: Color.tsAccent.opacity(0.39), radius: 14, x: 0, y: 4)
         }
         .disabled(isLoading)
     }

@@ -131,14 +131,8 @@ struct OnboardingGoalsView: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
-                            .background(
-                                LinearGradient(
-                                    colors: [Color.tsAccent, Color(hex: "#004775")],
-                                    startPoint: .topLeading, endPoint: .bottomTrailing
-                                )
-                            )
+                            .background(Color.tsAccent)
                             .clipShape(Capsule())
-                            .shadow(color: Color.tsAccent.opacity(0.3), radius: 16, x: 0, y: 4)
                     }
                     .padding(.horizontal, 24)
 

@@ -196,16 +196,8 @@ struct LanguageSelectionView: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
-                            .background(
-                                selectedLanguage != nil
-                                    ? AnyShapeStyle(LinearGradient(
-                                        colors: [Color.tsAccent, Color(hex: "#004775")],
-                                        startPoint: .topLeading, endPoint: .bottomTrailing))
-                                    : AnyShapeStyle(Color.tsCard)
-                            )
+                            .background(selectedLanguage != nil ? Color.tsAccent : Color.tsSecondary.opacity(0.35))
                             .clipShape(Capsule())
-                            .shadow(color: Color.tsAccent.opacity(selectedLanguage != nil ? 0.3 : 0),
-                                    radius: 16, x: 0, y: 4)
                     }
                     .disabled(selectedLanguage == nil)
                     .animation(.easeInOut(duration: 0.2), value: selectedLanguage != nil)

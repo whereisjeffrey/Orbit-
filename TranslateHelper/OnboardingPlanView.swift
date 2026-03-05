@@ -141,9 +141,10 @@ struct OnboardingPlanView: View {
                                     }
                                 }
                                 .padding(24)
-                                .background(Color.tsLabel.opacity(0.04))
+                                .background(Color.tsCard)
                                 .clipShape(RoundedRectangle(cornerRadius: 24))
-                                .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.tsBorder, lineWidth: 1))
+                                .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.tsAccent.opacity(0.2), lineWidth: 1))
+                                .contentShape(RoundedRectangle(cornerRadius: 24))
                             }
                             .buttonStyle(ScaleButtonStyle())
                         }
@@ -169,11 +170,8 @@ struct OnboardingPlanView: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
-                            .background(LinearGradient(
-                                colors: [Color.tsAccent, Color(hex: "#004775")],
-                                startPoint: .topLeading, endPoint: .bottomTrailing))
+                            .background(Color.tsAccent)
                             .clipShape(Capsule())
-                            .shadow(color: Color.tsAccent.opacity(0.3), radius: 16, x: 0, y: 4)
                     }
                     .padding(.horizontal, 24)
 

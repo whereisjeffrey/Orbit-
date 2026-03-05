@@ -42,7 +42,7 @@ struct KeyboardSetupSplashView: View {
                         PulsingKeyboardIcon()
                         Text("Enable Keyboard")
                             .font(.custom("HelveticaNeue-Medium", size: 17))
-                            .foregroundColor(.white)
+                            .foregroundColor(.tsAccent)
                     }
                     .padding(.top, 28)
                     .padding(.bottom, 20)

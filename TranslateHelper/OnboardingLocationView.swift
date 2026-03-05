@@ -229,16 +229,8 @@ struct OnboardingLocationView: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
-                            .background(
-                                LinearGradient(
-                                    colors: locStore.locations.isEmpty
-                                        ? [Color(hex: "#636366"), Color(hex: "#48484A")]
-                                        : [Color(hex: "#3B99FC"), Color.tsAccent],
-                                    startPoint: .topLeading, endPoint: .bottomTrailing
-                                )
-                            )
+                            .background(locStore.locations.isEmpty ? Color.tsSecondary.opacity(0.35) : Color.tsAccent)
                             .clipShape(Capsule())
-                            .shadow(color: locStore.locations.isEmpty ? .clear : Color.tsAccent.opacity(0.3), radius: 16, x: 0, y: 4)
                     }
                     .padding(.horizontal, 24)
                     .animation(.easeInOut(duration: 0.2), value: locStore.locations.isEmpty)
