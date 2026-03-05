@@ -218,12 +218,17 @@ struct LibraryView: View {
                         Spacer()
 
                         Button(action: { showingGoalSheet = true }) {
-                            Text("Set Goal")
-                                .font(.custom("HelveticaNeue-Medium", size: 13))
-                                .foregroundColor(.tsAccent)
-                                .padding(.horizontal, 14)
-                                .padding(.vertical, 6)
-                                .overlay(Capsule().stroke(Color.tsAccent.opacity(0.35), lineWidth: 1))
+                            HStack(spacing: 4) {
+                                Image(systemName: "bolt.fill")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundColor(Color(hex: "#FFD60A"))
+                                Text("Set Goal")
+                                    .font(.custom("HelveticaNeue-Medium", size: 13))
+                                    .foregroundColor(.tsAccent)
+                            }
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 6)
+                            .overlay(Capsule().stroke(Color.tsAccent.opacity(0.35), lineWidth: 1))
                         }
                     }
                     .padding(.horizontal, 16)
