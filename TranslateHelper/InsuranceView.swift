@@ -154,33 +154,33 @@ private struct TileHeightKey: PreferenceKey {
 
 struct CoverageTypesSection: View {
     let cols = [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)]
-    @State private var tileH: CGFloat = 80
+    @State private var tileH: CGFloat = 110
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             SectionLabel("WHAT TO LOOK FOR")
             LazyVGrid(columns: cols, spacing: 10) {
                 ForEach(coverageTypes, id: \.title) { c in
-                    HStack(alignment: .top, spacing: 10) {
+                    VStack(alignment: .leading, spacing: 10) {
                         ZStack {
                             RoundedRectangle(cornerRadius: 10)
                                 .fill(Color(hex: c.color).opacity(0.12))
-                                .frame(width: 36, height: 36)
+                                .frame(width: 38, height: 38)
                             Image(systemName: c.icon)
                                 .font(.system(size: 15))
                                 .foregroundColor(Color(hex: c.color))
                         }
-                        VStack(alignment: .leading, spacing: 3) {
+                        VStack(alignment: .leading, spacing: 4) {
                             Text(c.title)
-                                .font(.custom("HelveticaNeue-Bold", size: 12))
+                                .font(.custom("HelveticaNeue-Bold", size: 13))
                                 .foregroundColor(.tsLabel)
                             Text(c.desc)
-                                .font(.custom("HelveticaNeue", size: 11))
+                                .font(.custom("HelveticaNeue", size: 12))
                                 .foregroundColor(.tsSecondary)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                     }
-                    .padding(12)
+                    .padding(14)
                     .frame(maxWidth: .infinity, minHeight: tileH, alignment: .topLeading)
                     .background(
                         // Measure natural height of each tile
@@ -325,7 +325,7 @@ struct ExclusionsCard: View {
                     HStack(spacing: 12) {
                         Image(systemName: e.icon)
                             .font(.system(size: 14))
-                            .foregroundColor(Color(hex: "#FF3B30"))
+                            .foregroundColor(Color(hex: "#FF9500"))
                             .frame(width: 20)
                         Text(e.text)
                             .font(.custom("HelveticaNeue", size: 14))
