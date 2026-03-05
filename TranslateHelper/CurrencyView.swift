@@ -8,8 +8,6 @@ let otherCurrencies: [(code: String, flag: String, name: String)] = [
     ("EUR", "🇪🇺", "Euro"),
     ("CAD", "🇨🇦", "Canadian Dollar"),
 ]
-let quickAmounts: [Double] = [5, 10, 20, 50, 100]
-
 // Simulate a plausible 7-day sparkline ending at the live rate
 func mockSparkline(around rate: Double) -> [Double] {
     guard rate > 0 else { return Array(repeating: 17.5, count: 28) }
@@ -300,41 +298,6 @@ struct WiseCurrencyRow: View {
     }
 }
 
-// MARK: - Quick Convert Row
-struct QuickConvertRow: View {
-    let rate:     Double
-    let onSelect: (Double) -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("QUICK CONVERT")
-                .font(.custom("HelveticaNeue-Bold", size: 11))
-                .foregroundColor(.tsSecondary)
-                .tracking(1.2)
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(quickAmounts, id: \.self) { amount in
-                        Button(action: { onSelect(amount) }) {
-                            VStack(spacing: 3) {
-                                Text("$\(Int(amount))")
-                                    .font(.custom("HelveticaNeue-Bold", size: 15))
-                                    .foregroundColor(.tsLabel)
-                                Text(String(format: "%.0f", amount * rate))
-                                    .font(.custom("HelveticaNeue", size: 12))
-                                    .foregroundColor(.tsSecondary)
-                            }
-                            .frame(width: 72, height: 56)
-                            .background(Color.tsCard)
-                            .cornerRadius(14)
-                            .overlay(RoundedRectangle(cornerRadius: 14)
-                                .stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
 
 // MARK: - Other Rates
 struct OtherRatesSection: View {
@@ -458,14 +421,6 @@ struct CurrencyView: View {
                         updatedLabel: store.updatedLabel,
                         isLoading:    store.isLoading
                     )
-
-                    if mxnRate > 0 {
-                        QuickConvertRow(rate: mxnRate) { amount in
-                            usdText    = String(format: "%.0f", amount)
-                            mxnText    = String(format: "%.2f", amount * mxnRate)
-                            editingUSD = true
-                        }
-                    }
 
                     if !store.rates.isEmpty {
                         OtherRatesSection(store: store)
