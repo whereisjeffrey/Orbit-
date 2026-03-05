@@ -71,7 +71,7 @@ struct WorkView: View {
             VStack(spacing: 0) {
 
                 // ── Header ─────────────────────────────────────────
-                HStack(alignment: .top) {
+                HStack(alignment: .center) {
                     Text("Work")
                         .font(.custom("HelveticaNeue-Bold", size: 28))
                         .foregroundColor(.tsLabel)
@@ -102,7 +102,7 @@ struct WorkView: View {
                     }
                 }
                 .padding(.horizontal, 16)
-                .padding(.top, 16)
+                .padding(.top, 32)
                 .padding(.bottom, 12)
 
                 // ── Segmented control ───────────────────────────────
