@@ -85,6 +85,7 @@ struct StudySourceWordView: View {
                         if !isFlipped {
                             let generator = UIImpactFeedbackGenerator(style: .medium)
                             generator.impactOccurred()
+                            SoundEngine.shared.play(.flip)
                             withAnimation(.spring(response: 0.6, dampingFraction: 0.8, blendDuration: 0)) {
                                 isFlipped = true
                             }
@@ -218,6 +219,8 @@ struct StudySourceWordView: View {
     private func handleRating(rating: Int) {
         let generator = UIImpactFeedbackGenerator(style: .light)
         generator.impactOccurred()
+        let ratingSound: SoundEngine.Sound = rating == 1 ? .again : rating == 2 ? .hard : rating == 3 ? .good : .easy
+        SoundEngine.shared.play(ratingSound)
         
         if var phrase = currentPhrase {
             // Apply SM-2 spaced repetition logic
