@@ -199,40 +199,31 @@ struct LibraryView: View {
                     .padding(.bottom, 24)
 
                     // ── Daily Goal ─────────────────────────────────────
-                    HStack(spacing: 16) {
-                        TSProgressRing(progress: goalProgress, size: 44)
+                    HStack(spacing: 12) {
+                        TSProgressRing(progress: goalProgress, size: 36)
 
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Daily Goal")
-                                .font(.custom("HelveticaNeue-Bold", size: 15))
-                                .foregroundColor(.tsLabel)
-                            Text(dailyGoal == 0
-                                 ? "No goal set yet"
-                                 : "\(reviewedToday) / \(dailyGoal) phrases reviewed")
-                                .font(.custom("HelveticaNeue", size: 13))
-                                .foregroundColor(.tsSecondary)
-                        }
+                        Text(dailyGoal == 0
+                             ? "0 / 20 phrases reviewed"
+                             : "\(reviewedToday) / \(dailyGoal) phrases reviewed")
+                            .font(.custom("HelveticaNeue-Medium", size: 14))
+                            .foregroundColor(.tsLabel)
 
                         Spacer()
 
                         Button(action: { showingGoalSheet = true }) {
-                            HStack(spacing: 5) {
-                                Image(systemName: "bolt.fill")
-                                    .font(.system(size: 11, weight: .bold))
-                                    .foregroundColor(Color(hex: "#FFD60A"))
-                                Text("Set Daily Goal")
-                                    .font(.custom("HelveticaNeue-Medium", size: 13))
-                                    .foregroundColor(.tsAccent)
-                            }
-                            .padding(.horizontal, 16)
+                            Text("Set Goal")
+                                .font(.custom("HelveticaNeue-Medium", size: 13))
+                                .foregroundColor(.tsAccent)
+                                .padding(.horizontal, 14)
                                 .padding(.vertical, 6)
-                                .overlay(Capsule().stroke(Color.tsAccent.opacity(0.4), lineWidth: 1))
+                                .overlay(Capsule().stroke(Color.tsAccent.opacity(0.35), lineWidth: 1))
                         }
                     }
-                    .padding(16)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
                     .background(Color.tsCard)
-                    .cornerRadius(24)
-                    .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
+                    .cornerRadius(20)
+                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                     .padding(.horizontal, 16)
                     .padding(.bottom, 120)
                 }
