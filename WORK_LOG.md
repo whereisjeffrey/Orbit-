@@ -90,3 +90,24 @@
 - Location prompt shown once only (cowork_location_asked AppStorage key)
 - Raw location never stored — only used to calculate distances at query time
 - 'Suggest an edit' on detail view + 'Add a space' at list bottom = two entry points for community data
+
+## 2026-03-05 — project cleanup
+### Problem
+add_files.rb had been run 6 times, each creating a complete duplicate PBXGroup copy
+of the entire TranslateHelper/ folder. 125 ghost PBXFileReference objects + 26 orphaned
+PBXBuildFile entries caused duplicate compile warnings on every file in the project.
+
+### Root cause
+TalkSwitch.xcodeproj uses PBXFileSystemSynchronizedRootGroup (Xcode 16+) — files in
+TranslateHelper/ are picked up automatically. add_files.rb (old-style PBXGroup approach)
+was entirely redundant and additive on every run.
+
+### Fix
+- fix_filesync.rb: cleared explicit entries from Sources + Resources phases
+- fix_stale_groups.rb: removed 6 stale PBXGroup objects + contents
+- fix_final.rb: removed 1 remaining LaunchScreen.storyboard entry
+- Result: BUILD SUCCEEDED with zero warnings
+
+### Permanent change
+DO NOT run add_files.rb ever again. Just create .swift files in TranslateHelper/ —
+fileSystemSynchronizedGroups includes them automatically on next build.
