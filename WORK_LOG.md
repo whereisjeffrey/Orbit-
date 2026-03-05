@@ -111,3 +111,12 @@ was entirely redundant and additive on every run.
 ### Permanent change
 DO NOT run add_files.rb ever again. Just create .swift files in TranslateHelper/ —
 fileSystemSynchronizedGroups includes them automatically on next build.
+
+## 2026-03-05 08:45 — Auto-handoff (auto-heartbeat)
+### Changed (uncommitted)
+ M TranslateHelper/Assets.xcassets/AppIcon.appiconset/TalkSwitch-Icon.png
+ M TranslateHelper/Info.plist
+ M TranslateHelper/Localizable.xcstrings
+ M TranslateHelper/MainTabView.swift
+### Files
+TranslateHelper/Assets.xcassets/AppIcon.appiconset/TalkSwitch-Icon.png TranslateHelper/Info.plist TranslateHelper/Localizable.xcstrings TranslateHelper/MainTabView.swift 

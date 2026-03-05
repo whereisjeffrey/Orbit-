@@ -23,11 +23,26 @@ struct MainTabView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .background(.ultraThinMaterial)
+            .background(
+                ZStack {
+                    Color.tsFooter
+                    // Subtle top-edge glow
+                    VStack {
+                        LinearGradient(
+                            colors: [Color.tsAccent.opacity(0.18), Color.clear],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                        .frame(height: 1.5)
+                        Spacer()
+                    }
+                }
+            )
             .cornerRadius(24)
             .padding(.horizontal, 16)
             .padding(.bottom, 24)
-            .shadow(color: .black.opacity(0.15), radius: 16, x: 0, y: 4)
+            .shadow(color: Color.tsAccent.opacity(0.12), radius: 20, x: 0, y: -4)
+            .shadow(color: .black.opacity(0.35), radius: 16, x: 0, y: 4)
         }
         .ignoresSafeArea(edges: .bottom)
     }

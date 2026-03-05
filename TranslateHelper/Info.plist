@@ -23,10 +23,16 @@
 			</array>
 		</dict>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>TalkSwitch uses your location to personalise language learning content for the city you are in.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>TalkSwitch needs microphone access for voice translation and speech coaching.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>TalkSwitch uses speech recognition to transcribe your voice for translation and coaching.</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Sono-Regular.ttf</string>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -46,10 +52,5 @@
 			</array>
 		</dict>
 	</dict>
-
-	<key>UIAppFonts</key>
-	<array>
-		<string>Sono-Regular.ttf</string>
-	</array>
 </dict>
 </plist>
