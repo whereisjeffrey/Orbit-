@@ -152,11 +152,11 @@ struct StudyRevealedCardView: View {
                             VStack(alignment: .leading, spacing: 12) {
                                 HStack(spacing: 6) {
                                     Image(systemName: "lightbulb.fill")
-                                        .foregroundColor(Color(hex: "D4AF37"))
+                                        .foregroundColor(Color(hex: "F5A623"))
                                         .font(.custom("HelveticaNeue", size: 14))
                                     Text("CULTURAL CONTEXT")
                                         .font(.custom("HelveticaNeue-Bold", size: 11))
-                                        .foregroundColor(Color(hex: "D4AF37"))
+                                        .foregroundColor(Color(hex: "F5A623"))
                                         .tracking(1.5)
                                 }
                                 
@@ -167,15 +167,16 @@ struct StudyRevealedCardView: View {
                             }
                             .padding(20)
                             .background(
-                                ZStack {
-                                    Color(UIColor { $0.userInterfaceStyle == .dark ? .clear : .systemBackground })
-                                    Color(hex: "D4AF37").opacity(0.1)
-                                }
+                                Color(UIColor { trait in
+                                    trait.userInterfaceStyle == .dark
+                                        ? UIColor(red: 0.96, green: 0.65, blue: 0.14, alpha: 0.10)
+                                        : .systemBackground
+                                })
                             )
                             .clipShape(RoundedRectangle(cornerRadius: 16))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 16)
-                                    .stroke(Color(hex: "D4AF37").opacity(0.2), lineWidth: 1)
+                                    .stroke(Color(hex: "F5A623").opacity(0.2), lineWidth: 1)
                             )
                             .padding(.horizontal, 20)
                             .padding(.bottom, 24)
