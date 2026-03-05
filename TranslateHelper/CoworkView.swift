@@ -1,5 +1,3 @@
-//  CoworkView.swift
-
 import SwiftUI
 import Combine
 import CoreLocation
@@ -44,14 +42,17 @@ enum CoworkSort: String, CaseIterable {
 // MARK: - Main View
 struct CoworkView: View {
     @StateObject private var locationMgr = CoworkLocationManager()
-    @AppStorage("selected_city_id") private var cityId = "mx_cdmx"
+    @AppStorage("selected_city_id")        private var cityId           = "mx_cdmx"
+    @AppStorage("cowork_location_asked")   private var locationAsked    = false
 
-    @State private var sortBy:         CoworkSort = .distance
-    @State private var filterCallRoom: Bool = false
-    @State private var filterCoffee:   Bool = false
-    @State private var filterFastWifi: Bool = false
-    @State private var filterLate:     Bool = false
-    @State private var selected:       CoworkSpace? = nil
+    @State private var sortBy:          CoworkSort = .distance
+    @State private var filterCallRoom:  Bool = false
+    @State private var filterCoffee:    Bool = false
+    @State private var filterFastWifi:  Bool = false
+    @State private var filterLate:      Bool = false
+    @State private var selected:        CoworkSpace? = nil
+    @State private var showSubmit:      Bool = false
+    @State private var showLocationCard: Bool = false
 
     var allSpaces: [CoworkSpace] { cdmxCoworkSpaces.filter { $0.cityId == cityId } }
 
@@ -61,13 +62,10 @@ struct CoworkView: View {
         if filterCoffee   { list = list.filter { $0.hasCoffee } }
         if filterFastWifi { list = list.filter { $0.hasFastWifi } }
         if filterLate     { list = list.filter { $0.hasLateHours } }
-
         switch sortBy {
         case .distance:
             if let loc = locationMgr.userLocation {
-                list = list.sorted { a, b in
-                    (a.distance(from: loc) ?? 999) < (b.distance(from: loc) ?? 999)
-                }
+                list = list.sorted { ($0.distance(from: loc) ?? 999) < ($1.distance(from: loc) ?? 999) }
             }
         case .price:
             list = list.sorted { ($0.dayRate ?? 9999) < ($1.dayRate ?? 9999) }
@@ -79,12 +77,17 @@ struct CoworkView: View {
         [filterCallRoom, filterCoffee, filterFastWifi, filterLate].filter { $0 }.count
     }
 
+    var hasLocation: Bool {
+        locationMgr.authStatus == .authorizedWhenInUse ||
+        locationMgr.authStatus == .authorizedAlways
+    }
+
     var body: some View {
         ZStack { TSGradientBackground()
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
 
-                    // ── Header ─────────────────────────────────────────
+                    // ── Header ─────────────────────────────────────
                     HStack(alignment: .top) {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Cowork")
@@ -95,9 +98,7 @@ struct CoworkView: View {
                                 .foregroundColor(.tsSecondary)
                         }
                         Spacer()
-                        // Location status dot
-                        if locationMgr.authStatus == .authorizedWhenInUse ||
-                           locationMgr.authStatus == .authorizedAlways {
+                        if hasLocation {
                             HStack(spacing: 4) {
                                 Circle().fill(Color(hex: "#34C759")).frame(width: 7, height: 7)
                                 Text("Nearby")
@@ -111,7 +112,19 @@ struct CoworkView: View {
                     .padding(.top, 16)
                     .padding(.bottom, 16)
 
-                    // ── Sort pills ─────────────────────────────────────
+                    // ── One-time location prompt card ───────────────
+                    if !locationAsked && !hasLocation {
+                        CoworkLocationCard {
+                            locationAsked = true
+                            locationMgr.requestLocation()
+                        } onDismiss: {
+                            locationAsked = true
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 16)
+                    }
+
+                    // ── Sort pills ──────────────────────────────────
                     HStack(spacing: 8) {
                         Text("Sort:")
                             .font(.system(size: 13))
@@ -131,39 +144,19 @@ struct CoworkView: View {
                     .padding(.horizontal, 16)
                     .padding(.bottom, 12)
 
-                    // ── Filter chips ───────────────────────────────────
+                    // ── Filter chips ────────────────────────────────
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
-                            CoworkFilterChip(icon: "phone.fill",        label: "Call rooms", active: $filterCallRoom)
-                            CoworkFilterChip(icon: "cup.and.saucer.fill", label: "Coffee",   active: $filterCoffee)
-                            CoworkFilterChip(icon: "bolt.fill",         label: "Fast WiFi",  active: $filterFastWifi)
-                            CoworkFilterChip(icon: "moon.fill",         label: "Late hours", active: $filterLate)
+                            CoworkFilterChip(icon: "phone.fill",          label: "Call rooms", active: $filterCallRoom)
+                            CoworkFilterChip(icon: "cup.and.saucer.fill", label: "Coffee",     active: $filterCoffee)
+                            CoworkFilterChip(icon: "bolt.fill",           label: "Fast WiFi",  active: $filterFastWifi)
+                            CoworkFilterChip(icon: "moon.fill",           label: "Late hours", active: $filterLate)
                         }
                         .padding(.horizontal, 16)
                     }
                     .padding(.bottom, 12)
 
-                    // ── Location prompt ────────────────────────────────
-                    if locationMgr.authStatus == .notDetermined {
-                        Button(action: { locationMgr.requestLocation() }) {
-                            HStack(spacing: 8) {
-                                Image(systemName: "location.fill")
-                                    .font(.system(size: 13))
-                                Text("Enable location to sort by distance")
-                                    .font(.system(size: 13, weight: .medium))
-                            }
-                            .foregroundColor(.tsAccent)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 10)
-                            .frame(maxWidth: .infinity)
-                            .background(Color.tsAccent.opacity(0.08))
-                            .cornerRadius(12)
-                            .padding(.horizontal, 16)
-                        }
-                        .padding(.bottom, 12)
-                    }
-
-                    // ── Result count ───────────────────────────────────
+                    // ── Result count ────────────────────────────────
                     HStack {
                         Text(filtered.count == allSpaces.count
                              ? "\(filtered.count) spaces"
@@ -182,7 +175,7 @@ struct CoworkView: View {
                     .padding(.horizontal, 16)
                     .padding(.bottom, 12)
 
-                    // ── Space cards ────────────────────────────────────
+                    // ── Space cards ─────────────────────────────────
                     if filtered.isEmpty {
                         VStack(spacing: 12) {
                             Image(systemName: "laptopcomputer.slash")
@@ -214,32 +207,90 @@ struct CoworkView: View {
                         .padding(.horizontal, 16)
                     }
 
-                    // Suggest a space
-                    Button(action: {}) {
-                        HStack(spacing: 6) {
-                            Image(systemName: "plus.circle")
-                            Text("Suggest a space")
+                    // ── Community data note + add button ────────────
+                    VStack(spacing: 4) {
+                        Text("Data is community-verified. Prices and amenities change.")
+                            .font(.system(size: 12))
+                            .foregroundColor(.tsSecondary)
+                            .multilineTextAlignment(.center)
+                        Button(action: { showSubmit = true }) {
+                            HStack(spacing: 5) {
+                                Image(systemName: "plus.circle")
+                                Text("Add a space or fix outdated info")
+                            }
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.tsAccent)
                         }
-                        .font(.system(size: 14))
-                        .foregroundColor(.tsSecondary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 20)
                     }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 20)
                     .padding(.bottom, 32)
                 }
             }
         }
-        .onAppear { locationMgr.requestLocation() }
+        .onAppear {
+            if hasLocation { locationMgr.requestLocation() }
+        }
         .sheet(item: $selected) { space in
             CoworkDetailView(space: space, userLocation: locationMgr.userLocation)
+        }
+        .sheet(isPresented: $showSubmit) {
+            CoworkSubmitView(type: .newSpace)
         }
     }
 
     private func clearFilters() {
-        filterCallRoom = false
-        filterCoffee   = false
-        filterFastWifi = false
-        filterLate     = false
+        filterCallRoom = false; filterCoffee = false
+        filterFastWifi = false; filterLate   = false
+    }
+}
+
+// MARK: - One-time location prompt card
+struct CoworkLocationCard: View {
+    let onEnable: () -> Void
+    let onDismiss: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
+                Image(systemName: "location.circle.fill")
+                    .font(.system(size: 22))
+                    .foregroundColor(.tsAccent)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("See what\'s actually walkable")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(.tsLabel)
+                    Text("Sort by real walking distance from where you are now.")
+                        .font(.system(size: 13))
+                        .foregroundColor(.tsSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            Text("We only use your location to calculate distances. It\'s not stored.")
+                .font(.system(size: 12))
+                .foregroundColor(.tsSecondary)
+            HStack(spacing: 10) {
+                Button(action: onEnable) {
+                    Text("Enable location")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 9)
+                        .background(Color.tsAccent)
+                        .clipShape(Capsule())
+                }
+                Button(action: onDismiss) {
+                    Text("Not now")
+                        .font(.system(size: 14))
+                        .foregroundColor(.tsSecondary)
+                }
+            }
+        }
+        .padding(16)
+        .background(Color.tsCard)
+        .cornerRadius(16)
+        .overlay(RoundedRectangle(cornerRadius: 16)
+            .stroke(Color.tsAccent.opacity(0.2), lineWidth: 1))
     }
 }
 
@@ -248,18 +299,14 @@ struct CoworkFilterChip: View {
     let icon: String
     let label: String
     @Binding var active: Bool
-
     var body: some View {
         Button(action: { active.toggle() }) {
             HStack(spacing: 5) {
-                Image(systemName: icon)
-                    .font(.system(size: 11, weight: .semibold))
-                Text(label)
-                    .font(.system(size: 13, weight: .semibold))
+                Image(systemName: icon).font(.system(size: 11, weight: .semibold))
+                Text(label).font(.system(size: 13, weight: .semibold))
             }
             .foregroundColor(active ? .white : .tsLabel)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 8)
+            .padding(.horizontal, 14).padding(.vertical, 8)
             .background(active ? Color.tsAccent : Color.tsCard)
             .clipShape(Capsule())
         }
@@ -275,8 +322,6 @@ struct CoworkCard: View {
     var body: some View {
         Button(action: onTap) {
             VStack(alignment: .leading, spacing: 12) {
-
-                // ── Name + distance ────────────────────────────────
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(space.name)
@@ -288,7 +333,7 @@ struct CoworkCard: View {
                     }
                     Spacer()
                     VStack(alignment: .trailing, spacing: 2) {
-                        if let dist = space.distanceLabel(from: userLocation), !dist.isEmpty {
+                        if let dist = space.distanceLabel(from: userLocation) {
                             HStack(spacing: 3) {
                                 Image(systemName: "location.fill")
                                     .font(.system(size: 10))
@@ -305,18 +350,11 @@ struct CoworkCard: View {
                         }
                     }
                 }
-
-                // ── Hours ──────────────────────────────────────────
                 HStack(spacing: 4) {
-                    Image(systemName: "clock")
-                        .font(.system(size: 11))
-                        .foregroundColor(.tsSecondary)
+                    Image(systemName: "clock").font(.system(size: 11)).foregroundColor(.tsSecondary)
                     Text("\(space.hoursDisplay) · \(space.hoursDays)")
-                        .font(.system(size: 12))
-                        .foregroundColor(.tsSecondary)
+                        .font(.system(size: 12)).foregroundColor(.tsSecondary)
                 }
-
-                // ── Amenity row ────────────────────────────────────
                 HStack(spacing: 16) {
                     AmenityBadge(icon: "phone.fill",          label: "Call rooms", active: space.hasCallRooms)
                     AmenityBadge(icon: "cup.and.saucer.fill", label: "Coffee",     active: space.hasCoffee)
@@ -324,8 +362,7 @@ struct CoworkCard: View {
                     AmenityBadge(icon: "moon.fill",           label: "Late",       active: space.hasLateHours)
                     Spacer()
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 12))
-                        .foregroundColor(.tsSecondary)
+                        .font(.system(size: 12)).foregroundColor(.tsSecondary)
                 }
             }
             .padding(16)
@@ -338,17 +375,12 @@ struct CoworkCard: View {
 
 // MARK: - Amenity Badge
 struct AmenityBadge: View {
-    let icon: String
-    let label: String
-    let active: Bool
-
+    let icon: String; let label: String; let active: Bool
     var body: some View {
         VStack(spacing: 3) {
-            Image(systemName: icon)
-                .font(.system(size: 13))
+            Image(systemName: icon).font(.system(size: 13))
                 .foregroundColor(active ? Color(hex: "#34C759") : Color.tsSecondary.opacity(0.4))
-            Text(active ? "✓" : "✗")
-                .font(.system(size: 10, weight: .bold))
+            Text(active ? "✓" : "✗").font(.system(size: 10, weight: .bold))
                 .foregroundColor(active ? Color(hex: "#34C759") : Color.tsSecondary.opacity(0.4))
         }
     }
@@ -359,120 +391,80 @@ struct CoworkDetailView: View {
     let space: CoworkSpace
     let userLocation: CLLocation?
     @Environment(\.dismiss) var dismiss
+    @State private var showEdit = false
 
     var body: some View {
         NavigationStack {
             ZStack { TSGradientBackground()
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
-
-                        // ── Hero block ─────────────────────────────
                         VStack(alignment: .leading, spacing: 8) {
                             Text(space.name)
-                                .font(.system(size: 26, weight: .bold))
-                                .foregroundColor(.tsLabel)
+                                .font(.system(size: 26, weight: .bold)).foregroundColor(.tsLabel)
                             Text(space.neighbourhood + " · Mexico City")
-                                .font(.system(size: 14))
-                                .foregroundColor(.tsSecondary)
-                            if let dist = space.distanceLabel(from: userLocation), !dist.isEmpty {
+                                .font(.system(size: 14)).foregroundColor(.tsSecondary)
+                            if let dist = space.distanceLabel(from: userLocation) {
                                 HStack(spacing: 4) {
-                                    Image(systemName: "location.fill")
-                                        .font(.system(size: 12))
-                                    Text(dist + " from you")
-                                        .font(.system(size: 13, weight: .medium))
+                                    Image(systemName: "location.fill").font(.system(size: 12))
+                                    Text(dist + " from you").font(.system(size: 13, weight: .medium))
                                 }
                                 .foregroundColor(.tsAccent)
                             }
                         }
                         .padding(20)
 
-                        // ── Amenity grid ───────────────────────────
                         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                            DetailAmenityCard(icon: "phone.fill",          label: "Call Rooms",  value: space.hasCallRooms ? "Available" : "None",    active: space.hasCallRooms,  color: Color(hex: "#34C759"))
-                            DetailAmenityCard(icon: "cup.and.saucer.fill", label: "Coffee",      value: space.hasCoffee   ? "Included"  : "Not included", active: space.hasCoffee,   color: Color(hex: "#FF9500"))
+                            DetailAmenityCard(icon: "phone.fill",          label: "Call Rooms",  value: space.hasCallRooms ? "Available"    : "None",         active: space.hasCallRooms,  color: Color(hex: "#34C759"))
+                            DetailAmenityCard(icon: "cup.and.saucer.fill", label: "Coffee",      value: space.hasCoffee   ? "Included"     : "Not included", active: space.hasCoffee,    color: Color(hex: "#FF9500"))
                             DetailAmenityCard(icon: "bolt.fill",           label: "WiFi Speed",  value: space.wifiSpeed ?? (space.hasFastWifi ? "Fast" : "Standard"), active: space.hasFastWifi, color: Color(hex: "#007AFF"))
                             DetailAmenityCard(icon: "moon.fill",           label: "Late Hours",  value: space.hasLateHours ? "Open past 9pm" : "Closes early", active: space.hasLateHours, color: Color(hex: "#AF52DE"))
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.bottom, 20)
+                        .padding(.horizontal, 16).padding(.bottom, 20)
 
-                        // ── Pricing ────────────────────────────────
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Pricing")
-                                .font(.system(size: 17, weight: .bold))
-                                .foregroundColor(.tsLabel)
+                            Text("Pricing").font(.system(size: 17, weight: .bold)).foregroundColor(.tsLabel)
                             HStack(spacing: 12) {
-                                if let day = space.dayRate {
-                                    PricePill(label: "Day", value: "$\(day) MXN")
-                                }
-                                if let mo = space.monthRate {
-                                    PricePill(label: "Month", value: "$\(mo) MXN")
-                                }
+                                if let day = space.dayRate   { PricePill(label: "Day",   value: "$\(day) MXN") }
+                                if let mo  = space.monthRate { PricePill(label: "Month", value: "$\(mo) MXN") }
                             }
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.bottom, 20)
+                        .padding(.horizontal, 16).padding(.bottom, 20)
 
-                        // ── Hours ──────────────────────────────────
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Hours")
-                                .font(.system(size: 17, weight: .bold))
-                                .foregroundColor(.tsLabel)
+                            Text("Hours").font(.system(size: 17, weight: .bold)).foregroundColor(.tsLabel)
                             HStack(spacing: 8) {
-                                Image(systemName: "clock.fill")
-                                    .foregroundColor(.tsSecondary)
-                                Text("\(space.hoursDisplay)")
-                                    .foregroundColor(.tsLabel)
-                                Text("·")
-                                    .foregroundColor(.tsSecondary)
-                                Text(space.hoursDays)
-                                    .foregroundColor(.tsSecondary)
+                                Image(systemName: "clock.fill").foregroundColor(.tsSecondary)
+                                Text(space.hoursDisplay).foregroundColor(.tsLabel)
+                                Text("·").foregroundColor(.tsSecondary)
+                                Text(space.hoursDays).foregroundColor(.tsSecondary)
                             }
                             .font(.system(size: 15))
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.bottom, 20)
+                        .padding(.horizontal, 16).padding(.bottom, 20)
 
-                        // ── Address ────────────────────────────────
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Address")
-                                .font(.system(size: 17, weight: .bold))
-                                .foregroundColor(.tsLabel)
-                            Text(space.address)
-                                .font(.system(size: 15))
-                                .foregroundColor(.tsSecondary)
+                            Text("Address").font(.system(size: 17, weight: .bold)).foregroundColor(.tsLabel)
+                            Text(space.address).font(.system(size: 15)).foregroundColor(.tsSecondary)
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.bottom, 20)
+                        .padding(.horizontal, 16).padding(.bottom, 20)
 
-                        // ── Notes ──────────────────────────────────
                         if let notes = space.notes {
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("The lowdown")
-                                    .font(.system(size: 17, weight: .bold))
-                                    .foregroundColor(.tsLabel)
-                                Text(notes)
-                                    .font(.system(size: 15))
-                                    .foregroundColor(.tsSecondary)
+                                Text("The lowdown").font(.system(size: 17, weight: .bold)).foregroundColor(.tsLabel)
+                                Text(notes).font(.system(size: 15)).foregroundColor(.tsSecondary)
                                     .fixedSize(horizontal: false, vertical: true)
                             }
-                            .padding(.horizontal, 16)
-                            .padding(.bottom, 28)
+                            .padding(.horizontal, 16).padding(.bottom, 28)
                         }
 
-                        // ── CTA ────────────────────────────────────
                         VStack(spacing: 12) {
                             Button(action: { openMaps(space: space) }) {
                                 HStack(spacing: 8) {
                                     Image(systemName: "map.fill")
-                                    Text("Get Directions")
-                                        .fontWeight(.bold)
+                                    Text("Get Directions").fontWeight(.bold)
                                 }
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 52)
-                                .background(LinearGradient(
-                                    colors: [Color(hex: "#3B99FC"), Color(hex: "#007AFF")],
+                                .foregroundColor(.white).frame(maxWidth: .infinity).frame(height: 52)
+                                .background(LinearGradient(colors: [Color(hex: "#3B99FC"), Color(hex: "#007AFF")],
                                     startPoint: .topLeading, endPoint: .bottomTrailing))
                                 .cornerRadius(14)
                             }
@@ -482,89 +474,70 @@ struct CoworkDetailView: View {
                                         Image(systemName: "safari")
                                         Text(site)
                                     }
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.tsAccent)
+                                    .font(.system(size: 14)).foregroundColor(.tsAccent)
                                 }
                             }
+                            // ── Suggest edit ────────────────────────
+                            Button(action: { showEdit = true }) {
+                                HStack(spacing: 5) {
+                                    Image(systemName: "pencil")
+                                    Text("Suggest an edit")
+                                }
+                                .font(.system(size: 13)).foregroundColor(.tsSecondary)
+                            }
+                            .padding(.top, 4)
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.bottom, 48)
+                        .padding(.horizontal, 16).padding(.bottom, 48)
                     }
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") { dismiss() }
-                }
-            }
+            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Done") { dismiss() } } }
+            .sheet(isPresented: $showEdit) { CoworkSubmitView(type: .editExisting(space)) }
         }
     }
 
     private func openMaps(space: CoworkSpace) {
-        let query = space.address.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-        if let url = URL(string: "maps://?q=\(query)") {
-            UIApplication.shared.open(url)
-        }
+        let q = space.address.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        if let url = URL(string: "maps://?q=\(q)") { UIApplication.shared.open(url) }
     }
-
     private func openWebsite(_ site: String) {
-        let urlStr = site.hasPrefix("http") ? site : "https://\(site)"
-        if let url = URL(string: urlStr) {
-            UIApplication.shared.open(url)
-        }
+        let s = site.hasPrefix("http") ? site : "https://\(site)"
+        if let url = URL(string: s) { UIApplication.shared.open(url) }
     }
 }
 
 // MARK: - Detail sub-components
 struct DetailAmenityCard: View {
-    let icon: String
-    let label: String
-    let value: String
-    let active: Bool
-    let color: Color
-
+    let icon: String; let label: String; let value: String; let active: Bool; let color: Color
     var body: some View {
         HStack(spacing: 12) {
             ZStack {
                 RoundedRectangle(cornerRadius: 10)
                     .fill(active ? color.opacity(0.15) : Color.tsSecondary.opacity(0.08))
                     .frame(width: 40, height: 40)
-                Image(systemName: icon)
-                    .font(.system(size: 17))
+                Image(systemName: icon).font(.system(size: 17))
                     .foregroundColor(active ? color : .tsSecondary)
             }
             VStack(alignment: .leading, spacing: 2) {
-                Text(label)
-                    .font(.system(size: 12))
-                    .foregroundColor(.tsSecondary)
-                Text(value)
-                    .font(.system(size: 13, weight: .semibold))
+                Text(label).font(.system(size: 12)).foregroundColor(.tsSecondary)
+                Text(value).font(.system(size: 13, weight: .semibold))
                     .foregroundColor(active ? .tsLabel : .tsSecondary)
             }
             Spacer()
         }
-        .padding(12)
-        .background(Color.tsCard)
-        .cornerRadius(14)
+        .padding(12).background(Color.tsCard).cornerRadius(14)
     }
 }
 
 struct PricePill: View {
-    let label: String
-    let value: String
+    let label: String; let value: String
     var body: some View {
         VStack(spacing: 4) {
-            Text(label)
-                .font(.system(size: 11))
-                .foregroundColor(.tsSecondary)
-            Text(value)
-                .font(.system(size: 15, weight: .bold))
-                .foregroundColor(.tsLabel)
+            Text(label).font(.system(size: 11)).foregroundColor(.tsSecondary)
+            Text(value).font(.system(size: 15, weight: .bold)).foregroundColor(.tsLabel)
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 12)
-        .background(Color.tsCard)
-        .cornerRadius(12)
+        .padding(.horizontal, 20).padding(.vertical, 12)
+        .background(Color.tsCard).cornerRadius(12)
     }
 }

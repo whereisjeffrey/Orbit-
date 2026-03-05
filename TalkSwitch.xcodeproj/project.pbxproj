@@ -99,6 +99,7 @@
 		0A536490DFE056A5AA52FE9C /* CityModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93834FA2F33A8EBFE4B053E5 /* CityModel.swift */; };
 		0E128240CECCCB88C69D578E /* TTSService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10B7D83A76412AF0CE97BB3 /* TTSService.swift */; };
 		275FAE5BC493FC6FF8EC0BCE /* CoworkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 955608648AFEBBB3AEADB31C /* CoworkView.swift */; };
+		30AE24600E8F6E58D60519A1 /* CoworkSubmitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D03FBC7ABDA39DF4E9E70732 /* CoworkSubmitView.swift */; };
 		32748F58ACC1D068146338FF /* StudyRevealedCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7BCC4D19FBB7CCB35DEFB36 /* StudyRevealedCardView.swift */; };
 		373143C18345D2C26681476B /* StudyOptionsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 701E42686590C2360A8BDE9E /* StudyOptionsCard.swift */; };
 		3FDE143AC4601CE3AC8B15E2 /* SharedPhraseStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2111A26039606CBFB2DC5F96 /* SharedPhraseStore.swift */; };
@@ -289,6 +290,7 @@
 		B40E93BABBB610917935465D /* Localizable.xcstrings */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		B6645235449EC772517A19CF /* OnboardingPaywallView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OnboardingPaywallView.swift; sourceTree = "<group>"; };
 		C4FA7A587F0CCC98AE5D5CC6 /* DeckStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DeckStore.swift; sourceTree = "<group>"; };
+		D03FBC7ABDA39DF4E9E70732 /* CoworkSubmitView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoworkSubmitView.swift; sourceTree = "<group>"; };
 		DC65C434C4B19B941C69BC70 /* LibraryView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		F10B7D83A76412AF0CE97BB3 /* TTSService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TTSService.swift; sourceTree = "<group>"; };
 		F2963DE568C0EA71FB772FD2 /* OnboardingInterestsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OnboardingInterestsView.swift; sourceTree = "<group>"; };
@@ -552,6 +554,7 @@
 				A394AAACBDA3524A3E99F30B /* NewInTownSection.swift */,
 				4495980D41F88AC21D1D7562 /* CommunityUserProfileView.swift */,
 				647BAB9AC3A9720C933F9EEF /* BadgeSystem.swift */,
+				D03FBC7ABDA39DF4E9E70732 /* CoworkSubmitView.swift */,
 			);
 			path = TranslateHelper;
 			sourceTree = "<group>";
@@ -801,6 +804,7 @@
 				E3CC70291D4915828CF3B1FF /* NewInTownSection.swift in Sources */,
 				E5E95B21BF5B725B7A4BF044 /* CommunityUserProfileView.swift in Sources */,
 				5ECCF5C0DA9158F1D161FB32 /* BadgeSystem.swift in Sources */,
+				30AE24600E8F6E58D60519A1 /* CoworkSubmitView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

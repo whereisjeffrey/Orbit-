@@ -79,3 +79,14 @@
 ### Watch out
 - All seed data (CommunityUser, CoworkSpace) is hardcoded arrays — Firestore swap needed later
 - add_files.rb script at /tmp/add_files.rb — run after any new .swift files added via script
+
+## 2026-03-05 (continued) — Nigel
+### Changed
+- CoworkView: one-time location prompt card (shown once, explains distances aren't stored)
+- CoworkView: 'Add a space or fix outdated info' CTA at bottom of list
+- CoworkDetailView: 'Suggest an edit' button opens pre-filled submission form
+- CoworkSubmitView: full crowd-source form (new space + edit existing) — name, neighbourhood, address, pricing, hours, amenity toggles, notes/lowdown field
+### Decided
+- Location prompt shown once only (cowork_location_asked AppStorage key)
+- Raw location never stored — only used to calculate distances at query time
+- 'Suggest an edit' on detail view + 'Add a space' at list bottom = two entry points for community data
