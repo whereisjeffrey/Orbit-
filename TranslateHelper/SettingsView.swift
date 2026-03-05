@@ -9,6 +9,8 @@ struct SettingsView: View {
     
     @AppStorage("appTheme") private var appTheme: Int = 1 // 0 for Light, 1 for Dark
     @State private var notificationsEnabled: Bool = true
+    @AppStorage("instagram_handle") private var instagramHandle = ""
+    @AppStorage("linkedin_handle")  private var linkedinHandle  = ""
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -209,6 +211,30 @@ struct SettingsView: View {
                     .padding(.horizontal, 16)
                     .padding(.bottom, 32)
                     
+                    // Social Section
+                    SectionHeader(title: "Social")
+                    VStack(spacing: 0) {
+                        SocialHandleRow(
+                            icon: "camera",
+                            iconColor: Color(hex: "#E1306C"),
+                            platform: "Instagram",
+                            placeholder: "your_handle",
+                            handle: $instagramHandle 
+                        )
+                        Divider().background(Color.tsBorder).padding(.leading, 56)
+                        SocialHandleRow(
+                            icon: "briefcase",
+                            iconColor: Color(hex: "#0A66C2"),
+                            platform: "LinkedIn",
+                            placeholder: "your-name",
+                            handle: $linkedinHandle 
+                        )
+                    }
+                    .background(Color.tsCard)
+                    .cornerRadius(12)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 32)
+
                     // Log Out Button
                     Button(action: {
                         auth.signOut()
@@ -455,3 +481,50 @@ struct LocationSettingsSheet: View {
     }
 }
 
+
+// MARK: - Social Handle Row
+struct SocialHandleRow: View {
+    let icon: String
+    let iconColor: Color
+    let platform: String
+    let placeholder: String
+    @Binding var handle: String
+    @FocusState private var focused: Bool
+
+    var body: some View {
+        HStack(spacing: 12) {
+            // Platform icon badge
+            Image(systemName: icon)
+                .font(.system(size: 15, weight: .medium))
+                .foregroundColor(.white)
+                .frame(width: 28, height: 28)
+                .background(iconColor)
+                .clipShape(RoundedRectangle(cornerRadius: 7))
+
+            Text(platform)
+                .font(.system(size: 17))
+                .foregroundColor(.tsLabel)
+
+            Spacer()
+
+            // Inline editable handle
+            HStack(spacing: 4) {
+                Text("@")
+                    .font(.system(size: 15))
+                    .foregroundColor(handle.isEmpty ? .tsSecondary : .tsAccent)
+                TextField(placeholder, text: $handle)
+                    .font(.system(size: 15))
+                    .foregroundColor(.tsAccent)
+                    .multilineTextAlignment(.trailing)
+                    .autocapitalization(.none)
+                    .autocorrectionDisabled()
+                    .focused($focused)
+                    .frame(maxWidth: 160)
+            }
+        }
+        .padding(.horizontal, 16)
+        .frame(height: 52)
+        .contentShape(Rectangle())
+        .onTapGesture { focused = true }
+    }
+}
