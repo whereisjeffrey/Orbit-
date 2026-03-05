@@ -419,7 +419,7 @@ struct FreeATMSection: View {
         let name: String
         let tagline: String
         let detail: String
-        let logoURL: String
+        let logoAsset: String
         let initial: String
         let color: String
         let url: String
@@ -430,7 +430,7 @@ struct FreeATMSection: View {
             name:    "Charles Schwab",
             tagline: "Reimburses every ATM fee globally",
             detail:  "No cap. No monthly fee. Best card for nomads.",
-            logoURL: "https://logo.clearbit.com/schwab.com",
+            logoAsset: "logo-schwab",
             initial: "S", color: "#00A0DC",
             url:     "https://www.schwab.com/checking"
         ),
@@ -438,7 +438,7 @@ struct FreeATMSection: View {
             name:    "Fidelity Cash Management",
             tagline: "Unlimited ATM fee reimbursements",
             detail:  "All domestic + international ATM fees refunded.",
-            logoURL: "https://logo.clearbit.com/fidelity.com",
+            logoAsset: "logo-fidelity",
             initial: "F", color: "#317D2E",
             url:     "https://www.fidelity.com/cash-management/fidelity-cash-management-account/overview"
         ),
@@ -446,7 +446,7 @@ struct FreeATMSection: View {
             name:    "Revolut",
             tagline: "Free ATM up to $400/month",
             detail:  "Great app, real exchange rate, easy sign-up.",
-            logoURL: "https://logo.clearbit.com/revolut.com",
+            logoAsset: "logo-revolut",
             initial: "R", color: "#0075EB",
             url:     "https://www.revolut.com"
         ),
@@ -463,16 +463,13 @@ struct FreeATMSection: View {
                 ForEach(Array(banks.enumerated()), id: \.offset) { i, bank in
                     Button { if let url = URL(string: bank.url) { openURL(url) } } label: {
                         HStack(spacing: 12) {
-                            AsyncImage(url: URL(string: bank.logoURL)) { phase in
-                                switch phase {
-                                case .success(let img):
-                                    img.resizable().scaledToFit().padding(2)
-                                default:
-                                    Color(hex: bank.color)
-                                }
-                            }
-                            .frame(width: 40, height: 40)
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                            Image(bank.logoAsset)
+                                .resizable()
+                                .scaledToFit()
+                                .padding(4)
+                                .frame(width: 40, height: 40)
+                                .background(Color(hex: bank.color).opacity(0.08))
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
 
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(bank.name)
@@ -511,7 +508,7 @@ struct TravelCardsSection: View {
         let annualFee: String
         let bonus: String
         let perk: String
-        let logoURL: String
+        let logoAsset: String
         let initial: String
         let color: String
         let url: String
@@ -524,7 +521,7 @@ struct TravelCardsSection: View {
             annualFee: "$95/yr",
             bonus:     "60K pts sign-up (~$750)",
             perk:      "3x dining · no foreign fees",
-            logoURL:   "https://logo.clearbit.com/chase.com",
+            logoAsset: "logo-chase",
             initial:   "C", color: "#117ACA",
             url:       "https://creditcards.chase.com/rewards-credit-cards/sapphire/preferred"
         ),
@@ -534,7 +531,7 @@ struct TravelCardsSection: View {
             annualFee: "$95/yr",
             bonus:     "75K miles sign-up (~$750)",
             perk:      "2x on everything · no foreign fees",
-            logoURL:   "https://logo.clearbit.com/capitalone.com",
+            logoAsset: "logo-capitalone",
             initial:   "C", color: "#D03027",
             url:       "https://www.capitalone.com/credit-cards/venture/"
         ),
@@ -544,7 +541,7 @@ struct TravelCardsSection: View {
             annualFee: "No annual fee",
             bonus:     "No sign-up bonus",
             perk:      "2% on everything · no foreign fees",
-            logoURL:   "https://logo.clearbit.com/citi.com",
+            logoAsset: "logo-citi",
             initial:   "C", color: "#003B70",
             url:       "https://www.citi.com/credit-cards/citi-double-cash-credit-card"
         ),
@@ -561,16 +558,13 @@ struct TravelCardsSection: View {
                 ForEach(Array(cards.enumerated()), id: \.offset) { i, card in
                     Button { if let url = URL(string: card.url) { openURL(url) } } label: {
                         HStack(spacing: 12) {
-                            AsyncImage(url: URL(string: card.logoURL)) { phase in
-                                switch phase {
-                                case .success(let img):
-                                    img.resizable().scaledToFit().padding(2)
-                                default:
-                                    Color(hex: card.color)
-                                }
-                            }
-                            .frame(width: 40, height: 40)
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                            Image(card.logoAsset)
+                                .resizable()
+                                .scaledToFit()
+                                .padding(4)
+                                .frame(width: 40, height: 40)
+                                .background(Color(hex: card.color).opacity(0.08))
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
 
                             VStack(alignment: .leading, spacing: 2) {
                                 HStack(spacing: 6) {
