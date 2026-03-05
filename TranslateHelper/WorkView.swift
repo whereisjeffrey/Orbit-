@@ -252,7 +252,7 @@ struct CafeTabContent: View {
                     }
                     .frame(maxWidth: .infinity).padding(.top, 48)
                 } else {
-                    LazyVStack(spacing: 12) {
+                    LazyVStack(spacing: 16) {
                         ForEach(cafes) { cafe in
                             CafeCard(cafe: cafe, userLocation: userLocation) { onSelect(cafe) }
                         }

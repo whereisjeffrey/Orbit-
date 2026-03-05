@@ -197,7 +197,7 @@ struct CoworkView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.top, 48)
                     } else {
-                        LazyVStack(spacing: 12) {
+                        LazyVStack(spacing: 16) {
                             ForEach(filtered) { space in
                                 CoworkCard(space: space, userLocation: locationMgr.userLocation) {
                                     selected = space

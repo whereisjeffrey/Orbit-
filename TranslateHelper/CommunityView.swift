@@ -154,7 +154,7 @@ struct CommunityView: View {
                     .padding(.bottom, 12)
 
                     // ── Feed ───────────────────────────────────────────
-                    LazyVStack(spacing: 12) {
+                    LazyVStack(spacing: 16) {
                         ForEach(posts.filter { p in
                         selectedFilter == .all || p.type == selectedFilter
                     }) { post in
