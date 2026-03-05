@@ -139,7 +139,7 @@ struct WhyInsuranceCard: View {
             }
         }
         .padding(16)
-        .background(Color.tsCard)
+        .background(Color(UIColor.systemBackground))
         .cornerRadius(16)
         .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(hex: "#FF3B30").opacity(0.15), lineWidth: 1))
     }
