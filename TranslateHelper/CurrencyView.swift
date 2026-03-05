@@ -361,18 +361,48 @@ struct OtherRatesSection: View {
     }
 }
 
-// MARK: - ATM Tips
+// MARK: - ATM Tips (location-aware)
 struct ATMTipsCard: View {
-    let tips = [
-        ("banknote.fill",     "#34C759", "Use Citibanamex ATMs",   "Lowest foreign card fees in CDMX"),
-        ("xmark.circle.fill", "#FF3B30", "Avoid airport exchange", "Rates are 15–20% worse than mid-market"),
-        ("dollarsign.circle", "#0099FF", "Carry some cash",        "Markets, tacos and microbuses are cash only"),
-        ("creditcard.fill",   "#AF52DE", "DCC = bad deal",         "Always pay in MXN, never your home currency"),
-    ]
+
+    // Mirrors UserLearningLocation — only what we need
+    private struct SavedLocation: Codable {
+        var id: UUID
+        var displayName: String
+        var city: String
+        var country: String
+    }
+
+    typealias Tip = (icon: String, color: String, title: String, detail: String)
+
+    private var primaryLocation: SavedLocation? {
+        guard let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper"),
+              let data    = defaults.data(forKey: "talkswitch_learning_locations"),
+              let locs    = try? JSONDecoder().decode([SavedLocation].self, from: data),
+              !locs.isEmpty else { return nil }
+        return locs[0]
+    }
+
+    private var cityLabel: String { primaryLocation?.city ?? "Worldwide" }
+
+    private var tips: [Tip] {
+        let country = primaryLocation?.country.lowercased() ?? ""
+        let city    = primaryLocation?.city.lowercased() ?? ""
+
+        switch true {
+        case country.contains("mexico"):                          return mexicoTips(city: city)
+        case country.contains("colombia"):                        return colombiaTips()
+        case country.contains("argentina"):                       return argentinaTips()
+        case country.contains("portugal"):                        return portugalTips()
+        case country.contains("spain") || country.contains("españa"): return spainTips()
+        case country.contains("indonesia") || city.contains("bali"):  return baliTips()
+        case country.contains("thailand"):                        return thailandTips()
+        default:                                                  return genericTips()
+        }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("ATM & CASH TIPS")
+            Text("ATM & CASH TIPS — \(cityLabel.uppercased())")
                 .font(.custom("HelveticaNeue-Bold", size: 11))
                 .foregroundColor(.tsSecondary)
                 .tracking(1.2)
@@ -382,17 +412,17 @@ struct ATMTipsCard: View {
                     HStack(spacing: 12) {
                         ZStack {
                             RoundedRectangle(cornerRadius: 10)
-                                .fill(Color(hex: tip.1).opacity(0.12))
+                                .fill(Color(hex: tip.color).opacity(0.12))
                                 .frame(width: 36, height: 36)
-                            Image(systemName: tip.0)
+                            Image(systemName: tip.icon)
                                 .font(.system(size: 16))
-                                .foregroundColor(Color(hex: tip.1))
+                                .foregroundColor(Color(hex: tip.color))
                         }
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(tip.2)
+                            Text(tip.title)
                                 .font(.custom("HelveticaNeue-Bold", size: 14))
                                 .foregroundColor(.tsLabel)
-                            Text(tip.3)
+                            Text(tip.detail)
                                 .font(.custom("HelveticaNeue", size: 12))
                                 .foregroundColor(.tsSecondary)
                         }
@@ -409,6 +439,74 @@ struct ATMTipsCard: View {
             .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
         }
     }
+
+    // MARK: - Tip sets per region
+
+    private func mexicoTips(city: String) -> [Tip] {
+        let atm  = city.contains("guadalajara") ? "Banamex or HSBC"
+                 : city.contains("monterrey")   ? "Banorte or HSBC"
+                 : city.contains("oaxaca")       ? "Banamex or Bancomer"
+                 :                                 "Citibanamex or HSBC"
+        let note = city.contains("guadalajara") ? "Best foreign-card ATMs in GDL centro"
+                 : city.contains("monterrey")   ? "Lowest surcharges in MTY"
+                 : city.contains("oaxaca")       ? "Most reliable for foreign cards in Oaxaca"
+                 :                                 "Lowest foreign card fees in CDMX"
+        return [
+            (icon: "banknote.fill",     color: "#34C759", title: "Use \(atm) ATMs",      detail: note),
+            (icon: "xmark.circle.fill", color: "#FF3B30", title: "Avoid airport exchange", detail: "Rates are 15–20% worse than mid-market"),
+            (icon: "dollarsign.circle", color: "#0099FF", title: "Carry cash",             detail: "Markets, tacos and microbuses are cash only"),
+            (icon: "creditcard.fill",   color: "#AF52DE", title: "Always pay in MXN",      detail: "Decline DCC — never pay in your home currency"),
+        ]
+    }
+
+    private func colombiaTips() -> [Tip] {[
+        (icon: "banknote.fill",        color: "#34C759", title: "Use Bancolombia ATMs",    detail: "Widest network and best rates for foreign cards"),
+        (icon: "arrow.up.circle.fill", color: "#0099FF", title: "Withdraw larger amounts", detail: "Fees run $3–5 USD per transaction — minimise trips"),
+        (icon: "exclamationmark.circle.fill", color: "#FF9500", title: "Low ATM limits",   detail: "Max ~500K–1M COP per withdrawal — plan ahead"),
+        (icon: "creditcard.fill",      color: "#AF52DE", title: "Always pay in COP",       detail: "Decline any USD pricing — insist on local currency"),
+    ]}
+
+    private func argentinaTips() -> [Tip] {[
+        (icon: "chart.line.uptrend.xyaxis", color: "#34C759", title: "Dual-rate reality",        detail: "Official vs blue dollar can differ 2–3× — research before you go"),
+        (icon: "building.columns.fill",     color: "#0099FF", title: "Licensed casa de cambio",  detail: "Exchange houses legally offer far better rates than ATMs"),
+        (icon: "banknote.fill",             color: "#FF9500", title: "ATM fees are steep",       detail: "Expect 500–1500 ARS in fees — use Brubank to cut costs"),
+        (icon: "dollarsign.circle",         color: "#AF52DE", title: "USD cash is useful",       detail: "Widely accepted informally at favourable rates"),
+    ]}
+
+    private func portugalTips() -> [Tip] {[
+        (icon: "banknote.fill",     color: "#34C759", title: "Use Multibanco ATMs",   detail: "Portugal's national network — fairest rates and fees"),
+        (icon: "xmark.circle.fill", color: "#FF3B30", title: "Avoid Euronet ATMs",    detail: "Private network with inflated fees — recognisable by orange branding"),
+        (icon: "creditcard",        color: "#0099FF", title: "Cards accepted widely", detail: "Visa and Mastercard work almost universally in Portugal"),
+        (icon: "creditcard.fill",   color: "#AF52DE", title: "Decline DCC",           detail: "Always pay in euros — not your home currency"),
+    ]}
+
+    private func spainTips() -> [Tip] {[
+        (icon: "banknote.fill",     color: "#34C759", title: "CaixaBank or Santander", detail: "Widest ATM network in Spain with fair foreign-card rates"),
+        (icon: "xmark.circle.fill", color: "#FF3B30", title: "Avoid Euronet ATMs",     detail: "Common near tourist areas — fees and rates are punishing"),
+        (icon: "creditcard",        color: "#0099FF", title: "Tap-to-pay everywhere",  detail: "Contactless is the norm in Spanish cities — cards are king"),
+        (icon: "creditcard.fill",   color: "#AF52DE", title: "Decline DCC always",     detail: "Pay in euros — reject any offer to charge your home currency"),
+    ]}
+
+    private func baliTips() -> [Tip] {[
+        (icon: "banknote.fill",        color: "#34C759", title: "Use BRI or BCA ATMs",      detail: "Most reliable ATMs for foreign cards across Bali"),
+        (icon: "building.columns.fill",color: "#0099FF", title: "Licensed money changers",  detail: "Authorised changers on main roads beat ATM rates"),
+        (icon: "xmark.circle.fill",    color: "#FF3B30", title: "Avoid tourist strip FX",   detail: "Kuta and Legian changers offer poor unofficial rates"),
+        (icon: "arrow.down.circle",    color: "#FF9500", title: "Low withdrawal limits",    detail: "Typical max is 1.5–2.5M IDR — factor in multiple trips"),
+    ]}
+
+    private func thailandTips() -> [Tip] {[
+        (icon: "dollarsign.circle",    color: "#FF3B30", title: "220 THB fee per ATM use",  detail: "Every Thai ATM charges ~$6 for foreign cards — minimise use"),
+        (icon: "arrow.up.circle.fill", color: "#0099FF", title: "Withdraw the max",         detail: "30,000 THB limit per transaction — make each one count"),
+        (icon: "creditcard",           color: "#34C759", title: "Use Wise for card spend",  detail: "Skip ATMs entirely where cards are accepted"),
+        (icon: "building.columns.fill",color: "#FF9500", title: "Airport exchange is fine", detail: "Surprisingly fair rates at BKK and Suvarnabhumi airports"),
+    ]}
+
+    private func genericTips() -> [Tip] {[
+        (icon: "banknote.fill",     color: "#34C759", title: "Use partner bank ATMs",  detail: "Check your home bank's global ATM network to skip fees"),
+        (icon: "xmark.circle.fill", color: "#FF3B30", title: "Skip airport exchanges", detail: "Rates are always 15–20% worse than mid-market"),
+        (icon: "creditcard.fill",   color: "#AF52DE", title: "Decline DCC always",     detail: "Always pay in local currency — never your home one"),
+        (icon: "dollarsign.circle", color: "#0099FF", title: "Carry some cash",        detail: "Markets and small vendors rarely take cards"),
+    ]}
 }
 
 
