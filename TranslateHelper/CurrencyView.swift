@@ -134,27 +134,30 @@ struct RateHeroCard: View {
 
             // ── Rate header ───────────────────────────────────────────
             HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack(spacing: 5) {
+                VStack(alignment: .leading, spacing: 5) {
+                    HStack(spacing: 6) {
                         Text("🇺🇸")
-                            .font(.system(size: 17))
-                        Text("1 USD =")
+                            .font(.system(size: 15))
+                        Text("USD")
+                            .font(.custom("HelveticaNeue-Medium", size: 14))
+                            .foregroundColor(.tsSecondary)
+                        Text("=")
                             .font(.custom("HelveticaNeue", size: 14))
+                            .foregroundColor(.tsSecondary)
+                        Text("🇲🇽")
+                            .font(.system(size: 15))
+                        Text("MXN")
+                            .font(.custom("HelveticaNeue-Medium", size: 14))
                             .foregroundColor(.tsSecondary)
                     }
                     if isLoading || rate == 0 {
                         RoundedRectangle(cornerRadius: 6)
                             .fill(Color.tsSecondary.opacity(0.10))
-                            .frame(width: 180, height: 34)
+                            .frame(width: 150, height: 34)
                     } else {
-                        HStack(alignment: .firstTextBaseline, spacing: 7) {
-                            Text(String(format: "%.4f", rate))
-                                .font(.custom("HelveticaNeue-Bold", size: 32))
-                                .foregroundColor(.tsLabel)
-                            Text("🇲🇽 MXN")
-                                .font(.custom("HelveticaNeue-Medium", size: 14))
-                                .foregroundColor(.tsSecondary)
-                        }
+                        Text(String(format: "%.4f", rate))
+                            .font(.custom("HelveticaNeue-Bold", size: 32))
+                            .foregroundColor(.tsLabel)
                     }
                 }
                 Spacer()
@@ -205,7 +208,14 @@ struct RateHeroCard: View {
             .padding(.top, 6)
             .padding(.bottom, 16)
 
-            // ── Calculator — white fields on grey tray ────────────────
+            // ── Separator ────────────────────────────────────────────
+            Rectangle()
+                .fill(Color.tsAccent.opacity(0.10))
+                .frame(height: 1)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 14)
+
+            // ── Calculator — white fields on card-color tray ──────────
             ZStack(alignment: .center) {
                 VStack(spacing: 8) {
                     WiseCurrencyRow(
@@ -236,11 +246,9 @@ struct RateHeroCard: View {
                 } label: {
                     ZStack {
                         Circle()
-                            .fill(Color(UIColor.systemGray6))
+                            .fill(Color.white)
                             .frame(width: 36, height: 36)
-                        Circle()
-                            .stroke(Color.white, lineWidth: 2.5)
-                            .frame(width: 36, height: 36)
+                            .overlay(Circle().stroke(Color.tsAccent.opacity(0.25), lineWidth: 1.5))
                         Image(systemName: "arrow.up.arrow.down")
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundColor(.tsAccent)
@@ -248,7 +256,7 @@ struct RateHeroCard: View {
                 }
             }
             .padding(12)
-            .background(Color(UIColor.systemGray6))
+            .background(Color.tsCard)
         }
         .background(Color.tsCard)
         .cornerRadius(20)
@@ -272,6 +280,7 @@ struct WiseCurrencyRow: View {
     let isActive: Bool
     let onChange: (String) -> Void
     @Environment(\.colorScheme) var colorScheme
+    @FocusState private var isFocused: Bool
 
     var body: some View {
         HStack(spacing: 12) {
@@ -280,10 +289,13 @@ struct WiseCurrencyRow: View {
                 .foregroundColor(isActive ? .tsLabel : .tsSecondary.opacity(0.35))
                 .keyboardType(.decimalPad)
                 .tint(.tsAccent)
-                .onChange(of: text) { _, v in onChange(v) }
-
+                .focused($isFocused)
+                .onChange(of: text) { _, v in
+                    // Only convert when the user is actually typing here,
+                    // not when we programmatically update the other field.
+                    if isFocused { onChange(v) }
+                }
             Spacer()
-
             HStack(spacing: 6) {
                 Text(flag).font(.system(size: 22))
                 Text(code)
