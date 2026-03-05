@@ -2,175 +2,239 @@
 
 import SwiftUI
 
-// MARK: - Supported pairs
-private let otherCurrencies: [(code: String, flag: String, name: String)] = [
-    ("EUR", "🇪🇺", "Euro"),
+// MARK: - Data
+let otherCurrencies: [(code: String, flag: String, name: String)] = [
     ("GBP", "🇬🇧", "British Pound"),
+    ("EUR", "🇪🇺", "Euro"),
     ("CAD", "🇨🇦", "Canadian Dollar"),
-    ("ARS", "🇦🇷", "Argentine Peso"),
-    ("BRL", "🇧🇷", "Brazilian Real"),
-    ("COP", "🇨🇴", "Colombian Peso"),
 ]
+let quickAmounts: [Double] = [5, 10, 20, 50, 100]
 
-private let quickAmounts: [Double] = [5, 10, 20, 50, 100]
+// Simulate a plausible 7-day sparkline ending at the live rate
+func mockSparkline(around rate: Double) -> [Double] {
+    guard rate > 0 else { return Array(repeating: 17.5, count: 28) }
+    var pts: [Double] = []
+    var cur = rate * 0.987
+    for _ in 0..<28 {
+        let trend = (rate - cur) * 0.045
+        cur += trend + Double.random(in: -0.055...0.055)
+        pts.append(cur)
+    }
+    pts[pts.count - 1] = rate
+    return pts
+}
 
-// MARK: - Main View
-struct CurrencyView: View {
-    @StateObject private var store = CurrencyStore.shared
-    @State private var usdText  = ""
-    @State private var mxnText  = ""
-    @State private var editingUSD = true
-    @FocusState private var focusedField: Bool
+// MARK: - Sparkline
+struct SparklineView: View {
+    let data:  [Double]
+    let color: Color
 
-    var mxnRate: Double { store.rates["MXN"] ?? 0 }
+    var minV:  Double { data.min() ?? 0 }
+    var maxV:  Double { data.max() ?? 1 }
+    var midV:  Double { (minV + maxV) / 2 }
+    var range: Double { max(maxV - minV, 0.001) }
 
     var body: some View {
-        ZStack { TSGradientBackground()
-            ScrollView {
-                VStack(spacing: 16) {
+        ZStack(alignment: .trailing) {
 
-                    // ── Live Rate Hero ──────────────────────────────
-                    LiveRateHero(rate: mxnRate, updatedLabel: store.updatedLabel, isLoading: store.isLoading)
+            // Canvas — reference lines + fill + line + end dot
+            Canvas { ctx, size in
+                guard data.count > 1 else { return }
+                let w   = size.width - 40   // right margin for y-axis labels
+                let h   = size.height
+                let pad = h * 0.12
+                let ch  = h - 2 * pad
 
-                    // ── Calculator ──────────────────────────────────
-                    CalculatorCard(
-                        usdText:     $usdText,
-                        mxnText:     $mxnText,
-                        editingUSD:  $editingUSD,
-                        rate:        mxnRate,
-                        focusedField: $focusedField
+                func pt(_ i: Int) -> CGPoint {
+                    CGPoint(
+                        x: w * Double(i) / Double(data.count - 1),
+                        y: pad + ch * (1.0 - (data[i] - minV) / range)
                     )
-
-                    // ── Quick chips ─────────────────────────────────
-                    if mxnRate > 0 {
-                        QuickConvertRow(rate: mxnRate) { amount in
-                            usdText    = formatAmount(amount)
-                            mxnText    = formatAmount(amount * mxnRate)
-                            editingUSD = true
-                        }
-                    }
-
-                    // ── Other currencies → MXN ──────────────────────
-                    if !store.rates.isEmpty {
-                        OtherRatesSection(store: store)
-                    }
-
-                    // ── ATM Tips ────────────────────────────────────
-                    ATMTipsCard()
-
-                    Spacer().frame(height: 32)
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 8)
-            }
-            .onTapGesture { focusedField = false }
-        }
-        .task { await store.fetchRates() }
-    }
+                let pts = data.indices.map { pt($0) }
 
-    private func formatAmount(_ v: Double) -> String {
-        v == 0 ? "" : String(format: v.truncatingRemainder(dividingBy: 1) == 0 ? "%.0f" : "%.2f", v)
+                // Dashed reference lines
+                for frac in [0.12, 0.5, 0.88] as [Double] {
+                    let y = pad + ch * frac
+                    var p = Path()
+                    p.move(to: CGPoint(x: 0, y: y))
+                    p.addLine(to: CGPoint(x: w, y: y))
+                    ctx.stroke(p,
+                               with: .color(Color(hex: "#6D6D72").opacity(0.18)),
+                               style: StrokeStyle(lineWidth: 0.5, dash: [4, 3]))
+                }
+
+                // Gradient fill under line
+                var fill = Path()
+                fill.move(to: CGPoint(x: pts[0].x, y: h))
+                fill.addLine(to: pts[0])
+                pts.dropFirst().forEach { fill.addLine(to: $0) }
+                fill.addLine(to: CGPoint(x: pts.last!.x, y: h))
+                fill.closeSubpath()
+                ctx.fill(fill, with: .linearGradient(
+                    Gradient(stops: [
+                        .init(color: Color(hex: "#0099FF").opacity(0.14), location: 0),
+                        .init(color: Color(hex: "#0099FF").opacity(0.00), location: 1),
+                    ]),
+                    startPoint: .zero,
+                    endPoint: CGPoint(x: 0, y: h)
+                ))
+
+                // Line
+                var line = Path()
+                line.move(to: pts[0])
+                pts.dropFirst().forEach { line.addLine(to: $0) }
+                ctx.stroke(line,
+                           with: .color(Color(hex: "#0099FF")),
+                           style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+
+                // End dot — blue ring, white centre
+                if let last = pts.last {
+                    var outer = Path()
+                    outer.addEllipse(in: CGRect(x: last.x-5, y: last.y-5, width: 10, height: 10))
+                    ctx.fill(outer, with: .color(Color(hex: "#0099FF")))
+                    var inner = Path()
+                    inner.addEllipse(in: CGRect(x: last.x-2.5, y: last.y-2.5, width: 5, height: 5))
+                    ctx.fill(inner, with: .color(.white))
+                }
+            }
+
+            // Y-axis value labels
+            VStack(alignment: .trailing) {
+                Text(String(format: "%.2f", maxV))
+                    .font(.custom("HelveticaNeue", size: 10))
+                    .foregroundColor(.tsSecondary)
+                Spacer()
+                Text(String(format: "%.2f", midV))
+                    .font(.custom("HelveticaNeue", size: 10))
+                    .foregroundColor(.tsSecondary)
+                Spacer()
+                Text(String(format: "%.2f", minV))
+                    .font(.custom("HelveticaNeue", size: 10))
+                    .foregroundColor(.tsSecondary)
+            }
+            .frame(width: 38)
+            .padding(.vertical, 4)
+        }
     }
 }
 
-// MARK: - Live Rate Hero
-struct LiveRateHero: View {
-    let rate: Double
+// MARK: - Rate Hero Card (chart + calculator unified)
+struct RateHeroCard: View {
+    @Binding var usdText:    String
+    @Binding var mxnText:    String
+    @Binding var editingUSD: Bool
+    let rate:         Double
     let updatedLabel: String
-    let isLoading: Bool
+    let isLoading:    Bool
+
+    @State private var sparkData: [Double] = []
     @State private var pulse = false
 
     var body: some View {
         VStack(spacing: 0) {
-            // Top bar
-            HStack {
-                HStack(spacing: 6) {
-                    Circle()
-                        .fill(Color(hex: "#34C759"))
-                        .frame(width: 8, height: 8)
-                        .scaleEffect(pulse ? 1.3 : 1.0)
-                        .animation(.easeInOut(duration: 1).repeatForever(), value: pulse)
-                    Text("LIVE")
-                        .font(.custom("HelveticaNeue-Bold", size: 11))
-                        .foregroundColor(Color(hex: "#34C759"))
-                        .tracking(1.5)
-                }
-                Spacer()
-                Text(updatedLabel)
-                    .font(.custom("HelveticaNeue", size: 12))
-                    .foregroundColor(.tsSecondary)
-            }
-            .padding(.bottom, 20)
 
-            // Big rate
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text("🇺🇸")
-                    .font(.system(size: 36))
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("1 USD")
-                        .font(.custom("HelveticaNeue", size: 13))
-                        .foregroundColor(.tsSecondary)
-                    if isLoading {
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(Color.tsSecondary.opacity(0.15))
-                            .frame(width: 140, height: 38)
+            // ── Rate header ───────────────────────────────────────────
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 5) {
+                        Text("🇺🇸")
+                            .font(.system(size: 17))
+                        Text("1 USD =")
+                            .font(.custom("HelveticaNeue", size: 14))
+                            .foregroundColor(.tsSecondary)
+                    }
+                    if isLoading || rate == 0 {
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(Color.tsSecondary.opacity(0.10))
+                            .frame(width: 180, height: 34)
                     } else {
-                        Text(rate > 0 ? String(format: "%.4f", rate) : "—")
-                            .font(.custom("HelveticaNeue-Bold", size: 42))
-                            .foregroundColor(.tsLabel)
+                        HStack(alignment: .firstTextBaseline, spacing: 7) {
+                            Text(String(format: "%.4f", rate))
+                                .font(.custom("HelveticaNeue-Bold", size: 32))
+                                .foregroundColor(.tsLabel)
+                            Text("🇲🇽 MXN")
+                                .font(.custom("HelveticaNeue-Medium", size: 14))
+                                .foregroundColor(.tsSecondary)
+                        }
                     }
                 }
                 Spacer()
-                Text("🇲🇽")
-                    .font(.system(size: 36))
-                Text("MXN")
-                    .font(.custom("HelveticaNeue-Bold", size: 20))
-                    .foregroundColor(.tsSecondary)
+                VStack(alignment: .trailing, spacing: 5) {
+                    HStack(spacing: 5) {
+                        Circle()
+                            .fill(Color(hex: "#34C759"))
+                            .frame(width: 7, height: 7)
+                            .scaleEffect(pulse ? 1.45 : 1.0)
+                            .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: pulse)
+                        Text("LIVE")
+                            .font(.custom("HelveticaNeue-Bold", size: 11))
+                            .foregroundColor(Color(hex: "#34C759"))
+                            .tracking(1.2)
+                    }
+                    Text(updatedLabel)
+                        .font(.custom("HelveticaNeue", size: 11))
+                        .foregroundColor(.tsSecondary)
+                }
             }
-            .padding(.bottom, 8)
+            .padding(.horizontal, 20)
+            .padding(.top, 20)
+            .padding(.bottom, 14)
 
-            Text("Mexican Peso · mid-market rate")
-                .font(.custom("HelveticaNeue", size: 12))
-                .foregroundColor(.tsSecondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .padding(20)
-        .background(Color.tsCard)
-        .cornerRadius(20)
-        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
-        .onAppear { pulse = true }
-    }
-}
+            // ── Sparkline ─────────────────────────────────────────────
+            if sparkData.isEmpty {
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(Color.tsSecondary.opacity(0.06))
+                    .frame(height: 120)
+                    .padding(.horizontal, 16)
+            } else {
+                SparklineView(data: sparkData, color: .tsAccent)
+                    .frame(height: 120)
+                    .padding(.horizontal, 16)
+            }
 
-// MARK: - Calculator
-struct CalculatorCard: View {
-    @Binding var usdText:    String
-    @Binding var mxnText:    String
-    @Binding var editingUSD: Bool
-    let rate: Double
-    var focusedField: FocusState<Bool>.Binding
+            // X-axis
+            HStack {
+                Text("7 days ago")
+                    .font(.custom("HelveticaNeue", size: 11))
+                    .foregroundColor(.tsSecondary)
+                Spacer()
+                Text("Today")
+                    .font(.custom("HelveticaNeue-Bold", size: 11))
+                    .foregroundColor(.tsAccent)
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 6)
+            .padding(.bottom, 16)
 
-    var body: some View {
-        VStack(spacing: 0) {
-            // USD row
-            CurrencyInputRow(
-                flag: "🇺🇸", code: "USD", symbol: "$",
-                text: $usdText,
-                isEditing: editingUSD
-            ) { newVal in
+            // ── Divider ───────────────────────────────────────────────
+            Rectangle()
+                .fill(Color.tsAccent.opacity(0.07))
+                .frame(height: 1)
+
+            // ── USD input ─────────────────────────────────────────────
+            WiseCurrencyRow(
+                flag: "🇺🇸", code: "USD",
+                text: $usdText, isActive: editingUSD
+            ) { val in
                 editingUSD = true
-                if let v = Double(newVal.replacingOccurrences(of: ",", with: "")) {
-                    mxnText = rate > 0 ? formatAmt(v * rate) : ""
+                if let v = Double(val.replacingOccurrences(of: ",", with: "")) {
+                    mxnText = rate > 0 ? String(format: "%.2f", v * rate) : ""
                 } else { mxnText = "" }
             }
 
-            // Swap divider
+            // ── Swap ──────────────────────────────────────────────────
             ZStack {
-                Divider().background(Color.tsAccent.opacity(0.08))
-                Button(action: swapCurrencies) {
+                Rectangle()
+                    .fill(Color.tsAccent.opacity(0.07))
+                    .frame(height: 1)
+                Button {
+                    let t = usdText; usdText = mxnText; mxnText = t
+                    editingUSD.toggle()
+                } label: {
                     ZStack {
                         Circle().fill(Color.tsBackground).frame(width: 36, height: 36)
-                        Circle().stroke(Color.tsAccent.opacity(0.15), lineWidth: 1).frame(width: 36, height: 36)
+                        Circle().stroke(Color.tsAccent.opacity(0.18), lineWidth: 1).frame(width: 36, height: 36)
                         Image(systemName: "arrow.up.arrow.down")
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.tsAccent)
@@ -179,68 +243,72 @@ struct CalculatorCard: View {
             }
             .frame(height: 36)
 
-            // MXN row
-            CurrencyInputRow(
-                flag: "🇲🇽", code: "MXN", symbol: "$",
-                text: $mxnText,
-                isEditing: !editingUSD
-            ) { newVal in
+            // ── MXN input ─────────────────────────────────────────────
+            WiseCurrencyRow(
+                flag: "🇲🇽", code: "MXN",
+                text: $mxnText, isActive: !editingUSD
+            ) { val in
                 editingUSD = false
-                if let v = Double(newVal.replacingOccurrences(of: ",", with: "")) {
-                    usdText = rate > 0 ? formatAmt(v / rate) : ""
+                if let v = Double(val.replacingOccurrences(of: ",", with: "")) {
+                    usdText = rate > 0 ? String(format: "%.2f", v / rate) : ""
                 } else { usdText = "" }
             }
+            .padding(.bottom, 6)
         }
         .background(Color.tsCard)
         .cornerRadius(20)
         .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
-    }
-
-    private func swapCurrencies() {
-        let tmp = usdText; usdText = mxnText; mxnText = tmp
-        editingUSD.toggle()
-    }
-
-    private func formatAmt(_ v: Double) -> String {
-        v == 0 ? "" : String(format: v.truncatingRemainder(dividingBy: 1) == 0 ? "%.0f" : "%.2f", v)
+        .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 2)
+        .onAppear {
+            pulse = true
+            if rate > 0 { sparkData = mockSparkline(around: rate) }
+        }
+        .onChange(of: rate) { _, newRate in
+            if newRate > 0 { sparkData = mockSparkline(around: newRate) }
+        }
     }
 }
 
-struct CurrencyInputRow: View {
-    let flag:     String
-    let code:     String
-    let symbol:   String
+// MARK: - Wise-style input row
+struct WiseCurrencyRow: View {
+    let flag:    String
+    let code:    String
     @Binding var text: String
-    let isEditing: Bool
+    let isActive: Bool
     let onChange: (String) -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
-            Text(flag).font(.system(size: 28))
-            VStack(alignment: .leading, spacing: 2) {
-                Text(code)
-                    .font(.custom("HelveticaNeue-Bold", size: 13))
-                    .foregroundColor(.tsSecondary)
-                TextField("0", text: $text)
-                    .font(.custom("HelveticaNeue-Bold", size: 28))
-                    .foregroundColor(.tsLabel)
-                    .keyboardType(.decimalPad)
-                    .tint(.tsAccent)
-                    .onChange(of: text) { onChange(text) }
-            }
+        HStack(spacing: 16) {
+            TextField("0", text: $text)
+                .font(.custom("HelveticaNeue-Bold", size: 34))
+                .foregroundColor(isActive ? .tsLabel : .tsSecondary.opacity(0.4))
+                .keyboardType(.decimalPad)
+                .tint(.tsAccent)
+                .onChange(of: text) { _, v in onChange(v) }
+
             Spacer()
-            Text(symbol)
-                .font(.custom("HelveticaNeue-Light", size: 28))
-                .foregroundColor(isEditing ? .tsAccent : .tsSecondary.opacity(0.4))
+
+            HStack(spacing: 7) {
+                Text(flag).font(.system(size: 22))
+                Text(code)
+                    .font(.custom("HelveticaNeue-Bold", size: 15))
+                    .foregroundColor(.tsLabel)
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundColor(.tsSecondary)
+            }
+            .padding(.horizontal, 12).padding(.vertical, 9)
+            .background(Color.tsInputBg)
+            .cornerRadius(12)
         }
         .padding(.horizontal, 20)
-        .padding(.vertical, 16)
+        .padding(.vertical, 14)
     }
 }
 
 // MARK: - Quick Convert Row
 struct QuickConvertRow: View {
-    let rate: Double
+    let rate:     Double
     let onSelect: (Double) -> Void
 
     var body: some View {
@@ -264,7 +332,8 @@ struct QuickConvertRow: View {
                             .frame(width: 72, height: 56)
                             .background(Color.tsCard)
                             .cornerRadius(14)
-                            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
+                            .overlay(RoundedRectangle(cornerRadius: 14)
+                                .stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                         }
                     }
                 }
@@ -308,8 +377,7 @@ struct OtherRatesSection: View {
                                 .foregroundColor(.tsSecondary)
                                 .padding(.leading, 2)
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
+                        .padding(.horizontal, 16).padding(.vertical, 12)
 
                         if i < otherCurrencies.count - 1 {
                             Divider().background(Color.tsAccent.opacity(0.06)).padding(.leading, 54)
@@ -327,10 +395,10 @@ struct OtherRatesSection: View {
 // MARK: - ATM Tips
 struct ATMTipsCard: View {
     let tips = [
-        ("banknote.fill",        "#34C759", "Use Citibanamex ATMs",    "Lowest foreign card fees in CDMX"),
-        ("xmark.circle.fill",    "#FF3B30", "Avoid airport exchange",  "Rates are 15–20% worse than mid-market"),
-        ("dollarsign.circle",    "#0099FF", "Carry some cash",         "Markets, tacos and microbuses are cash only"),
-        ("creditcard.fill",      "#AF52DE", "DCC = bad deal",          "Always pay in MXN, never your home currency"),
+        ("banknote.fill",     "#34C759", "Use Citibanamex ATMs",   "Lowest foreign card fees in CDMX"),
+        ("xmark.circle.fill", "#FF3B30", "Avoid airport exchange", "Rates are 15–20% worse than mid-market"),
+        ("dollarsign.circle", "#0099FF", "Carry some cash",        "Markets, tacos and microbuses are cash only"),
+        ("creditcard.fill",   "#AF52DE", "DCC = bad deal",         "Always pay in MXN, never your home currency"),
     ]
 
     var body: some View {
@@ -361,8 +429,7 @@ struct ATMTipsCard: View {
                         }
                         Spacer()
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
+                    .padding(.horizontal, 16).padding(.vertical, 12)
                     if i < tips.count - 1 {
                         Divider().background(Color.tsAccent.opacity(0.06)).padding(.leading, 64)
                     }
@@ -372,5 +439,58 @@ struct ATMTipsCard: View {
             .cornerRadius(16)
             .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
         }
+    }
+}
+
+// MARK: - Main View
+struct CurrencyView: View {
+    @StateObject private var store = CurrencyStore.shared
+    @State private var usdText    = ""
+    @State private var mxnText    = ""
+    @State private var editingUSD = true
+
+    var mxnRate: Double { store.rates["MXN"] ?? 0 }
+
+    var body: some View {
+        ZStack { TSGradientBackground()
+            ScrollView {
+                VStack(spacing: 16) {
+
+                    RateHeroCard(
+                        usdText:      $usdText,
+                        mxnText:      $mxnText,
+                        editingUSD:   $editingUSD,
+                        rate:         mxnRate,
+                        updatedLabel: store.updatedLabel,
+                        isLoading:    store.isLoading
+                    )
+
+                    if mxnRate > 0 {
+                        QuickConvertRow(rate: mxnRate) { amount in
+                            usdText    = String(format: "%.0f", amount)
+                            mxnText    = String(format: "%.2f", amount * mxnRate)
+                            editingUSD = true
+                        }
+                    }
+
+                    if !store.rates.isEmpty {
+                        OtherRatesSection(store: store)
+                    }
+
+                    ATMTipsCard()
+
+                    Spacer().frame(height: 32)
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+            }
+            .onTapGesture {
+                UIApplication.shared.sendAction(
+                    #selector(UIResponder.resignFirstResponder),
+                    to: nil, from: nil, for: nil
+                )
+            }
+        }
+        .task { await store.fetchRates() }
     }
 }
