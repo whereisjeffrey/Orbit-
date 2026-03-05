@@ -120,3 +120,10 @@ fileSystemSynchronizedGroups includes them automatically on next build.
  M TranslateHelper/MainTabView.swift
 ### Files
 TranslateHelper/Assets.xcassets/AppIcon.appiconset/TalkSwitch-Icon.png TranslateHelper/Info.plist TranslateHelper/Localizable.xcstrings TranslateHelper/MainTabView.swift 
+
+## 2026-03-05 09:45 — Auto-handoff (auto-heartbeat)
+### Changed (uncommitted)
+ M TalkSwitch.xcodeproj/project.pbxproj
+ M TranslateHelper/Info.plist
+### Files
+TalkSwitch.xcodeproj/project.pbxproj TranslateHelper/Info.plist 
