@@ -69,7 +69,8 @@ struct CommunityView: View {
         CommunityPost(author: "Sarah K.", neighbourhood: "Polanco", type: .rec,
                       body: "Highly recommend Café Toscano for remote work — fast wifi, great coffee, never too crowded before noon.",
                       likes: 24, comments: 6, timeAgo: "5h", isVerifiedLocal: true,
-                      avatarInitials: "SK", avatarColor: Color(hex: "#AF52DE"), avatarURL: "https://i.pravatar.cc/150?img=44"),
+                      avatarInitials: "SK", avatarColor: Color(hex: "#AF52DE"), avatarURL: "https://i.pravatar.cc/150?img=44",
+                      imageURL: "https://picsum.photos/id/431/700/520"),
         CommunityPost(author: "Diego M.", neighbourhood: "Roma Norte", type: .warning,
                       body: "Watch out for fake taxi overcharges outside Benito Juárez airport. Always use DIDI or Uber from inside.",
                       likes: 89, comments: 12, timeAgo: "1d", isVerifiedLocal: true,
@@ -112,6 +113,11 @@ struct CommunityView: View {
                     .padding(.top, 16)
                     .padding(.bottom, 16)
 
+                    // ── Composer bar ────────────────────────────────────
+                    PostComposerBar(onTap: { showCompose = true })
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 12)
+
                     // ── Quick access pills ─────────────────────────────
                     HStack(spacing: 12) {
                         QuickAccessPill(icon: "person.2.fill", label: "Groups") {
@@ -124,10 +130,6 @@ struct CommunityView: View {
                     }
                     .padding(.horizontal, 16)
                     .padding(.bottom, 16)
-
-                    // ── Composer bar ────────────────────────────────────
-                    PostComposerBar(onTap: { showCompose = true })
-                        .padding(.bottom, 4)
 
                     // ── New in town ─────────────────────────────────────
                     NewInTownSection()
@@ -233,12 +235,17 @@ struct FilterChip: View {
 struct CommunityPostCard: View {
     let post: CommunityPost
 
-    @ViewBuilder var initialsCircle: some View {
+    // True if this is a standalone photo post (not a link preview)
+    var hasPhoto: Bool {
+        post.imageURL != nil && post.linkPreviewTitle == nil
+    }
+
+    @ViewBuilder var avatarView: some View {
         ZStack {
             Circle().fill(post.avatarColor).frame(width: 40, height: 40)
             if post.avatarInitials.isEmpty {
                 Image(systemName: "person.fill")
-                    .font(.custom("HelveticaNeue-Medium", size: 16))
+                    .font(.system(size: 16))
                     .foregroundColor(.white)
             } else {
                 Text(post.avatarInitials)
@@ -248,92 +255,147 @@ struct CommunityPostCard: View {
         }
     }
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .top, spacing: 10) {
-                Group {
-                    if let urlStr = post.avatarURL, let url = URL(string: urlStr) {
-                        AsyncImage(url: url) { phase in
-                            if let img = phase.image {
-                                img.resizable().scaledToFill()
-                                    .frame(width: 40, height: 40)
-                                    .clipShape(Circle())
-                            } else {
-                                initialsCircle
-                            }
-                        }
-                    } else {
-                        initialsCircle
+    @ViewBuilder var authorRow: some View {
+        HStack(alignment: .center, spacing: 10) {
+            // Avatar — real photo or initials
+            Group {
+                if let urlStr = post.avatarURL, let url = URL(string: urlStr) {
+                    AsyncImage(url: url) { phase in
+                        if let img = phase.image {
+                            img.resizable().scaledToFill()
+                                .frame(width: 40, height: 40)
+                                .clipShape(Circle())
+                        } else { avatarView }
                     }
-                }
-                .frame(width: 40, height: 40)
-                VStack(alignment: .leading, spacing: 2) {
-                    HStack(spacing: 4) {
-                        Text(post.author)
-                            .font(.custom("HelveticaNeue-Medium", size: 14))
-                            .foregroundColor(.tsLabel)
-                        if post.isVerifiedLocal {
-                            Text("Local")
-                                .font(.custom("HelveticaNeue-Bold", size: 10))
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(Color(hex: "#34C759"))
-                                .clipShape(Capsule())
-                        }
-                    }
-                    Text("\(post.neighbourhood) · \(post.timeAgo)")
-                        .font(.custom("HelveticaNeue", size: 12))
-                        .foregroundColor(.tsSecondary)
-                }
-                Spacer()
-                Text(post.type.rawValue.dropLast())
-                    .font(.custom("HelveticaNeue-Medium", size: 11))
-                    .foregroundColor(post.type.color)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(post.type.color.opacity(0.1))
-                    .clipShape(Capsule())
+                } else { avatarView }
             }
-            Text(post.body)
-                .font(.custom("HelveticaNeue", size: 15))
-                .foregroundColor(.tsLabel)
-                .fixedSize(horizontal: false, vertical: true)
+            .frame(width: 40, height: 40)
 
-            if let imgURL = post.imageURL, let url = URL(string: imgURL) {
-                AsyncImage(url: url) { phase in
-                    if let img = phase.image {
-                        img.resizable().scaledToFill()
-                            .frame(maxWidth: .infinity).frame(height: 200)
-                            .clipped().cornerRadius(14)
-                    } else {
-                        RoundedRectangle(cornerRadius: 14).fill(Color.tsInputBg).frame(height: 200)
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 5) {
+                    Text(post.author)
+                        .font(.custom("HelveticaNeue-Bold", size: 14))
+                        .foregroundColor(.tsLabel)
+                    if post.isVerifiedLocal {
+                        Text("Local")
+                            .font(.custom("HelveticaNeue-Bold", size: 10))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 6).padding(.vertical, 2)
+                            .background(Color(hex: "#34C759"))
+                            .clipShape(Capsule())
                     }
                 }
-            } else if let title = post.linkPreviewTitle {
-                LinkPreviewCard(preview: LinkPreview(
-                    url: post.linkURL ?? "",
-                    imageURL: post.imageURL,
-                    title: title,
-                    description: nil,
-                    siteName: post.linkPreviewSite
-                ))
+                Text("\(post.neighbourhood) · \(post.timeAgo)")
+                    .font(.custom("HelveticaNeue", size: 12))
+                    .foregroundColor(.tsSecondary)
             }
+            Spacer()
+            Text(post.type.rawValue.dropLast())
+                .font(.custom("HelveticaNeue-Medium", size: 11))
+                .foregroundColor(post.type.color)
+                .padding(.horizontal, 8).padding(.vertical, 4)
+                .background(post.type.color.opacity(0.1))
+                .clipShape(Capsule())
+        }
+    }
 
-            HStack(spacing: 16) {
+    @ViewBuilder var engagementRow: some View {
+        HStack(spacing: 20) {
+            Button(action: {}) {
                 Label("\(post.likes)", systemImage: "heart")
                     .font(.custom("HelveticaNeue", size: 13))
                     .foregroundColor(.tsSecondary)
+            }
+            Button(action: {}) {
                 Label("\(post.comments)", systemImage: "bubble.left")
                     .font(.custom("HelveticaNeue", size: 13))
                     .foregroundColor(.tsSecondary)
-                Spacer()
+            }
+            Spacer()
+            Button(action: {}) {
+                Image(systemName: "paperplane")
+                    .font(.system(size: 13))
+                    .foregroundColor(.tsSecondary)
             }
         }
-        .padding(16)
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+
+            // ── Photo at top (full bleed, square-ish) ────────────────
+            if hasPhoto, let imgURL = post.imageURL, let url = URL(string: imgURL) {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .success(let img):
+                        img.resizable()
+                            .scaledToFill()
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 260)
+                            .clipped()
+                            .clipShape(
+                                UnevenRoundedRectangle(
+                                    topLeadingRadius: 16,
+                                    bottomLeadingRadius: 0,
+                                    bottomTrailingRadius: 0,
+                                    topTrailingRadius: 16
+                                )
+                            )
+                    case .failure(_):
+                        Rectangle()
+                            .fill(Color.tsInputBg)
+                            .frame(height: 260)
+                    default:
+                        Rectangle()
+                            .fill(Color.tsInputBg.opacity(0.6))
+                            .frame(height: 260)
+                            .overlay(ProgressView().tint(.tsSecondary))
+                    }
+                }
+            }
+
+            // ── Card body ─────────────────────────────────────────────
+            VStack(alignment: .leading, spacing: 12) {
+
+                // If photo post — author row floats over the seam
+                if hasPhoto {
+                    authorRow
+                        .padding(.top, 4)
+                } else {
+                    authorRow
+                }
+
+                Text(post.body)
+                    .font(.custom("HelveticaNeue", size: 15))
+                    .foregroundColor(.tsLabel)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                // Link preview (non-photo posts only)
+                if !hasPhoto, let title = post.linkPreviewTitle {
+                    LinkPreviewCard(preview: LinkPreview(
+                        url: post.linkURL ?? "",
+                        imageURL: post.imageURL,
+                        title: title,
+                        description: nil,
+                        siteName: post.linkPreviewSite
+                    ))
+                }
+
+                Divider().opacity(0.5)
+
+                engagementRow
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 14)
+            .padding(.bottom, 14)
+        }
         .background(Color.tsCard)
         .cornerRadius(16)
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5)
+        )
+        .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
     }
 }
 
@@ -407,11 +469,18 @@ struct PostComposerBar: View {
                     .font(.custom("HelveticaNeue", size: 15))
                     .foregroundColor(.tsSecondary.opacity(0.7))
                 Spacer()
-                Image(systemName: "photo.on.rectangle")
-                    .font(.system(size: 18))
-                    .foregroundColor(.tsAccent)
+                ZStack {
+                    Circle()
+                        .fill(Color.white)
+                        .frame(width: 34, height: 34)
+                        .overlay(Circle().stroke(Color.tsAccent.opacity(0.12), lineWidth: 1))
+                    Image(systemName: "photo.on.rectangle")
+                        .font(.system(size: 15))
+                        .foregroundColor(.tsAccent)
+                }
             }
-            .padding(.horizontal, 14)
+            .padding(.leading, 14)
+            .padding(.trailing, 10)
             .padding(.vertical, 10)
             .background(Color.tsCard)
             .cornerRadius(16)
