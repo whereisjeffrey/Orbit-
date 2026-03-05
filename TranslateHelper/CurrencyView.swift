@@ -207,53 +207,50 @@ struct RateHeroCard: View {
             .padding(.top, 6)
             .padding(.bottom, 16)
 
-            // ── Divider ───────────────────────────────────────────────
-            Rectangle()
-                .fill(Color.tsAccent.opacity(0.07))
-                .frame(height: 1)
+            // ── Calculator — white fields on grey tray ────────────────
+            ZStack(alignment: .center) {
+                VStack(spacing: 8) {
+                    WiseCurrencyRow(
+                        flag: "🇺🇸", code: "USD",
+                        text: $usdText, isActive: editingUSD
+                    ) { val in
+                        editingUSD = true
+                        if let v = Double(val.replacingOccurrences(of: ",", with: "")) {
+                            mxnText = rate > 0 ? String(format: "%.2f", v * rate) : ""
+                        } else { mxnText = "" }
+                    }
 
-            // ── USD input ─────────────────────────────────────────────
-            WiseCurrencyRow(
-                flag: "🇺🇸", code: "USD",
-                text: $usdText, isActive: editingUSD
-            ) { val in
-                editingUSD = true
-                if let v = Double(val.replacingOccurrences(of: ",", with: "")) {
-                    mxnText = rate > 0 ? String(format: "%.2f", v * rate) : ""
-                } else { mxnText = "" }
-            }
+                    WiseCurrencyRow(
+                        flag: "🇲🇽", code: "MXN",
+                        text: $mxnText, isActive: !editingUSD
+                    ) { val in
+                        editingUSD = false
+                        if let v = Double(val.replacingOccurrences(of: ",", with: "")) {
+                            usdText = rate > 0 ? String(format: "%.2f", v / rate) : ""
+                        } else { usdText = "" }
+                    }
+                }
 
-            // ── Swap ──────────────────────────────────────────────────
-            ZStack {
-                Rectangle()
-                    .fill(Color.tsAccent.opacity(0.07))
-                    .frame(height: 1)
+                // Swap button floats in the gap
                 Button {
                     let t = usdText; usdText = mxnText; mxnText = t
                     editingUSD.toggle()
                 } label: {
                     ZStack {
-                        Circle().fill(Color.tsBackground).frame(width: 36, height: 36)
-                        Circle().stroke(Color.tsAccent.opacity(0.18), lineWidth: 1).frame(width: 36, height: 36)
+                        Circle()
+                            .fill(Color(UIColor.systemGray6))
+                            .frame(width: 36, height: 36)
+                        Circle()
+                            .stroke(Color.white, lineWidth: 2.5)
+                            .frame(width: 36, height: 36)
                         Image(systemName: "arrow.up.arrow.down")
-                            .font(.system(size: 14, weight: .medium))
+                            .font(.system(size: 13, weight: .semibold))
                             .foregroundColor(.tsAccent)
                     }
                 }
             }
-            .frame(height: 36)
-
-            // ── MXN input ─────────────────────────────────────────────
-            WiseCurrencyRow(
-                flag: "🇲🇽", code: "MXN",
-                text: $mxnText, isActive: !editingUSD
-            ) { val in
-                editingUSD = false
-                if let v = Double(val.replacingOccurrences(of: ",", with: "")) {
-                    usdText = rate > 0 ? String(format: "%.2f", v / rate) : ""
-                } else { usdText = "" }
-            }
-            .padding(.bottom, 6)
+            .padding(12)
+            .background(Color(UIColor.systemGray6))
         }
         .background(Color.tsCard)
         .cornerRadius(20)
@@ -278,31 +275,27 @@ struct WiseCurrencyRow: View {
     let onChange: (String) -> Void
 
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 12) {
             TextField("0", text: $text)
                 .font(.custom("HelveticaNeue-Bold", size: 34))
-                .foregroundColor(isActive ? .tsLabel : .tsSecondary.opacity(0.4))
+                .foregroundColor(isActive ? .tsLabel : .tsSecondary.opacity(0.35))
                 .keyboardType(.decimalPad)
                 .tint(.tsAccent)
                 .onChange(of: text) { _, v in onChange(v) }
 
             Spacer()
 
-            HStack(spacing: 7) {
+            HStack(spacing: 6) {
                 Text(flag).font(.system(size: 22))
                 Text(code)
-                    .font(.custom("HelveticaNeue-Bold", size: 15))
+                    .font(.custom("HelveticaNeue-Bold", size: 16))
                     .foregroundColor(.tsLabel)
-                Image(systemName: "chevron.down")
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundColor(.tsSecondary)
             }
-            .padding(.horizontal, 12).padding(.vertical, 9)
-            .background(Color.tsInputBg)
-            .cornerRadius(12)
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 14)
+        .padding(.horizontal, 18)
+        .padding(.vertical, 18)
+        .background(Color.white)
+        .cornerRadius(12)
     }
 }
 
