@@ -306,10 +306,11 @@ struct CoworkFilterChip: View {
                 Image(systemName: icon).font(.custom("HelveticaNeue-Medium", size: 11))
                 Text(label).font(.custom("HelveticaNeue-Medium", size: 13))
             }
-            .foregroundColor(active ? .white : .tsLabel)
+            .foregroundColor(active ? .tsAccent : .tsSecondary)
             .padding(.horizontal, 14).padding(.vertical, 8)
-            .background(active ? Color.tsAccent : Color.tsCard)
+            .background(active ? Color.tsAccent.opacity(0.12) : Color.tsCard)
             .clipShape(Capsule())
+            .overlay(Capsule().stroke(active ? Color.tsAccent.opacity(0.3) : Color.clear, lineWidth: 1))
         }
     }
 }
