@@ -294,7 +294,7 @@ struct WiseCurrencyRow: View {
             }
         }
         .padding(.horizontal, 18)
-        .padding(.vertical, 18)
+        .padding(.vertical, 12)
         .background(colorScheme == .dark ? Color.black : Color.white)
         .cornerRadius(12)
     }
