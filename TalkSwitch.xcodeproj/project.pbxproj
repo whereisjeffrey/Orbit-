@@ -105,6 +105,8 @@
 		5C4EF48D41050AF96AE488B1 /* UserLocationsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B06F69CBF0E7D5F064F666BC /* UserLocationsStore.swift */; };
 		5E42D4212BC7916E47FD047B /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70676833227F3272CB102236 /* Config.swift */; };
 		6252250843EA34A8DDFDE489 /* OnboardingPlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 451A6F929AD5C20B592589F0 /* OnboardingPlanView.swift */; };
+		6A770F3C17113E004FF5E356 /* OnboardingInterestsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2963DE568C0EA71FB772FD2 /* OnboardingInterestsView.swift */; };
+		888D574E11D379F47D7BD96F /* OnboardingStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29E8417B5F12E03415CE343A /* OnboardingStatusView.swift */; };
 		9479CB32831558A74D7F8A51 /* CommunityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471F186ED6F55E5C3B83ED96 /* CommunityView.swift */; };
 		9C10EEFBB37EC898AD006B2E /* DeckGenerationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66950B49E530F7E461383FB4 /* DeckGenerationService.swift */; };
 		A6728A9D362581C24272B7DA /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E5C787F74B49B3B71FC2D15 /* SettingsView.swift */; };
@@ -255,6 +257,7 @@
 		13721C7308918D79F62CB559 /* KitView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KitView.swift; sourceTree = "<group>"; };
 		1CF0203081627899390A9ED7 /* QuickAddSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = QuickAddSheet.swift; sourceTree = "<group>"; };
 		2111A26039606CBFB2DC5F96 /* SharedPhraseStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SharedPhraseStore.swift; sourceTree = "<group>"; };
+		29E8417B5F12E03415CE343A /* OnboardingStatusView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OnboardingStatusView.swift; sourceTree = "<group>"; };
 		3C9C1B33D0F41361EBB664B4 /* OnboardingView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		3CCCB62F99F464B7F3FB39D6 /* MainTabView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		3E4CDAE7CCAE5AB261FA919A /* DeckPhraseListView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DeckPhraseListView.swift; sourceTree = "<group>"; };
@@ -281,6 +284,7 @@
 		C4FA7A587F0CCC98AE5D5CC6 /* DeckStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DeckStore.swift; sourceTree = "<group>"; };
 		DC65C434C4B19B941C69BC70 /* LibraryView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		F10B7D83A76412AF0CE97BB3 /* TTSService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TTSService.swift; sourceTree = "<group>"; };
+		F2963DE568C0EA71FB772FD2 /* OnboardingInterestsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OnboardingInterestsView.swift; sourceTree = "<group>"; };
 		F615F7271A5D10592C66CDCC /* FlirtyContextSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FlirtyContextSheet.swift; sourceTree = "<group>"; };
 		F7BCC4D19FBB7CCB35DEFB36 /* StudyRevealedCardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StudyRevealedCardView.swift; sourceTree = "<group>"; };
 		F7FDC3F2AB5601574ACCEED0 /* LanguageSelectionView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LanguageSelectionView.swift; sourceTree = "<group>"; };
@@ -534,6 +538,8 @@
 				B06F69CBF0E7D5F064F666BC /* UserLocationsStore.swift */,
 				955608648AFEBBB3AEADB31C /* CoworkView.swift */,
 				AA374B85B1F404E8B29F71AA /* CoworkSpace.swift */,
+				F2963DE568C0EA71FB772FD2 /* OnboardingInterestsView.swift */,
+				29E8417B5F12E03415CE343A /* OnboardingStatusView.swift */,
 			);
 			path = TranslateHelper;
 			sourceTree = "<group>";
@@ -777,6 +783,8 @@
 				5C4EF48D41050AF96AE488B1 /* UserLocationsStore.swift in Sources */,
 				275FAE5BC493FC6FF8EC0BCE /* CoworkView.swift in Sources */,
 				FEE4F96E93E9E1E38013EDD5 /* CoworkSpace.swift in Sources */,
+				6A770F3C17113E004FF5E356 /* OnboardingInterestsView.swift in Sources */,
+				888D574E11D379F47D7BD96F /* OnboardingStatusView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
