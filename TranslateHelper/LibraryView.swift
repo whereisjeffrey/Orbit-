@@ -124,18 +124,26 @@ struct LibraryView: View {
 
                         HStack {
                             // Languages: EN + PT only
-                            HStack(spacing: -10) {
-                                Text("🇺🇸")
-                                    .font(.system(size: 20))
-                                    .frame(width: 34, height: 34)
-                                    .clipShape(Circle())
-                                    .overlay(Circle().stroke(Color.tsCard, lineWidth: 2))
-                                Text("🇪🇸")
-                                    .font(.system(size: 20))
-                                    .frame(width: 34, height: 34)
-                                    .clipShape(Circle())
-                                    .overlay(Circle().stroke(Color.tsCard, lineWidth: 2))
-                                    .zIndex(1)
+                            HStack(spacing: -8) {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.tsAccent)
+                                        .frame(width: 32, height: 32)
+                                        .overlay(Circle().stroke(Color.tsCard, lineWidth: 2))
+                                    Text("EN")
+                                        .font(.custom("HelveticaNeue-Bold", size: 11))
+                                        .foregroundColor(.white)
+                                }
+                                ZStack {
+                                    Circle()
+                                        .fill(Color(hex: "#FF3B30"))
+                                        .frame(width: 32, height: 32)
+                                        .overlay(Circle().stroke(Color.tsCard, lineWidth: 2))
+                                    Text("ES")
+                                        .font(.custom("HelveticaNeue-Bold", size: 11))
+                                        .foregroundColor(.white)
+                                }
+                                .zIndex(1)
                             }
                             Spacer()
                             if store.activePhrases.isEmpty {
