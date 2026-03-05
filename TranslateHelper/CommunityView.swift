@@ -392,7 +392,7 @@ struct CommunityPostCard: View {
             .padding(.top, 14)
             .padding(.bottom, 14)
         }
-        .background(post.isPreset ? (colorScheme == .dark ? Color(UIColor.systemGray5).opacity(0.375) : Color(UIColor.systemGray6).opacity(0.5)) : Color.tsCard)
+        .background(post.isPreset ? (colorScheme == .dark ? Color.tsCard : Color(UIColor.systemGray6).opacity(0.5)) : Color.tsCard)
         .cornerRadius(16)
         .overlay(
             Group {
@@ -489,7 +489,7 @@ struct PostComposerBar: View {
             .padding(.leading, 14)
             .padding(.trailing, 10)
             .padding(.vertical, 10)
-            .background(colorScheme == .dark ? Color.tsAccent.opacity(0.15) : Color.white)
+            .background(colorScheme == .dark ? Color.tsCard : Color.white)
             .cornerRadius(16)
             .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
         }
