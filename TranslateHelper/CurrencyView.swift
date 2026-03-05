@@ -348,7 +348,7 @@ struct OtherRatesSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("OTHER CURRENCIES → MXN")
+            Text("GBP · EUR · CAD → MXN")
                 .font(.custom("HelveticaNeue-Bold", size: 11))
                 .foregroundColor(.tsSecondary)
                 .tracking(1.2)
