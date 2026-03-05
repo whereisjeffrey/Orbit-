@@ -286,7 +286,7 @@ struct WiseCurrencyRow: View {
         HStack(spacing: 12) {
             TextField("0", text: $text)
                 .font(.custom("HelveticaNeue-Bold", size: 34))
-                .foregroundColor(isActive ? .tsLabel : .tsSecondary.opacity(0.35))
+                .foregroundColor(colorScheme == .dark ? .tsSecondary : (isActive ? .tsLabel : .tsSecondary.opacity(0.35)))
                 .keyboardType(.decimalPad)
                 .tint(.tsAccent)
                 .focused($isFocused)
@@ -305,7 +305,7 @@ struct WiseCurrencyRow: View {
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 12)
-        .background(colorScheme == .dark ? Color.black : Color.white)
+        .background(colorScheme == .dark ? Color.tsCard : Color.white)
         .cornerRadius(12)
     }
 }
@@ -414,6 +414,7 @@ struct ATMTipsCard: View {
 
 // MARK: - Free ATM Banks
 struct FreeATMSection: View {
+    @Environment(\.openURL) private var openURL
     struct ATMBank {
         let name: String
         let tagline: String
@@ -460,18 +461,14 @@ struct FreeATMSection: View {
 
             VStack(spacing: 0) {
                 ForEach(Array(banks.enumerated()), id: \.offset) { i, bank in
-                    Link(destination: URL(string: bank.url)!) {
+                    Button { if let url = URL(string: bank.url) { openURL(url) } } label: {
                         HStack(spacing: 12) {
                             AsyncImage(url: URL(string: bank.logoURL)) { phase in
-                                if let img = phase.image {
-                                    img.resizable().scaledToFit()
-                                } else {
-                                    ZStack {
-                                        Color(hex: bank.color)
-                                        Text(bank.initial)
-                                            .font(.custom("HelveticaNeue-Bold", size: 17))
-                                            .foregroundColor(.white)
-                                    }
+                                switch phase {
+                                case .success(let img):
+                                    img.resizable().scaledToFit().padding(2)
+                                default:
+                                    Color(hex: bank.color)
                                 }
                             }
                             .frame(width: 40, height: 40)
@@ -507,6 +504,7 @@ struct FreeATMSection: View {
 
 // MARK: - Best Travel Cards
 struct TravelCardsSection: View {
+    @Environment(\.openURL) private var openURL
     struct TravelCard {
         let name: String
         let issuer: String
@@ -554,30 +552,21 @@ struct TravelCardsSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("BEST TRAVEL CARDS")
-                    .font(.custom("HelveticaNeue-Bold", size: 11))
-                    .foregroundColor(.tsSecondary)
-                    .tracking(1.2)
-                Text("Zero foreign transaction fees")
-                    .font(.custom("HelveticaNeue", size: 12))
-                    .foregroundColor(.tsSecondary)
-            }
+            Text("BEST TRAVEL CARDS")
+                .font(.custom("HelveticaNeue-Bold", size: 11))
+                .foregroundColor(.tsSecondary)
+                .tracking(1.2)
 
             VStack(spacing: 0) {
                 ForEach(Array(cards.enumerated()), id: \.offset) { i, card in
-                    Link(destination: URL(string: card.url)!) {
+                    Button { if let url = URL(string: card.url) { openURL(url) } } label: {
                         HStack(spacing: 12) {
                             AsyncImage(url: URL(string: card.logoURL)) { phase in
-                                if let img = phase.image {
-                                    img.resizable().scaledToFit()
-                                } else {
-                                    ZStack {
-                                        Color(hex: card.color)
-                                        Text(card.initial)
-                                            .font(.custom("HelveticaNeue-Bold", size: 17))
-                                            .foregroundColor(.white)
-                                    }
+                                switch phase {
+                                case .success(let img):
+                                    img.resizable().scaledToFit().padding(2)
+                                default:
+                                    Color(hex: card.color)
                                 }
                             }
                             .frame(width: 40, height: 40)
