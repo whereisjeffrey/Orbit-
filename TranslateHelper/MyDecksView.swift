@@ -127,6 +127,7 @@ struct MyDecksView: View {
                     .frame(height: 44)
                     .background(Color.tsCard)
                     .cornerRadius(14)
+                    .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
                     .padding(.horizontal, 24)
                     .padding(.bottom, 32)
 
@@ -338,6 +339,7 @@ struct UserDeckCard: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color.tsCard)
             .cornerRadius(20)
+            .overlay(RoundedRectangle(cornerRadius: 20).stroke(deck.tint.opacity(0.25), lineWidth: 1))
         }
         .buttonStyle(DeckTapStyle())
     }
@@ -436,6 +438,7 @@ struct FeaturedDeckRow: View {
         .padding(16)
         .background(Color.tsCard)
         .cornerRadius(16)
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(deck.tint.opacity(0.25), lineWidth: 1))
     }
 }
 
@@ -541,6 +544,7 @@ struct EmptyDecksPrompt: View {
         .padding(32)
         .background(Color.tsCard)
         .cornerRadius(20)
+        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
     }
 }
 

@@ -9,19 +9,19 @@ enum PostType: String, CaseIterable {
     case warning   = "Warnings"
     case event     = "Events"
 
-    var icon: String {
+    var emoji: String {
         switch self {
-        case .all:      return "square.grid.2x2"
-        case .question: return "questionmark.bubble"
-        case .rec:      return "hand.thumbsup"
-        case .warning:  return "exclamationmark.triangle"
-        case .event:    return "calendar"
+        case .all:      return "✨"
+        case .question: return "💬"
+        case .rec:      return "👍"
+        case .warning:  return "⚠️"
+        case .event:    return "📅"
         }
     }
     var color: Color {
         switch self {
         case .all:      return .tsAccent
-        case .question: return Color(hex: "#007AFF")
+        case .question: return .tsAccent
         case .rec:      return Color(hex: "#34C759")
         case .warning:  return Color(hex: "#FF9500")
         case .event:    return Color(hex: "#AF52DE")
@@ -39,6 +39,8 @@ struct CommunityPost: Identifiable {
     let comments: Int
     let timeAgo: String
     var isVerifiedLocal: Bool = false
+    var avatarInitials: String = ""
+    var avatarColor: Color = .tsAccent
 }
 
 struct CommunityView: View {
@@ -55,16 +57,20 @@ struct CommunityView: View {
     let samplePosts: [CommunityPost] = [
         CommunityPost(author: "Marco R.", neighbourhood: "Condesa", type: .question,
                       body: "Anyone know a good English-speaking dentist in Roma Norte?",
-                      likes: 7, comments: 3, timeAgo: "2h", isVerifiedLocal: false),
+                      likes: 7, comments: 3, timeAgo: "2h", isVerifiedLocal: false,
+                      avatarInitials: "MR", avatarColor: Color(hex: "#FF9500")),
         CommunityPost(author: "Sarah K.", neighbourhood: "Polanco", type: .rec,
                       body: "Highly recommend Café Toscano for remote work — fast wifi, great coffee, never too crowded before noon.",
-                      likes: 24, comments: 6, timeAgo: "5h", isVerifiedLocal: true),
+                      likes: 24, comments: 6, timeAgo: "5h", isVerifiedLocal: true,
+                      avatarInitials: "SK", avatarColor: Color(hex: "#AF52DE")),
         CommunityPost(author: "Diego M.", neighbourhood: "Roma Norte", type: .warning,
                       body: "Watch out for fake taxi overcharges outside Benito Juárez airport. Always use DIDI or Uber from inside.",
-                      likes: 89, comments: 12, timeAgo: "1d", isVerifiedLocal: true),
+                      likes: 89, comments: 12, timeAgo: "1d", isVerifiedLocal: true,
+                      avatarInitials: "DM", avatarColor: Color(hex: "#34C759")),
         CommunityPost(author: "Lena W.", neighbourhood: "Coyoacán", type: .event,
                       body: "Expat meetup Friday night at Jardín Pushkin — 7pm. DM me if you\'re coming!",
-                      likes: 31, comments: 8, timeAgo: "3h", isVerifiedLocal: false),
+                      likes: 31, comments: 8, timeAgo: "3h", isVerifiedLocal: false,
+                      avatarInitials: "LW", avatarColor: Color(hex: "#FF2D55")),
     ]
 
     var filteredPosts: [CommunityPost] {
@@ -118,7 +124,7 @@ struct CommunityView: View {
 
                     // ── New in town ─────────────────────────────────────
                     NewInTownSection()
-                        .padding(.bottom, 16)
+                        .padding(.bottom, 8)
 
                     // ── Post type filter ───────────────────────────────
                     ScrollView(.horizontal, showsIndicators: false) {
@@ -126,7 +132,7 @@ struct CommunityView: View {
                             ForEach(PostType.allCases, id: \.self) { type in
                                 FilterChip(
                                     label: type.rawValue,
-                                    icon: type.icon,
+                                    emoji: type.emoji,
                                     color: type.color,
                                     isSelected: selectedFilter == type
                                 ) { selectedFilter = type }
@@ -134,7 +140,7 @@ struct CommunityView: View {
                         }
                         .padding(.horizontal, 16)
                     }
-                    .padding(.bottom, 16)
+                    .padding(.bottom, 12)
 
                     // ── Feed ───────────────────────────────────────────
                     LazyVStack(spacing: 12) {
@@ -197,19 +203,19 @@ struct QuickAccessPill: View {
 
 struct FilterChip: View {
     let label: String
-    let icon: String
+    let emoji: String
     let color: Color
     let isSelected: Bool
     let action: () -> Void
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 4) {
-                Image(systemName: icon).font(.custom("HelveticaNeue", size: 11))
-                Text(label).font(.custom("HelveticaNeue-Medium", size: 13))
+            HStack(spacing: 5) {
+                Text(emoji).font(.custom("HelveticaNeue", size: 13))
+                Text(label).font(.custom("HelveticaNeue-Medium", size: 14))
             }
             .foregroundColor(isSelected ? .white : .tsLabel)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 7)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
             .background(isSelected ? color : Color.tsCard)
             .clipShape(Capsule())
         }
@@ -220,15 +226,21 @@ struct CommunityPostCard: View {
     let post: CommunityPost
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
-                Circle()
-                    .fill(post.type.color.opacity(0.15))
-                    .frame(width: 36, height: 36)
-                    .overlay(
-                        Image(systemName: post.type.icon)
-                            .font(.custom("HelveticaNeue", size: 14))
-                            .foregroundColor(post.type.color)
-                    )
+            HStack(spacing: 10) {
+                ZStack {
+                    Circle()
+                        .fill(post.avatarColor)
+                        .frame(width: 40, height: 40)
+                    if post.avatarInitials.isEmpty {
+                        Image(systemName: "person.fill")
+                            .font(.custom("HelveticaNeue-Medium", size: 16))
+                            .foregroundColor(.white)
+                    } else {
+                        Text(post.avatarInitials)
+                            .font(.custom("HelveticaNeue-Bold", size: 14))
+                            .foregroundColor(.white)
+                    }
+                }
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 4) {
                         Text(post.author)
@@ -274,6 +286,7 @@ struct CommunityPostCard: View {
         .padding(16)
         .background(Color.tsCard)
         .cornerRadius(16)
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
     }
 }
 

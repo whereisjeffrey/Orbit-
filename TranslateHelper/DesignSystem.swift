@@ -43,48 +43,34 @@ extension UIColor {
 // MARK: - Background
 struct TSGradientBackground: View {
     var body: some View {
-        Color(hex: "#111111").ignoresSafeArea()
+        Color.tsBackground.ignoresSafeArea()
     }
 }
 
 // MARK: - Colours
 extension Color {
-    static let tsBackground = Color(UIColor { trait in
-        trait.userInterfaceStyle == .dark ? UIColor(hex: "#111111") : UIColor(hex: "#FFFFFF")
-    })
+    static let tsBackground = Color(UIColor { _ in UIColor(hex: "#F5FAFB") })
     
-    static let tsCard = Color(UIColor { trait in
-        trait.userInterfaceStyle == .dark ? UIColor(hex: "#252525") : UIColor(hex: "#F3F6FF")
-    })
+    static let tsCard = Color(UIColor { _ in UIColor(hex: "#FFFFFF") })
     
-    static let tsBorder = Color(UIColor { trait in
-        trait.userInterfaceStyle == .dark ? UIColor.white.withAlphaComponent(0.08) : UIColor(hex: "#C6C6C8")
-    })
+    static let tsBorder = Color(hex: "#0099FF").opacity(0.07)
     
-    static let tsAccent = Color(hex: "#0099E5")
+    static let tsAccent = Color(hex: "#0099FF")
     
     static let tsAccentTeal = Color(UIColor { trait in
         trait.userInterfaceStyle == .dark ? UIColor(hex: "#00C7BE") : UIColor(hex: "#5AC8FA")
     })
     
-    static let tsSecondary = Color(UIColor { trait in
-        trait.userInterfaceStyle == .dark ? UIColor(hex: "#8E8E93") : UIColor(hex: "#3C3C43").withAlphaComponent(0.6)
-    })
+    static let tsSecondary = Color(UIColor { _ in UIColor(hex: "#6D6D72") })
     
-    static let tsLabel = Color(UIColor { trait in
-        trait.userInterfaceStyle == .dark ? UIColor(hex: "#FFFFFF") : UIColor(hex: "#000000")
-    })
+    static let tsLabel = Color(UIColor { _ in UIColor(hex: "#0A0A0A") })
     
-    static let tsInputBg = Color(UIColor { trait in
-        trait.userInterfaceStyle == .dark ? UIColor(hex: "#787880").withAlphaComponent(0.12) : UIColor(hex: "#EDF2FF")
-    })
+    static let tsInputBg = Color(UIColor { _ in UIColor(hex: "#E8F4FA") })
 
     /// Footer / tab bar background.
-    /// Dark:  #252525 — lifted near-black with a subtle warm haze (à la TestFlight banner).
+    /// Dark:  #1E1E1E — lifted near-black with a subtle warm haze (à la TestFlight banner).
     /// Light: #FFFFFF — standard white to match system tab bar convention.
-    static let tsFooter = Color(UIColor { trait in
-        trait.userInterfaceStyle == .dark ? UIColor(hex: "#111111") : UIColor(hex: "#FFFFFF")
-    })
+    static let tsFooter = Color(UIColor { _ in UIColor(hex: "#F5FAFB") })
 
     init(hex: String) {
         let h = hex.trimmingCharacters(in: CharacterSet(charactersIn: "#"))
@@ -115,7 +101,7 @@ extension LinearGradient {
     )
     
     static let tsBluePrimary = LinearGradient(
-        colors: [Color(hex: "#0099E5"), Color(hex: "#004775")],
+        colors: [Color(hex: "#0099FF"), Color(hex: "#005C99")],
         startPoint: .topLeading, endPoint: .bottomTrailing
     )
 }
@@ -272,7 +258,7 @@ struct TSButton: View {
     private let gradient = LinearGradient(
         colors: [
             Color(hex: "#5BA8FF"),  // lighter blue — top highlight
-            Color(hex: "#004775"),  // action navy — bottom
+            Color(hex: "#005C99"),  // action navy — bottom
         ],
         startPoint: .top,
         endPoint: .bottom

@@ -75,7 +75,7 @@ struct CoworkSubmitView: View {
                         SubmitSection(title: "Amenities — tick what you know") {
                             AmenityToggleRow(icon: "phone.fill",          label: "Private call rooms",   color: Color(hex: "#34C759"), isOn: $hasCallRooms)
                             AmenityToggleRow(icon: "cup.and.saucer.fill", label: "Coffee included",      color: Color(hex: "#FF9500"), isOn: $hasCoffee)
-                            AmenityToggleRow(icon: "bolt.fill",           label: "Fast WiFi (50+ Mbps)", color: Color(hex: "#007AFF"), isOn: $hasFastWifi)
+                            AmenityToggleRow(icon: "bolt.fill",           label: "Fast WiFi (50+ Mbps)", color: Color.tsAccent, isOn: $hasFastWifi)
                             AmenityToggleRow(icon: "moon.fill",           label: "Open past 9pm",        color: Color(hex: "#AF52DE"), isOn: $hasLateHours)
                             SubmitField(label: "WiFi speed (if known)", placeholder: "e.g. ~80 Mbps", text: $wifiSpeed)
                         }
@@ -159,6 +159,7 @@ struct SubmitField: View {
                 .padding(12)
                 .background(Color.tsCard)
                 .cornerRadius(10)
+                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
                 .focused($focused)
         }
     }
@@ -188,5 +189,6 @@ struct AmenityToggleRow: View {
         .padding(12)
         .background(Color.tsCard)
         .cornerRadius(10)
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
     }
 }

@@ -54,6 +54,7 @@ struct CommunityUserProfileView: View {
                             }
                             .background(Color.tsCard)
                             .cornerRadius(16)
+                            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
                             .padding(.horizontal, 24)
                             .padding(.bottom, 24)
                         }
@@ -80,6 +81,7 @@ struct CommunityUserProfileView: View {
                                         .padding(.vertical, 6)
                                         .background(Color.tsCard)
                                         .cornerRadius(10)
+                                        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
                                     }
                                 }
                             }
@@ -173,6 +175,7 @@ struct SocialLinkRow: View {
             .padding(12)
             .background(Color.tsCard)
             .cornerRadius(12)
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
         }
     }
 }

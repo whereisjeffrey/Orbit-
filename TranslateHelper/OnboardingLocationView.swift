@@ -233,7 +233,7 @@ struct OnboardingLocationView: View {
                                 LinearGradient(
                                     colors: locStore.locations.isEmpty
                                         ? [Color(hex: "#636366"), Color(hex: "#48484A")]
-                                        : [Color(hex: "#3B99FC"), Color(hex: "#007AFF")],
+                                        : [Color(hex: "#3B99FC"), Color.tsAccent],
                                     startPoint: .topLeading, endPoint: .bottomTrailing
                                 )
                             )

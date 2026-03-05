@@ -358,7 +358,7 @@ struct CoworkCard: View {
                 HStack(spacing: 12) {
                     AmenityBadge(icon: "phone.fill",          label: space.hasCallRooms ? "Call rooms" : "No rooms",     active: space.hasCallRooms,  color: Color(hex: "#34C759"))
                     AmenityBadge(icon: "cup.and.saucer.fill", label: space.hasCoffee    ? "Coffee"     : "No coffee",    active: space.hasCoffee,    color: Color(hex: "#FF9500"))
-                    AmenityBadge(icon: "bolt.fill",           label: space.hasFastWifi  ? "Fast WiFi"  : "Standard",     active: space.hasFastWifi,  color: Color(hex: "#007AFF"))
+                    AmenityBadge(icon: "bolt.fill",           label: space.hasFastWifi  ? "Fast WiFi"  : "Standard",     active: space.hasFastWifi,  color: Color.tsAccent)
                     AmenityBadge(icon: "moon.fill",           label: space.hasLateHours ? "Open late"  : "Closes early", active: space.hasLateHours, color: Color(hex: "#AF52DE"))
                     Spacer()
                     Image(systemName: "chevron.right")
@@ -368,6 +368,7 @@ struct CoworkCard: View {
             .padding(16)
             .background(Color.tsCard)
             .cornerRadius(16)
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
         }
         .buttonStyle(ScaleButtonStyle())
     }
@@ -417,7 +418,7 @@ struct CoworkDetailView: View {
                         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                             DetailAmenityCard(icon: "phone.fill",          label: "Call Rooms",  value: space.hasCallRooms ? "Available"    : "None",         active: space.hasCallRooms,  color: Color(hex: "#34C759"))
                             DetailAmenityCard(icon: "cup.and.saucer.fill", label: "Coffee",      value: space.hasCoffee   ? "Included"     : "Not included", active: space.hasCoffee,    color: Color(hex: "#FF9500"))
-                            DetailAmenityCard(icon: "bolt.fill",           label: "WiFi Speed",  value: space.wifiSpeed ?? (space.hasFastWifi ? "Fast" : "Standard"), active: space.hasFastWifi, color: Color(hex: "#007AFF"))
+                            DetailAmenityCard(icon: "bolt.fill",           label: "WiFi Speed",  value: space.wifiSpeed ?? (space.hasFastWifi ? "Fast" : "Standard"), active: space.hasFastWifi, color: Color.tsAccent)
                             DetailAmenityCard(icon: "moon.fill",           label: "Late Hours",  value: space.hasLateHours ? "Open past 9pm" : "Closes early", active: space.hasLateHours, color: Color(hex: "#AF52DE"))
                         }
                         .padding(.horizontal, 16).padding(.bottom, 20)

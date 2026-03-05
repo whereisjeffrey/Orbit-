@@ -69,6 +69,7 @@ struct SettingsView: View {
                     }
                     .background(Color.tsCard)
                     .cornerRadius(12)
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
                     .padding(.horizontal, 16)
                     
                     Text("Choose your preferred interface style for optimal learning.")
@@ -143,6 +144,7 @@ struct SettingsView: View {
                     }
                     .background(Color.tsCard)
                     .cornerRadius(12)
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
                     .padding(.horizontal, 16)
                     .padding(.bottom, 32)
                     
@@ -208,6 +210,7 @@ struct SettingsView: View {
                     }
                     .background(Color.tsCard)
                     .cornerRadius(12)
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
                     .padding(.horizontal, 16)
                     .padding(.bottom, 32)
                     
@@ -232,6 +235,7 @@ struct SettingsView: View {
                     }
                     .background(Color.tsCard)
                     .cornerRadius(12)
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
                     .padding(.horizontal, 16)
                     .padding(.bottom, 32)
 
@@ -246,6 +250,7 @@ struct SettingsView: View {
                             .frame(height: 52)
                             .background(Color.tsCard)
                             .cornerRadius(12)
+                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
                     }
                     .padding(.horizontal, 16)
                     
@@ -274,6 +279,7 @@ struct SettingsView: View {
                     }
                     .background(Color.tsCard)
                     .cornerRadius(12)
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
                     .padding(.horizontal, 16)
                     .padding(.bottom, 8)
 

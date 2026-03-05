@@ -28,7 +28,7 @@ struct KitView: View {
     @State private var showCityPicker = false
 
     let tools: [KitTool] = [
-        KitTool(icon: "laptopcomputer",              name: "Work",        description: "Find spaces with call rooms & fast WiFi", color: Color(hex: "#007AFF"), destination: .work),
+        KitTool(icon: "laptopcomputer",              name: "Work",        description: "Find spaces with call rooms & fast WiFi", color: Color.tsAccent, destination: .work),
         KitTool(icon: "dollarsign.arrow.circlepath", name: "Currency",      description: "Live rates + quick converter",            color: Color(hex: "#34C759"), destination: .currency),
         KitTool(icon: "simcard",                     name: "SIM Guide",     description: "Best carriers, plans & cost",             color: Color(hex: "#FF9500"), destination: .sim),
         KitTool(icon: "map",                         name: "Neighbourhoods",description: "Find your area by vibe",                  color: Color(hex: "#AF52DE"), destination: .neighbourhoods),
@@ -121,6 +121,7 @@ struct KitToolCard: View {
             .frame(maxWidth: .infinity, minHeight: 148, alignment: .leading)
             .background(Color.tsCard)
             .cornerRadius(20)
+            .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
         }
         .buttonStyle(ScaleButtonStyle())
     }

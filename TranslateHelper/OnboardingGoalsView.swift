@@ -15,7 +15,7 @@ struct OnboardingGoalsView: View {
     @State private var selectedGoals: Set<String> = []
 
     let goals: [(String, String, Color)] = [
-        ("airplane",           "Travel",  Color(hex: "#007AFF")),
+        ("airplane",           "Travel",  Color.tsAccent),
         ("briefcase.fill",     "Work",    Color(hex: "#A2845E")),
         ("face.smiling.fill",  "Casual",  Color(hex: "#FFCC00")),
         ("heart.fill",         "Flirty",  Color(hex: "#FF3B30")),

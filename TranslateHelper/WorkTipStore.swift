@@ -42,7 +42,7 @@ enum WifiRating: String, Codable, CaseIterable {
     }
     var color: String {
         switch self {
-        case .fast: return "#007AFF"
+        case .fast: return "0099FF"
         case .ok:   return "#FF9500"
         case .slow: return "#FF3B30"
         case .none: return "#8E8E93"

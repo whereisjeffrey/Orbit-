@@ -303,7 +303,7 @@ struct CafeCard: View {
                     // WiFi
                     HStack(spacing: 4) {
                         Image(systemName: "wifi").font(.custom("HelveticaNeue", size: 12))
-                            .foregroundColor(cafe.hasFastWifi ? Color(hex: "#007AFF") : Color.tsSecondary.opacity(0.4))
+                            .foregroundColor(cafe.hasFastWifi ? Color.tsAccent : Color.tsSecondary.opacity(0.4))
                         Text(cafe.wifiSpeed ?? (cafe.hasFastWifi ? "Fast" : "Slow")).font(.custom("HelveticaNeue", size: 12))
                             .foregroundColor(.tsSecondary)
                     }
@@ -322,6 +322,7 @@ struct CafeCard: View {
             .padding(16)
             .background(Color.tsCard)
             .cornerRadius(16)
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
         }
         .buttonStyle(ScaleButtonStyle())
     }
@@ -374,7 +375,7 @@ struct CafeDetailView: View {
                                 label: "WiFi",
                                 value: cafe.wifiSpeed ?? (cafe.hasFastWifi ? "Fast" : "Standard"),
                                 active: cafe.hasFastWifi,
-                                color: Color(hex: "#007AFF")
+                                color: Color.tsAccent
                             )
                             DetailAmenityCard(
                                 icon: "timer",

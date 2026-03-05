@@ -68,6 +68,7 @@ struct AddCardSheet: View {
                                 .padding(16)
                                 .background(Color.tsCard)
                                 .cornerRadius(14)
+                                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
                             } else {
                                 VStack(spacing: 8) {
                                     ForEach(deckStore.decks) { deck in

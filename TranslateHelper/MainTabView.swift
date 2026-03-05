@@ -21,7 +21,7 @@ struct MainTabView: View {
             // ── Custom tab bar ──────────────────────────────────────────
             VStack(spacing: 0) {
                 Rectangle()
-                    .fill(Color.tsBorder)
+                    .fill(Color.tsSecondary.opacity(0.25))
                     .frame(height: 0.5)
                 HStack(spacing: 0) {
                     TabBarItem(icon: "bubble.left.and.bubble.right", label: "Learn",     tag: 0, selected: $selectedTab)
@@ -33,7 +33,7 @@ struct MainTabView: View {
                 .padding(.top, 12)
                 .padding(.bottom, 32)
             }
-            .background(Color.tsCard)
+            .background(Color.tsBackground)
         }
         .ignoresSafeArea(edges: .bottom)
     }

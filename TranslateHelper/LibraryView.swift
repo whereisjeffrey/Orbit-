@@ -87,6 +87,7 @@ struct LibraryView: View {
                     .frame(height: 40)
                     .background(Color.tsCard)
                     .cornerRadius(12)
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
                     .padding(.horizontal, 16)
                     .padding(.bottom, 24)
 
@@ -124,15 +125,21 @@ struct LibraryView: View {
                                 .clipShape(Capsule())
                         }
 
-                        Spacer()
+                        Spacer().frame(maxHeight: 10)
 
                         HStack {
                             // Languages: EN + PT only
-                            HStack(spacing: 6) {
+                            HStack(spacing: -10) {
                                 Text("🇺🇸")
-                                    .font(.custom("HelveticaNeue", size: 26))
+                                    .font(.system(size: 22))
+                                    .frame(width: 34, height: 34)
+                                    .clipShape(Circle())
+                                    .overlay(Circle().stroke(Color.tsBackground, lineWidth: 2.5))
                                 Text("🇪🇸")
-                                    .font(.custom("HelveticaNeue", size: 26))
+                                    .font(.system(size: 22))
+                                    .frame(width: 34, height: 34)
+                                    .clipShape(Circle())
+                                    .overlay(Circle().stroke(Color.tsBackground, lineWidth: 2.5))
                             }
                             Spacer()
                             if store.activePhrases.isEmpty {
@@ -146,10 +153,11 @@ struct LibraryView: View {
                             }
                         }
                     }
-                    .padding(20)
-                    .frame(height: 176)
+                    .padding(16)
+                    .frame(height: 148)
                     .background(Color.tsCard)
                     .cornerRadius(24)
+                    .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
                     }
                     .buttonStyle(ScaleButtonStyle())
                     .padding(.horizontal, 16)
@@ -222,6 +230,7 @@ struct LibraryView: View {
                     .padding(16)
                     .background(Color.tsCard)
                     .cornerRadius(24)
+                    .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
                     .padding(.horizontal, 16)
                     .padding(.bottom, 120)
                 }
@@ -345,6 +354,7 @@ struct LibraryDeckCard: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color.tsCard)
             .cornerRadius(24)
+            .overlay(RoundedRectangle(cornerRadius: 24).stroke(tint.opacity(0.25), lineWidth: 1))
         }
         .buttonStyle(DeckTapStyle())
     }

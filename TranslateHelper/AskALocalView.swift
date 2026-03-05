@@ -32,13 +32,13 @@ struct AskALocalView: View {
                     // ── Filter chips ───────────────────────────────
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
-                            FilterChip(label: "All", icon: "person.2", color: .tsAccent, isSelected: filterInterest == nil) {
+                            FilterChip(label: "All", emoji: "✨", color: .tsAccent, isSelected: filterInterest == nil) {
                                 filterInterest = nil
                             }
                             ForEach(filterOptions, id: \.id) { opt in
                                 FilterChip(
                                     label: opt.label,
-                                    icon: "circle.fill",
+                                    emoji: "•",
                                     color: .tsAccent,
                                     isSelected: filterInterest == opt.id
                                 ) { filterInterest = filterInterest == opt.id ? nil : opt.id }
@@ -129,6 +129,7 @@ struct LocalCard: View {
             .padding(16)
             .background(Color.tsCard)
             .cornerRadius(16)
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.07), lineWidth: 0.5))
         }
         .buttonStyle(ScaleButtonStyle())
     }
