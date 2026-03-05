@@ -469,26 +469,25 @@ struct PostComposerBar: View {
             HStack(spacing: 12) {
                 MiniAvatar(auth: auth, size: 36)
                 Rectangle()
-                    .fill(Color.tsSecondary.opacity(0.15))
-                    .frame(width: 1, height: 28)
+                    .fill(Color.tsSecondary.opacity(0.12))
+                    .frame(width: 1, height: 24)
                 Text("What's on your mind?")
                     .font(.custom("HelveticaNeue", size: 15))
-                    .foregroundColor(.tsSecondary.opacity(0.7))
+                    .foregroundColor(.tsSecondary.opacity(0.6))
                 Spacer()
                 ZStack {
                     Circle()
-                        .fill(Color.white)
+                        .fill(Color.tsAccent)
                         .frame(width: 34, height: 34)
-                        .overlay(Circle().stroke(Color.tsAccent.opacity(0.12), lineWidth: 1))
                     Image(systemName: "photo.on.rectangle")
                         .font(.system(size: 15))
-                        .foregroundColor(.tsAccent)
+                        .foregroundColor(.white)
                 }
             }
             .padding(.leading, 14)
             .padding(.trailing, 10)
             .padding(.vertical, 10)
-            .background(Color.tsCard)
+            .background(Color.white)
             .cornerRadius(16)
             .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
         }
