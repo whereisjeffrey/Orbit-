@@ -25,6 +25,7 @@ struct KitView: View {
     var selectedCity: City { CityStore.city(id: selectedCityId) ?? CityStore.defaultCity }
 
     @State private var activeDestination: KitDestination? = nil
+    @State private var showCityPicker = false
 
     let tools: [KitTool] = [
         KitTool(icon: "laptopcomputer",              name: "Work",        description: "Find spaces with call rooms & fast WiFi", color: Color(hex: "#007AFF"), destination: .work),
@@ -41,20 +42,29 @@ struct KitView: View {
         ZStack { TSGradientBackground()
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Kit")
-                                .font(.system(size: 28, weight: .bold))
-                                .foregroundColor(.tsLabel)
-                            Text("\(selectedCity.emoji) \(selectedCity.name)")
-                                .font(.system(size: 13))
-                                .foregroundColor(.tsSecondary)
-                        }
+                    HStack(alignment: .center) {
+                        Text("Kit")
+                            .font(.custom("HelveticaNeue-Bold", size: 28))
+                            .foregroundColor(.tsLabel)
                         Spacer()
+                        Button(action: { showCityPicker = true }) {
+                            HStack(spacing: 6) {
+                                Text(selectedCity.emoji)
+                                    .font(.custom("HelveticaNeue-Medium", size: 13))
+                                Text(selectedCity.name)
+                                    .font(.custom("HelveticaNeue-Medium", size: 14))
+                                    .foregroundColor(.white)
+                                Image(systemName: "chevron.down")
+                                    .font(.system(size: 11, weight: .medium))
+                                    .foregroundColor(.tsAccent)
+                            }
+                        }
+                        .frame(height: 36)
                     }
+                    .frame(minHeight: 36)
                     .padding(.horizontal, 16)
                     .padding(.top, 16)
-                    .padding(.bottom, 24)
+                    .padding(.bottom, 16)
 
                     LazyVGrid(columns: columns, spacing: 16) {
                         ForEach(tools) { tool in
@@ -66,6 +76,7 @@ struct KitView: View {
                 }
             }
         }
+        .sheet(isPresented: $showCityPicker) { CityPickerView(selectedId: $selectedCityId) }
         .sheet(isPresented: Binding(
             get: { activeDestination == .work },
             set: { if !$0 { activeDestination = nil } }
@@ -92,15 +103,15 @@ struct KitToolCard: View {
                         .fill(tool.color.opacity(0.15))
                         .frame(width: 48, height: 48)
                     Image(systemName: tool.icon)
-                        .font(.system(size: 22, weight: .medium))
+                        .font(.custom("HelveticaNeue-Medium", size: 22))
                         .foregroundColor(tool.color)
                 }
                 VStack(alignment: .leading, spacing: 4) {
                     Text(tool.name)
-                        .font(.system(size: 16, weight: .bold))
+                        .font(.custom("HelveticaNeue-Bold", size: 16))
                         .foregroundColor(.tsLabel)
                     Text(tool.description)
-                        .font(.system(size: 12))
+                        .font(.custom("HelveticaNeue", size: 12))
                         .foregroundColor(.tsSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -123,10 +134,10 @@ struct KitPlaceholderView: View {
             ZStack { TSGradientBackground()
                 VStack(spacing: 12) {
                     Text("⚒️")
-                        .font(.system(size: 48))
+                        .font(.custom("HelveticaNeue", size: 48))
                         .padding(.top, 48)
                     Text(name)
-                        .font(.system(size: 24, weight: .bold))
+                        .font(.custom("HelveticaNeue-Bold", size: 24))
                         .foregroundColor(.tsLabel)
                     Text("Coming soon")
                         .foregroundColor(.tsSecondary)

@@ -7,42 +7,33 @@ struct MainTabView: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            TabView(selection: $selectedTab) {
-                LibraryView()    .tag(0)
-                CommunityView()  .tag(1)
-                KitView()        .tag(2)
-                SettingsView()   .tag(3)
-            }
-
-            // Custom tab bar
-            HStack(spacing: 0) {
-                TabBarItem(icon: "bubble.left.and.bubble.right", label: "Learn", tag: 0, selected: $selectedTab)
-                TabBarItem(icon: "person.2",         label: "Community", tag: 1, selected: $selectedTab)
-                TabBarItem(icon: "backpack",          label: "Kit",       tag: 2, selected: $selectedTab)
-                TabBarItem(icon: "gearshape",        label: "Settings",  tag: 3, selected: $selectedTab)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(
-                ZStack {
-                    Color.tsFooter
-                    // Subtle top-edge glow
-                    VStack {
-                        LinearGradient(
-                            colors: [Color.tsAccent.opacity(0.18), Color.clear],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                        .frame(height: 1.5)
-                        Spacer()
-                    }
+            Group {
+                switch selectedTab {
+                case 0: LibraryView()
+                case 1: CommunityView()
+                case 2: KitView()
+                case 3: SettingsView()
+                default: LibraryView()
                 }
-            )
-            .cornerRadius(24)
-            .padding(.horizontal, 16)
-            .padding(.bottom, 24)
-            .shadow(color: Color.tsAccent.opacity(0.12), radius: 20, x: 0, y: -4)
-            .shadow(color: .black.opacity(0.35), radius: 16, x: 0, y: 4)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            // ── Custom tab bar ──────────────────────────────────────────
+            VStack(spacing: 0) {
+                Rectangle()
+                    .fill(Color.tsBorder)
+                    .frame(height: 0.5)
+                HStack(spacing: 0) {
+                    TabBarItem(icon: "bubble.left.and.bubble.right", label: "Learn",     tag: 0, selected: $selectedTab)
+                    TabBarItem(icon: "person.2",                     label: "Community", tag: 1, selected: $selectedTab)
+                    TabBarItem(icon: "backpack",                     label: "Kit",       tag: 2, selected: $selectedTab)
+                    TabBarItem(icon: "gearshape",                    label: "Settings",  tag: 3, selected: $selectedTab)
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
+                .padding(.bottom, 32)
+            }
+            .background(Color.tsCard)
         }
         .ignoresSafeArea(edges: .bottom)
     }
@@ -60,12 +51,11 @@ struct TabBarItem: View {
         Button(action: { selected = tag }) {
             VStack(spacing: 4) {
                 Image(systemName: isSelected ? icon + ".fill" : icon)
-                    .font(.system(size: 20))
-                    .foregroundColor(isSelected ? .tsAccent : .tsSecondary)
+                    .font(.custom("HelveticaNeue", size: 20))
                 Text(label)
                     .font(.system(size: 10, weight: isSelected ? .semibold : .regular))
-                    .foregroundColor(isSelected ? .tsAccent : .tsSecondary)
             }
+            .foregroundColor(isSelected ? .tsAccent : .tsSecondary)
             .frame(maxWidth: .infinity)
         }
     }

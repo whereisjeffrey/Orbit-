@@ -43,12 +43,12 @@ struct CoworkSubmitView: View {
                         // ── Context note ───────────────────────────
                         HStack(spacing: 10) {
                             Image(systemName: isEdit ? "pencil.circle.fill" : "plus.circle.fill")
-                                .font(.system(size: 18))
+                                .font(.custom("HelveticaNeue", size: 18))
                                 .foregroundColor(.tsAccent)
                             Text(isEdit
                                  ? "Know something that\'s out of date? Fix it for everyone."
                                  : "Know a great coworking spot that\'s not listed? Add it.")
-                                .font(.system(size: 14))
+                                .font(.custom("HelveticaNeue", size: 14))
                                 .foregroundColor(.tsSecondary)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
@@ -89,13 +89,13 @@ struct CoworkSubmitView: View {
                                 TextEditor(text: $notes)
                                     .scrollContentBackground(.hidden)
                                     .background(Color.clear)
-                                    .font(.system(size: 15))
+                                    .font(.custom("HelveticaNeue", size: 15))
                                     .foregroundColor(.tsLabel)
                                     .frame(minHeight: 80)
                                     .padding(8)
                                 if notes.isEmpty {
                                     Text("Anything useful to know — vibe, crowd, parking, noise level…")
-                                        .font(.system(size: 15))
+                                        .font(.custom("HelveticaNeue", size: 15))
                                         .foregroundColor(.tsSecondary)
                                         .padding(16)
                                         .allowsHitTesting(false)
@@ -134,7 +134,7 @@ struct SubmitSection<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title.uppercased())
-                .font(.system(size: 11, weight: .semibold))
+                .font(.custom("HelveticaNeue-Medium", size: 11))
                 .foregroundColor(.tsSecondary)
                 .tracking(1)
             content()
@@ -151,10 +151,10 @@ struct SubmitField: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(label)
-                .font(.system(size: 12))
+                .font(.custom("HelveticaNeue", size: 12))
                 .foregroundColor(.tsSecondary)
             TextField(placeholder, text: $text)
-                .font(.system(size: 15))
+                .font(.custom("HelveticaNeue", size: 15))
                 .foregroundColor(.tsLabel)
                 .padding(12)
                 .background(Color.tsCard)
@@ -172,13 +172,13 @@ struct AmenityToggleRow: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.system(size: 14))
+                .font(.custom("HelveticaNeue", size: 14))
                 .foregroundColor(.white)
                 .frame(width: 28, height: 28)
                 .background(isOn ? color : Color.tsSecondary.opacity(0.3))
                 .clipShape(RoundedRectangle(cornerRadius: 7))
             Text(label)
-                .font(.system(size: 15))
+                .font(.custom("HelveticaNeue", size: 15))
                 .foregroundColor(.tsLabel)
             Spacer()
             Toggle("", isOn: $isOn)

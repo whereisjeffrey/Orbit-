@@ -22,7 +22,7 @@ struct StudyRevealedCardView: View {
                     HStack {
                         Button(action: { dismiss() }) {
                             Image(systemName: "chevron.left")
-                                .font(.system(size: 24, weight: .bold))
+                                .font(.custom("HelveticaNeue-Bold", size: 24))
                                 .foregroundColor(.tsAccent)
                                 .frame(width: 40, height: 40)
                         }
@@ -31,10 +31,10 @@ struct StudyRevealedCardView: View {
                         
                         VStack(spacing: 2) {
                             Text("Study Mode")
-                                .font(.system(size: 18, weight: .bold))
+                                .font(.custom("HelveticaNeue-Bold", size: 18))
                                 .foregroundColor(.tsLabel)
                             Text("\(currentIndex + 1) OF \(phrases.count) CARDS")
-                                .font(.system(size: 10, weight: .semibold))
+                                .font(.custom("HelveticaNeue-Medium", size: 10))
                                 .foregroundColor(.tsSecondary)
                                 .tracking(1.5)
                         }
@@ -58,20 +58,20 @@ struct StudyRevealedCardView: View {
                         HStack(spacing: 8) {
                             HStack(spacing: 4) {
                                 let leftLang = swapLanguage ? phrase.targetLang : phrase.sourceLang
-                                Text(leftLang == "en" ? "🇺🇸" : "🇲🇽").font(.system(size: 16))
+                                Text(leftLang == "en" ? "🇺🇸" : "🇲🇽").font(.custom("HelveticaNeue", size: 16))
                                 Text(leftLang == "en" ? "English" : "Spanish")
-                                    .font(.system(size: 12, weight: .semibold)).foregroundColor(.tsLabel)
+                                    .font(.custom("HelveticaNeue-Medium", size: 12)).foregroundColor(.tsLabel)
                             }
                             
                             Image(systemName: "arrow.right")
-                                .font(.system(size: 12, weight: .bold))
+                                .font(.custom("HelveticaNeue-Bold", size: 12))
                                 .foregroundColor(.tsSecondary)
                             
                             HStack(spacing: 4) {
                                 let rightLang = swapLanguage ? phrase.sourceLang : phrase.targetLang
-                                Text(rightLang == "en" ? "🇺🇸" : "🇲🇽").font(.system(size: 16))
+                                Text(rightLang == "en" ? "🇺🇸" : "🇲🇽").font(.custom("HelveticaNeue", size: 16))
                                 Text(rightLang == "en" ? "English" : "Spanish")
-                                    .font(.system(size: 12, weight: .semibold)).foregroundColor(.tsLabel)
+                                    .font(.custom("HelveticaNeue-Medium", size: 12)).foregroundColor(.tsLabel)
                             }
                             
                             Button(action: {
@@ -82,7 +82,7 @@ struct StudyRevealedCardView: View {
                                 }
                             }) {
                                 Image(systemName: "arrow.triangle.2.circlepath")
-                                    .font(.system(size: 14, weight: .bold))
+                                    .font(.custom("HelveticaNeue-Bold", size: 14))
                                     .foregroundColor(.tsSecondary)
                             }
                             .padding(.leading, 4)
@@ -101,12 +101,12 @@ struct StudyRevealedCardView: View {
                             // Source Word
                             VStack(spacing: 8) {
                                 Text("SOURCE WORD")
-                                    .font(.system(size: 10, weight: .bold))
+                                    .font(.custom("HelveticaNeue-Bold", size: 10))
                                     .foregroundColor(.tsSecondary)
                                     .tracking(1.5)
                                 
                                 Text(swapLanguage ? phrase.translatedText : phrase.sourceText)
-                                    .font(.system(size: 24, weight: .bold))
+                                    .font(.custom("HelveticaNeue-Bold", size: 24))
                                     .foregroundColor(.tsLabel)
                                     .multilineTextAlignment(.center)
                                     .padding(.horizontal)
@@ -115,12 +115,12 @@ struct StudyRevealedCardView: View {
                             // Translation
                             VStack(spacing: 8) {
                                 Text("TRANSLATION")
-                                    .font(.system(size: 10, weight: .bold))
+                                    .font(.custom("HelveticaNeue-Bold", size: 10))
                                     .foregroundColor(.tsSecondary)
                                     .tracking(1.5)
                                 
                                 Text(swapLanguage ? phrase.sourceText : phrase.translatedText)
-                                    .font(.system(size: 24, weight: .semibold))
+                                    .font(.custom("HelveticaNeue-Medium", size: 24))
                                     .foregroundColor(.tsLabel)
                                     .multilineTextAlignment(.center)
                                     .padding(.horizontal)
@@ -138,7 +138,7 @@ struct StudyRevealedCardView: View {
                                 TTSService.shared.speak(targetText, language: langCode)
                             }) {
                                 Image(systemName: "speaker.wave.2.fill")
-                                    .font(.system(size: 24))
+                                    .font(.custom("HelveticaNeue", size: 24))
                                     .foregroundColor(.tsAccent)
                                     .frame(width: 56, height: 56)
                                     .background(Color.tsAccent.opacity(0.15))
@@ -153,15 +153,15 @@ struct StudyRevealedCardView: View {
                                 HStack(spacing: 6) {
                                     Image(systemName: "lightbulb.fill")
                                         .foregroundColor(Color(hex: "D4AF37"))
-                                        .font(.system(size: 14))
+                                        .font(.custom("HelveticaNeue", size: 14))
                                     Text("CULTURAL CONTEXT")
-                                        .font(.system(size: 11, weight: .bold))
+                                        .font(.custom("HelveticaNeue-Bold", size: 11))
                                         .foregroundColor(Color(hex: "D4AF37"))
                                         .tracking(1.5)
                                 }
                                 
                                 Text(notes)
-                                    .font(.system(size: 14, weight: .medium))
+                                    .font(.custom("HelveticaNeue-Medium", size: 14))
                                     .foregroundColor(.tsLabel.opacity(0.9))
                                     .lineSpacing(4)
                             }
@@ -234,11 +234,11 @@ struct RatingButton: View {
         Button(action: action) {
             VStack(spacing: 6) {
                 Text(title)
-                    .font(.system(size: 16, weight: .bold))
+                    .font(.custom("HelveticaNeue-Bold", size: 16))
                     .foregroundColor(color)
                 
                 Text(time)
-                    .font(.system(size: 10, weight: .bold))
+                    .font(.custom("HelveticaNeue-Bold", size: 10))
                     .foregroundColor(color.opacity(0.6))
                     .tracking(1.0)
             }

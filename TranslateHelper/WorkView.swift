@@ -71,17 +71,17 @@ struct WorkView: View {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Work")
-                            .font(.system(size: 28, weight: .bold))
+                            .font(.custom("HelveticaNeue-Bold", size: 28))
                             .foregroundColor(.tsLabel)
                         Text("Mexico City")
-                            .font(.system(size: 13))
+                            .font(.custom("HelveticaNeue", size: 13))
                             .foregroundColor(.tsSecondary)
                     }
                     Spacer()
                     if hasLocation {
                         HStack(spacing: 4) {
                             Circle().fill(Color(hex: "#34C759")).frame(width: 7, height: 7)
-                            Text("Nearby").font(.system(size: 12)).foregroundColor(.tsSecondary)
+                            Text("Nearby").font(.custom("HelveticaNeue", size: 12)).foregroundColor(.tsSecondary)
                         }
                         .padding(.top, 6)
                     }
@@ -95,7 +95,7 @@ struct WorkView: View {
                     ForEach(WorkTab.allCases, id: \.self) { tab in
                         Button(action: { withAnimation(.easeInOut(duration: 0.2)) { activeTab = tab } }) {
                             Text(tab.rawValue)
-                                .font(.system(size: 15, weight: .semibold))
+                                .font(.custom("HelveticaNeue-Medium", size: 15))
                                 .foregroundColor(activeTab == tab ? .tsLabel : .tsSecondary)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 10)
@@ -233,8 +233,8 @@ struct CafeTabContent: View {
 
                 if cafes.isEmpty {
                     VStack(spacing: 12) {
-                        Image(systemName: "cup.and.saucer").font(.system(size: 36)).foregroundColor(.tsSecondary)
-                        Text("No cafés match those filters").font(.system(size: 15)).foregroundColor(.tsSecondary)
+                        Image(systemName: "cup.and.saucer").font(.custom("HelveticaNeue", size: 36)).foregroundColor(.tsSecondary)
+                        Text("No cafés match those filters").font(.custom("HelveticaNeue", size: 15)).foregroundColor(.tsSecondary)
                     }
                     .frame(maxWidth: .infinity).padding(.top, 48)
                 } else {
@@ -264,53 +264,53 @@ struct CafeCard: View {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(cafe.name)
-                            .font(.system(size: 16, weight: .bold))
+                            .font(.custom("HelveticaNeue-Bold", size: 16))
                             .foregroundColor(.tsLabel)
                         Text(cafe.neighbourhood)
-                            .font(.system(size: 13))
+                            .font(.custom("HelveticaNeue", size: 13))
                             .foregroundColor(.tsSecondary)
                     }
                     Spacer()
                     if let dist = cafe.distanceLabel(from: userLocation) {
                         HStack(spacing: 3) {
-                            Image(systemName: "location.fill").font(.system(size: 10)).foregroundColor(.tsAccent)
-                            Text(dist).font(.system(size: 13, weight: .semibold)).foregroundColor(.tsAccent)
+                            Image(systemName: "location.fill").font(.custom("HelveticaNeue", size: 10)).foregroundColor(.tsAccent)
+                            Text(dist).font(.custom("HelveticaNeue-Medium", size: 13)).foregroundColor(.tsAccent)
                         }
                     }
                 }
 
                 HStack(spacing: 4) {
-                    Image(systemName: "clock").font(.system(size: 11)).foregroundColor(.tsSecondary)
+                    Image(systemName: "clock").font(.custom("HelveticaNeue", size: 11)).foregroundColor(.tsSecondary)
                     Text("\(cafe.hoursDisplay) · \(cafe.hoursDays)")
-                        .font(.system(size: 12)).foregroundColor(.tsSecondary)
+                        .font(.custom("HelveticaNeue", size: 12)).foregroundColor(.tsSecondary)
                 }
 
                 HStack(spacing: 12) {
                     // Noise
                     HStack(spacing: 4) {
-                        Image(systemName: cafe.noiseLevel.icon).font(.system(size: 12))
+                        Image(systemName: cafe.noiseLevel.icon).font(.custom("HelveticaNeue", size: 12))
                             .foregroundColor(Color(hex: cafe.noiseLevel.color))
-                        Text(cafe.noiseLevel.rawValue).font(.system(size: 12))
+                        Text(cafe.noiseLevel.rawValue).font(.custom("HelveticaNeue", size: 12))
                             .foregroundColor(.tsSecondary)
                     }
                     // Outlets
                     HStack(spacing: 4) {
-                        Image(systemName: "bolt.fill").font(.system(size: 12))
+                        Image(systemName: "bolt.fill").font(.custom("HelveticaNeue", size: 12))
                             .foregroundColor(cafe.outlets != .none ? Color(hex: "#FF9500") : Color.tsSecondary.opacity(0.4))
-                        Text(cafe.outlets.rawValue).font(.system(size: 12))
+                        Text(cafe.outlets.rawValue).font(.custom("HelveticaNeue", size: 12))
                             .foregroundColor(.tsSecondary)
                     }
                     // WiFi
                     HStack(spacing: 4) {
-                        Image(systemName: "wifi").font(.system(size: 12))
+                        Image(systemName: "wifi").font(.custom("HelveticaNeue", size: 12))
                             .foregroundColor(cafe.hasFastWifi ? Color(hex: "#007AFF") : Color.tsSecondary.opacity(0.4))
-                        Text(cafe.wifiSpeed ?? (cafe.hasFastWifi ? "Fast" : "Slow")).font(.system(size: 12))
+                        Text(cafe.wifiSpeed ?? (cafe.hasFastWifi ? "Fast" : "Slow")).font(.custom("HelveticaNeue", size: 12))
                             .foregroundColor(.tsSecondary)
                     }
                     Spacer()
                     // Time limit pill
                     Text(cafe.timeLimitLabel)
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.custom("HelveticaNeue-Medium", size: 11))
                         .foregroundColor(cafe.hasNoTimeLimit ? Color(hex: "#34C759") : Color(hex: "#FF9500"))
                         .padding(.horizontal, 8).padding(.vertical, 3)
                         .background(
@@ -341,13 +341,13 @@ struct CafeDetailView: View {
                     VStack(alignment: .leading, spacing: 0) {
                         VStack(alignment: .leading, spacing: 8) {
                             Text(cafe.name)
-                                .font(.system(size: 26, weight: .bold)).foregroundColor(.tsLabel)
+                                .font(.custom("HelveticaNeue-Bold", size: 26)).foregroundColor(.tsLabel)
                             Text(cafe.neighbourhood + " · Mexico City")
-                                .font(.system(size: 14)).foregroundColor(.tsSecondary)
+                                .font(.custom("HelveticaNeue", size: 14)).foregroundColor(.tsSecondary)
                             if let dist = cafe.distanceLabel(from: userLocation) {
                                 HStack(spacing: 4) {
-                                    Image(systemName: "location.fill").font(.system(size: 12))
-                                    Text(dist + " from you").font(.system(size: 13, weight: .medium))
+                                    Image(systemName: "location.fill").font(.custom("HelveticaNeue", size: 12))
+                                    Text(dist + " from you").font(.custom("HelveticaNeue-Medium", size: 13))
                                 }
                                 .foregroundColor(.tsAccent)
                             }
@@ -387,27 +387,27 @@ struct CafeDetailView: View {
                         .padding(.horizontal, 16).padding(.bottom, 20)
 
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Hours").font(.system(size: 17, weight: .bold)).foregroundColor(.tsLabel)
+                            Text("Hours").font(.custom("HelveticaNeue-Bold", size: 17)).foregroundColor(.tsLabel)
                             HStack(spacing: 8) {
                                 Image(systemName: "clock.fill").foregroundColor(.tsSecondary)
                                 Text(cafe.hoursDisplay).foregroundColor(.tsLabel)
                                 Text("·").foregroundColor(.tsSecondary)
                                 Text(cafe.hoursDays).foregroundColor(.tsSecondary)
                             }
-                            .font(.system(size: 15))
+                            .font(.custom("HelveticaNeue", size: 15))
                         }
                         .padding(.horizontal, 16).padding(.bottom, 20)
 
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Address").font(.system(size: 17, weight: .bold)).foregroundColor(.tsLabel)
-                            Text(cafe.address).font(.system(size: 15)).foregroundColor(.tsSecondary)
+                            Text("Address").font(.custom("HelveticaNeue-Bold", size: 17)).foregroundColor(.tsLabel)
+                            Text(cafe.address).font(.custom("HelveticaNeue", size: 15)).foregroundColor(.tsSecondary)
                         }
                         .padding(.horizontal, 16).padding(.bottom, 20)
 
                         if let notes = cafe.notes {
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("The lowdown").font(.system(size: 17, weight: .bold)).foregroundColor(.tsLabel)
-                                Text(notes).font(.system(size: 15)).foregroundColor(.tsSecondary)
+                                Text("The lowdown").font(.custom("HelveticaNeue-Bold", size: 17)).foregroundColor(.tsLabel)
+                                Text(notes).font(.custom("HelveticaNeue", size: 15)).foregroundColor(.tsSecondary)
                                     .fixedSize(horizontal: false, vertical: true)
                             }
                             .padding(.horizontal, 16).padding(.bottom, 28)
@@ -425,7 +425,7 @@ struct CafeDetailView: View {
                                     Text("Get Directions").fontWeight(.bold)
                                 }
                                 .foregroundColor(.white).frame(maxWidth: .infinity).frame(height: 52)
-                                .background(LinearGradient(colors: [Color(hex: "#3B99FC"), Color(hex: "#007AFF")],
+                                .background(LinearGradient(colors: [Color.tsAccent, Color(hex: "#004775")],
                                     startPoint: .topLeading, endPoint: .bottomTrailing))
                                 .cornerRadius(14)
                             }
@@ -435,7 +435,7 @@ struct CafeDetailView: View {
                                         Image(systemName: "safari")
                                         Text(site)
                                     }
-                                    .font(.system(size: 14)).foregroundColor(.tsAccent)
+                                    .font(.custom("HelveticaNeue", size: 14)).foregroundColor(.tsAccent)
                                 }
                             }
                             Button(action: { showEdit = true }) {
@@ -443,7 +443,7 @@ struct CafeDetailView: View {
                                     Image(systemName: "pencil")
                                     Text("Suggest an edit")
                                 }
-                                .font(.system(size: 13)).foregroundColor(.tsSecondary)
+                                .font(.custom("HelveticaNeue", size: 13)).foregroundColor(.tsSecondary)
                             }
                             .padding(.top, 4)
                         }
@@ -475,13 +475,13 @@ struct WorkFooterNote: View {
     var body: some View {
         VStack(spacing: 4) {
             Text("Data is community-verified. Hours and amenities change.")
-                .font(.system(size: 12)).foregroundColor(.tsSecondary).multilineTextAlignment(.center)
+                .font(.custom("HelveticaNeue", size: 12)).foregroundColor(.tsSecondary).multilineTextAlignment(.center)
             Button(action: onSubmit) {
                 HStack(spacing: 5) {
                     Image(systemName: "plus.circle")
                     Text("Add a place or fix outdated info")
                 }
-                .font(.system(size: 14, weight: .medium)).foregroundColor(.tsAccent)
+                .font(.custom("HelveticaNeue-Medium", size: 14)).foregroundColor(.tsAccent)
             }
         }
         .frame(maxWidth: .infinity)

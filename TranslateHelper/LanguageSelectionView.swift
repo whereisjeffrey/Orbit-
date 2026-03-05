@@ -80,7 +80,7 @@ struct LanguageSelectionView: View {
                 HStack {
                     Button(action: onBack) {
                         Image(systemName: "chevron.left")
-                            .font(.system(size: 22, weight: .semibold))
+                            .font(.custom("HelveticaNeue-Medium", size: 22))
                             .foregroundColor(.tsAccent)
                     }
                     .frame(width: 40, height: 40)
@@ -101,7 +101,7 @@ struct LanguageSelectionView: View {
 
                     Button(action: onSkip) {
                         Text("Skip")
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(.custom("HelveticaNeue-Medium", size: 16))
                             .foregroundColor(.tsAccent)
                     }
                     .frame(width: 40, height: 40)
@@ -116,10 +116,10 @@ struct LanguageSelectionView: View {
                         // ── Native language section ────────────────────
                         VStack(alignment: .leading, spacing: 8) {
                             Text("My native language")
-                                .font(.system(size: 34, weight: .bold))
+                                .font(.custom("HelveticaNeue-Bold", size: 34))
                                 .foregroundColor(.tsLabel)
                             Text("Please select your native language")
-                                .font(.system(size: 17))
+                                .font(.custom("HelveticaNeue", size: 17))
                                 .foregroundColor(.tsSecondary)
                         }
                         .padding(.bottom, 24)
@@ -139,10 +139,10 @@ struct LanguageSelectionView: View {
                         // ── Learn section ──────────────────────────────
                         VStack(alignment: .leading, spacing: 8) {
                             Text("I want to learn...")
-                                .font(.system(size: 34, weight: .bold))
+                                .font(.custom("HelveticaNeue-Bold", size: 34))
                                 .foregroundColor(.tsLabel)
                             Text("Select the language you'd like to master. You can add more later.")
-                                .font(.system(size: 17))
+                                .font(.custom("HelveticaNeue", size: 17))
                                 .foregroundColor(.tsSecondary)
                         }
                         .padding(.bottom, 24)
@@ -165,10 +165,10 @@ struct LanguageSelectionView: View {
                         // Coming soon note
                         HStack(spacing: 6) {
                             Image(systemName: "clock")
-                                .font(.system(size: 13))
+                                .font(.custom("HelveticaNeue", size: 13))
                                 .foregroundColor(.tsSecondary)
                             Text("More languages coming soon")
-                                .font(.system(size: 13))
+                                .font(.custom("HelveticaNeue", size: 13))
                                 .foregroundColor(.tsSecondary)
                         }
                         .padding(.top, 8)
@@ -192,14 +192,14 @@ struct LanguageSelectionView: View {
                 VStack(spacing: 16) {
                     Button(action: onContinue) {
                         Text("Continue")
-                            .font(.system(size: 18, weight: .bold))
+                            .font(.custom("HelveticaNeue-Bold", size: 18))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
                             .background(
                                 selectedLanguage != nil
                                     ? AnyShapeStyle(LinearGradient(
-                                        colors: [Color(hex: "#3B99FC"), Color(hex: "#007AFF")],
+                                        colors: [Color.tsAccent, Color(hex: "#004775")],
                                         startPoint: .topLeading, endPoint: .bottomTrailing))
                                     : AnyShapeStyle(Color.tsCard)
                             )
@@ -234,10 +234,10 @@ struct LanguageCard: View {
             ZStack(alignment: .topTrailing) {
                 VStack(spacing: 8) {
                     Text(language.flag)
-                        .font(.system(size: 40))
+                        .font(.custom("HelveticaNeue", size: 40))
                         .opacity(isComingSoon ? 0.45 : 1)
                     Text(language.name)
-                        .font(.system(size: 17, weight: .semibold))
+                        .font(.custom("HelveticaNeue-Medium", size: 17))
                         .foregroundColor(isComingSoon ? .tsSecondary : .tsLabel)
                         .multilineTextAlignment(.center)
                 }
@@ -260,7 +260,7 @@ struct LanguageCard: View {
                             .fill(Color.tsAccent)
                             .frame(width: 20, height: 20)
                         Image(systemName: "checkmark")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(.custom("HelveticaNeue-Bold", size: 10))
                             .foregroundColor(.tsLabel)
                     }
                     .padding(8)
@@ -269,7 +269,7 @@ struct LanguageCard: View {
                 // "Coming Soon" pill overlaid on top-right
                 if isComingSoon {
                     Text("Soon")
-                        .font(.system(size: 9, weight: .bold))
+                        .font(.custom("HelveticaNeue-Bold", size: 9))
                         .foregroundColor(.white)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 3)

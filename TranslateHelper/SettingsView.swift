@@ -22,7 +22,7 @@ struct SettingsView: View {
                     // Header
                     HStack {
                         Text("Settings")
-                            .font(.system(size: 30, weight: .bold))
+                            .font(.custom("HelveticaNeue-Bold", size: 30))
                             .foregroundColor(.tsLabel)
                         Spacer()
                     }
@@ -35,7 +35,7 @@ struct SettingsView: View {
                     VStack(spacing: 0) {
                         HStack {
                             Text("Theme")
-                                .font(.system(size: 17))
+                                .font(.custom("HelveticaNeue", size: 17))
                                 .foregroundColor(.tsLabel)
                             Spacer()
                             
@@ -43,7 +43,7 @@ struct SettingsView: View {
                             HStack(spacing: 0) {
                                 Button(action: { appTheme = 0 }) {
                                     Text("Light")
-                                        .font(.system(size: 13, weight: .medium))
+                                        .font(.custom("HelveticaNeue-Medium", size: 13))
                                         .foregroundColor(appTheme == 0 ? .tsLabel : Color.tsSecondary)
                                         .padding(.horizontal, 16)
                                         .padding(.vertical, 6)
@@ -52,7 +52,7 @@ struct SettingsView: View {
                                 }
                                 Button(action: { appTheme = 1 }) {
                                     Text("Dark")
-                                        .font(.system(size: 13, weight: .medium))
+                                        .font(.custom("HelveticaNeue-Medium", size: 13))
                                         .foregroundColor(appTheme == 1 ? .tsLabel : Color.tsSecondary)
                                         .padding(.horizontal, 16)
                                         .padding(.vertical, 6)
@@ -72,7 +72,7 @@ struct SettingsView: View {
                     .padding(.horizontal, 16)
                     
                     Text("Choose your preferred interface style for optimal learning.")
-                        .font(.system(size: 12))
+                        .font(.custom("HelveticaNeue", size: 12))
                         .foregroundColor(Color.tsSecondary)
                         .padding(.horizontal, 32)
                         .padding(.top, 8)
@@ -84,14 +84,14 @@ struct SettingsView: View {
                         Button(action: {}) {
                             HStack {
                                 Text("Language")
-                                    .font(.system(size: 17))
+                                    .font(.custom("HelveticaNeue", size: 17))
                                     .foregroundColor(.tsLabel)
                                 Spacer()
                                 Text("Spanish")
-                                    .font(.system(size: 17))
+                                    .font(.custom("HelveticaNeue", size: 17))
                                     .foregroundColor(Color.tsSecondary)
                                 Image(systemName: "chevron.right")
-                                    .font(.system(size: 14, weight: .semibold))
+                                    .font(.custom("HelveticaNeue-Medium", size: 14))
                                     .foregroundColor(Color.tsSecondary.opacity(0.6))
                             }
                             .padding(.horizontal, 16)
@@ -103,26 +103,26 @@ struct SettingsView: View {
                         Button(action: { showLocationSheet = true }) {
                             HStack {
                                 Text("Learning Locations")
-                                    .font(.system(size: 17))
+                                    .font(.custom("HelveticaNeue", size: 17))
                                     .foregroundColor(.tsLabel)
                                 Spacer()
                                 if locStore.locations.isEmpty {
                                     Text("None set")
-                                        .font(.system(size: 17))
+                                        .font(.custom("HelveticaNeue", size: 17))
                                         .foregroundColor(.tsSecondary)
                                 } else if locStore.locations.count == 1 {
                                     Text(locStore.locations[0].city)
-                                        .font(.system(size: 17))
+                                        .font(.custom("HelveticaNeue", size: 17))
                                         .foregroundColor(.tsSecondary)
                                         .lineLimit(1)
                                 } else {
                                     HStack(spacing: 4) {
                                         Text(locStore.locations[0].city)
-                                            .font(.system(size: 17))
+                                            .font(.custom("HelveticaNeue", size: 17))
                                             .foregroundColor(.tsSecondary)
                                             .lineLimit(1)
                                         Text("+\(locStore.locations.count - 1)")
-                                            .font(.system(size: 13, weight: .semibold))
+                                            .font(.custom("HelveticaNeue-Medium", size: 13))
                                             .foregroundColor(.white)
                                             .padding(.horizontal, 6)
                                             .padding(.vertical, 2)
@@ -131,7 +131,7 @@ struct SettingsView: View {
                                     }
                                 }
                                 Image(systemName: "chevron.right")
-                                    .font(.system(size: 14, weight: .semibold))
+                                    .font(.custom("HelveticaNeue-Medium", size: 14))
                                     .foregroundColor(Color.tsSecondary.opacity(0.6))
                             }
                             .padding(.horizontal, 16)
@@ -157,16 +157,16 @@ struct SettingsView: View {
                                 
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("Profile")
-                                        .font(.system(size: 17))
+                                        .font(.custom("HelveticaNeue", size: 17))
                                         .foregroundColor(.tsLabel)
                                     Text(auth.user?.email ?? "sarah.doe@example.com")
-                                        .font(.system(size: 12))
+                                        .font(.custom("HelveticaNeue", size: 12))
                                         .foregroundColor(Color.tsSecondary)
                                 }
                                 
                                 Spacer()
                                 Image(systemName: "chevron.right")
-                                    .font(.system(size: 14, weight: .semibold))
+                                    .font(.custom("HelveticaNeue-Medium", size: 14))
                                     .foregroundColor(Color.tsSecondary.opacity(0.6))
                             }
                             .padding(.horizontal, 16)
@@ -178,14 +178,14 @@ struct SettingsView: View {
                         Button(action: {}) {
                             HStack {
                                 Text("Plan")
-                                    .font(.system(size: 17))
+                                    .font(.custom("HelveticaNeue", size: 17))
                                     .foregroundColor(.tsLabel)
                                 Spacer()
                                 Text("Premium")
-                                    .font(.system(size: 17))
+                                    .font(.custom("HelveticaNeue", size: 17))
                                     .foregroundColor(Color.tsAccent)
                                 Image(systemName: "chevron.right")
-                                    .font(.system(size: 14, weight: .semibold))
+                                    .font(.custom("HelveticaNeue-Medium", size: 14))
                                     .foregroundColor(Color.tsSecondary.opacity(0.6))
                             }
                             .padding(.horizontal, 16)
@@ -196,7 +196,7 @@ struct SettingsView: View {
                         
                         HStack {
                             Text("Notifications")
-                                .font(.system(size: 17))
+                                .font(.custom("HelveticaNeue", size: 17))
                                 .foregroundColor(.tsLabel)
                             Spacer()
                             Toggle("", isOn: $notificationsEnabled)
@@ -215,7 +215,7 @@ struct SettingsView: View {
                     SectionHeader(title: "Social")
                     VStack(spacing: 0) {
                         SocialHandleRow(
-                            icon: "camera",
+                            icon: "instagram",
                             iconColor: Color(hex: "#E1306C"),
                             platform: "Instagram",
                             placeholder: "your_handle",
@@ -223,7 +223,7 @@ struct SettingsView: View {
                         )
                         Divider().background(Color.tsBorder).padding(.leading, 56)
                         SocialHandleRow(
-                            icon: "briefcase",
+                            icon: "linkedin",
                             iconColor: Color(hex: "#0A66C2"),
                             platform: "LinkedIn",
                             placeholder: "your-name",
@@ -240,7 +240,7 @@ struct SettingsView: View {
                         auth.signOut()
                     }) {
                         Text("Log Out")
-                            .font(.system(size: 17, weight: .medium))
+                            .font(.custom("HelveticaNeue-Medium", size: 17))
                             .foregroundColor(Color(hex: "FF453A"))
                             .frame(maxWidth: .infinity)
                             .frame(height: 52)
@@ -261,11 +261,11 @@ struct SettingsView: View {
                                     .background(Color.orange.opacity(0.15))
                                     .clipShape(RoundedRectangle(cornerRadius: 6))
                                 Text("Reset Onboarding")
-                                    .font(.system(size: 17))
+                                    .font(.custom("HelveticaNeue", size: 17))
                                     .foregroundColor(.tsLabel)
                                 Spacer()
                                 Text("Debug")
-                                    .font(.system(size: 12))
+                                    .font(.custom("HelveticaNeue", size: 12))
                                     .foregroundColor(.tsSecondary)
                             }
                             .padding(.horizontal, 16)
@@ -279,7 +279,7 @@ struct SettingsView: View {
 
                     // Version info
                     Text("Version 2.4.1 (Build 890)")
-                        .font(.system(size: 12))
+                        .font(.custom("HelveticaNeue", size: 12))
                         .foregroundColor(Color.tsSecondary)
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.top, 16)
@@ -314,23 +314,23 @@ struct LocationSettingsSheet: View {
                         if !locStore.locations.isEmpty {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("YOUR LOCATIONS")
-                                    .font(.system(size: 12, weight: .semibold))
+                                    .font(.custom("HelveticaNeue-Medium", size: 12))
                                     .foregroundColor(.tsSecondary)
                                     .tracking(1.0)
 
                                 ForEach(Array(locStore.locations.enumerated()), id: \.element.id) { index, loc in
                                     HStack(spacing: 12) {
                                         Image(systemName: "line.3.horizontal")
-                                            .font(.system(size: 14))
+                                            .font(.custom("HelveticaNeue", size: 14))
                                             .foregroundColor(.tsSecondary)
 
                                         VStack(alignment: .leading, spacing: 2) {
                                             Text(loc.displayName)
-                                                .font(.system(size: 16, weight: .medium))
+                                                .font(.custom("HelveticaNeue-Medium", size: 16))
                                                 .foregroundColor(.tsLabel)
                                             if index == 0 {
                                                 Text("Primary — highest slang weight")
-                                                    .font(.system(size: 12))
+                                                    .font(.custom("HelveticaNeue", size: 12))
                                                     .foregroundColor(.tsAccent)
                                             }
                                         }
@@ -346,7 +346,7 @@ struct LocationSettingsSheet: View {
                                             }
                                         }) {
                                             Image(systemName: "xmark.circle.fill")
-                                                .font(.system(size: 20))
+                                                .font(.custom("HelveticaNeue", size: 20))
                                                 .foregroundColor(Color.tsSecondary.opacity(0.6))
                                         }
                                     }
@@ -366,11 +366,11 @@ struct LocationSettingsSheet: View {
                                 if locStore.locations.count > 1 {
                                     HStack(alignment: .top, spacing: 10) {
                                         Image(systemName: "info.circle.fill")
-                                            .font(.system(size: 15))
+                                            .font(.custom("HelveticaNeue", size: 15))
                                             .foregroundColor(.tsAccent)
                                             .padding(.top, 1)
                                         Text("Drag to reorder — your first location gets the most slang weight. Put where you spend the most time at the top.")
-                                            .font(.system(size: 13))
+                                            .font(.custom("HelveticaNeue", size: 13))
                                             .foregroundColor(.tsSecondary)
                                             .fixedSize(horizontal: false, vertical: true)
                                     }
@@ -385,16 +385,16 @@ struct LocationSettingsSheet: View {
                         if locStore.locations.count < maxLocations {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("ADD LOCATION")
-                                    .font(.system(size: 12, weight: .semibold))
+                                    .font(.custom("HelveticaNeue-Medium", size: 12))
                                     .foregroundColor(.tsSecondary)
                                     .tracking(1.0)
 
                                 HStack(spacing: 12) {
                                     Image(systemName: "magnifyingglass")
-                                        .font(.system(size: 15))
+                                        .font(.custom("HelveticaNeue", size: 15))
                                         .foregroundColor(.tsSecondary)
                                     TextField("Search a city or region…", text: $searchVM.searchQuery)
-                                        .font(.system(size: 16))
+                                        .font(.custom("HelveticaNeue", size: 16))
                                         .foregroundColor(.tsLabel)
                                         .focused($isFocused)
                                     if !searchVM.searchQuery.isEmpty {
@@ -431,11 +431,11 @@ struct LocationSettingsSheet: View {
                                             }) {
                                                 VStack(alignment: .leading, spacing: 4) {
                                                     Text(completion.title)
-                                                        .font(.system(size: 15, weight: .medium))
+                                                        .font(.custom("HelveticaNeue-Medium", size: 15))
                                                         .foregroundColor(.tsLabel)
                                                     if !completion.subtitle.isEmpty {
                                                         Text(completion.subtitle)
-                                                            .font(.system(size: 13))
+                                                            .font(.custom("HelveticaNeue", size: 13))
                                                             .foregroundColor(.tsSecondary)
                                                     }
                                                 }
@@ -457,7 +457,7 @@ struct LocationSettingsSheet: View {
 
                         if locStore.locations.count >= maxLocations {
                             Text("You've reached the maximum of \(maxLocations) locations. Remove one to add another.")
-                                .font(.system(size: 14))
+                                .font(.custom("HelveticaNeue", size: 14))
                                 .foregroundColor(.tsSecondary)
                                 .padding(.top, 4)
                         }
@@ -472,7 +472,7 @@ struct LocationSettingsSheet: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") { dismiss() }
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.custom("HelveticaNeue-Medium", size: 16))
                         .foregroundColor(.tsAccent)
                 }
             }
@@ -494,15 +494,37 @@ struct SocialHandleRow: View {
     var body: some View {
         HStack(spacing: 12) {
             // Platform icon badge
-            Image(systemName: icon)
-                .font(.system(size: 15, weight: .medium))
-                .foregroundColor(.white)
-                .frame(width: 28, height: 28)
-                .background(iconColor)
-                .clipShape(RoundedRectangle(cornerRadius: 7))
+            ZStack {
+                if icon == "instagram" {
+                    LinearGradient(
+                        colors: [
+                            Color(hex: "#F58529"),
+                            Color(hex: "#DD2A7B"),
+                            Color(hex: "#8134AF")
+                        ],
+                        startPoint: .bottomLeading,
+                        endPoint: .topTrailing
+                    )
+                    Image(systemName: "camera.fill")
+                        .font(.custom("HelveticaNeue-Medium", size: 14))
+                        .foregroundColor(.white)
+                } else if icon == "linkedin" {
+                    Color(hex: "#0A66C2")
+                    Text("in")
+                        .font(.custom("HelveticaNeue-Bold", size: 15))
+                        .foregroundColor(.white)
+                } else {
+                    iconColor
+                    Image(systemName: icon)
+                        .font(.custom("HelveticaNeue-Medium", size: 15))
+                        .foregroundColor(.white)
+                }
+            }
+            .frame(width: 28, height: 28)
+            .clipShape(RoundedRectangle(cornerRadius: 7))
 
             Text(platform)
-                .font(.system(size: 17))
+                .font(.custom("HelveticaNeue", size: 17))
                 .foregroundColor(.tsLabel)
 
             Spacer()
@@ -510,10 +532,10 @@ struct SocialHandleRow: View {
             // Inline editable handle
             HStack(spacing: 4) {
                 Text("@")
-                    .font(.system(size: 15))
+                    .font(.custom("HelveticaNeue", size: 15))
                     .foregroundColor(handle.isEmpty ? .tsSecondary : .tsAccent)
                 TextField(placeholder, text: $handle)
-                    .font(.system(size: 15))
+                    .font(.custom("HelveticaNeue", size: 15))
                     .foregroundColor(.tsAccent)
                     .multilineTextAlignment(.trailing)
                     .autocapitalization(.none)

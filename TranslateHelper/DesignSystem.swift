@@ -42,40 +42,26 @@ extension UIColor {
 
 // MARK: - Background
 struct TSGradientBackground: View {
-    @Environment(\.colorScheme) private var scheme
-
     var body: some View {
-        ZStack {
-            Color.tsBackground.ignoresSafeArea()
-            // Centered top-to-bottom only — no left/right bias
-            LinearGradient(
-                colors: [
-                    Color(hex: "#0086DB").opacity(scheme == .dark ? 0.22 : 0.10),
-                    Color.clear
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
-        }
+        Color(hex: "#111111").ignoresSafeArea()
     }
 }
 
 // MARK: - Colours
 extension Color {
     static let tsBackground = Color(UIColor { trait in
-        trait.userInterfaceStyle == .dark ? UIColor(hex: "#000000") : UIColor(hex: "#FFFFFF")
+        trait.userInterfaceStyle == .dark ? UIColor(hex: "#111111") : UIColor(hex: "#FFFFFF")
     })
     
     static let tsCard = Color(UIColor { trait in
-        trait.userInterfaceStyle == .dark ? UIColor(hex: "#000000") : UIColor(hex: "#F3F6FF")
+        trait.userInterfaceStyle == .dark ? UIColor(hex: "#252525") : UIColor(hex: "#F3F6FF")
     })
     
     static let tsBorder = Color(UIColor { trait in
-        trait.userInterfaceStyle == .dark ? UIColor.white.withAlphaComponent(0.12) : UIColor(hex: "#C6C6C8")
+        trait.userInterfaceStyle == .dark ? UIColor.white.withAlphaComponent(0.08) : UIColor(hex: "#C6C6C8")
     })
     
-    static let tsAccent = Color(hex: "#0086DB")
+    static let tsAccent = Color(hex: "#0099E5")
     
     static let tsAccentTeal = Color(UIColor { trait in
         trait.userInterfaceStyle == .dark ? UIColor(hex: "#00C7BE") : UIColor(hex: "#5AC8FA")
@@ -90,14 +76,14 @@ extension Color {
     })
     
     static let tsInputBg = Color(UIColor { trait in
-        trait.userInterfaceStyle == .dark ? UIColor(hex: "#000000") : UIColor(hex: "#EDF2FF")
+        trait.userInterfaceStyle == .dark ? UIColor(hex: "#787880").withAlphaComponent(0.12) : UIColor(hex: "#EDF2FF")
     })
 
     /// Footer / tab bar background.
-    /// Dark:  #141416 — lifted near-black with a subtle warm haze (à la TestFlight banner).
+    /// Dark:  #252525 — lifted near-black with a subtle warm haze (à la TestFlight banner).
     /// Light: #FFFFFF — standard white to match system tab bar convention.
     static let tsFooter = Color(UIColor { trait in
-        trait.userInterfaceStyle == .dark ? UIColor(hex: "#000000") : UIColor(hex: "#FFFFFF")
+        trait.userInterfaceStyle == .dark ? UIColor(hex: "#111111") : UIColor(hex: "#FFFFFF")
     })
 
     init(hex: String) {
@@ -129,7 +115,7 @@ extension LinearGradient {
     )
     
     static let tsBluePrimary = LinearGradient(
-        colors: [Color(hex: "#0086DB"), Color(hex: "#004775")],
+        colors: [Color(hex: "#0099E5"), Color(hex: "#004775")],
         startPoint: .topLeading, endPoint: .bottomTrailing
     )
 }
@@ -257,12 +243,12 @@ struct TSPickerField<MenuContent: View>: View {
         } label: {
             HStack(spacing: 0) {
                 Text(label)
-                    .font(.system(size: 17, weight: .medium))
+                    .font(.custom("HelveticaNeue-Medium", size: 17))
                     .foregroundColor(.tsLabel)   // white in dark mode ✅
                     .lineLimit(1)
                 Spacer()
                 Image(systemName: "chevron.down")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.custom("HelveticaNeue-Medium", size: 14))
                     .foregroundColor(.tsAccent)  // always blue ✅
             }
             .padding(.horizontal, 16)
@@ -296,7 +282,7 @@ struct TSButton: View {
         Button(action: action) {
             ZStack {
                 Text(title)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.custom("HelveticaNeue-Medium", size: 16))
                     .foregroundColor(.white)
                     .opacity(isLoading ? 0 : 1)
                 if isLoading { ProgressView().tint(.white) }
@@ -331,9 +317,9 @@ struct TSGradientPill: View {
         Button(action: action) {
             HStack(spacing: 6) {
                 Image(systemName: icon)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.custom("HelveticaNeue-Medium", size: 16))
                 Text(title)
-                    .font(.system(size: 15, weight: .bold))
+                    .font(.custom("HelveticaNeue-Bold", size: 15))
             }
             .foregroundColor(.white)
             .padding(.horizontal, 20)
@@ -361,7 +347,7 @@ struct TSProgressRing: View {
                 .stroke(Color.tsAccent, style: StrokeStyle(lineWidth: 3, lineCap: .round))
                 .rotationEffect(.degrees(-90))
             Text("\(Int(progress * 100))%")
-                .font(.system(size: 10, weight: .bold))
+                .font(.custom("HelveticaNeue-Bold", size: 10))
                 .foregroundColor(.tsSecondary)
         }
         .frame(width: size, height: size)

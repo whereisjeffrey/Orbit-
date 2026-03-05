@@ -78,24 +78,24 @@ struct LocalCard: View {
                 ZStack {
                     Circle().fill(user.initialsColor).frame(width: 52, height: 52)
                     Text(user.initials)
-                        .font(.system(size: 18, weight: .bold))
+                        .font(.custom("HelveticaNeue-Bold", size: 18))
                         .foregroundColor(.white)
                 }
 
                 VStack(alignment: .leading, spacing: 5) {
                     HStack(spacing: 6) {
                         Text(user.displayName)
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(.custom("HelveticaNeue-Medium", size: 16))
                             .foregroundColor(.tsLabel)
                         TrustBadge(level: user.trustLevel)
                     }
 
                     Text(user.neighbourhood + " · " + user.timeInCityLabel)
-                        .font(.system(size: 12))
+                        .font(.custom("HelveticaNeue", size: 12))
                         .foregroundColor(.tsSecondary)
 
                     Text(user.bio)
-                        .font(.system(size: 13))
+                        .font(.custom("HelveticaNeue", size: 13))
                         .foregroundColor(.tsSecondary)
                         .lineLimit(2)
 
@@ -104,7 +104,7 @@ struct LocalCard: View {
                         ForEach(user.interests.prefix(3), id: \.self) { interest in
                             if let match = allInterests.first(where: { $0.id == interest }) {
                                 Text(match.emoji + " " + match.label)
-                                    .font(.system(size: 11))
+                                    .font(.custom("HelveticaNeue", size: 11))
                                     .foregroundColor(.tsSecondary)
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 3)
@@ -119,10 +119,10 @@ struct LocalCard: View {
 
                 VStack(spacing: 4) {
                     Text("\(user.questionsAnswered)")
-                        .font(.system(size: 18, weight: .bold))
+                        .font(.custom("HelveticaNeue-Bold", size: 18))
                         .foregroundColor(.tsAccent)
                     Text("answers")
-                        .font(.system(size: 10))
+                        .font(.custom("HelveticaNeue", size: 10))
                         .foregroundColor(.tsSecondary)
                 }
             }

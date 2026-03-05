@@ -18,19 +18,19 @@ struct CommunityUserProfileView: View {
                             ZStack {
                                 Circle().fill(user.initialsColor).frame(width: 88, height: 88)
                                 Text(user.initials)
-                                    .font(.system(size: 32, weight: .bold))
+                                    .font(.custom("HelveticaNeue-Bold", size: 32))
                                     .foregroundColor(.white)
                             }
                             .padding(.top, 24)
 
                             Text(user.displayName)
-                                .font(.system(size: 24, weight: .bold))
+                                .font(.custom("HelveticaNeue-Bold", size: 24))
                                 .foregroundColor(.tsLabel)
 
                             TrustBadge(level: user.trustLevel)
 
                             Text(user.neighbourhood + " · " + user.timeInCityLabel + " · From " + user.fromCity)
-                                .font(.system(size: 13))
+                                .font(.custom("HelveticaNeue", size: 13))
                                 .foregroundColor(.tsSecondary)
                                 .multilineTextAlignment(.center)
                         }
@@ -39,7 +39,7 @@ struct CommunityUserProfileView: View {
 
                         // ── Bio ────────────────────────────────────
                         Text(user.bio)
-                            .font(.system(size: 15))
+                            .font(.custom("HelveticaNeue", size: 15))
                             .foregroundColor(.tsLabel)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 32)
@@ -61,7 +61,7 @@ struct CommunityUserProfileView: View {
                         // ── Interests ──────────────────────────────
                         VStack(alignment: .leading, spacing: 12) {
                             Text("Into")
-                                .font(.system(size: 15, weight: .semibold))
+                                .font(.custom("HelveticaNeue-Medium", size: 15))
                                 .foregroundColor(.tsSecondary)
                                 .padding(.horizontal, 24)
 
@@ -71,7 +71,7 @@ struct CommunityUserProfileView: View {
                                         HStack(spacing: 4) {
                                             Text(interest.emoji)
                                             Text(interest.label)
-                                                .font(.system(size: 12, weight: .medium))
+                                                .font(.custom("HelveticaNeue-Medium", size: 12))
                                                 .foregroundColor(.tsLabel)
                                                 .lineLimit(1)
                                                 .minimumScaleFactor(0.8)
@@ -137,10 +137,10 @@ struct ProfileStat: View {
     var body: some View {
         VStack(spacing: 4) {
             Text(value)
-                .font(.system(size: 17, weight: .bold))
+                .font(.custom("HelveticaNeue-Bold", size: 17))
                 .foregroundColor(.tsLabel)
             Text(label)
-                .font(.system(size: 12))
+                .font(.custom("HelveticaNeue", size: 12))
                 .foregroundColor(.tsSecondary)
         }
         .frame(maxWidth: .infinity)
@@ -157,17 +157,17 @@ struct SocialLinkRow: View {
         Button(action: onTap) {
             HStack(spacing: 10) {
                 Image(systemName: icon)
-                    .font(.system(size: 14, weight: .medium))
+                    .font(.custom("HelveticaNeue-Medium", size: 14))
                     .foregroundColor(.white)
                     .frame(width: 28, height: 28)
                     .background(color)
                     .clipShape(RoundedRectangle(cornerRadius: 7))
                 Text(handle)
-                    .font(.system(size: 15))
+                    .font(.custom("HelveticaNeue", size: 15))
                     .foregroundColor(.tsAccent)
                 Spacer()
                 Image(systemName: "arrow.up.right")
-                    .font(.system(size: 12))
+                    .font(.custom("HelveticaNeue", size: 12))
                     .foregroundColor(.tsSecondary)
             }
             .padding(12)

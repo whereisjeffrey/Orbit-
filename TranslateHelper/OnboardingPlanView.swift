@@ -19,7 +19,7 @@ struct OnboardingPlanView: View {
                 HStack {
                     Button(action: onBack) {
                         Image(systemName: "chevron.left")
-                            .font(.system(size: 22, weight: .semibold))
+                            .font(.custom("HelveticaNeue-Medium", size: 22))
                             .foregroundColor(.tsAccent)
                             .frame(width: 40, height: 40)
                             .background(Color.tsLabel.opacity(0.08))
@@ -27,7 +27,7 @@ struct OnboardingPlanView: View {
                     }
                     Spacer()
                     Text("Choose Your Plan")
-                        .font(.system(size: 18, weight: .bold))
+                        .font(.custom("HelveticaNeue-Bold", size: 18))
                         .foregroundColor(.tsLabel)
                     Spacer()
                     Spacer().frame(width: 40)
@@ -39,10 +39,10 @@ struct OnboardingPlanView: View {
                     VStack(spacing: 24) {
                         VStack(spacing: 8) {
                             Text("Master Any Language")
-                                .font(.system(size: 24, weight: .bold))
+                                .font(.custom("HelveticaNeue-Bold", size: 24))
                                 .foregroundColor(.tsLabel)
                             Text("Select the plan that works best for your learning goals.")
-                                .font(.system(size: 15))
+                                .font(.custom("HelveticaNeue", size: 15))
                                 .foregroundColor(.tsSecondary)
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal, 16)
@@ -60,22 +60,22 @@ struct OnboardingPlanView: View {
                                                     .foregroundStyle(LinearGradient(
                                                         colors: [Color.tsAccent, Color(hex: "#00F0FF")],
                                                         startPoint: .leading, endPoint: .trailing))
-                                                    .font(.system(size: 20, weight: .bold))
+                                                    .font(.custom("HelveticaNeue-Bold", size: 20))
                                                 Text("Pro")
-                                                    .font(.system(size: 24, weight: .bold))
+                                                    .font(.custom("HelveticaNeue-Bold", size: 24))
                                                     .foregroundColor(.tsLabel)
                                             }
                                             Text("Unlock your full potential")
-                                                .font(.system(size: 14))
+                                                .font(.custom("HelveticaNeue", size: 14))
                                                 .foregroundColor(.tsSecondary)
                                         }
                                         Spacer()
                                         VStack(alignment: .trailing, spacing: 2) {
                                             Text("$7.99")
-                                                .font(.system(size: 30, weight: .bold))
+                                                .font(.custom("HelveticaNeue-Bold", size: 30))
                                                 .foregroundColor(.tsLabel)
                                             Text("/ month")
-                                                .font(.system(size: 12))
+                                                .font(.custom("HelveticaNeue", size: 12))
                                                 .foregroundColor(.tsSecondary)
                                         }
                                     }
@@ -97,7 +97,7 @@ struct OnboardingPlanView: View {
                                 )
 
                                 Text("MOST POPULAR")
-                                    .font(.system(size: 10, weight: .bold))
+                                    .font(.custom("HelveticaNeue-Bold", size: 10))
                                     .foregroundColor(.white)
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 4)
@@ -116,22 +116,22 @@ struct OnboardingPlanView: View {
                                             HStack(spacing: 8) {
                                                 Image(systemName: "graduationcap.fill")
                                                     .foregroundColor(.tsSecondary)
-                                                    .font(.system(size: 20))
+                                                    .font(.custom("HelveticaNeue", size: 20))
                                                 Text("Basic")
-                                                    .font(.system(size: 24, weight: .bold))
+                                                    .font(.custom("HelveticaNeue-Bold", size: 24))
                                                     .foregroundColor(.tsLabel)
                                             }
                                             Text("Getting started")
-                                                .font(.system(size: 14))
+                                                .font(.custom("HelveticaNeue", size: 14))
                                                 .foregroundColor(.tsSecondary)
                                         }
                                         Spacer()
                                         VStack(alignment: .trailing, spacing: 2) {
                                             Text("Free")
-                                                .font(.system(size: 30, weight: .bold))
+                                                .font(.custom("HelveticaNeue-Bold", size: 30))
                                                 .foregroundColor(.tsLabel)
                                             Text("FOREVER")
-                                                .font(.system(size: 12, weight: .semibold))
+                                                .font(.custom("HelveticaNeue-Medium", size: 12))
                                                 .foregroundColor(.tsSecondary)
                                         }
                                     }
@@ -165,12 +165,12 @@ struct OnboardingPlanView: View {
                 VStack(spacing: 12) {
                     Button(action: onProTrial) {
                         Text("Start 7-Day Free Trial")
-                            .font(.system(size: 18, weight: .bold))
+                            .font(.custom("HelveticaNeue-Bold", size: 18))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
                             .background(LinearGradient(
-                                colors: [Color(hex: "#3B99FC"), Color(hex: "#007AFF")],
+                                colors: [Color.tsAccent, Color(hex: "#004775")],
                                 startPoint: .topLeading, endPoint: .bottomTrailing))
                             .clipShape(Capsule())
                             .shadow(color: Color.tsAccent.opacity(0.3), radius: 16, x: 0, y: 4)
@@ -178,7 +178,7 @@ struct OnboardingPlanView: View {
                     .padding(.horizontal, 24)
 
                     Text("After 7 days, your Pro subscription begins at $7.99/mo. Cancel anytime.")
-                        .font(.system(size: 11))
+                        .font(.custom("HelveticaNeue", size: 11))
                         .foregroundColor(.tsSecondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 32)
@@ -205,7 +205,7 @@ struct PlanFeatureRow: View {
                 .frame(width: 24, height: 24)
                 .overlay(
                     Image(systemName: "checkmark")
-                        .font(.system(size: 11, weight: .bold))
+                        .font(.custom("HelveticaNeue-Bold", size: 11))
                         .foregroundStyle(isBasic
                             ? AnyShapeStyle(Color.tsAccent)
                             : AnyShapeStyle(LinearGradient(
@@ -213,7 +213,7 @@ struct PlanFeatureRow: View {
                                 startPoint: .leading, endPoint: .trailing)))
                 )
             Text(text)
-                .font(.system(size: 14, weight: .medium))
+                .font(.custom("HelveticaNeue-Medium", size: 14))
                 .foregroundColor(.tsLabel)
         }
     }

@@ -244,17 +244,17 @@ private func stepView(
     onBack: (() -> Void)? = nil
 ) -> some View {
     VStack(spacing: 0) {
-        Text(icon).font(.system(size: 56)).padding(.bottom, 16)
+        Text(icon).font(.custom("HelveticaNeue", size: 56)).padding(.bottom, 16)
 
         Text(headline)
-            .font(.system(size: 24, weight: .bold))
+            .font(.custom("HelveticaNeue-Bold", size: 24))
             .foregroundColor(.tsLabel)
             .multilineTextAlignment(.center)
             .padding(.horizontal, 32)
             .padding(.bottom, 8)
 
         Text(subtext)
-            .font(.system(size: 14))
+            .font(.custom("HelveticaNeue", size: 14))
             .foregroundColor(.tsSecondary)
             .multilineTextAlignment(.center)
             .padding(.horizontal, 40)
@@ -265,21 +265,21 @@ private func stepView(
                 Button(action: { onSelect(option.id) }) {
                     HStack(spacing: 16) {
                         Text(option.emoji)
-                            .font(.system(size: 28))
+                            .font(.custom("HelveticaNeue", size: 28))
                             .frame(width: 44)
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text(option.label)
-                                .font(.system(size: 16, weight: .semibold))
+                                .font(.custom("HelveticaNeue-Medium", size: 16))
                                 .foregroundColor(.tsLabel)
                             Text(option.detail)
-                                .font(.system(size: 13))
+                                .font(.custom("HelveticaNeue", size: 13))
                                 .foregroundColor(.tsSecondary)
                         }
                         Spacer()
                         Image(systemName: selectedId == option.id
                               ? "checkmark.circle.fill" : "circle")
-                            .font(.system(size: 22))
+                            .font(.custom("HelveticaNeue", size: 22))
                             .foregroundColor(selectedId == option.id ? .tsAccent : Color.tsCard)
                     }
                     .padding(16)
@@ -302,7 +302,7 @@ private func stepView(
         // CTA
         Button(action: onCTA) {
             Text(ctaLabel)
-                .font(.system(size: 17, weight: .bold))
+                .font(.custom("HelveticaNeue-Bold", size: 17))
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .frame(height: 56)
@@ -319,7 +319,7 @@ private func stepView(
 
         if showBack, let onBack {
             Button("Back", action: onBack)
-                .font(.system(size: 15, weight: .medium))
+                .font(.custom("HelveticaNeue-Medium", size: 15))
                 .foregroundColor(.tsSecondary)
                 .padding(.top, 16)
         }
@@ -338,18 +338,18 @@ private struct GeneratingView: View {
         VStack(spacing: 24) {
             if let error {
                 Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.system(size: 48))
+                    .font(.custom("HelveticaNeue", size: 48))
                     .foregroundColor(.orange)
                 Text("Something went wrong")
-                    .font(.system(size: 20, weight: .bold))
+                    .font(.custom("HelveticaNeue-Bold", size: 20))
                     .foregroundColor(.tsLabel)
                 Text(error)
-                    .font(.system(size: 13))
+                    .font(.custom("HelveticaNeue", size: 13))
                     .foregroundColor(.tsSecondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 40)
                 Button("Try Again", action: onRetry)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.custom("HelveticaNeue-Medium", size: 16))
                     .foregroundColor(.tsAccent)
             } else {
                 ZStack {
@@ -369,15 +369,15 @@ private struct GeneratingView: View {
                                 angle = 360
                             }
                         }
-                    Text("✨").font(.system(size: 28))
+                    Text("✨").font(.custom("HelveticaNeue", size: 28))
                 }
 
                 Text("Building your deck...")
-                    .font(.system(size: 22, weight: .bold))
+                    .font(.custom("HelveticaNeue-Bold", size: 22))
                     .foregroundColor(.tsLabel)
 
                 Text("GPT-4o mini is crafting phrases tailored to your preferences")
-                    .font(.system(size: 14))
+                    .font(.custom("HelveticaNeue", size: 14))
                     .foregroundColor(.tsSecondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 48)
@@ -396,7 +396,7 @@ private struct DoneView: View {
     var body: some View {
         VStack(spacing: 24) {
             Text("😏")
-                .font(.system(size: 72))
+                .font(.custom("HelveticaNeue", size: 72))
                 .scaleEffect(scale)
                 .opacity(opacity)
                 .onAppear {
@@ -406,18 +406,18 @@ private struct DoneView: View {
                 }
 
             Text("Your deck is ready")
-                .font(.system(size: 26, weight: .bold))
+                .font(.custom("HelveticaNeue-Bold", size: 26))
                 .foregroundColor(.tsLabel)
 
             Text("25 personalised phrases — gendered perfectly for how you actually talk.")
-                .font(.system(size: 15))
+                .font(.custom("HelveticaNeue", size: 15))
                 .foregroundColor(.tsSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
 
             Button(action: onContinue) {
                 Text("Let's Go")
-                    .font(.system(size: 17, weight: .bold))
+                    .font(.custom("HelveticaNeue-Bold", size: 17))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 56)

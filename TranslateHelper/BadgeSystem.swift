@@ -24,7 +24,7 @@ enum TrustLevel: Int, Comparable {
 
     var color: Color {
         switch self {
-        case .newArrival:   return Color(hex: "#007AFF")
+        case .newArrival:   return Color.tsAccent
         case .settling:     return Color(hex: "#FF9500")
         case .local:        return Color(hex: "#34C759")
         case .trustedLocal: return Color(hex: "#30D158")
@@ -67,7 +67,7 @@ struct TrustBadge: View {
                 .font(.system(size: compact ? 9 : 11, weight: .semibold))
             if !compact {
                 Text(level.label)
-                    .font(.system(size: 11, weight: .bold))
+                    .font(.custom("HelveticaNeue-Bold", size: 11))
             }
         }
         .foregroundColor(.white)
@@ -106,7 +106,7 @@ struct CommunityUser: Identifiable {
 
     var initialsColor: Color {
         let colors: [Color] = [
-            Color(hex: "#007AFF"), Color(hex: "#34C759"), Color(hex: "#FF9500"),
+            Color.tsAccent, Color(hex: "#34C759"), Color(hex: "#FF9500"),
             Color(hex: "#AF52DE"), Color(hex: "#FF3B30"), Color(hex: "#5856D6")
         ]
         let index = abs(id.hashValue) % colors.count

@@ -55,7 +55,7 @@ struct OnboardingStatusView: View {
                 HStack {
                     Button(action: onBack) {
                         Image(systemName: "chevron.left")
-                            .font(.system(size: 17, weight: .semibold))
+                            .font(.custom("HelveticaNeue-Medium", size: 17))
                             .foregroundColor(.tsLabel)
                     }
                     Spacer()
@@ -69,11 +69,11 @@ struct OnboardingStatusView: View {
                         // ── Header ─────────────────────────────────
                         VStack(spacing: 12) {
                             Text("How long have you\nbeen here?")
-                                .font(.system(size: 30, weight: .bold))
+                                .font(.custom("HelveticaNeue-Bold", size: 30))
                                 .foregroundColor(.tsLabel)
                                 .multilineTextAlignment(.center)
                             Text("We\'ll show you what\'s actually relevant\nto where you are right now.")
-                                .font(.system(size: 16))
+                                .font(.custom("HelveticaNeue", size: 16))
                                 .foregroundColor(.tsSecondary)
                                 .multilineTextAlignment(.center)
                         }
@@ -108,7 +108,7 @@ struct OnboardingStatusView: View {
                         onContinue()
                     }) {
                         Text("Skip")
-                            .font(.system(size: 15))
+                            .font(.custom("HelveticaNeue", size: 15))
                             .foregroundColor(.tsSecondary)
                     }
                 }
@@ -128,15 +128,15 @@ struct StatusOptionRow: View {
         Button(action: onTap) {
             HStack(spacing: 16) {
                 Text(status.emoji)
-                    .font(.system(size: 28))
+                    .font(.custom("HelveticaNeue", size: 28))
                     .frame(width: 44)
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(status.label)
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.custom("HelveticaNeue-Medium", size: 16))
                         .foregroundColor(.tsLabel)
                     Text(status.sublabel)
-                        .font(.system(size: 13))
+                        .font(.custom("HelveticaNeue", size: 13))
                         .foregroundColor(.tsSecondary)
                 }
 

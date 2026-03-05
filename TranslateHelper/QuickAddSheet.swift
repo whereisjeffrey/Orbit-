@@ -73,9 +73,9 @@ private struct ModePicker: View {
                 } label: {
                     HStack(spacing: 6) {
                         Image(systemName: options[i].icon)
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.custom("HelveticaNeue-Medium", size: 14))
                         Text(options[i].label)
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.custom("HelveticaNeue-Medium", size: 14))
                     }
                     .foregroundColor(isOn ? .white : .tsSecondary)
                     .frame(maxWidth: .infinity)
@@ -120,12 +120,12 @@ private struct AddWordPane: View {
                 // ── Word / Phrase input ───────────────────────────────
                 VStack(alignment: .leading, spacing: 8) {
                     Label("WORD OR PHRASE", systemImage: "character.cursor.ibeam")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.custom("HelveticaNeue-Medium", size: 12))
                         .foregroundColor(.tsSecondary)
                         .tracking(0.8)
 
                     TextField("e.g. buenos días, ¿cómo estás?", text: $wordText)
-                        .font(.system(size: 17))
+                        .font(.custom("HelveticaNeue", size: 17))
                         .foregroundColor(.tsLabel)
                         .submitLabel(.done)
                         .padding(14)
@@ -155,10 +155,10 @@ private struct AddWordPane: View {
                                         .tint(.tsAccent)
                                 } else {
                                     Image(systemName: "arrow.triangle.2.circlepath")
-                                        .font(.system(size: 12, weight: .semibold))
+                                        .font(.custom("HelveticaNeue-Medium", size: 12))
                                 }
                                 Text(isTranslating ? "Translating…" : "Auto-translate")
-                                    .font(.system(size: 13, weight: .semibold))
+                                    .font(.custom("HelveticaNeue-Medium", size: 13))
                             }
                             .foregroundColor(.tsAccent)
                         }
@@ -170,13 +170,13 @@ private struct AddWordPane: View {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Label("TRANSLATION", systemImage: "globe")
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.custom("HelveticaNeue-Medium", size: 12))
                             .foregroundColor(.tsSecondary)
                             .tracking(0.8)
                         Spacer()
                         if !translation.isEmpty {
                             Text("Editable")
-                                .font(.system(size: 11))
+                                .font(.custom("HelveticaNeue", size: 11))
                                 .foregroundColor(.tsSecondary.opacity(0.6))
                         }
                     }
@@ -184,14 +184,14 @@ private struct AddWordPane: View {
                     ZStack(alignment: .topLeading) {
                         if translation.isEmpty && !isTranslating {
                             Text("Translation will appear here…")
-                                .font(.system(size: 16))
+                                .font(.custom("HelveticaNeue", size: 16))
                                 .foregroundColor(.tsSecondary.opacity(0.45))
                                 .padding(.horizontal, 14)
                                 .padding(.vertical, 14)
                                 .allowsHitTesting(false)
                         }
                         TextEditor(text: $translation)
-                            .font(.system(size: 16))
+                            .font(.custom("HelveticaNeue", size: 16))
                             .foregroundColor(.tsLabel)
                             .frame(minHeight: 80)
                             .padding(10)
@@ -209,7 +209,7 @@ private struct AddWordPane: View {
 
                     if let err = translateError {
                         Label(err, systemImage: "exclamationmark.circle")
-                            .font(.system(size: 12))
+                            .font(.custom("HelveticaNeue", size: 12))
                             .foregroundColor(.orange)
                     }
                 }
@@ -217,7 +217,7 @@ private struct AddWordPane: View {
                 // ── Deck Picker ───────────────────────────────────────
                 VStack(alignment: .leading, spacing: 8) {
                     Label("SAVE TO DECK", systemImage: "rectangle.stack")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.custom("HelveticaNeue-Medium", size: 12))
                         .foregroundColor(.tsSecondary)
                         .tracking(0.8)
 
@@ -240,9 +240,9 @@ private struct AddWordPane: View {
                     } label: {
                         HStack(spacing: 6) {
                             Image(systemName: "plus.circle")
-                                .font(.system(size: 13))
+                                .font(.custom("HelveticaNeue", size: 13))
                             Text("Create a new deck")
-                                .font(.system(size: 13, weight: .medium))
+                                .font(.custom("HelveticaNeue-Medium", size: 13))
                         }
                         .foregroundColor(.tsAccent.opacity(0.75))
                     }
@@ -253,9 +253,9 @@ private struct AddWordPane: View {
                 Button(action: saveCard) {
                     HStack(spacing: 10) {
                         Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(.custom("HelveticaNeue-Medium", size: 16))
                         Text("Add to Deck")
-                            .font(.system(size: 17, weight: .bold))
+                            .font(.custom("HelveticaNeue-Bold", size: 17))
                     }
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
@@ -347,7 +347,7 @@ private struct EmptyDeckHint: View {
             Image(systemName: "info.circle")
                 .foregroundColor(.tsSecondary)
             Text("No decks yet — use the **Create Deck** tab to make one first.")
-                .font(.system(size: 14))
+                .font(.custom("HelveticaNeue", size: 14))
                 .foregroundColor(.tsSecondary)
         }
         .padding(16)
@@ -391,12 +391,12 @@ private struct CreateDeckPane: View {
                 if aiLimitReached {
                     HStack(spacing: 12) {
                         Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundColor(.orange).font(.system(size: 16))
+                            .foregroundColor(.orange).font(.custom("HelveticaNeue", size: 16))
                         VStack(alignment: .leading, spacing: 2) {
                             Text("AI deck limit reached (\(deckStore.aiDeckCount)/\(DeckStore.maxAIDecks))")
-                                .font(.system(size: 14, weight: .bold)).foregroundColor(.tsLabel)
+                                .font(.custom("HelveticaNeue-Bold", size: 14)).foregroundColor(.tsLabel)
                             Text("Switch to Manual to create another, or delete an AI deck first.")
-                                .font(.system(size: 12)).foregroundColor(.tsSecondary)
+                                .font(.custom("HelveticaNeue", size: 12)).foregroundColor(.tsSecondary)
                         }
                     }
                     .padding(16).background(Color.orange.opacity(0.08)).cornerRadius(14)
@@ -406,12 +406,12 @@ private struct CreateDeckPane: View {
                 // ── Emoji Picker ─────────────────────────────────────
                 VStack(alignment: .leading, spacing: 8) {
                     Text("CHOOSE AN EMOJI")
-                        .font(.system(size: 12, weight: .semibold)).foregroundColor(.tsSecondary).tracking(1.0)
+                        .font(.custom("HelveticaNeue-Medium", size: 12)).foregroundColor(.tsSecondary).tracking(1.0)
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
                             ForEach(emojiOptions, id: \.self) { emoji in
                                 Button { selectedEmoji = emoji } label: {
-                                    Text(emoji).font(.system(size: 22))
+                                    Text(emoji).font(.custom("HelveticaNeue", size: 22))
                                         .frame(width: 44, height: 44)
                                         .background(selectedEmoji == emoji ? Color.tsAccent.opacity(0.15) : Color.tsCard)
                                         .cornerRadius(12)
@@ -426,7 +426,7 @@ private struct CreateDeckPane: View {
                 // ── Tint Picker ──────────────────────────────────────
                 VStack(alignment: .leading, spacing: 8) {
                     Text("COLOUR")
-                        .font(.system(size: 12, weight: .semibold)).foregroundColor(.tsSecondary).tracking(1.0)
+                        .font(.custom("HelveticaNeue-Medium", size: 12)).foregroundColor(.tsSecondary).tracking(1.0)
                     HStack(spacing: 10) {
                         ForEach(tintOptions, id: \.name) { opt in
                             Button { selectedTint = opt.name } label: {
@@ -444,9 +444,9 @@ private struct CreateDeckPane: View {
                 // ── Deck Name ────────────────────────────────────────
                 VStack(alignment: .leading, spacing: 8) {
                     Text("DECK NAME")
-                        .font(.system(size: 12, weight: .semibold)).foregroundColor(.tsSecondary).tracking(1.0)
+                        .font(.custom("HelveticaNeue-Medium", size: 12)).foregroundColor(.tsSecondary).tracking(1.0)
                     TextField("e.g. Medical Radiology, Sports Slang…", text: $deckName)
-                        .font(.system(size: 17)).foregroundColor(.tsLabel)
+                        .font(.custom("HelveticaNeue", size: 17)).foregroundColor(.tsLabel)
                         .padding(16).background(Color.tsCard).cornerRadius(14)
                         .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.tsBorder, lineWidth: 1))
                 }
@@ -454,22 +454,22 @@ private struct CreateDeckPane: View {
                 // ── Description ──────────────────────────────────────
                 VStack(alignment: .leading, spacing: 8) {
                     Text("DESCRIBE WHAT YOU WANT TO LEARN")
-                        .font(.system(size: 12, weight: .semibold)).foregroundColor(.tsSecondary).tracking(1.0)
+                        .font(.custom("HelveticaNeue-Medium", size: 12)).foregroundColor(.tsSecondary).tracking(1.0)
                     TextField(
                         "e.g. Vocabulary for a radiology resident — anatomy terms and imaging procedures",
                         text: $deckDescription, axis: .vertical
                     )
-                    .lineLimit(3...6).font(.system(size: 15)).foregroundColor(.tsLabel)
+                    .lineLimit(3...6).font(.custom("HelveticaNeue", size: 15)).foregroundColor(.tsLabel)
                     .padding(16).background(Color.tsCard).cornerRadius(14)
                     .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.tsBorder, lineWidth: 1))
                     Text("The more detail you give, the better your AI cards will be.")
-                        .font(.system(size: 12)).foregroundColor(.tsSecondary.opacity(0.7))
+                        .font(.custom("HelveticaNeue", size: 12)).foregroundColor(.tsSecondary.opacity(0.7))
                 }
 
                 // ── AI vs Manual ─────────────────────────────────────
                 VStack(alignment: .leading, spacing: 12) {
                     Text("HOW DO YOU WANT TO ADD CARDS?")
-                        .font(.system(size: 12, weight: .semibold)).foregroundColor(.tsSecondary).tracking(1.0)
+                        .font(.custom("HelveticaNeue-Medium", size: 12)).foregroundColor(.tsSecondary).tracking(1.0)
                     HStack(spacing: 12) {
                         ModeToggleCard(icon: "sparkles",   title: "Generate with AI",
                                        subtitle: "~50 cards created instantly",
@@ -483,9 +483,9 @@ private struct CreateDeckPane: View {
                 // ── Info banner ──────────────────────────────────────
                 if useAI && !aiLimitReached {
                     HStack(spacing: 12) {
-                        Image(systemName: "info.circle.fill").foregroundColor(.tsAccent).font(.system(size: 16))
+                        Image(systemName: "info.circle.fill").foregroundColor(.tsAccent).font(.custom("HelveticaNeue", size: 16))
                         Text("AI will generate up to 50 Spanish–English flashcard pairs.")
-                            .font(.system(size: 13)).foregroundColor(.tsSecondary)
+                            .font(.custom("HelveticaNeue", size: 13)).foregroundColor(.tsSecondary)
                     }
                     .padding(16).background(Color.tsAccent.opacity(0.06)).cornerRadius(14)
                     .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.tsAccent.opacity(0.15), lineWidth: 1))
@@ -494,7 +494,7 @@ private struct CreateDeckPane: View {
                 if let err = errorMessage {
                     HStack(spacing: 10) {
                         Image(systemName: "xmark.circle.fill").foregroundColor(.red)
-                        Text(err).font(.system(size: 13)).foregroundColor(.red)
+                        Text(err).font(.custom("HelveticaNeue", size: 13)).foregroundColor(.red)
                     }
                     .padding(14).background(Color.red.opacity(0.07)).cornerRadius(12)
                 }
@@ -506,9 +506,9 @@ private struct CreateDeckPane: View {
                     ZStack {
                         HStack(spacing: 10) {
                             Image(systemName: useAI ? "sparkles" : "rectangle.stack.badge.plus")
-                                .font(.system(size: 16, weight: .semibold))
+                                .font(.custom("HelveticaNeue-Medium", size: 16))
                             Text(useAI ? "Generate My Deck" : "Create Deck")
-                                .font(.system(size: 17, weight: .bold))
+                                .font(.custom("HelveticaNeue-Bold", size: 17))
                         }
                         .foregroundColor(.white).opacity(isGenerating ? 0 : 1)
                         if isGenerating { ProgressView().tint(.white) }

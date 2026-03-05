@@ -22,11 +22,11 @@ struct NewInTownSection: View {
 
             HStack {
                 Text("New in town")
-                    .font(.system(size: 17, weight: .bold))
+                    .font(.custom("HelveticaNeue-Bold", size: 17))
                     .foregroundColor(.tsLabel)
                 Spacer()
                 Text("\(newArrivals.count) people")
-                    .font(.system(size: 13))
+                    .font(.custom("HelveticaNeue", size: 13))
                     .foregroundColor(.tsSecondary)
             }
             .padding(.horizontal, 16)
@@ -66,7 +66,7 @@ struct NewArrivalCard: View {
                         .fill(user.initialsColor)
                         .frame(width: 56, height: 56)
                     Text(user.initials)
-                        .font(.system(size: 20, weight: .bold))
+                        .font(.custom("HelveticaNeue-Bold", size: 20))
                         .foregroundColor(.white)
                 }
                 .overlay(alignment: .bottomTrailing) {
@@ -77,11 +77,11 @@ struct NewArrivalCard: View {
                 }
 
                 Text(user.firstName)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.custom("HelveticaNeue-Medium", size: 13))
                     .foregroundColor(.tsLabel)
 
                 Text(user.timeInCityLabel)
-                    .font(.system(size: 11))
+                    .font(.custom("HelveticaNeue", size: 11))
                     .foregroundColor(.tsSecondary)
 
                 TrustBadge(level: user.trustLevel, compact: true)
@@ -107,14 +107,14 @@ struct NewInTownOptInCard: View {
                         .fill(Color.tsAccent.opacity(0.12))
                         .frame(width: 56, height: 56)
                     Image(systemName: "person.badge.plus")
-                        .font(.system(size: 22))
+                        .font(.custom("HelveticaNeue", size: 22))
                         .foregroundColor(.tsAccent)
                 }
                 Text("Show up")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.custom("HelveticaNeue-Medium", size: 13))
                     .foregroundColor(.tsAccent)
                 Text("Let locals\nfind you")
-                    .font(.system(size: 11))
+                    .font(.custom("HelveticaNeue", size: 11))
                     .foregroundColor(.tsSecondary)
                     .multilineTextAlignment(.center)
             }
@@ -142,16 +142,16 @@ struct NewInTownOptInSheet: View {
                 VStack(spacing: 24) {
                     Spacer()
                     Image(systemName: "person.2.fill")
-                        .font(.system(size: 48))
+                        .font(.custom("HelveticaNeue", size: 48))
                         .foregroundColor(.tsAccent)
 
                     VStack(spacing: 8) {
                         Text("Let the community\nknow you\'re here")
-                            .font(.system(size: 26, weight: .bold))
+                            .font(.custom("HelveticaNeue-Bold", size: 26))
                             .foregroundColor(.tsLabel)
                             .multilineTextAlignment(.center)
                         Text("Locals and fellow newcomers can see\nyou arrived recently and say hi.")
-                            .font(.system(size: 15))
+                            .font(.custom("HelveticaNeue", size: 15))
                             .foregroundColor(.tsSecondary)
                             .multilineTextAlignment(.center)
                     }
@@ -172,7 +172,7 @@ struct NewInTownOptInSheet: View {
                             dismiss()
                         }
                         Button("Not right now") { dismiss() }
-                            .font(.system(size: 15))
+                            .font(.custom("HelveticaNeue", size: 15))
                             .foregroundColor(.tsSecondary)
                     }
                     .padding(.horizontal, 24)
@@ -193,11 +193,11 @@ struct OptInBenefit: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.system(size: 16))
+                .font(.custom("HelveticaNeue", size: 16))
                 .foregroundColor(.tsAccent)
                 .frame(width: 24)
             Text(text)
-                .font(.system(size: 15))
+                .font(.custom("HelveticaNeue", size: 15))
                 .foregroundColor(.tsLabel)
         }
     }

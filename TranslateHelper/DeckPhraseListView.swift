@@ -34,7 +34,7 @@ struct DeckPhraseListView: View {
                     HStack {
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(.tsSecondary)
-                            .font(.system(size: 15))
+                            .font(.custom("HelveticaNeue", size: 15))
                         TextField("Search phrases…", text: $searchText)
                             .foregroundColor(.tsLabel)
                             .autocorrectionDisabled()
@@ -56,16 +56,16 @@ struct DeckPhraseListView: View {
                     }) {
                         HStack(spacing: 6) {
                             Text(swapLanguage ? "🇲🇽 Spanish" : "🇺🇸 English")
-                                .font(.system(size: 12, weight: .semibold))
+                                .font(.custom("HelveticaNeue-Medium", size: 12))
                                 .foregroundColor(.tsLabel)
                             Image(systemName: "arrow.right")
-                                .font(.system(size: 11, weight: .bold))
+                                .font(.custom("HelveticaNeue-Bold", size: 11))
                                 .foregroundColor(.tsSecondary)
                             Text(swapLanguage ? "🇺🇸 English" : "🇲🇽 Spanish")
-                                .font(.system(size: 12, weight: .semibold))
+                                .font(.custom("HelveticaNeue-Medium", size: 12))
                                 .foregroundColor(.tsLabel)
                             Image(systemName: "arrow.triangle.2.circlepath")
-                                .font(.system(size: 12, weight: .bold))
+                                .font(.custom("HelveticaNeue-Bold", size: 12))
                                 .foregroundColor(.tsAccent)
                         }
                         .padding(.horizontal, 14)
@@ -83,10 +83,10 @@ struct DeckPhraseListView: View {
                         Spacer()
                         VStack(spacing: 12) {
                             Image(systemName: "text.badge.xmark")
-                                .font(.system(size: 40))
+                                .font(.custom("HelveticaNeue", size: 40))
                                 .foregroundColor(.tsSecondary.opacity(0.4))
                             Text("No phrases found")
-                                .font(.system(size: 17, weight: .semibold))
+                                .font(.custom("HelveticaNeue-Medium", size: 17))
                                 .foregroundColor(.tsSecondary)
                         }
                         Spacer()
@@ -118,7 +118,7 @@ struct DeckPhraseListView: View {
                 }
                 ToolbarItem(placement: .primaryAction) {
                     Text("\(phrases.count) cards")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.custom("HelveticaNeue-Medium", size: 13))
                         .foregroundColor(.tsSecondary)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 4)
@@ -150,27 +150,27 @@ private struct PhraseListRow: View {
         HStack(alignment: .center, spacing: 14) {
             // Index badge
             Text("\(index)")
-                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                .font(.custom("HelveticaNeue-Bold", size: 11))
                 .foregroundColor(.tsSecondary)
                 .frame(width: 24, alignment: .center)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(primaryText)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.custom("HelveticaNeue-Medium", size: 16))
                     .foregroundColor(.tsLabel)
                     .fixedSize(horizontal: false, vertical: true)
 
                 Text(secondaryText)
-                    .font(.system(size: 14))
+                    .font(.custom("HelveticaNeue", size: 14))
                     .foregroundColor(.tsSecondary)
                     .fixedSize(horizontal: false, vertical: true)
 
                 if let tag = phrase.localityTag, !tag.isEmpty {
                     HStack(spacing: 4) {
                         Image(systemName: "mappin.circle.fill")
-                            .font(.system(size: 9))
+                            .font(.custom("HelveticaNeue", size: 9))
                         Text(tag)
-                            .font(.system(size: 11, weight: .medium))
+                            .font(.custom("HelveticaNeue-Medium", size: 11))
                     }
                     .foregroundColor(.tsAccent.opacity(0.7))
                     .padding(.top, 2)
@@ -186,7 +186,7 @@ private struct PhraseListRow: View {
                 TTSService.shared.speak(speakText, language: speakLang)
             }) {
                 Image(systemName: "speaker.wave.2.fill")
-                    .font(.system(size: 16))
+                    .font(.custom("HelveticaNeue", size: 16))
                     .foregroundColor(.tsAccent)
                     .frame(width: 40, height: 40)
                     .background(Color.tsAccent.opacity(0.1))

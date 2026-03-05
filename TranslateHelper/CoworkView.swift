@@ -91,10 +91,10 @@ struct CoworkView: View {
                     HStack(alignment: .top) {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Cowork")
-                                .font(.system(size: 28, weight: .bold))
+                                .font(.custom("HelveticaNeue-Bold", size: 28))
                                 .foregroundColor(.tsLabel)
                             Text("Mexico City")
-                                .font(.system(size: 13))
+                                .font(.custom("HelveticaNeue", size: 13))
                                 .foregroundColor(.tsSecondary)
                         }
                         Spacer()
@@ -102,7 +102,7 @@ struct CoworkView: View {
                             HStack(spacing: 4) {
                                 Circle().fill(Color(hex: "#34C759")).frame(width: 7, height: 7)
                                 Text("Nearby")
-                                    .font(.system(size: 12))
+                                    .font(.custom("HelveticaNeue", size: 12))
                                     .foregroundColor(.tsSecondary)
                             }
                             .padding(.top, 6)
@@ -127,12 +127,12 @@ struct CoworkView: View {
                     // ── Sort pills ──────────────────────────────────
                     HStack(spacing: 8) {
                         Text("Sort:")
-                            .font(.system(size: 13))
+                            .font(.custom("HelveticaNeue", size: 13))
                             .foregroundColor(.tsSecondary)
                         ForEach(CoworkSort.allCases, id: \.self) { option in
                             Button(action: { sortBy = option }) {
                                 Text(option.rawValue)
-                                    .font(.system(size: 13, weight: .semibold))
+                                    .font(.custom("HelveticaNeue-Medium", size: 13))
                                     .foregroundColor(sortBy == option ? .white : .tsLabel)
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 6)
@@ -161,13 +161,13 @@ struct CoworkView: View {
                         Text(filtered.count == allSpaces.count
                              ? "\(filtered.count) spaces"
                              : "\(filtered.count) of \(allSpaces.count) match")
-                            .font(.system(size: 13))
+                            .font(.custom("HelveticaNeue", size: 13))
                             .foregroundColor(.tsSecondary)
                         Spacer()
                         if activeFilterCount > 0 {
                             Button(action: clearFilters) {
                                 Text("Clear filters")
-                                    .font(.system(size: 13, weight: .medium))
+                                    .font(.custom("HelveticaNeue-Medium", size: 13))
                                     .foregroundColor(.tsAccent)
                             }
                         }
@@ -179,14 +179,14 @@ struct CoworkView: View {
                     if filtered.isEmpty {
                         VStack(spacing: 12) {
                             Image(systemName: "laptopcomputer.slash")
-                                .font(.system(size: 36))
+                                .font(.custom("HelveticaNeue", size: 36))
                                 .foregroundColor(.tsSecondary)
                             Text("No spaces match your filters")
-                                .font(.system(size: 15))
+                                .font(.custom("HelveticaNeue", size: 15))
                                 .foregroundColor(.tsSecondary)
                             Button(action: clearFilters) {
                                 Text("Clear filters")
-                                    .font(.system(size: 14, weight: .semibold))
+                                    .font(.custom("HelveticaNeue-Medium", size: 14))
                                     .foregroundColor(.white)
                                     .padding(.horizontal, 20)
                                     .padding(.vertical, 10)
@@ -210,7 +210,7 @@ struct CoworkView: View {
                     // ── Community data note + add button ────────────
                     VStack(spacing: 4) {
                         Text("Data is community-verified. Prices and amenities change.")
-                            .font(.system(size: 12))
+                            .font(.custom("HelveticaNeue", size: 12))
                             .foregroundColor(.tsSecondary)
                             .multilineTextAlignment(.center)
                         Button(action: { showSubmit = true }) {
@@ -218,7 +218,7 @@ struct CoworkView: View {
                                 Image(systemName: "plus.circle")
                                 Text("Add a space or fix outdated info")
                             }
-                            .font(.system(size: 14, weight: .medium))
+                            .font(.custom("HelveticaNeue-Medium", size: 14))
                             .foregroundColor(.tsAccent)
                         }
                     }
@@ -254,25 +254,25 @@ struct CoworkLocationCard: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 10) {
                 Image(systemName: "location.circle.fill")
-                    .font(.system(size: 22))
+                    .font(.custom("HelveticaNeue", size: 22))
                     .foregroundColor(.tsAccent)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("See what\'s actually walkable")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.custom("HelveticaNeue-Medium", size: 15))
                         .foregroundColor(.tsLabel)
                     Text("Sort by real walking distance from where you are now.")
-                        .font(.system(size: 13))
+                        .font(.custom("HelveticaNeue", size: 13))
                         .foregroundColor(.tsSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
             Text("We only use your location to calculate distances. It\'s not stored.")
-                .font(.system(size: 12))
+                .font(.custom("HelveticaNeue", size: 12))
                 .foregroundColor(.tsSecondary)
             HStack(spacing: 10) {
                 Button(action: onEnable) {
                     Text("Enable location")
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.custom("HelveticaNeue-Medium", size: 14))
                         .foregroundColor(.white)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 9)
@@ -281,7 +281,7 @@ struct CoworkLocationCard: View {
                 }
                 Button(action: onDismiss) {
                     Text("Not now")
-                        .font(.system(size: 14))
+                        .font(.custom("HelveticaNeue", size: 14))
                         .foregroundColor(.tsSecondary)
                 }
             }
@@ -302,8 +302,8 @@ struct CoworkFilterChip: View {
     var body: some View {
         Button(action: { active.toggle() }) {
             HStack(spacing: 5) {
-                Image(systemName: icon).font(.system(size: 11, weight: .semibold))
-                Text(label).font(.system(size: 13, weight: .semibold))
+                Image(systemName: icon).font(.custom("HelveticaNeue-Medium", size: 11))
+                Text(label).font(.custom("HelveticaNeue-Medium", size: 13))
             }
             .foregroundColor(active ? .white : .tsLabel)
             .padding(.horizontal, 14).padding(.vertical, 8)
@@ -325,10 +325,10 @@ struct CoworkCard: View {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(space.name)
-                            .font(.system(size: 16, weight: .bold))
+                            .font(.custom("HelveticaNeue-Bold", size: 16))
                             .foregroundColor(.tsLabel)
                         Text(space.neighbourhood)
-                            .font(.system(size: 13))
+                            .font(.custom("HelveticaNeue", size: 13))
                             .foregroundColor(.tsSecondary)
                     }
                     Spacer()
@@ -336,24 +336,24 @@ struct CoworkCard: View {
                         if let dist = space.distanceLabel(from: userLocation) {
                             HStack(spacing: 3) {
                                 Image(systemName: "location.fill")
-                                    .font(.system(size: 10))
+                                    .font(.custom("HelveticaNeue", size: 10))
                                     .foregroundColor(.tsAccent)
                                 Text(dist)
-                                    .font(.system(size: 13, weight: .semibold))
+                                    .font(.custom("HelveticaNeue-Medium", size: 13))
                                     .foregroundColor(.tsAccent)
                             }
                         }
                         if let day = space.dayRate {
                             Text("$\(day) MXN/day")
-                                .font(.system(size: 12))
+                                .font(.custom("HelveticaNeue", size: 12))
                                 .foregroundColor(.tsSecondary)
                         }
                     }
                 }
                 HStack(spacing: 4) {
-                    Image(systemName: "clock").font(.system(size: 11)).foregroundColor(.tsSecondary)
+                    Image(systemName: "clock").font(.custom("HelveticaNeue", size: 11)).foregroundColor(.tsSecondary)
                     Text("\(space.hoursDisplay) · \(space.hoursDays)")
-                        .font(.system(size: 12)).foregroundColor(.tsSecondary)
+                        .font(.custom("HelveticaNeue", size: 12)).foregroundColor(.tsSecondary)
                 }
                 HStack(spacing: 12) {
                     AmenityBadge(icon: "phone.fill",          label: space.hasCallRooms ? "Call rooms" : "No rooms",     active: space.hasCallRooms,  color: Color(hex: "#34C759"))
@@ -362,7 +362,7 @@ struct CoworkCard: View {
                     AmenityBadge(icon: "moon.fill",           label: space.hasLateHours ? "Open late"  : "Closes early", active: space.hasLateHours, color: Color(hex: "#AF52DE"))
                     Spacer()
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 12)).foregroundColor(.tsSecondary)
+                        .font(.custom("HelveticaNeue", size: 12)).foregroundColor(.tsSecondary)
                 }
             }
             .padding(16)
@@ -379,9 +379,9 @@ struct AmenityBadge: View {
     var color: Color = Color(hex: "#34C759")
     var body: some View {
         HStack(spacing: 4) {
-            Image(systemName: icon).font(.system(size: 12))
+            Image(systemName: icon).font(.custom("HelveticaNeue", size: 12))
                 .foregroundColor(active ? color : Color.tsSecondary.opacity(0.35))
-            Text(label).font(.system(size: 12))
+            Text(label).font(.custom("HelveticaNeue", size: 12))
                 .foregroundColor(active ? Color.tsLabel : Color.tsSecondary.opacity(0.35))
         }
     }
@@ -401,13 +401,13 @@ struct CoworkDetailView: View {
                     VStack(alignment: .leading, spacing: 0) {
                         VStack(alignment: .leading, spacing: 8) {
                             Text(space.name)
-                                .font(.system(size: 26, weight: .bold)).foregroundColor(.tsLabel)
+                                .font(.custom("HelveticaNeue-Bold", size: 26)).foregroundColor(.tsLabel)
                             Text(space.neighbourhood + " · Mexico City")
-                                .font(.system(size: 14)).foregroundColor(.tsSecondary)
+                                .font(.custom("HelveticaNeue", size: 14)).foregroundColor(.tsSecondary)
                             if let dist = space.distanceLabel(from: userLocation) {
                                 HStack(spacing: 4) {
-                                    Image(systemName: "location.fill").font(.system(size: 12))
-                                    Text(dist + " from you").font(.system(size: 13, weight: .medium))
+                                    Image(systemName: "location.fill").font(.custom("HelveticaNeue", size: 12))
+                                    Text(dist + " from you").font(.custom("HelveticaNeue-Medium", size: 13))
                                 }
                                 .foregroundColor(.tsAccent)
                             }
@@ -423,7 +423,7 @@ struct CoworkDetailView: View {
                         .padding(.horizontal, 16).padding(.bottom, 20)
 
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Pricing").font(.system(size: 17, weight: .bold)).foregroundColor(.tsLabel)
+                            Text("Pricing").font(.custom("HelveticaNeue-Bold", size: 17)).foregroundColor(.tsLabel)
                             HStack(spacing: 12) {
                                 if let day = space.dayRate   { PricePill(label: "Day",   value: "$\(day) MXN") }
                                 if let mo  = space.monthRate { PricePill(label: "Month", value: "$\(mo) MXN") }
@@ -432,27 +432,27 @@ struct CoworkDetailView: View {
                         .padding(.horizontal, 16).padding(.bottom, 20)
 
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Hours").font(.system(size: 17, weight: .bold)).foregroundColor(.tsLabel)
+                            Text("Hours").font(.custom("HelveticaNeue-Bold", size: 17)).foregroundColor(.tsLabel)
                             HStack(spacing: 8) {
                                 Image(systemName: "clock.fill").foregroundColor(.tsSecondary)
                                 Text(space.hoursDisplay).foregroundColor(.tsLabel)
                                 Text("·").foregroundColor(.tsSecondary)
                                 Text(space.hoursDays).foregroundColor(.tsSecondary)
                             }
-                            .font(.system(size: 15))
+                            .font(.custom("HelveticaNeue", size: 15))
                         }
                         .padding(.horizontal, 16).padding(.bottom, 20)
 
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Address").font(.system(size: 17, weight: .bold)).foregroundColor(.tsLabel)
-                            Text(space.address).font(.system(size: 15)).foregroundColor(.tsSecondary)
+                            Text("Address").font(.custom("HelveticaNeue-Bold", size: 17)).foregroundColor(.tsLabel)
+                            Text(space.address).font(.custom("HelveticaNeue", size: 15)).foregroundColor(.tsSecondary)
                         }
                         .padding(.horizontal, 16).padding(.bottom, 20)
 
                         if let notes = space.notes {
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("The lowdown").font(.system(size: 17, weight: .bold)).foregroundColor(.tsLabel)
-                                Text(notes).font(.system(size: 15)).foregroundColor(.tsSecondary)
+                                Text("The lowdown").font(.custom("HelveticaNeue-Bold", size: 17)).foregroundColor(.tsLabel)
+                                Text(notes).font(.custom("HelveticaNeue", size: 15)).foregroundColor(.tsSecondary)
                                     .fixedSize(horizontal: false, vertical: true)
                             }
                             .padding(.horizontal, 16).padding(.bottom, 28)
@@ -470,7 +470,7 @@ struct CoworkDetailView: View {
                                     Text("Get Directions").fontWeight(.bold)
                                 }
                                 .foregroundColor(.white).frame(maxWidth: .infinity).frame(height: 52)
-                                .background(LinearGradient(colors: [Color(hex: "#3B99FC"), Color(hex: "#007AFF")],
+                                .background(LinearGradient(colors: [Color.tsAccent, Color(hex: "#004775")],
                                     startPoint: .topLeading, endPoint: .bottomTrailing))
                                 .cornerRadius(14)
                             }
@@ -480,7 +480,7 @@ struct CoworkDetailView: View {
                                         Image(systemName: "safari")
                                         Text(site)
                                     }
-                                    .font(.system(size: 14)).foregroundColor(.tsAccent)
+                                    .font(.custom("HelveticaNeue", size: 14)).foregroundColor(.tsAccent)
                                 }
                             }
                             // ── Suggest edit ────────────────────────
@@ -489,7 +489,7 @@ struct CoworkDetailView: View {
                                     Image(systemName: "pencil")
                                     Text("Suggest an edit")
                                 }
-                                .font(.system(size: 13)).foregroundColor(.tsSecondary)
+                                .font(.custom("HelveticaNeue", size: 13)).foregroundColor(.tsSecondary)
                             }
                             .padding(.top, 4)
                         }
@@ -524,12 +524,12 @@ struct DetailAmenityCard: View {
                 RoundedRectangle(cornerRadius: 10)
                     .fill(active ? color.opacity(0.15) : Color.tsSecondary.opacity(0.08))
                     .frame(width: 40, height: 40)
-                Image(systemName: icon).font(.system(size: 17))
+                Image(systemName: icon).font(.custom("HelveticaNeue", size: 17))
                     .foregroundColor(active ? color : .tsSecondary)
             }
             VStack(alignment: .leading, spacing: 2) {
-                Text(label).font(.system(size: 12)).foregroundColor(.tsSecondary)
-                Text(value).font(.system(size: 13, weight: .semibold))
+                Text(label).font(.custom("HelveticaNeue", size: 12)).foregroundColor(.tsSecondary)
+                Text(value).font(.custom("HelveticaNeue-Medium", size: 13))
                     .foregroundColor(active ? .tsLabel : .tsSecondary)
             }
             Spacer()
@@ -542,8 +542,8 @@ struct PricePill: View {
     let label: String; let value: String
     var body: some View {
         VStack(spacing: 4) {
-            Text(label).font(.system(size: 11)).foregroundColor(.tsSecondary)
-            Text(value).font(.system(size: 15, weight: .bold)).foregroundColor(.tsLabel)
+            Text(label).font(.custom("HelveticaNeue", size: 11)).foregroundColor(.tsSecondary)
+            Text(value).font(.custom("HelveticaNeue-Bold", size: 15)).foregroundColor(.tsLabel)
         }
         .padding(.horizontal, 20).padding(.vertical, 12)
         .background(Color.tsCard).cornerRadius(12)

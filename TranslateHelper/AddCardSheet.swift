@@ -62,7 +62,7 @@ struct AddCardSheet: View {
                                     Image(systemName: "info.circle")
                                         .foregroundColor(.tsSecondary)
                                     Text("No decks yet — create one first using the + button.")
-                                        .font(.system(size: 14))
+                                        .font(.custom("HelveticaNeue", size: 14))
                                         .foregroundColor(.tsSecondary)
                                 }
                                 .padding(16)
@@ -86,9 +86,9 @@ struct AddCardSheet: View {
                         Button(action: saveCard) {
                             HStack(spacing: 10) {
                                 Image(systemName: "plus.circle.fill")
-                                    .font(.system(size: 16, weight: .semibold))
+                                    .font(.custom("HelveticaNeue-Medium", size: 16))
                                 Text("Add to Deck")
-                                    .font(.system(size: 17, weight: .bold))
+                                    .font(.custom("HelveticaNeue-Bold", size: 17))
                             }
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -146,15 +146,15 @@ struct DeckPickerRow: View {
                     RoundedRectangle(cornerRadius: 8)
                         .fill(deck.tintColor.opacity(0.15))
                         .frame(width: 36, height: 36)
-                    Text(deck.emoji).font(.system(size: 16))
+                    Text(deck.emoji).font(.custom("HelveticaNeue", size: 16))
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(deck.name)
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.custom("HelveticaNeue-Medium", size: 15))
                         .foregroundColor(.tsLabel)
                     Text("\(deck.activeCards.count) active · \(deck.conqueredCards.count) conquered")
-                        .font(.system(size: 12))
+                        .font(.custom("HelveticaNeue", size: 12))
                         .foregroundColor(.tsSecondary)
                 }
 
@@ -162,7 +162,7 @@ struct DeckPickerRow: View {
 
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 22))
+                        .font(.custom("HelveticaNeue", size: 22))
                         .foregroundColor(.tsAccent)
                 } else {
                     Circle()
@@ -190,7 +190,7 @@ struct InputSection<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(label)
-                .font(.system(size: 12, weight: .semibold))
+                .font(.custom("HelveticaNeue-Medium", size: 12))
                 .foregroundColor(.tsSecondary)
                 .tracking(1.0)
             content()
@@ -203,7 +203,7 @@ struct InputSection<Content: View>: View {
 private extension View {
     func styledField() -> some View {
         self
-            .font(.system(size: 16))
+            .font(.custom("HelveticaNeue", size: 16))
             .foregroundColor(.tsLabel)
             .padding(14)
             .background(Color.tsCard)

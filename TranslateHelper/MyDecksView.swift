@@ -101,12 +101,12 @@ struct MyDecksView: View {
                     // ── Header ──────────────────────────────────────────
                     HStack {
                         Text("My Decks")
-                            .font(.system(size: 30, weight: .bold))
+                            .font(.custom("HelveticaNeue-Bold", size: 30))
                             .foregroundColor(.tsLabel)
                         Spacer()
                         Button(action: { dismiss() }) {
                             Image(systemName: "xmark.circle.fill")
-                                .font(.system(size: 28))
+                                .font(.custom("HelveticaNeue", size: 28))
                                 .foregroundColor(.tsSecondary)
                         }
                     }
@@ -118,7 +118,7 @@ struct MyDecksView: View {
                     HStack {
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(.tsSecondary)
-                            .font(.system(size: 16))
+                            .font(.custom("HelveticaNeue", size: 16))
                         TextField("Search categories...", text: $searchText)
                             .foregroundColor(.tsLabel)
                             .autocorrectionDisabled()
@@ -248,13 +248,13 @@ struct SectionHeader: View {
     var body: some View {
         HStack {
             Text(title)
-                .font(.system(size: 13, weight: .semibold))
+                .font(.custom("HelveticaNeue-Medium", size: 13))
                 .foregroundColor(.tsSecondary)
                 .tracking(1.2)
             Spacer()
             if let action {
                 Button("See All", action: action)
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.custom("HelveticaNeue-Medium", size: 15))
                     .foregroundColor(.tsAccent)
             }
         }
@@ -276,14 +276,14 @@ struct AutoDeckCard: View {
                     RoundedRectangle(cornerRadius: 12)
                         .fill(deck.tint.opacity(0.15))
                         .frame(width: 40, height: 40)
-                    Text(deck.emoji).font(.system(size: 20))
+                    Text(deck.emoji).font(.custom("HelveticaNeue", size: 20))
                 }
                 Spacer()
                 Text(deck.title)
-                    .font(.system(size: 17, weight: .bold))
+                    .font(.custom("HelveticaNeue-Bold", size: 17))
                     .foregroundColor(.tsLabel)
                 Text(deck.cardCount == 0 ? "No phrases yet" : "\(deck.cardCount) phrases")
-                    .font(.system(size: 12))
+                    .font(.custom("HelveticaNeue", size: 12))
                     .foregroundColor(.tsSecondary)
                     .padding(.top, 2)
             }
@@ -314,22 +314,22 @@ struct UserDeckCard: View {
                         RoundedRectangle(cornerRadius: 10)
                             .fill(deck.tint.opacity(0.12))
                             .frame(width: 36, height: 36)
-                        Text(deck.emoji).font(.system(size: 16))
+                        Text(deck.emoji).font(.custom("HelveticaNeue", size: 16))
                     }
                     Spacer()
                     if deck.isAI {
                         Image(systemName: "sparkles")
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.custom("HelveticaNeue-Medium", size: 12))
                             .foregroundColor(.tsAccent.opacity(0.7))
                     }
                 }
                 Spacer()
                 Text(deck.title)
-                    .font(.system(size: 16, weight: .bold))
+                    .font(.custom("HelveticaNeue-Bold", size: 16))
                     .foregroundColor(.tsLabel)
                     .lineLimit(2)
                 Text(deck.cardCount == 0 ? "Empty" : "\(deck.cardCount) cards")
-                    .font(.system(size: 12))
+                    .font(.custom("HelveticaNeue", size: 12))
                     .foregroundColor(.tsSecondary)
                     .padding(.top, 2)
             }
@@ -368,15 +368,15 @@ struct CreateDeckCell: View {
                         .fill(Color.tsAccent.opacity(0.1))
                         .frame(width: 40, height: 40)
                     Image(systemName: "plus")
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(.custom("HelveticaNeue-Medium", size: 18))
                         .foregroundColor(.tsAccent)
                 }
                 Spacer()
                 Text("New Deck")
-                    .font(.system(size: 17, weight: .bold))
+                    .font(.custom("HelveticaNeue-Bold", size: 17))
                     .foregroundColor(.tsAccent)
                 Text("Create your own")
-                    .font(.system(size: 12))
+                    .font(.custom("HelveticaNeue", size: 12))
                     .foregroundColor(.tsAccent.opacity(0.6))
                     .padding(.top, 2)
             }
@@ -405,18 +405,18 @@ struct FeaturedDeckRow: View {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(deck.tint.opacity(0.12))
                     .frame(width: 48, height: 48)
-                Text(deck.emoji).font(.system(size: 22))
+                Text(deck.emoji).font(.custom("HelveticaNeue", size: 22))
             }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(deck.title)
-                    .font(.system(size: 16, weight: .bold))
+                    .font(.custom("HelveticaNeue-Bold", size: 16))
                     .foregroundColor(.tsLabel)
                 Text(deck.subtitle)
-                    .font(.system(size: 13))
+                    .font(.custom("HelveticaNeue", size: 13))
                     .foregroundColor(.tsSecondary)
                 Text("\(deck.cardCount) cards")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.custom("HelveticaNeue-Medium", size: 11))
                     .foregroundColor(.tsAccent.opacity(0.8))
                     .padding(.top, 2)
             }
@@ -425,7 +425,7 @@ struct FeaturedDeckRow: View {
 
             Button(action: { importing = true }) {
                 Text("Add")
-                    .font(.system(size: 14, weight: .bold))
+                    .font(.custom("HelveticaNeue-Bold", size: 14))
                     .foregroundColor(.tsAccent)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
@@ -452,28 +452,28 @@ struct LockedFlirtingRow: View {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(deck.tint.opacity(0.12))
                     .frame(width: 48, height: 48)
-                Text(deck.emoji).font(.system(size: 22))
+                Text(deck.emoji).font(.custom("HelveticaNeue", size: 22))
             }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(deck.title)
-                    .font(.system(size: 16, weight: .bold))
+                    .font(.custom("HelveticaNeue-Bold", size: 16))
                     .foregroundColor(.tsLabel)
                 Text(deck.subtitle)
-                    .font(.system(size: 13))
+                    .font(.custom("HelveticaNeue", size: 13))
                     .foregroundColor(.tsSecondary)
                 if isAdded {
                     Text("\(deck.cardCount) personalised cards")
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.custom("HelveticaNeue-Medium", size: 11))
                         .foregroundColor(.tsAccent.opacity(0.8))
                         .padding(.top, 2)
                 } else {
                     HStack(spacing: 4) {
                         Image(systemName: "lock.fill")
-                            .font(.system(size: 10))
+                            .font(.custom("HelveticaNeue", size: 10))
                             .foregroundColor(.tsSecondary)
                         Text("Quick setup required")
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(.custom("HelveticaNeue-Medium", size: 11))
                             .foregroundColor(.tsSecondary)
                     }
                     .padding(.top, 2)
@@ -485,9 +485,9 @@ struct LockedFlirtingRow: View {
             if isAdded {
                 HStack(spacing: 4) {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 14))
+                        .font(.custom("HelveticaNeue", size: 14))
                     Text("Added")
-                        .font(.system(size: 14, weight: .bold))
+                        .font(.custom("HelveticaNeue-Bold", size: 14))
                 }
                 .foregroundColor(.green)
                 .padding(.horizontal, 14)
@@ -498,9 +498,9 @@ struct LockedFlirtingRow: View {
                 Button(action: onSetUp) {
                     HStack(spacing: 4) {
                         Image(systemName: "sparkles")
-                            .font(.system(size: 12))
+                            .font(.custom("HelveticaNeue", size: 12))
                         Text("Set Up")
-                            .font(.system(size: 14, weight: .bold))
+                            .font(.custom("HelveticaNeue-Bold", size: 14))
                     }
                     .foregroundColor(.white)
                     .padding(.horizontal, 14)
@@ -527,13 +527,13 @@ struct EmptyDecksPrompt: View {
     var body: some View {
         VStack(spacing: 16) {
             Image(systemName: "rectangle.stack.badge.plus")
-                .font(.system(size: 40))
+                .font(.custom("HelveticaNeue", size: 40))
                 .foregroundColor(.tsAccent.opacity(0.5))
             Text("No decks yet")
-                .font(.system(size: 18, weight: .bold))
+                .font(.custom("HelveticaNeue-Bold", size: 18))
                 .foregroundColor(.tsLabel)
             Text("Create your first deck or import a featured one below")
-                .font(.system(size: 14))
+                .font(.custom("HelveticaNeue", size: 14))
                 .foregroundColor(.tsSecondary)
                 .multilineTextAlignment(.center)
         }
@@ -581,13 +581,13 @@ struct CreateDeckSheet: View {
                             HStack(spacing: 12) {
                                 Image(systemName: "exclamationmark.triangle.fill")
                                     .foregroundColor(.orange)
-                                    .font(.system(size: 16))
+                                    .font(.custom("HelveticaNeue", size: 16))
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("AI deck limit reached (\(deckStore.aiDeckCount)/\(DeckStore.maxAIDecks))")
-                                        .font(.system(size: 14, weight: .bold))
+                                        .font(.custom("HelveticaNeue-Bold", size: 14))
                                         .foregroundColor(.tsLabel)
                                     Text("Switch to Manual to create another deck, or delete an existing AI deck first.")
-                                        .font(.system(size: 12))
+                                        .font(.custom("HelveticaNeue", size: 12))
                                         .foregroundColor(.tsSecondary)
                                 }
                             }
@@ -601,7 +601,7 @@ struct CreateDeckSheet: View {
                         // ── Emoji Picker ─────────────────────────────────
                         VStack(alignment: .leading, spacing: 8) {
                             Text("CHOOSE AN EMOJI")
-                                .font(.system(size: 12, weight: .semibold))
+                                .font(.custom("HelveticaNeue-Medium", size: 12))
                                 .foregroundColor(.tsSecondary)
                                 .tracking(1.0)
                             ScrollView(.horizontal, showsIndicators: false) {
@@ -609,7 +609,7 @@ struct CreateDeckSheet: View {
                                     ForEach(emojiOptions, id: \.self) { emoji in
                                         Button(action: { selectedEmoji = emoji }) {
                                             Text(emoji)
-                                                .font(.system(size: 22))
+                                                .font(.custom("HelveticaNeue", size: 22))
                                                 .frame(width: 44, height: 44)
                                                 .background(selectedEmoji == emoji
                                                     ? Color.tsAccent.opacity(0.15) : Color.tsCard)
@@ -627,7 +627,7 @@ struct CreateDeckSheet: View {
                         // ── Tint Picker ──────────────────────────────────
                         VStack(alignment: .leading, spacing: 8) {
                             Text("COLOUR")
-                                .font(.system(size: 12, weight: .semibold))
+                                .font(.custom("HelveticaNeue-Medium", size: 12))
                                 .foregroundColor(.tsSecondary)
                                 .tracking(1.0)
                             HStack(spacing: 10) {
@@ -650,11 +650,11 @@ struct CreateDeckSheet: View {
                         // ── Deck Name ────────────────────────────────────
                         VStack(alignment: .leading, spacing: 8) {
                             Text("DECK NAME")
-                                .font(.system(size: 12, weight: .semibold))
+                                .font(.custom("HelveticaNeue-Medium", size: 12))
                                 .foregroundColor(.tsSecondary)
                                 .tracking(1.0)
                             TextField("e.g. Medical Radiology, Sports Slang...", text: $deckName)
-                                .font(.system(size: 17))
+                                .font(.custom("HelveticaNeue", size: 17))
                                 .foregroundColor(.tsLabel)
                                 .padding(16)
                                 .background(Color.tsCard)
@@ -666,7 +666,7 @@ struct CreateDeckSheet: View {
                         // ── Description ──────────────────────────────────
                         VStack(alignment: .leading, spacing: 8) {
                             Text("DESCRIBE WHAT YOU WANT TO LEARN")
-                                .font(.system(size: 12, weight: .semibold))
+                                .font(.custom("HelveticaNeue-Medium", size: 12))
                                 .foregroundColor(.tsSecondary)
                                 .tracking(1.0)
                             TextField(
@@ -674,7 +674,7 @@ struct CreateDeckSheet: View {
                                 text: $deckDescription, axis: .vertical
                             )
                             .lineLimit(3...6)
-                            .font(.system(size: 15))
+                            .font(.custom("HelveticaNeue", size: 15))
                             .foregroundColor(.tsLabel)
                             .padding(16)
                             .background(Color.tsCard)
@@ -682,14 +682,14 @@ struct CreateDeckSheet: View {
                             .overlay(RoundedRectangle(cornerRadius: 14)
                                 .stroke(Color.tsBorder, lineWidth: 1))
                             Text("The more detail you give, the better your cards will be.")
-                                .font(.system(size: 12))
+                                .font(.custom("HelveticaNeue", size: 12))
                                 .foregroundColor(.tsSecondary.opacity(0.7))
                         }
 
                         // ── AI vs Manual toggle ──────────────────────────
                         VStack(alignment: .leading, spacing: 12) {
                             Text("HOW DO YOU WANT TO ADD CARDS?")
-                                .font(.system(size: 12, weight: .semibold))
+                                .font(.custom("HelveticaNeue-Medium", size: 12))
                                 .foregroundColor(.tsSecondary)
                                 .tracking(1.0)
                             HStack(spacing: 12) {
@@ -706,9 +706,9 @@ struct CreateDeckSheet: View {
                         if useAI && !aiLimitReached {
                             HStack(spacing: 12) {
                                 Image(systemName: "info.circle.fill")
-                                    .foregroundColor(.tsAccent).font(.system(size: 16))
+                                    .foregroundColor(.tsAccent).font(.custom("HelveticaNeue", size: 16))
                                 Text("AI will generate up to 50 Spanish–English flashcard pairs. You can add more cards after.")
-                                    .font(.system(size: 13)).foregroundColor(.tsSecondary)
+                                    .font(.custom("HelveticaNeue", size: 13)).foregroundColor(.tsSecondary)
                             }
                             .padding(16)
                             .background(Color.tsAccent.opacity(0.06))
@@ -720,7 +720,7 @@ struct CreateDeckSheet: View {
                         if let err = errorMessage {
                             HStack(spacing: 10) {
                                 Image(systemName: "xmark.circle.fill").foregroundColor(.red)
-                                Text(err).font(.system(size: 13)).foregroundColor(.red)
+                                Text(err).font(.custom("HelveticaNeue", size: 13)).foregroundColor(.red)
                             }
                             .padding(14).background(Color.red.opacity(0.07)).cornerRadius(12)
                         }
@@ -732,9 +732,9 @@ struct CreateDeckSheet: View {
                             ZStack {
                                 HStack(spacing: 10) {
                                     Image(systemName: useAI ? "sparkles" : "plus")
-                                        .font(.system(size: 16, weight: .semibold))
+                                        .font(.custom("HelveticaNeue-Medium", size: 16))
                                     Text(useAI ? "Generate My Deck" : "Create Empty Deck")
-                                        .font(.system(size: 17, weight: .bold))
+                                        .font(.custom("HelveticaNeue-Bold", size: 17))
                                 }
                                 .foregroundColor(.white).opacity(isGenerating ? 0 : 1)
                                 if isGenerating { ProgressView().tint(.white) }
@@ -811,15 +811,15 @@ struct ModeToggleCard: View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: 8) {
                 Image(systemName: icon)
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(.custom("HelveticaNeue-Medium", size: 20))
                     .foregroundStyle(isSelected
                         ? AnyShapeStyle(LinearGradient.tsBluePrimary)
                         : AnyShapeStyle(Color.tsSecondary))
                 Text(title)
-                    .font(.system(size: 14, weight: .bold))
+                    .font(.custom("HelveticaNeue-Bold", size: 14))
                     .foregroundColor(isSelected ? .tsLabel : .tsSecondary)
                 Text(subtitle)
-                    .font(.system(size: 12))
+                    .font(.custom("HelveticaNeue", size: 12))
                     .foregroundColor(.tsSecondary)
                     .lineLimit(2)
             }

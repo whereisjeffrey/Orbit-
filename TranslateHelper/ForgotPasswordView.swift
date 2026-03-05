@@ -21,15 +21,15 @@ struct ForgotPasswordView: View {
                     // Check email state
                     VStack(spacing: 16) {
                         Image(systemName: "envelope.badge.checkmark.fill")
-                            .font(.system(size: 60))
+                            .font(.custom("HelveticaNeue", size: 60))
                             .foregroundColor(.tsAccent)
 
                         Text("Check Your Email")
-                            .font(.system(size: 26, weight: .bold))
+                            .font(.custom("HelveticaNeue-Bold", size: 26))
                             .foregroundColor(.tsLabel)
 
                         Text("We sent a reset link to\n\(email)")
-                            .font(.system(size: 15))
+                            .font(.custom("HelveticaNeue", size: 15))
                             .foregroundColor(.tsSecondary)
                             .multilineTextAlignment(.center)
 
@@ -41,16 +41,16 @@ struct ForgotPasswordView: View {
                                 sent = await auth.resetPassword(email: email)
                             }
                         }
-                        .font(.system(size: 14))
+                        .font(.custom("HelveticaNeue", size: 14))
                         .foregroundColor(.tsAccent)
                     }
                 } else {
                     VStack(spacing: 8) {
                         Text("Forgot Password?")
-                            .font(.system(size: 26, weight: .bold))
+                            .font(.custom("HelveticaNeue-Bold", size: 26))
                             .foregroundColor(.tsLabel)
                         Text("Enter your email and we'll send a reset link")
-                            .font(.system(size: 15))
+                            .font(.custom("HelveticaNeue", size: 15))
                             .foregroundColor(.tsSecondary)
                             .multilineTextAlignment(.center)
                     }
@@ -75,7 +75,7 @@ struct ForgotPasswordView: View {
                             Text("Back to").foregroundColor(.tsSecondary)
                             Text("Sign In").foregroundColor(.tsAccent).fontWeight(.semibold)
                         }
-                        .font(.system(size: 15))
+                        .font(.custom("HelveticaNeue", size: 15))
                     }
                 }
 

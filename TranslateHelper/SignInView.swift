@@ -53,10 +53,10 @@ struct SignInView: View {
 
                         VStack(alignment: .leading, spacing: 6) {
                             Text("Sign In")
-                                .font(.system(size: 32, weight: .bold))
+                                .font(.custom("HelveticaNeue-Bold", size: 32))
                                 .foregroundColor(.tsLabel)
                             Text("Find your voice in any language.")
-                                .font(.system(size: 15))
+                                .font(.custom("HelveticaNeue", size: 15))
                                 .foregroundColor(.tsSecondary)
                         }
                         .padding(.bottom, 28)
@@ -77,7 +77,7 @@ struct SignInView: View {
                         .padding(.bottom, 16)
 
                         Button("Forgot Password?") { showForgot = true }
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.custom("HelveticaNeue-Medium", size: 14))
                             .foregroundColor(.tsAccent)
                             .frame(maxWidth: .infinity, alignment: .trailing)
                             .padding(.bottom, 28)
@@ -86,7 +86,7 @@ struct SignInView: View {
                         HStack(spacing: 12) {
                             Rectangle().frame(height: 1).foregroundColor(Color.tsCard)
                             Text("OR CONTINUE WITH")
-                                .font(.system(size: 11, weight: .semibold))
+                                .font(.custom("HelveticaNeue-Medium", size: 11))
                                 .foregroundColor(.tsSecondary)
                                 .tracking(1.5).fixedSize()
                             Rectangle().frame(height: 1).foregroundColor(Color.tsCard)
@@ -106,7 +106,7 @@ struct SignInView: View {
                                 }
                             } label: {
                                 Image(systemName: "apple.logo")
-                                    .font(.system(size: 22, weight: .medium))
+                                    .font(.custom("HelveticaNeue-Medium", size: 22))
                                     .foregroundColor(.tsLabel)
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 56)
@@ -138,7 +138,7 @@ struct SignInView: View {
                             Text("Don't have an account?").foregroundColor(.tsSecondary)
                             Text("Create Account").foregroundColor(.tsAccent).fontWeight(.semibold)
                         }
-                        .font(.system(size: 15))
+                        .font(.custom("HelveticaNeue", size: 15))
                     }
                     .padding(.bottom, 16)
 

@@ -42,7 +42,7 @@ struct LibraryView: View {
                     // ── Header ─────────────────────────────────────────
                     HStack {
                         Text("Library")
-                            .font(.system(size: 30, weight: .bold))
+                            .font(.custom("HelveticaNeue-Bold", size: 30))
                             .foregroundColor(.tsLabel)
                         Spacer()
                         HStack(spacing: 12) {
@@ -52,7 +52,7 @@ struct LibraryView: View {
                                 .overlay(
                                     Image(systemName: "magnifyingglass")
                                         .foregroundColor(.tsAccent)
-                                        .font(.system(size: 16))
+                                        .font(.custom("HelveticaNeue", size: 16))
                                 )
                             Button(action: { auth.signOut() }) {
                                 Circle()
@@ -61,7 +61,7 @@ struct LibraryView: View {
                                     .overlay(
                                         Image(systemName: "rectangle.portrait.and.arrow.right")
                                             .foregroundColor(.tsAccent)
-                                            .font(.system(size: 16))
+                                            .font(.custom("HelveticaNeue", size: 16))
                                     )
                             }
                         }
@@ -78,7 +78,7 @@ struct LibraryView: View {
                     HStack {
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(.tsSecondary)
-                            .font(.system(size: 16))
+                            .font(.custom("HelveticaNeue", size: 16))
                         TextField("Search phrases...", text: $searchText)
                             .foregroundColor(.tsLabel)
                             .autocorrectionDisabled()
@@ -92,7 +92,7 @@ struct LibraryView: View {
 
                     // ── ACTIVE ─────────────────────────────────────────
                     Text("ACTIVE")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.custom("HelveticaNeue-Medium", size: 13))
                         .foregroundColor(.tsSecondary)
                         .tracking(1.2)
                         .padding(.horizontal, 20)
@@ -103,20 +103,20 @@ struct LibraryView: View {
                     VStack(alignment: .leading, spacing: 0) {
                         HStack(alignment: .top) {
                             HStack(spacing: 12) {
-                                Text("📋").font(.system(size: 24))
+                                Text("📋").font(.custom("HelveticaNeue", size: 24))
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("My Clipboard")
-                                        .font(.system(size: 20, weight: .bold))
+                                        .font(.custom("HelveticaNeue-Bold", size: 20))
                                         .foregroundColor(.tsLabel)
                                     Text("Synced from keyboard")
-                                        .font(.system(size: 13))
+                                        .font(.custom("HelveticaNeue", size: 13))
                                         .foregroundColor(.tsSecondary)
                                 }
                             }
                             Spacer()
                             // Live count badge
                             Text(store.activePhrases.isEmpty ? "0 Phrases" : "\(store.activePhrases.count) Phrase\(store.activePhrases.count == 1 ? "" : "s")")
-                                .font(.system(size: 11, weight: .bold))
+                                .font(.custom("HelveticaNeue-Bold", size: 11))
                                 .foregroundColor(store.activePhrases.isEmpty ? .tsSecondary : .tsAccent)
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 4)
@@ -128,14 +128,16 @@ struct LibraryView: View {
 
                         HStack {
                             // Languages: EN + PT only
-                            HStack(spacing: -8) {
-                                LanguageBubble(label: "EN", color: .blue)
-                                LanguageBubble(label: "PT", color: .green)
+                            HStack(spacing: 6) {
+                                Text("🇺🇸")
+                                    .font(.custom("HelveticaNeue", size: 26))
+                                Text("🇪🇸")
+                                    .font(.custom("HelveticaNeue", size: 26))
                             }
                             Spacer()
                             if store.activePhrases.isEmpty {
                                 Text("Save phrases from the keyboard")
-                                    .font(.system(size: 12))
+                                    .font(.custom("HelveticaNeue", size: 12))
                                     .foregroundColor(.tsSecondary)
                             } else {
                                 TSGradientPill(title: "Study", icon: "graduationcap.fill") {
@@ -162,27 +164,33 @@ struct LibraryView: View {
                     // ── MY DECKS ───────────────────────────────────────
                     HStack {
                         Text("MY DECKS")
-                            .font(.system(size: 13, weight: .semibold))
+                            .font(.custom("HelveticaNeue-Medium", size: 13))
                             .foregroundColor(.tsSecondary)
                             .tracking(1.2)
                         Spacer()
                     Button("See All") { showMyDecks = true }
+                            .foregroundColor(.tsAccent)
                     }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 10)
 
-                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-                        // New Deck — always pinned left
-                        NewDeckCard { showNewDeck = true }
-                        // User decks — newest first (DeckStore inserts at 0)
-                        ForEach(deckStore.decks) { deck in
-                            LibraryDeckCard(emoji: deck.emoji, title: deck.name, count: deck.cards.count, tint: deck.tintColor) {
-                                activeDeckStudyName = deck.name
-                                showDeckStudy = true
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 12) {
+                            // New Deck — always pinned left
+                            NewDeckCard { showNewDeck = true }
+                                .frame(width: 160)
+                            // User decks — newest first (DeckStore inserts at 0)
+                            ForEach(deckStore.decks) { deck in
+                                LibraryDeckCard(emoji: deck.emoji, title: deck.name, count: deck.cards.count, tint: deck.tintColor) {
+                                    activeDeckStudyName = deck.name
+                                    showDeckStudy = true
+                                }
+                                .frame(width: 160)
                             }
                         }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 2)
                     }
-                    .padding(.horizontal, 16)
                     .padding(.bottom, 24)
 
                     // ── Daily Goal ─────────────────────────────────────
@@ -191,12 +199,12 @@ struct LibraryView: View {
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Daily Goal")
-                                .font(.system(size: 15, weight: .bold))
+                                .font(.custom("HelveticaNeue-Bold", size: 15))
                                 .foregroundColor(.tsLabel)
                             Text(dailyGoal == 0
                                  ? "No goal set yet"
                                  : "\(reviewedToday) / \(dailyGoal) phrases reviewed")
-                                .font(.system(size: 13))
+                                .font(.custom("HelveticaNeue", size: 13))
                                 .foregroundColor(.tsSecondary)
                         }
 
@@ -204,7 +212,7 @@ struct LibraryView: View {
 
                         Button(action: { showingGoalSheet = true }) {
                             Text("Set Daily Goal")
-                                .font(.system(size: 13, weight: .semibold))
+                                .font(.custom("HelveticaNeue-Medium", size: 13))
                                 .foregroundColor(.tsAccent)
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 6)
@@ -256,12 +264,12 @@ struct SetDailyGoalSheet: View {
     var body: some View {
         VStack(spacing: 24) {
             Text("Set Daily Goal")
-                .font(.system(size: 20, weight: .bold))
+                .font(.custom("HelveticaNeue-Bold", size: 20))
                 .foregroundColor(.tsLabel)
                 .padding(.top, 24)
 
             Text("How many phrases do you want to review each day?")
-                .font(.system(size: 15))
+                .font(.custom("HelveticaNeue", size: 15))
                 .foregroundColor(.tsSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 24)
@@ -270,7 +278,7 @@ struct SetDailyGoalSheet: View {
                 ForEach(options, id: \.self) { n in
                     Button(action: { dailyGoal = n; dismiss() }) {
                         Text("\(n)")
-                            .font(.system(size: 22, weight: .bold))
+                            .font(.custom("HelveticaNeue-Bold", size: 22))
                             .foregroundColor(dailyGoal == n ? .white : .tsLabel)
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
@@ -296,7 +304,7 @@ struct LanguageBubble: View {
     let color: Color
     var body: some View {
         Text(label)
-            .font(.system(size: 10, weight: .bold))
+            .font(.custom("HelveticaNeue-Bold", size: 10))
             .foregroundColor(.white)
             .frame(width: 32, height: 32)
             .background(color)
@@ -319,15 +327,15 @@ struct LibraryDeckCard: View {
                     RoundedRectangle(cornerRadius: 12)
                         .fill(tint.opacity(0.1))
                         .frame(width: 40, height: 40)
-                    Text(emoji).font(.system(size: 18))
+                    Text(emoji).font(.custom("HelveticaNeue", size: 18))
                 }
                 Spacer()
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(.system(size: 17, weight: .bold))
+                        .font(.custom("HelveticaNeue-Bold", size: 17))
                         .foregroundColor(.tsLabel)
                     Text(count == 0 ? "No phrases yet" : "\(count) phrases")
-                        .font(.system(size: 13))
+                        .font(.custom("HelveticaNeue", size: 13))
                         .foregroundColor(.tsSecondary)
 
                 }
@@ -354,16 +362,16 @@ struct NewDeckCard: View {
                         .fill(Color.tsAccent.opacity(0.12))
                         .frame(width: 40, height: 40)
                     Image(systemName: "plus")
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(.custom("HelveticaNeue-Medium", size: 18))
                         .foregroundColor(.tsAccent)
                 }
                 Spacer()
                 VStack(alignment: .leading, spacing: 2) {
                     Text("New Deck")
-                        .font(.system(size: 17, weight: .bold))
+                        .font(.custom("HelveticaNeue-Bold", size: 17))
                         .foregroundColor(.tsLabel)
                     Text("Create your own")
-                        .font(.system(size: 13))
+                        .font(.custom("HelveticaNeue", size: 13))
                         .foregroundColor(.tsSecondary)
                 }
             }

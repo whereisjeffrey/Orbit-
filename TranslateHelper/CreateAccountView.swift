@@ -17,13 +17,13 @@ struct CreateAccountView: View {
                 HStack {
                     Button(action: { dismiss() }) {
                         Image(systemName: "chevron.left")
-                            .font(.system(size: 28, weight: .medium))
+                            .font(.custom("HelveticaNeue-Medium", size: 28))
                             .foregroundColor(.tsAccent)
                             .frame(width: 44, height: 44)
                     }
                     Spacer()
                     Text("Create Account")
-                        .font(.system(size: 17, weight: .semibold))
+                        .font(.custom("HelveticaNeue-Medium", size: 17))
                         .foregroundColor(.tsLabel)
                     Spacer()
                     Spacer().frame(width: 44) // Balance
@@ -36,10 +36,10 @@ struct CreateAccountView: View {
                     VStack(alignment: .leading, spacing: 24) {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Join the journey")
-                                .font(.system(size: 32, weight: .bold))
+                                .font(.custom("HelveticaNeue-Bold", size: 32))
                                 .foregroundColor(.tsLabel)
                             Text("Start mastering new languages today.")
-                                .font(.system(size: 17))
+                                .font(.custom("HelveticaNeue", size: 17))
                                 .foregroundColor(.tsSecondary)
                         }
                         .padding(.top, 16)
@@ -51,7 +51,7 @@ struct CreateAccountView: View {
                         }
                         
                         Text("By creating an account, you agree to our Terms of Service and Privacy Policy.")
-                            .font(.system(size: 13))
+                            .font(.custom("HelveticaNeue", size: 13))
                             .foregroundColor(.tsSecondary)
                             .multilineTextAlignment(.center)
                             .padding(.top, 12)
@@ -70,7 +70,7 @@ struct CreateAccountView: View {
                     }) {
                         ZStack {
                             Text("Create Account")
-                                .font(.system(size: 17, weight: .semibold))
+                                .font(.custom("HelveticaNeue-Medium", size: 17))
                                 .foregroundColor(.tsLabel)
                                 .opacity(auth.isLoading ? 0 : 1)
                             
@@ -90,7 +90,7 @@ struct CreateAccountView: View {
                     
                     Button(action: { dismiss() }) {
                         Text("Already have an account? Log in")
-                            .font(.system(size: 15, weight: .medium))
+                            .font(.custom("HelveticaNeue-Medium", size: 15))
                             .foregroundColor(.tsAccent)
                     }
                 }
@@ -113,7 +113,7 @@ struct OnboardingField: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title)
-                .font(.system(size: 13, weight: .semibold))
+                .font(.custom("HelveticaNeue-Medium", size: 13))
                 .foregroundColor(.tsSecondary)
                 .tracking(1.0)
                 .padding(.leading, 4)
@@ -125,7 +125,7 @@ struct OnboardingField: View {
                     TextField(placeholder, text: $text)
                 }
             }
-            .font(.system(size: 17))
+            .font(.custom("HelveticaNeue", size: 17))
             .foregroundColor(.tsLabel)
             .padding(.horizontal, 16)
             .padding(.vertical, 16)

@@ -41,7 +41,7 @@ struct KeyboardSetupSplashView: View {
                     VStack(spacing: 12) {
                         PulsingKeyboardIcon()
                         Text("Enable Keyboard")
-                            .font(.system(size: 17, weight: .semibold))
+                            .font(.custom("HelveticaNeue-Medium", size: 17))
                             .foregroundColor(.white)
                     }
                     .padding(.top, 28)
@@ -55,7 +55,7 @@ struct KeyboardSetupSplashView: View {
 
                     // Instruction copy
                     Text("To save phrases and translate on the go,\nactivate your TalkSwitch keyboard:")
-                        .font(.system(size: 14))
+                        .font(.custom("HelveticaNeue", size: 14))
                         .foregroundColor(.tsSecondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 24)
@@ -92,9 +92,9 @@ struct KeyboardSetupSplashView: View {
                     Button(action: openKeyboardSettings) {
                         HStack(spacing: 8) {
                             Image(systemName: "keyboard.badge.ellipsis")
-                                .font(.system(size: 15, weight: .semibold))
+                                .font(.custom("HelveticaNeue-Medium", size: 15))
                             Text("Set Up Keyboard")
-                                .font(.system(size: 16, weight: .bold))
+                                .font(.custom("HelveticaNeue-Bold", size: 16))
                         }
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
@@ -131,7 +131,7 @@ struct KeyboardSetupSplashView: View {
                 // Skip link
                 Button(action: onSkip) {
                     Text("Skip for now")
-                        .font(.system(size: 14))
+                        .font(.custom("HelveticaNeue", size: 14))
                         .foregroundColor(.tsSecondary)
                 }
                 .padding(.bottom, 48)
@@ -173,7 +173,7 @@ private struct PulsingKeyboardIcon: View {
 
     // Gradient: solid blue matching tsBluePrimary
     private let gradient = LinearGradient(
-        colors: [Color(hex: "#3B99FC"), Color(hex: "#007AFF")],
+        colors: [Color.tsAccent, Color(hex: "#004775")],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
@@ -229,7 +229,7 @@ private struct PulsingKeyboardIcon: View {
                 )
 
             Image(systemName: "keyboard.fill")
-                .font(.system(size: 26, weight: .medium))
+                .font(.custom("HelveticaNeue-Medium", size: 26))
                 .foregroundStyle(LinearGradient.tsVibrant)
         }
         .frame(width: maxRingSize, height: maxRingSize) // hold space for largest ring
@@ -256,12 +256,12 @@ private struct KBSetupStep: View {
                     .fill(Color.tsAccent.opacity(0.13))
                     .frame(width: 30, height: 30)
                 Text("\(number)")
-                    .font(.system(size: 13, weight: .bold))
+                    .font(.custom("HelveticaNeue-Bold", size: 13))
                     .foregroundColor(.tsAccent)
             }
 
             Text(text)
-                .font(.system(size: 14))
+                .font(.custom("HelveticaNeue", size: 14))
                 .foregroundColor(.tsLabel)
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)

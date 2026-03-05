@@ -28,7 +28,7 @@ struct StudySourceWordView: View {
                     HStack {
                         Button(action: { dismiss() }) {
                             Image(systemName: "chevron.left")
-                                .font(.system(size: 24, weight: .bold))
+                                .font(.custom("HelveticaNeue-Bold", size: 24))
                                 .foregroundColor(.tsAccent)
                                 .frame(width: 40, height: 40)
                         }
@@ -37,10 +37,10 @@ struct StudySourceWordView: View {
                         
                         VStack(spacing: 2) {
                             Text("Study Mode")
-                                .font(.system(size: 18, weight: .bold))
+                                .font(.custom("HelveticaNeue-Bold", size: 18))
                                 .foregroundColor(.tsLabel)
                             Text("\(currentIndex + 1) OF \(phrases.count) CARDS")
-                                .font(.system(size: 10, weight: .semibold))
+                                .font(.custom("HelveticaNeue-Medium", size: 10))
                                 .foregroundColor(.tsSecondary)
                                 .tracking(1.5)
                         }
@@ -138,21 +138,21 @@ struct StudySourceWordView: View {
                                 )
                                 .frame(width: 140, height: 140)
                             Text("🏆")
-                                .font(.system(size: 72))
+                                .font(.custom("HelveticaNeue", size: 72))
                                 .scaleEffect(showCompletionUI ? 1.12 : 0.6)
                                 .opacity(showCompletionUI ? 1 : 0)
                                 .animation(.spring(response: 0.5, dampingFraction: 0.55).delay(0.1), value: showCompletionUI)
                         }
 
                         Text("Session Complete!")
-                            .font(.system(size: 28, weight: .bold))
+                            .font(.custom("HelveticaNeue-Bold", size: 28))
                             .foregroundColor(.tsLabel)
                             .opacity(showCompletionUI ? 1 : 0)
                             .offset(y: showCompletionUI ? 0 : 20)
                             .animation(.easeOut(duration: 0.45).delay(0.25), value: showCompletionUI)
 
                         Text("You've reviewed all phrases. 🎉")
-                            .font(.system(size: 16, weight: .medium))
+                            .font(.custom("HelveticaNeue-Medium", size: 16))
                             .foregroundColor(.tsSecondary)
                             .multilineTextAlignment(.center)
                             .opacity(showCompletionUI ? 1 : 0)
@@ -161,7 +161,7 @@ struct StudySourceWordView: View {
 
                         Button(action: { dismiss() }) {
                             Text("Done")
-                                .font(.system(size: 16, weight: .bold))
+                                .font(.custom("HelveticaNeue-Bold", size: 16))
                                 .foregroundColor(.white)
                                 .padding(.horizontal, 40)
                                 .padding(.vertical, 14)
@@ -389,17 +389,17 @@ struct FrontCardView: View {
             // Source Word
             VStack(spacing: 6) {
                 Text("SOURCE WORD")
-                    .font(.system(size: 10, weight: .bold))
+                    .font(.custom("HelveticaNeue-Bold", size: 10))
                     .foregroundColor(.tsSecondary)
                     .tracking(1.5)
 
                 // Explicit language label so there's never any ambiguity
                 Text(displaySourceLang == "en" ? "English" : "Spanish")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.custom("HelveticaNeue-Medium", size: 11))
                     .foregroundColor(.tsAccent.opacity(0.75))
 
                 Text(displaySourceText)
-                    .font(.system(size: 36, weight: .bold))
+                    .font(.custom("HelveticaNeue-Bold", size: 36))
                     .foregroundColor(.tsLabel)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
@@ -410,11 +410,11 @@ struct FrontCardView: View {
             // Tap to reveal
             VStack(spacing: 12) {
                 Image(systemName: "hand.tap.fill")
-                    .font(.system(size: 28))
+                    .font(.custom("HelveticaNeue", size: 28))
                     .foregroundColor(.tsAccent)
                 
                 Text("Tap to reveal")
-                    .font(.system(size: 14, weight: .medium))
+                    .font(.custom("HelveticaNeue-Medium", size: 14))
                     .foregroundColor(.tsSecondary.opacity(0.5))
             }
             
@@ -455,16 +455,16 @@ struct BackCardView: View {
                 // Source Word
                 VStack(spacing: 6) {
                     Text("SOURCE WORD")
-                        .font(.system(size: 10, weight: .bold))
+                        .font(.custom("HelveticaNeue-Bold", size: 10))
                         .foregroundColor(.tsSecondary)
                         .tracking(1.5)
 
                     Text(displaySourceLang == "en" ? "English" : "Spanish")
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.custom("HelveticaNeue-Medium", size: 11))
                         .foregroundColor(.tsAccent.opacity(0.75))
                     
                     Text(displaySourceText)
-                        .font(.system(size: 24, weight: .bold))
+                        .font(.custom("HelveticaNeue-Bold", size: 24))
                         .foregroundColor(.tsLabel)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
@@ -473,16 +473,16 @@ struct BackCardView: View {
                 // Translation
                 VStack(spacing: 6) {
                     Text("TRANSLATION")
-                        .font(.system(size: 10, weight: .bold))
+                        .font(.custom("HelveticaNeue-Bold", size: 10))
                         .foregroundColor(.tsSecondary)
                         .tracking(1.5)
 
                     Text(displayTranslationLang == "en" ? "English" : "Spanish")
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.custom("HelveticaNeue-Medium", size: 11))
                         .foregroundColor(.tsAccent.opacity(0.75))
                     
                     Text(displayTranslationText)
-                        .font(.system(size: 24, weight: .semibold))
+                        .font(.custom("HelveticaNeue-Medium", size: 24))
                         .foregroundColor(.tsLabel)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
@@ -498,7 +498,7 @@ struct BackCardView: View {
                     TTSService.shared.speak(displayTranslationText, language: langCode)
                 }) {
                     Image(systemName: "speaker.wave.2.fill")
-                        .font(.system(size: 24))
+                        .font(.custom("HelveticaNeue", size: 24))
                         .foregroundColor(.tsAccent)
                         .frame(width: 56, height: 56)
                         .background(Color.tsAccent.opacity(0.15))
@@ -512,15 +512,15 @@ struct BackCardView: View {
                 HStack(spacing: 6) {
                     Image(systemName: "lightbulb.fill")
                         .foregroundColor(Color(hex: "D4AF37"))
-                        .font(.system(size: 14))
+                        .font(.custom("HelveticaNeue", size: 14))
                     Text("CULTURAL CONTEXT")
-                        .font(.system(size: 11, weight: .bold))
+                        .font(.custom("HelveticaNeue-Bold", size: 11))
                         .foregroundColor(Color(hex: "D4AF37"))
                         .tracking(1.5)
                 }
                 
                 Text(phrase.notes ?? "Cultural and slang context for this Spanish phrase will appear here.")
-                    .font(.system(size: 14, weight: .medium))
+                    .font(.custom("HelveticaNeue-Medium", size: 14))
                     .foregroundColor(.tsLabel.opacity(0.9))
                     .lineSpacing(4)
             }
@@ -550,20 +550,20 @@ struct LanguageSwitchPill: View {
         HStack(spacing: 8) {
             HStack(spacing: 4) {
                 let leftLang = swapLanguage ? phrase.targetLang : phrase.sourceLang
-                Text(leftLang == "en" ? "🇺🇸" : "🇲🇽").font(.system(size: 16))
+                Text(leftLang == "en" ? "🇺🇸" : "🇲🇽").font(.custom("HelveticaNeue", size: 16))
                 Text(leftLang == "en" ? "English" : "Spanish")
-                    .font(.system(size: 12, weight: .semibold)).foregroundColor(.tsLabel)
+                    .font(.custom("HelveticaNeue-Medium", size: 12)).foregroundColor(.tsLabel)
             }
             
             Image(systemName: "arrow.right")
-                .font(.system(size: 12, weight: .bold))
+                .font(.custom("HelveticaNeue-Bold", size: 12))
                 .foregroundColor(.tsSecondary)
             
             HStack(spacing: 4) {
                 let rightLang = swapLanguage ? phrase.sourceLang : phrase.targetLang
-                Text(rightLang == "en" ? "🇺🇸" : "🇲🇽").font(.system(size: 16))
+                Text(rightLang == "en" ? "🇺🇸" : "🇲🇽").font(.custom("HelveticaNeue", size: 16))
                 Text(rightLang == "en" ? "English" : "Spanish")
-                    .font(.system(size: 12, weight: .semibold)).foregroundColor(.tsLabel)
+                    .font(.custom("HelveticaNeue-Medium", size: 12)).foregroundColor(.tsLabel)
             }
             
             Button(action: {
@@ -574,7 +574,7 @@ struct LanguageSwitchPill: View {
                 }
             }) {
                 Image(systemName: "arrow.triangle.2.circlepath")
-                    .font(.system(size: 14, weight: .bold))
+                    .font(.custom("HelveticaNeue-Bold", size: 14))
                     .foregroundColor(.tsSecondary)
             }
             .padding(.leading, 4)

@@ -42,7 +42,7 @@ struct OnboardingPaywallView: View {
                     HStack {
                         Button(action: onBack) {
                             Image(systemName: "chevron.left")
-                                .font(.system(size: 22, weight: .semibold))
+                                .font(.custom("HelveticaNeue-Medium", size: 22))
                                 .foregroundColor(.tsAccent)
                         }
                         .frame(width: 40, height: 40)
@@ -55,10 +55,10 @@ struct OnboardingPaywallView: View {
                     VStack(spacing: 8) {
                         HStack(spacing: 6) {
                             Image(systemName: "lock.fill")
-                                .font(.system(size: 14))
+                                .font(.custom("HelveticaNeue", size: 14))
                                 .foregroundColor(.tsAccent)
                             Text("Secured Payment")
-                                .font(.system(size: 13, weight: .medium))
+                                .font(.custom("HelveticaNeue-Medium", size: 13))
                                 .foregroundColor(.tsAccent)
                         }
                         .padding(.horizontal, 12)
@@ -67,42 +67,42 @@ struct OnboardingPaywallView: View {
                         .clipShape(Capsule())
 
                         Text("Start your free trial")
-                            .font(.system(size: 28, weight: .bold))
+                            .font(.custom("HelveticaNeue-Bold", size: 28))
                             .foregroundColor(.tsLabel)
 
                         // Charge summary card
                         VStack(spacing: 4) {
                             HStack {
                                 Text("TalkSwitch Pro")
-                                    .font(.system(size: 16, weight: .semibold))
+                                    .font(.custom("HelveticaNeue-Medium", size: 16))
                                     .foregroundColor(.tsLabel)
                                 Spacer()
                                 Text("$7.99/mo")
-                                    .font(.system(size: 16, weight: .bold))
+                                    .font(.custom("HelveticaNeue-Bold", size: 16))
                                     .foregroundColor(.tsAccent)
                             }
                             HStack {
                                 Text("7-day free trial")
-                                    .font(.system(size: 13))
+                                    .font(.custom("HelveticaNeue", size: 13))
                                     .foregroundColor(.tsSecondary)
                                 Spacer()
                                 Text("Free today")
-                                    .font(.system(size: 13, weight: .medium))
+                                    .font(.custom("HelveticaNeue-Medium", size: 13))
                                     .foregroundColor(Color(hex: "#34C759"))
                             }
                             Divider().background(Color.tsBorder).padding(.vertical, 8)
                             HStack {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("First charge")
-                                        .font(.system(size: 12))
+                                        .font(.custom("HelveticaNeue", size: 12))
                                         .foregroundColor(.tsSecondary)
                                     Text(chargeDate)
-                                        .font(.system(size: 14, weight: .semibold))
+                                        .font(.custom("HelveticaNeue-Medium", size: 14))
                                         .foregroundColor(.tsLabel)
                                 }
                                 Spacer()
                                 Text("$7.99")
-                                    .font(.system(size: 14, weight: .bold))
+                                    .font(.custom("HelveticaNeue-Bold", size: 14))
                                     .foregroundColor(.tsLabel)
                             }
                         }
@@ -189,9 +189,9 @@ struct OnboardingPaywallView: View {
                     Button(action: onComplete) {
                         HStack(spacing: 8) {
                             Image(systemName: "lock.fill")
-                                .font(.system(size: 14))
+                                .font(.custom("HelveticaNeue", size: 14))
                             Text("Start Free Trial")
-                                .font(.system(size: 18, weight: .bold))
+                                .font(.custom("HelveticaNeue-Bold", size: 18))
                         }
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
@@ -199,7 +199,7 @@ struct OnboardingPaywallView: View {
                         .background(
                             isFormComplete
                                 ? AnyShapeStyle(LinearGradient(
-                                    colors: [Color(hex: "#3B99FC"), Color(hex: "#007AFF")],
+                                    colors: [Color.tsAccent, Color(hex: "#004775")],
                                     startPoint: .topLeading, endPoint: .bottomTrailing))
                                 : AnyShapeStyle(Color.tsCard)
                         )
@@ -211,7 +211,7 @@ struct OnboardingPaywallView: View {
                     .padding(.horizontal, 24)
 
                     Text("You won\'t be charged until \(chargeDate). Cancel anytime before then.")
-                        .font(.system(size: 11))
+                        .font(.custom("HelveticaNeue", size: 11))
                         .foregroundColor(.tsSecondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 32)
@@ -260,7 +260,7 @@ struct CardInputField: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(label)
-                .font(.system(size: 12, weight: .medium))
+                .font(.custom("HelveticaNeue-Medium", size: 12))
                 .foregroundColor(.tsSecondary)
 
             HStack {
@@ -272,12 +272,12 @@ struct CardInputField: View {
                             .keyboardType(keyboardType)
                     }
                 }
-                .font(.system(size: 17))
+                .font(.custom("HelveticaNeue", size: 17))
                 .foregroundColor(.tsLabel)
 
                 if let icon = trailingIcon {
                     Image(systemName: icon)
-                        .font(.system(size: 14))
+                        .font(.custom("HelveticaNeue", size: 14))
                         .foregroundColor(.tsSecondary)
                 }
             }

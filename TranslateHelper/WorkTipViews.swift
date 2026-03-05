@@ -12,21 +12,21 @@ struct WorkTipNudgeCard: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 10) {
                 Image(systemName: "bubble.left.and.bubble.right.fill")
-                    .font(.system(size: 18))
+                    .font(.custom("HelveticaNeue", size: 18))
                     .foregroundColor(.tsAccent)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Did you make it to \(intent.placeName)?")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.custom("HelveticaNeue-Medium", size: 15))
                         .foregroundColor(.tsLabel)
                     Text("Leave a quick tip — takes 15 seconds.")
-                        .font(.system(size: 13))
+                        .font(.custom("HelveticaNeue", size: 13))
                         .foregroundColor(.tsSecondary)
                 }
             }
             HStack(spacing: 10) {
                 Button(action: { showSheet = true }) {
                     Text("Yes — add a tip")
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.custom("HelveticaNeue-Medium", size: 14))
                         .foregroundColor(.white)
                         .padding(.horizontal, 16).padding(.vertical, 9)
                         .background(Color.tsAccent)
@@ -34,7 +34,7 @@ struct WorkTipNudgeCard: View {
                 }
                 Button(action: { store.dismissNudge(placeId: intent.placeId) }) {
                     Text("Nope")
-                        .font(.system(size: 14))
+                        .font(.custom("HelveticaNeue", size: 14))
                         .foregroundColor(.tsSecondary)
                 }
             }
@@ -72,10 +72,10 @@ struct WorkTipSubmitSheet: View {
                         // Header
                         VStack(alignment: .leading, spacing: 4) {
                             Text(intent.placeName)
-                                .font(.system(size: 22, weight: .bold))
+                                .font(.custom("HelveticaNeue-Bold", size: 22))
                                 .foregroundColor(.tsLabel)
                             Text("Quick tip for the community")
-                                .font(.system(size: 14))
+                                .font(.custom("HelveticaNeue", size: 14))
                                 .foregroundColor(.tsSecondary)
                         }
 
@@ -130,14 +130,14 @@ struct WorkTipSubmitSheet: View {
                                 TextEditor(text: $note)
                                     .scrollContentBackground(.hidden)
                                     .background(Color.clear)
-                                    .font(.system(size: 15))
+                                    .font(.custom("HelveticaNeue", size: 15))
                                     .foregroundColor(.tsLabel)
                                     .frame(minHeight: 72)
                                     .padding(8)
                                     .focused($noteFocused)
                                 if note.isEmpty {
                                     Text("e.g. \"Quiet mornings, busy at lunch\"")
-                                        .font(.system(size: 15))
+                                        .font(.custom("HelveticaNeue", size: 15))
                                         .foregroundColor(.tsSecondary)
                                         .padding(16)
                                         .allowsHitTesting(false)
@@ -186,13 +186,13 @@ struct CommunityTipCard: View {
                 TipBadge(icon: "bolt.fill",          label: tip.outlets.rawValue, color: Color(hex: "#FF9500"))
                 Spacer()
                 Text(tip.timeAgoLabel)
-                    .font(.system(size: 11))
+                    .font(.custom("HelveticaNeue", size: 11))
                     .foregroundColor(.tsSecondary)
             }
             // Note
             if let note = tip.note {
                 Text("\"\(note)\"")
-                    .font(.system(size: 14))
+                    .font(.custom("HelveticaNeue", size: 14))
                     .foregroundColor(.tsLabel)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -217,11 +217,11 @@ struct CommunityTipsSection: View {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
                     Text("From the community")
-                        .font(.system(size: 17, weight: .bold))
+                        .font(.custom("HelveticaNeue-Bold", size: 17))
                         .foregroundColor(.tsLabel)
                     Spacer()
                     Text("\(tips.count) tip\(tips.count == 1 ? "" : "s")")
-                        .font(.system(size: 13))
+                        .font(.custom("HelveticaNeue", size: 13))
                         .foregroundColor(.tsSecondary)
                 }
                 ForEach(tips.prefix(3)) { tip in
@@ -229,7 +229,7 @@ struct CommunityTipsSection: View {
                 }
                 if tips.count > 3 {
                     Text("+ \(tips.count - 3) more tip\(tips.count - 3 == 1 ? "" : "s")")
-                        .font(.system(size: 13))
+                        .font(.custom("HelveticaNeue", size: 13))
                         .foregroundColor(.tsAccent)
                 }
             }
@@ -245,7 +245,7 @@ struct TipSection<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title.uppercased())
-                .font(.system(size: 11, weight: .semibold))
+                .font(.custom("HelveticaNeue-Medium", size: 11))
                 .foregroundColor(.tsSecondary)
                 .tracking(1)
             content()
@@ -263,8 +263,8 @@ struct TipOptionPill: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 5) {
-                Image(systemName: icon).font(.system(size: 12, weight: .semibold))
-                Text(label).font(.system(size: 13, weight: .semibold))
+                Image(systemName: icon).font(.custom("HelveticaNeue-Medium", size: 12))
+                Text(label).font(.custom("HelveticaNeue-Medium", size: 13))
             }
             .foregroundColor(selected ? .white : .tsLabel)
             .padding(.horizontal, 14).padding(.vertical, 9)
@@ -282,8 +282,8 @@ struct TipBadge: View {
     let color: Color
     var body: some View {
         HStack(spacing: 4) {
-            Image(systemName: icon).font(.system(size: 11)).foregroundColor(color)
-            Text(label).font(.system(size: 12)).foregroundColor(.tsSecondary)
+            Image(systemName: icon).font(.custom("HelveticaNeue", size: 11)).foregroundColor(color)
+            Text(label).font(.custom("HelveticaNeue", size: 12)).foregroundColor(.tsSecondary)
         }
     }
 }

@@ -79,26 +79,26 @@ struct CommunityView: View {
                 VStack(spacing: 0) {
 
                     // ── Header ─────────────────────────────────────────
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Community")
-                                .font(.system(size: 28, weight: .bold))
-                                .foregroundColor(.tsLabel)
-                            Button(action: { showCityPicker = true }) {
-                                HStack(spacing: 4) {
-                                    Text(selectedCity.emoji)
-                                        .font(.system(size: 13))
-                                    Text(selectedCity.name)
-                                        .font(.system(size: 13, weight: .medium))
-                                        .foregroundColor(.tsAccent)
-                                    Image(systemName: "chevron.down")
-                                        .font(.system(size: 11))
-                                        .foregroundColor(.tsAccent)
-                                }
+                    HStack(alignment: .center) {
+                        Text("Community")
+                            .font(.custom("HelveticaNeue-Bold", size: 28))
+                            .foregroundColor(.tsLabel)
+                        Spacer()
+                        Button(action: { showCityPicker = true }) {
+                            HStack(spacing: 6) {
+                                Text(selectedCity.emoji)
+                                    .font(.custom("HelveticaNeue-Medium", size: 13))
+                                Text(selectedCity.name)
+                                    .font(.custom("HelveticaNeue-Medium", size: 14))
+                                    .foregroundColor(.white)
+                                Image(systemName: "chevron.down")
+                                    .font(.system(size: 11, weight: .medium))
+                                    .foregroundColor(.tsAccent)
                             }
                         }
-                        Spacer()
+                        .frame(height: 36)
                     }
+                    .frame(minHeight: 36)
                     .padding(.horizontal, 16)
                     .padding(.top, 16)
                     .padding(.bottom, 16)
@@ -150,12 +150,12 @@ struct CommunityView: View {
             // ── FAB ────────────────────────────────────────────────────
             Button(action: { showNewPost = true }) {
                 Image(systemName: "plus")
-                    .font(.system(size: 20, weight: .bold))
+                    .font(.custom("HelveticaNeue-Bold", size: 20))
                     .foregroundColor(.white)
                     .frame(width: 56, height: 56)
                     .background(
                         LinearGradient(
-                            colors: [Color(hex: "#3B99FC"), Color(hex: "#007AFF")],
+                            colors: [Color.tsAccent, Color.tsAccent.opacity(0.7)],
                             startPoint: .topLeading, endPoint: .bottomTrailing
                         )
                     )
@@ -182,9 +182,9 @@ struct QuickAccessPill: View {
         Button(action: action) {
             HStack(spacing: 6) {
                 Image(systemName: icon)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.custom("HelveticaNeue-Medium", size: 13))
                 Text(label)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.custom("HelveticaNeue-Medium", size: 14))
             }
             .foregroundColor(.tsAccent)
             .padding(.horizontal, 16)
@@ -204,8 +204,8 @@ struct FilterChip: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 4) {
-                Image(systemName: icon).font(.system(size: 11))
-                Text(label).font(.system(size: 13, weight: .medium))
+                Image(systemName: icon).font(.custom("HelveticaNeue", size: 11))
+                Text(label).font(.custom("HelveticaNeue-Medium", size: 13))
             }
             .foregroundColor(isSelected ? .white : .tsLabel)
             .padding(.horizontal, 12)
@@ -226,17 +226,17 @@ struct CommunityPostCard: View {
                     .frame(width: 36, height: 36)
                     .overlay(
                         Image(systemName: post.type.icon)
-                            .font(.system(size: 14))
+                            .font(.custom("HelveticaNeue", size: 14))
                             .foregroundColor(post.type.color)
                     )
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 4) {
                         Text(post.author)
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.custom("HelveticaNeue-Medium", size: 14))
                             .foregroundColor(.tsLabel)
                         if post.isVerifiedLocal {
                             Text("Local")
-                                .font(.system(size: 10, weight: .bold))
+                                .font(.custom("HelveticaNeue-Bold", size: 10))
                                 .foregroundColor(.white)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
@@ -245,12 +245,12 @@ struct CommunityPostCard: View {
                         }
                     }
                     Text("\(post.neighbourhood) · \(post.timeAgo)")
-                        .font(.system(size: 12))
+                        .font(.custom("HelveticaNeue", size: 12))
                         .foregroundColor(.tsSecondary)
                 }
                 Spacer()
                 Text(post.type.rawValue.dropLast())
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.custom("HelveticaNeue-Medium", size: 11))
                     .foregroundColor(post.type.color)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
@@ -258,15 +258,15 @@ struct CommunityPostCard: View {
                     .clipShape(Capsule())
             }
             Text(post.body)
-                .font(.system(size: 15))
+                .font(.custom("HelveticaNeue", size: 15))
                 .foregroundColor(.tsLabel)
                 .fixedSize(horizontal: false, vertical: true)
             HStack(spacing: 16) {
                 Label("\(post.likes)", systemImage: "heart")
-                    .font(.system(size: 13))
+                    .font(.custom("HelveticaNeue", size: 13))
                     .foregroundColor(.tsSecondary)
                 Label("\(post.comments)", systemImage: "bubble.left")
-                    .font(.system(size: 13))
+                    .font(.custom("HelveticaNeue", size: 13))
                     .foregroundColor(.tsSecondary)
                 Spacer()
             }

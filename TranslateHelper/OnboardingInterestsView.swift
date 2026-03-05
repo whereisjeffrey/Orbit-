@@ -40,13 +40,13 @@ struct OnboardingInterestsView: View {
                 HStack {
                     Button(action: onBack) {
                         Image(systemName: "chevron.left")
-                            .font(.system(size: 17, weight: .semibold))
+                            .font(.custom("HelveticaNeue-Medium", size: 17))
                             .foregroundColor(.tsLabel)
                     }
                     Spacer()
                     if !selected.isEmpty {
                         Text("\(selected.count) selected")
-                            .font(.system(size: 14))
+                            .font(.custom("HelveticaNeue", size: 14))
                             .foregroundColor(.tsAccent)
                     }
                 }
@@ -59,11 +59,11 @@ struct OnboardingInterestsView: View {
                         // ── Header ─────────────────────────────────
                         VStack(spacing: 12) {
                             Text("What are you\ninto?")
-                                .font(.system(size: 30, weight: .bold))
+                                .font(.custom("HelveticaNeue-Bold", size: 30))
                                 .foregroundColor(.tsLabel)
                                 .multilineTextAlignment(.center)
                             Text("We\'ll personalise your community feed\nand suggestions. Pick as many as you want.")
-                                .font(.system(size: 16))
+                                .font(.custom("HelveticaNeue", size: 16))
                                 .foregroundColor(.tsSecondary)
                                 .multilineTextAlignment(.center)
                         }
@@ -101,7 +101,7 @@ struct OnboardingInterestsView: View {
                             onContinue()
                         }) {
                             Text("Skip for now")
-                                .font(.system(size: 15))
+                                .font(.custom("HelveticaNeue", size: 15))
                                 .foregroundColor(.tsSecondary)
                         }
                     }
@@ -122,9 +122,9 @@ struct InterestTile: View {
         Button(action: onTap) {
             VStack(spacing: 10) {
                 Text(interest.emoji)
-                    .font(.system(size: 32))
+                    .font(.custom("HelveticaNeue", size: 32))
                 Text(interest.label)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.custom("HelveticaNeue-Medium", size: 14))
                     .foregroundColor(isSelected ? .white : .tsLabel)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
@@ -135,7 +135,7 @@ struct InterestTile: View {
             .background(
                 RoundedRectangle(cornerRadius: 16)
                     .fill(isSelected
-                          ? LinearGradient(colors: [Color(hex: "#3B99FC"), Color(hex: "#007AFF")],
+                          ? LinearGradient(colors: [Color.tsAccent, Color(hex: "#004775")],
                                            startPoint: .topLeading, endPoint: .bottomTrailing)
                           : LinearGradient(colors: [Color.tsCard, Color.tsCard],
                                            startPoint: .topLeading, endPoint: .bottomTrailing))

@@ -33,7 +33,7 @@ struct OnboardingLocationView: View {
                 HStack {
                     Button(action: onBack) {
                         Image(systemName: "chevron.left")
-                            .font(.system(size: 22, weight: .semibold))
+                            .font(.custom("HelveticaNeue-Medium", size: 22))
                             .foregroundColor(.tsAccent)
                     }
                     .frame(width: 40, height: 40)
@@ -53,7 +53,7 @@ struct OnboardingLocationView: View {
 
                     Button(action: onSkip) {
                         Text("Skip")
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(.custom("HelveticaNeue-Medium", size: 16))
                             .foregroundColor(.tsAccent)
                     }
                     .frame(width: 40, height: 40)
@@ -68,10 +68,10 @@ struct OnboardingLocationView: View {
 
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Where are you learning?")
-                                .font(.system(size: 34, weight: .bold))
+                                .font(.custom("HelveticaNeue-Bold", size: 34))
                                 .foregroundColor(.tsLabel)
                             Text("We'll tailor slang and phrases to where you spend time. Add up to \(maxLocations) locations — your top one gets the most weight.")
-                                .font(.system(size: 17))
+                                .font(.custom("HelveticaNeue", size: 17))
                                 .foregroundColor(.tsSecondary)
                         }
                         .padding(.top, 16)
@@ -101,14 +101,14 @@ struct OnboardingLocationView: View {
                             VStack(alignment: .leading, spacing: 0) {
                                 HStack(spacing: 12) {
                                     Image(systemName: "location.fill")
-                                        .font(.system(size: 16))
+                                        .font(.custom("HelveticaNeue", size: 16))
                                         .foregroundColor(.tsSecondary)
 
                                     TextField(
                                         locStore.locations.isEmpty ? "Search a city or region…" : "+ Add another location",
                                         text: $searchVM.searchQuery
                                     )
-                                    .font(.system(size: 17))
+                                    .font(.custom("HelveticaNeue", size: 17))
                                     .foregroundColor(.tsLabel)
                                     .focused($isFocused)
 
@@ -161,11 +161,11 @@ struct OnboardingLocationView: View {
                                             }) {
                                                 VStack(alignment: .leading, spacing: 4) {
                                                     Text(completion.title)
-                                                        .font(.system(size: 16, weight: .medium))
+                                                        .font(.custom("HelveticaNeue-Medium", size: 16))
                                                         .foregroundColor(.tsLabel)
                                                     if !completion.subtitle.isEmpty {
                                                         Text(completion.subtitle)
-                                                            .font(.system(size: 14))
+                                                            .font(.custom("HelveticaNeue", size: 14))
                                                             .foregroundColor(.tsSecondary)
                                                     }
                                                 }
@@ -225,7 +225,7 @@ struct OnboardingLocationView: View {
                         onContinue()
                     }) {
                         Text(locStore.locations.isEmpty ? "Skip for Now" : "Continue")
-                            .font(.system(size: 18, weight: .bold))
+                            .font(.custom("HelveticaNeue-Bold", size: 18))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
@@ -266,17 +266,17 @@ private struct LocationPill: View {
         HStack(spacing: 12) {
             // Drag handle
             Image(systemName: "line.3.horizontal")
-                .font(.system(size: 14, weight: .medium))
+                .font(.custom("HelveticaNeue-Medium", size: 14))
                 .foregroundColor(.tsSecondary)
                 .frame(width: 24)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(location.displayName)
-                    .font(.system(size: 16, weight: .medium))
+                    .font(.custom("HelveticaNeue-Medium", size: 16))
                     .foregroundColor(.tsLabel)
                 if isPrimary {
                     Text("Primary — highest slang weight")
-                        .font(.system(size: 12))
+                        .font(.custom("HelveticaNeue", size: 12))
                         .foregroundColor(.tsAccent)
                 }
             }
@@ -285,7 +285,7 @@ private struct LocationPill: View {
 
             Button(action: onRemove) {
                 Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 20))
+                    .font(.custom("HelveticaNeue", size: 20))
                     .foregroundColor(Color.tsSecondary.opacity(0.6))
             }
         }
@@ -310,16 +310,16 @@ private struct OrderTipBanner: View {
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: "info.circle.fill")
-                .font(.system(size: 18))
+                .font(.custom("HelveticaNeue", size: 18))
                 .foregroundColor(.tsAccent)
                 .padding(.top, 1)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text("Order matters")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.custom("HelveticaNeue-Medium", size: 14))
                     .foregroundColor(.tsLabel)
                 Text("Your first location gets the most slang weight. Drag to reorder by where you spend the most time.")
-                    .font(.system(size: 13))
+                    .font(.custom("HelveticaNeue", size: 13))
                     .foregroundColor(.tsSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -328,7 +328,7 @@ private struct OrderTipBanner: View {
 
             Button(action: onDismiss) {
                 Image(systemName: "xmark")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.custom("HelveticaNeue-Medium", size: 12))
                     .foregroundColor(.tsSecondary)
             }
         }

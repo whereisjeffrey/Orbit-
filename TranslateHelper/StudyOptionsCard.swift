@@ -20,7 +20,7 @@ struct StudyOptionsCard: View {
 
             // Header — deck name in bold
             Text(listName)
-                .font(.system(size: 22, weight: .bold))
+                .font(.custom("HelveticaNeue-Bold", size: 22))
                 .foregroundColor(.tsLabel)
                 .padding(.top, 16)
                 .padding(.bottom, 16)
@@ -97,11 +97,11 @@ struct OptionButton: View {
         Button(action: action) {
             HStack(spacing: 16) {
                 Image(systemName: icon)
-                    .font(.system(size: 20))
+                    .font(.custom("HelveticaNeue", size: 20))
                     .frame(width: 24)
 
                 Text(title)
-                    .font(.system(size: 18, weight: .medium))
+                    .font(.custom("HelveticaNeue-Medium", size: 18))
 
                 Spacer()
             }

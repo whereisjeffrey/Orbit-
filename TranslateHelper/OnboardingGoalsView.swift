@@ -33,7 +33,7 @@ struct OnboardingGoalsView: View {
                 HStack {
                     Button(action: onBack) {
                         Image(systemName: "chevron.left")
-                            .font(.system(size: 22, weight: .semibold))
+                            .font(.custom("HelveticaNeue-Medium", size: 22))
                             .foregroundColor(.tsAccent)
                     }
                     .frame(width: 40, height: 40)
@@ -53,7 +53,7 @@ struct OnboardingGoalsView: View {
 
                     Button(action: onSkip) {
                         Text("Skip")
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(.custom("HelveticaNeue-Medium", size: 16))
                             .foregroundColor(.tsAccent)
                     }
                     .frame(width: 40, height: 40)
@@ -66,10 +66,10 @@ struct OnboardingGoalsView: View {
                     VStack(alignment: .leading, spacing: 24) {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Why are you learning?")
-                                .font(.system(size: 34, weight: .bold))
+                                .font(.custom("HelveticaNeue-Bold", size: 34))
                                 .foregroundColor(.tsLabel)
                             Text("Select all that apply. This helps us customize your study cards.")
-                                .font(.system(size: 17))
+                                .font(.custom("HelveticaNeue", size: 17))
                                 .foregroundColor(.tsSecondary)
                         }
                         .padding(.top, 16)
@@ -90,11 +90,11 @@ struct OnboardingGoalsView: View {
                                             .frame(width: 48, height: 48)
                                             .overlay(
                                                 Image(systemName: icon)
-                                                    .font(.system(size: 22))
+                                                    .font(.custom("HelveticaNeue", size: 22))
                                                     .foregroundColor(color)
                                             )
                                         Text(name)
-                                            .font(.system(size: 17, weight: .semibold))
+                                            .font(.custom("HelveticaNeue-Medium", size: 17))
                                             .foregroundColor(.tsLabel)
                                     }
                                     .frame(maxWidth: .infinity)
@@ -127,13 +127,13 @@ struct OnboardingGoalsView: View {
                 VStack(spacing: 16) {
                     Button(action: onContinue) {
                         Text("Continue")
-                            .font(.system(size: 18, weight: .bold))
+                            .font(.custom("HelveticaNeue-Bold", size: 18))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
                             .background(
                                 LinearGradient(
-                                    colors: [Color(hex: "#3B99FC"), Color(hex: "#007AFF")],
+                                    colors: [Color.tsAccent, Color(hex: "#004775")],
                                     startPoint: .topLeading, endPoint: .bottomTrailing
                                 )
                             )

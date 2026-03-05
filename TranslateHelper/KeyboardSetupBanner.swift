@@ -44,7 +44,7 @@ struct KeyboardSetupBanner: View {
 
                 // Message
                 Text("Keyboard not set up")
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.custom("HelveticaNeue-Medium", size: 13))
                     .foregroundColor(.tsLabel)
                     .lineLimit(1)
 
@@ -54,9 +54,9 @@ struct KeyboardSetupBanner: View {
                 Button(action: openKeyboardSettings) {
                     HStack(spacing: 4) {
                         Text("Set Up")
-                            .font(.system(size: 13, weight: .semibold))
+                            .font(.custom("HelveticaNeue-Medium", size: 13))
                         Image(systemName: "chevron.right")
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(.custom("HelveticaNeue-Medium", size: 11))
                     }
                     .foregroundColor(.tsAccent)
                 }
@@ -64,7 +64,7 @@ struct KeyboardSetupBanner: View {
                 // Dismiss X
                 Button(action: { dismissed = true }) {
                     Image(systemName: "xmark")
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.custom("HelveticaNeue-Medium", size: 11))
                         .foregroundColor(.tsSecondary)
                         .frame(width: 24, height: 24)
                         .background(Color.tsSecondary.opacity(0.12))

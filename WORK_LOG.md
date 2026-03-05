@@ -140,3 +140,43 @@ TalkSwitch.xcodeproj/project.pbxproj TranslateHelper/Info.plist
  M TranslateHelper/RootView.swift
 ### Files
 TalkSwitch.xcodeproj/xcshareddata/xcschemes/TalkSwitch.xcscheme TranslateHelper/CoworkView.swift TranslateHelper/DesignSystem.swift TranslateHelper/LibraryView.swift TranslateHelper/Localizable.xcstrings TranslateHelper/MainTabView.swift TranslateHelper/MyDecksView.swift TranslateHelper/RootView.swift 
+
+## 2026-03-05 14:45 — Auto-handoff (auto-heartbeat)
+### Changed (uncommitted)
+ M TranslateHelper/AddCardSheet.swift
+ M TranslateHelper/AskALocalView.swift
+ M TranslateHelper/BadgeSystem.swift
+ M TranslateHelper/CommunityUserProfileView.swift
+ M TranslateHelper/CommunityView.swift
+ M TranslateHelper/CoworkSubmitView.swift
+ M TranslateHelper/CoworkView.swift
+ M TranslateHelper/CreateAccountView.swift
+ M TranslateHelper/DeckPhraseListView.swift
+ M TranslateHelper/DesignSystem.swift
+ M TranslateHelper/FlirtyContextSheet.swift
+ M TranslateHelper/ForgotPasswordView.swift
+ M TranslateHelper/KeyboardSetupBanner.swift
+ M TranslateHelper/KeyboardSetupSplashView.swift
+ M TranslateHelper/KitView.swift
+ M TranslateHelper/LanguageSelectionView.swift
+ M TranslateHelper/LibraryView.swift
+ M TranslateHelper/Localizable.xcstrings
+ M TranslateHelper/MainTabView.swift
+ M TranslateHelper/MyDecksView.swift
+ M TranslateHelper/NewInTownSection.swift
+ M TranslateHelper/OnboardingGoalsView.swift
+ M TranslateHelper/OnboardingInterestsView.swift
+ M TranslateHelper/OnboardingLocationView.swift
+ M TranslateHelper/OnboardingPaywallView.swift
+ M TranslateHelper/OnboardingPlanView.swift
+ M TranslateHelper/OnboardingStatusView.swift
+ M TranslateHelper/QuickAddSheet.swift
+ M TranslateHelper/SettingsView.swift
+ M TranslateHelper/SignInView.swift
+ M TranslateHelper/StudyOptionsCard.swift
+ M TranslateHelper/StudyRevealedCardView.swift
+ M TranslateHelper/StudySourceWordView.swift
+ M TranslateHelper/WorkTipViews.swift
+ M TranslateHelper/WorkView.swift
+### Files
+TranslateHelper/AddCardSheet.swift TranslateHelper/AskALocalView.swift TranslateHelper/BadgeSystem.swift TranslateHelper/CommunityUserProfileView.swift TranslateHelper/CommunityView.swift TranslateHelper/CoworkSubmitView.swift TranslateHelper/CoworkView.swift TranslateHelper/CreateAccountView.swift TranslateHelper/DeckPhraseListView.swift TranslateHelper/DesignSystem.swift TranslateHelper/FlirtyContextSheet.swift TranslateHelper/ForgotPasswordView.swift TranslateHelper/KeyboardSetupBanner.swift TranslateHelper/KeyboardSetupSplashView.swift TranslateHelper/KitView.swift TranslateHelper/LanguageSelectionView.swift TranslateHelper/LibraryView.swift TranslateHelper/Localizable.xcstrings TranslateHelper/MainTabView.swift TranslateHelper/MyDecksView.swift TranslateHelper/NewInTownSection.swift TranslateHelper/OnboardingGoalsView.swift TranslateHelper/OnboardingInterestsView.swift TranslateHelper/OnboardingLocationView.swift TranslateHelper/OnboardingPaywallView.swift TranslateHelper/OnboardingPlanView.swift TranslateHelper/OnboardingStatusView.swift TranslateHelper/QuickAddSheet.swift TranslateHelper/SettingsView.swift TranslateHelper/SignInView.swift TranslateHelper/StudyOptionsCard.swift TranslateHelper/StudyRevealedCardView.swift TranslateHelper/StudySourceWordView.swift TranslateHelper/WorkTipViews.swift TranslateHelper/WorkView.swift 
