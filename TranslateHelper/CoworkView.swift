@@ -457,6 +457,11 @@ struct CoworkDetailView: View {
                             .padding(.horizontal, 16).padding(.bottom, 28)
                         }
 
+                        // Community tips
+                        CommunityTipsSection(placeId: space.id)
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 20)
+
                         VStack(spacing: 12) {
                             Button(action: { openMaps(space: space) }) {
                                 HStack(spacing: 8) {
@@ -498,6 +503,8 @@ struct CoworkDetailView: View {
     }
 
     private func openMaps(space: CoworkSpace) {
+        WorkTipStore.shared.recordDirectionsTapped(
+            placeId: space.id, placeType: .cowork, placeName: space.name)
         let q = space.address.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
         if let url = URL(string: "maps://?q=\(q)") { UIApplication.shared.open(url) }
     }

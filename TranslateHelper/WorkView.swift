@@ -125,6 +125,14 @@ struct WorkView: View {
                     .padding(.bottom, 12)
                 }
 
+                // ── Community tip nudge card ─────────────────────────
+                if let nudge = WorkTipStore.shared.pendingNudge {
+                    WorkTipNudgeCard(intent: nudge)
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 12)
+                        .onAppear { WorkTipStore.shared.checkNudge() }
+                }
+
                 // ── Tab content ─────────────────────────────────────
                 if activeTab == .coworking {
                     CoworkingTabContent(
@@ -151,7 +159,7 @@ struct WorkView: View {
                 }
             }
         }
-        .onAppear { if hasLocation { locationMgr.requestLocation() } }
+        .onAppear { if hasLocation { locationMgr.requestLocation() }; WorkTipStore.shared.checkNudge() }
         .sheet(item: $selectedSpace) { CoworkDetailView(space: $0, userLocation: locationMgr.userLocation) }
         .sheet(item: $selectedCafe)  { CafeDetailView(cafe: $0, userLocation: locationMgr.userLocation) }
         .sheet(isPresented: $showSubmit) {
@@ -405,6 +413,11 @@ struct CafeDetailView: View {
                             .padding(.horizontal, 16).padding(.bottom, 28)
                         }
 
+                        // Community tips
+                        CommunityTipsSection(placeId: cafe.id)
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 20)
+
                         VStack(spacing: 12) {
                             Button(action: { openMaps() }) {
                                 HStack(spacing: 8) {
@@ -445,6 +458,8 @@ struct CafeDetailView: View {
     }
 
     private func openMaps() {
+        WorkTipStore.shared.recordDirectionsTapped(
+            placeId: cafe.id, placeType: .cafe, placeName: cafe.name)
         let q = cafe.address.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
         if let url = URL(string: "maps://?q=\(q)") { UIApplication.shared.open(url) }
     }

@@ -12,7 +12,7 @@ struct KitTool: Identifiable {
 }
 
 enum KitDestination {
-    case cowork
+    case work
     case currency
     case sim
     case neighbourhoods
@@ -27,7 +27,7 @@ struct KitView: View {
     @State private var activeDestination: KitDestination? = nil
 
     let tools: [KitTool] = [
-        KitTool(icon: "laptopcomputer",              name: "Cowork",        description: "Find spaces with call rooms & fast WiFi", color: Color(hex: "#007AFF"), destination: .cowork),
+        KitTool(icon: "laptopcomputer",              name: "Work",        description: "Find spaces with call rooms & fast WiFi", color: Color(hex: "#007AFF"), destination: .work),
         KitTool(icon: "dollarsign.arrow.circlepath", name: "Currency",      description: "Live rates + quick converter",            color: Color(hex: "#34C759"), destination: .currency),
         KitTool(icon: "simcard",                     name: "SIM Guide",     description: "Best carriers, plans & cost",             color: Color(hex: "#FF9500"), destination: .sim),
         KitTool(icon: "map",                         name: "Neighbourhoods",description: "Find your area by vibe",                  color: Color(hex: "#AF52DE"), destination: .neighbourhoods),
@@ -67,11 +67,11 @@ struct KitView: View {
             }
         }
         .sheet(isPresented: Binding(
-            get: { activeDestination == .cowork },
+            get: { activeDestination == .work },
             set: { if !$0 { activeDestination = nil } }
         )) { WorkView() }
         .sheet(isPresented: Binding(
-            get: { activeDestination != nil && activeDestination != .cowork },
+            get: { activeDestination != nil && activeDestination != .work },
             set: { if !$0 { activeDestination = nil } }
         )) {
             if let dest = activeDestination {

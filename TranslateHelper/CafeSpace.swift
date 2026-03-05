@@ -3,7 +3,7 @@
 import Foundation
 import CoreLocation
 
-enum NoiseLevel: String, Codable {
+enum NoiseLevel: String, Codable, CaseIterable {
     case quiet    = "Quiet"
     case moderate = "Moderate"
     case lively   = "Lively"
@@ -25,7 +25,7 @@ enum NoiseLevel: String, Codable {
     }
 }
 
-enum OutletAvailability: String, Codable {
+enum OutletAvailability: String, Codable, CaseIterable {
     case plenty = "Plenty"
     case some   = "Some"
     case none   = "Scarce"
