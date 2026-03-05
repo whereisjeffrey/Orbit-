@@ -124,7 +124,7 @@ struct LibraryView: View {
 
                         HStack {
                             // Languages: EN + PT only
-                            ZStack(alignment: .leading) {
+                            HStack(spacing: -10) {
                                 Text("🇺🇸")
                                     .font(.system(size: 20))
                                     .frame(width: 34, height: 34)
@@ -135,9 +135,8 @@ struct LibraryView: View {
                                     .frame(width: 34, height: 34)
                                     .clipShape(Circle())
                                     .overlay(Circle().stroke(Color.tsCard, lineWidth: 2))
-                                    .offset(x: 22)
+                                    .zIndex(1)
                             }
-                            .frame(width: 56)
                             Spacer()
                             if store.activePhrases.isEmpty {
                                 Text("Save phrases from the keyboard")
