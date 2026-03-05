@@ -324,43 +324,27 @@ class TalkSwitchAPI {
             ? ""
             : "\n\n\(locationInstruction)"
 
-        // Different coaching based on direction
-        let systemPrompt: String
-        if sourceLang == "es" {
-            // User wrote/spoke in Spanish → coach their Spanish
-            systemPrompt = """
-            You are a friendly Spanish coach. A student wrote something in Spanish. \
-            Analyze their Spanish and provide helpful, concise coaching notes. \
+        // Notes are ALWAYS about the Spanish phrase — regardless of which direction the card is studied.
+        // The English side is never the subject. Teach the learner about Spanish usage, culture, slang.
+        let systemPrompt = """
+            You are a bilingual cultural coach specialising in Mexican Spanish. \
+            A user has a translation between English and Spanish. \
+            Write a short cultural note EXCLUSIVELY about the SPANISH phrase. \
             \
-            Your notes should include: \
-            1. If there are grammar mistakes, point them out briefly with corrections \
-            2. How a native speaker would more naturally say it (especially for \(toneDesc) tone) \
-            3. One cultural/usage tip or slang expression related to what they wrote \
+            Always cover: \
+            1. How the Spanish phrase is actually used — regional flavour, tone, register \
+            2. A more natural or \(toneDesc) Spanish alternative if the phrasing is literal \
+            3. One Mexican or Latin American slang, idiom, or cultural tip about the Spanish phrase \
             \
-            Keep it SHORT — max 3-4 lines. Use emoji sparingly. Be encouraging. \
-            If their Spanish is perfect, say so and teach them an alternative expression or slang. \
-            Write in English (they're learning Spanish, they need to understand the notes). \
-            Do NOT use JSON. Write plain text only.\(locationBlock)
+            CRITICAL RULES: \
+            • Write notes in English so the learner understands — but every example must be in Spanish \
+            • Do NOT explain the English phrase. Never say "In English..." — they already know English \
+            • Never discuss English slang, idioms, or cultural context — Spanish only \
+            • Max 3-4 lines. No JSON. Plain text only.\(locationBlock)
             """
-        } else {
-            // User wrote in English → teach them the Spanish cultural context
-            systemPrompt = """
-            You are a bilingual cultural coach for \(sourceName) → \(targetName) translation. \
-            A user just translated something. Provide brief, insightful notes about the translation. \
-            \
-            Your notes should include: \
-            1. A more natural/\(toneDesc) alternative if the translation is too literal \
-            2. Cultural context — how natives actually say this in their region \
-            3. One useful expression, idiom, or local slang related to what they said \
-            \
-            Keep it SHORT — max 3-4 lines. Use emoji sparingly. \
-            If there’s an idiom or expression that fits, teach it to them. \
-            Write in English with Spanish examples in quotes. \
-            Do NOT use JSON. Write plain text only.\(locationBlock)
-            """
-        }
-        
-        var userPrompt = "Original (\(sourceName)): \"\(original)\"\nTranslation (\(targetName)): \"\(translated)\"\nTone: \(toneDesc)"
+        let enText = sourceLang == "en" ? original : translated
+        let esText = sourceLang == "es" ? original : translated
+        var userPrompt = "English: \"\(enText)\"\nSpanish: \"\(esText)\"\nTone: \(toneDesc)\nWrite notes ONLY about the Spanish phrase."
         if let pronContext = pronunciationContext {
             userPrompt += "\n\n⚠️ \(pronContext)"
         }
