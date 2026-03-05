@@ -99,18 +99,15 @@ struct WorkView: View {
                                 .foregroundColor(activeTab == tab ? .tsAccent : .tsSecondary)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 10)
-                                .background(
-                                    activeTab == tab
-                                    ? Color.tsAccent.opacity(0.12).cornerRadius(10)
-                                    : Color.clear.cornerRadius(10)
-                                )
-
+                                .background(activeTab == tab
+                                    ? Color.tsAccent.opacity(0.12)
+                                    : Color.clear)
                         }
                     }
                 }
-                .padding(4)
                 .background(Color.tsCard)
                 .cornerRadius(13)
+                .clipped()
                 .overlay(RoundedRectangle(cornerRadius: 13).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                 .padding(.horizontal, 16)
                 .padding(.bottom, 12)
