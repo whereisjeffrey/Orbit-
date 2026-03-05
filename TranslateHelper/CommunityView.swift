@@ -479,11 +479,17 @@ struct PostComposerBar: View {
                 Spacer()
                 ZStack {
                     Circle()
-                        .fill(Color.tsAccent)
+                        .fill(colorScheme == .dark
+                              ? Color.tsAccent.opacity(0.1)
+                              : Color.tsAccent)
                         .frame(width: 34, height: 34)
+                        .overlay(
+                            Circle().stroke(Color.tsAccent,
+                                            lineWidth: colorScheme == .dark ? 1.5 : 0)
+                        )
                     Image(systemName: "photo.on.rectangle")
                         .font(.system(size: 15))
-                        .foregroundColor(.white)
+                        .foregroundColor(colorScheme == .dark ? .tsAccent : .white)
                 }
             }
             .padding(.leading, 14)
