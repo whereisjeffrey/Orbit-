@@ -479,17 +479,14 @@ struct PostComposerBar: View {
                 Spacer()
                 ZStack {
                     Circle()
-                        .fill(colorScheme == .dark
-                              ? Color.tsAccent.opacity(0.1)
-                              : Color.tsAccent)
+                        .fill(Color.tsAccent.opacity(0.1))
                         .frame(width: 34, height: 34)
                         .overlay(
-                            Circle().stroke(Color.tsAccent,
-                                            lineWidth: colorScheme == .dark ? 1.5 : 0)
+                            Circle().stroke(Color.tsAccent, lineWidth: 1.5)
                         )
                     Image(systemName: "photo.on.rectangle")
                         .font(.system(size: 15))
-                        .foregroundColor(colorScheme == .dark ? .tsAccent : .white)
+                        .foregroundColor(.tsAccent)
                 }
             }
             .padding(.leading, 14)
@@ -497,7 +494,9 @@ struct PostComposerBar: View {
             .padding(.vertical, 10)
             .background(colorScheme == .dark ? Color.tsCard : Color.white)
             .cornerRadius(16)
-            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(
+                Color.tsAccent.opacity(colorScheme == .dark ? 0.08 : 0.18),
+                lineWidth: colorScheme == .dark ? 0.5 : 1))
         }
         .buttonStyle(PlainButtonStyle())
     }
