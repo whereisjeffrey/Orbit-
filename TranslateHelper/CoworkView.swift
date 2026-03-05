@@ -291,7 +291,7 @@ struct CoworkLocationCard: View {
         .background(Color.tsCard)
         .cornerRadius(16)
         .overlay(RoundedRectangle(cornerRadius: 16)
-            .stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
+            .stroke(Color.tsAccent, lineWidth: 1.5))
     }
 }
 
