@@ -16,9 +16,9 @@ struct MainTabView: View {
 
             // Custom tab bar
             HStack(spacing: 0) {
-                TabBarItem(icon: "books.vertical",  label: "Library",   tag: 0, selected: $selectedTab)
+                TabBarItem(icon: "bubble.left.and.bubble.right", label: "Learn", tag: 0, selected: $selectedTab)
                 TabBarItem(icon: "person.2",         label: "Community", tag: 1, selected: $selectedTab)
-                TabBarItem(icon: "square.grid.2x2",  label: "Kit",       tag: 2, selected: $selectedTab)
+                TabBarItem(icon: "backpack",          label: "Kit",       tag: 2, selected: $selectedTab)
                 TabBarItem(icon: "gearshape",        label: "Settings",  tag: 3, selected: $selectedTab)
             }
             .padding(.horizontal, 16)

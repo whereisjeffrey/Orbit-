@@ -49,6 +49,7 @@ struct MyDecksView: View {
     @StateObject private var store = SharedPhraseStore.shared
     @ObservedObject private var deckStore = DeckStore.shared
     @AppStorage("ts_flirty_context_set") private var flirtyContextSet: Bool = false
+    @Environment(\.dismiss) var dismiss
 
     // ── Real auto deck data ─────────────────────────────────────────────────
     var conqueredCount: Int {
@@ -98,12 +99,20 @@ struct MyDecksView: View {
                 VStack(alignment: .leading, spacing: 0) {
 
                     // ── Header ──────────────────────────────────────────
-                    Text("My Decks")
-                        .font(.system(size: 30, weight: .bold))
-                        .foregroundColor(.tsLabel)
-                        .padding(.horizontal, 24)
-                        .padding(.top, 16)
-                        .padding(.bottom, 16)
+                    HStack {
+                        Text("My Decks")
+                            .font(.system(size: 30, weight: .bold))
+                            .foregroundColor(.tsLabel)
+                        Spacer()
+                        Button(action: { dismiss() }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 28))
+                                .foregroundColor(.tsSecondary)
+                        }
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.top, 16)
+                    .padding(.bottom, 16)
 
                     // ── Search / Browse Categories ───────────────────────
                     HStack {

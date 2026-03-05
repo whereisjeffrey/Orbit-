@@ -14,6 +14,8 @@ struct LibraryView: View {
     @State private var showMyDecks = false
     @State private var showDeckStudy = false
     @State private var activeDeckStudyName = ""
+    @ObservedObject private var deckStore = DeckStore.shared
+    @State private var showNewDeck = false
     @AppStorage("daily_goal") private var dailyGoal: Int = 20
     @AppStorage("phrases_reviewed_today") private var reviewedToday: Int = 0
 
@@ -97,6 +99,7 @@ struct LibraryView: View {
                         .padding(.bottom, 10)
 
                     // My Clipboard card
+                    Button(action: { showingStudyMode = true }) {
                     VStack(alignment: .leading, spacing: 0) {
                         HStack(alignment: .top) {
                             HStack(spacing: 12) {
@@ -145,6 +148,8 @@ struct LibraryView: View {
                     .frame(height: 176)
                     .background(Color.tsCard)
                     .cornerRadius(24)
+                    }
+                    .buttonStyle(ScaleButtonStyle())
                     .padding(.horizontal, 16)
                     .padding(.bottom, 24)
                     .fullScreenCover(isPresented: $showingStudyMode) {
@@ -167,13 +172,14 @@ struct LibraryView: View {
                     .padding(.bottom, 10)
 
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-                        LibraryDeckCard(emoji: "❄️", title: "Winter 2026",    count: 0, tint: .blue) {
-                            activeDeckStudyName = "Winter 2026"
-                            showDeckStudy = true
-                        }
-                        LibraryDeckCard(emoji: "🍳", title: "Food & Cooking", count: 0, tint: .green) {
-                            activeDeckStudyName = "Food & Cooking"
-                            showDeckStudy = true
+                        // New Deck — always pinned left
+                        NewDeckCard { showNewDeck = true }
+                        // User decks — newest first (DeckStore inserts at 0)
+                        ForEach(deckStore.decks) { deck in
+                            LibraryDeckCard(emoji: deck.emoji, title: deck.name, count: deck.cards.count, tint: deck.tintColor) {
+                                activeDeckStudyName = deck.name
+                                showDeckStudy = true
+                            }
                         }
                     }
                     .padding(.horizontal, 16)
@@ -213,11 +219,19 @@ struct LibraryView: View {
                 }
             }
         }
-        .onAppear { store.load() }
+        .onAppear {
+            store.load()
+            // Seed starter decks once if empty
+            if deckStore.decks.isEmpty {
+                deckStore.addDeck(Deck(emoji: "🍳", name: "Food & Cooking", tintName: "green"))
+                deckStore.addDeck(Deck(emoji: "❄️", name: "Winter 2026",    tintName: "blue"))
+            }
+        }
         .sheet(isPresented: $showingGoalSheet) {
             SetDailyGoalSheet(dailyGoal: $dailyGoal)
         }
-        .navigationDestination(isPresented: $showMyDecks) {
+        .sheet(isPresented: $showNewDeck) { CreateDeckSheet() }
+        .fullScreenCover(isPresented: $showMyDecks) {
             MyDecksView()
         }
         .fullScreenCover(isPresented: $showDeckStudy) {
@@ -316,14 +330,6 @@ struct LibraryDeckCard: View {
                         .font(.system(size: 13))
                         .foregroundColor(.tsSecondary)
 
-                    HStack(spacing: 4) {
-                        Image(systemName: "graduationcap.fill")
-                            .font(.system(size: 10))
-                        Text("Study")
-                            .font(.system(size: 11, weight: .semibold))
-                    }
-                    .foregroundColor(.tsAccent)
-                    .padding(.top, 4)
                 }
             }
             .padding(16)
@@ -331,6 +337,46 @@ struct LibraryDeckCard: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color.tsCard)
             .cornerRadius(24)
+        }
+        .buttonStyle(DeckTapStyle())
+    }
+}
+
+
+// MARK: - New Deck Card
+struct NewDeckCard: View {
+    let onTap: () -> Void
+    var body: some View {
+        Button(action: onTap) {
+            VStack(alignment: .leading, spacing: 0) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.tsAccent.opacity(0.12))
+                        .frame(width: 40, height: 40)
+                    Image(systemName: "plus")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(.tsAccent)
+                }
+                Spacer()
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("New Deck")
+                        .font(.system(size: 17, weight: .bold))
+                        .foregroundColor(.tsLabel)
+                    Text("Create your own")
+                        .font(.system(size: 13))
+                        .foregroundColor(.tsSecondary)
+                }
+            }
+            .padding(16)
+            .frame(height: 176)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.tsCard)
+            .cornerRadius(24)
+            .overlay(
+                RoundedRectangle(cornerRadius: 24)
+                    .strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [6, 4]))
+                    .foregroundColor(Color.tsAccent.opacity(0.3))
+            )
         }
         .buttonStyle(DeckTapStyle())
     }

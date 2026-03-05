@@ -42,8 +42,22 @@ extension UIColor {
 
 // MARK: - Background
 struct TSGradientBackground: View {
+    @Environment(\.colorScheme) private var scheme
+
     var body: some View {
-        Color.tsBackground.ignoresSafeArea()
+        ZStack {
+            Color.tsBackground.ignoresSafeArea()
+            // Centered top-to-bottom only — no left/right bias
+            LinearGradient(
+                colors: [
+                    Color(hex: "#0086DB").opacity(scheme == .dark ? 0.22 : 0.10),
+                    Color.clear
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
+        }
     }
 }
 
@@ -54,14 +68,14 @@ extension Color {
     })
     
     static let tsCard = Color(UIColor { trait in
-        trait.userInterfaceStyle == .dark ? UIColor(hex: "#1C1C1E") : UIColor(hex: "#F2F2F7")
+        trait.userInterfaceStyle == .dark ? UIColor(hex: "#000000") : UIColor(hex: "#F3F6FF")
     })
     
     static let tsBorder = Color(UIColor { trait in
-        trait.userInterfaceStyle == .dark ? UIColor.white.withAlphaComponent(0.08) : UIColor(hex: "#C6C6C8")
+        trait.userInterfaceStyle == .dark ? UIColor.white.withAlphaComponent(0.12) : UIColor(hex: "#C6C6C8")
     })
     
-    static let tsAccent = Color(hex: "#007AFF")
+    static let tsAccent = Color(hex: "#0086DB")
     
     static let tsAccentTeal = Color(UIColor { trait in
         trait.userInterfaceStyle == .dark ? UIColor(hex: "#00C7BE") : UIColor(hex: "#5AC8FA")
@@ -76,14 +90,14 @@ extension Color {
     })
     
     static let tsInputBg = Color(UIColor { trait in
-        trait.userInterfaceStyle == .dark ? UIColor(hex: "#787880").withAlphaComponent(0.12) : UIColor(hex: "#F2F2F7")
+        trait.userInterfaceStyle == .dark ? UIColor(hex: "#000000") : UIColor(hex: "#EDF2FF")
     })
 
     /// Footer / tab bar background.
     /// Dark:  #141416 — lifted near-black with a subtle warm haze (à la TestFlight banner).
     /// Light: #FFFFFF — standard white to match system tab bar convention.
     static let tsFooter = Color(UIColor { trait in
-        trait.userInterfaceStyle == .dark ? UIColor(hex: "#141416") : UIColor(hex: "#FFFFFF")
+        trait.userInterfaceStyle == .dark ? UIColor(hex: "#000000") : UIColor(hex: "#FFFFFF")
     })
 
     init(hex: String) {
@@ -115,7 +129,7 @@ extension LinearGradient {
     )
     
     static let tsBluePrimary = LinearGradient(
-        colors: [Color(hex: "#3B99FC"), Color(hex: "#007AFF")],
+        colors: [Color(hex: "#0086DB"), Color(hex: "#004775")],
         startPoint: .topLeading, endPoint: .bottomTrailing
     )
 }
@@ -272,7 +286,7 @@ struct TSButton: View {
     private let gradient = LinearGradient(
         colors: [
             Color(hex: "#5BA8FF"),  // lighter blue — top highlight
-            Color(hex: "#007AFF"),  // standard blue — bottom
+            Color(hex: "#004775"),  // action navy — bottom
         ],
         startPoint: .top,
         endPoint: .bottom

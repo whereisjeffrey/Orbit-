@@ -355,11 +355,11 @@ struct CoworkCard: View {
                     Text("\(space.hoursDisplay) · \(space.hoursDays)")
                         .font(.system(size: 12)).foregroundColor(.tsSecondary)
                 }
-                HStack(spacing: 16) {
-                    AmenityBadge(icon: "phone.fill",          label: "Call rooms", active: space.hasCallRooms)
-                    AmenityBadge(icon: "cup.and.saucer.fill", label: "Coffee",     active: space.hasCoffee)
-                    AmenityBadge(icon: "bolt.fill",           label: "Fast WiFi",  active: space.hasFastWifi)
-                    AmenityBadge(icon: "moon.fill",           label: "Late",       active: space.hasLateHours)
+                HStack(spacing: 12) {
+                    AmenityBadge(icon: "phone.fill",          label: space.hasCallRooms ? "Call rooms" : "No rooms",     active: space.hasCallRooms,  color: Color(hex: "#34C759"))
+                    AmenityBadge(icon: "cup.and.saucer.fill", label: space.hasCoffee    ? "Coffee"     : "No coffee",    active: space.hasCoffee,    color: Color(hex: "#FF9500"))
+                    AmenityBadge(icon: "bolt.fill",           label: space.hasFastWifi  ? "Fast WiFi"  : "Standard",     active: space.hasFastWifi,  color: Color(hex: "#007AFF"))
+                    AmenityBadge(icon: "moon.fill",           label: space.hasLateHours ? "Open late"  : "Closes early", active: space.hasLateHours, color: Color(hex: "#AF52DE"))
                     Spacer()
                     Image(systemName: "chevron.right")
                         .font(.system(size: 12)).foregroundColor(.tsSecondary)
@@ -376,12 +376,13 @@ struct CoworkCard: View {
 // MARK: - Amenity Badge
 struct AmenityBadge: View {
     let icon: String; let label: String; let active: Bool
+    var color: Color = Color(hex: "#34C759")
     var body: some View {
-        VStack(spacing: 3) {
-            Image(systemName: icon).font(.system(size: 13))
-                .foregroundColor(active ? Color(hex: "#34C759") : Color.tsSecondary.opacity(0.4))
-            Text(active ? "✓" : "✗").font(.system(size: 10, weight: .bold))
-                .foregroundColor(active ? Color(hex: "#34C759") : Color.tsSecondary.opacity(0.4))
+        HStack(spacing: 4) {
+            Image(systemName: icon).font(.system(size: 12))
+                .foregroundColor(active ? color : Color.tsSecondary.opacity(0.35))
+            Text(label).font(.system(size: 12))
+                .foregroundColor(active ? Color.tsLabel : Color.tsSecondary.opacity(0.35))
         }
     }
 }

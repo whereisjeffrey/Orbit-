@@ -127,3 +127,16 @@ TranslateHelper/Assets.xcassets/AppIcon.appiconset/TalkSwitch-Icon.png Translate
  M TranslateHelper/Info.plist
 ### Files
 TalkSwitch.xcodeproj/project.pbxproj TranslateHelper/Info.plist 
+
+## 2026-03-05 13:45 — Auto-handoff (auto-heartbeat)
+### Changed (uncommitted)
+ M TalkSwitch.xcodeproj/xcshareddata/xcschemes/TalkSwitch.xcscheme
+ M TranslateHelper/CoworkView.swift
+ M TranslateHelper/DesignSystem.swift
+ M TranslateHelper/LibraryView.swift
+ M TranslateHelper/Localizable.xcstrings
+ M TranslateHelper/MainTabView.swift
+ M TranslateHelper/MyDecksView.swift
+ M TranslateHelper/RootView.swift
+### Files
+TalkSwitch.xcodeproj/xcshareddata/xcschemes/TalkSwitch.xcscheme TranslateHelper/CoworkView.swift TranslateHelper/DesignSystem.swift TranslateHelper/LibraryView.swift TranslateHelper/Localizable.xcstrings TranslateHelper/MainTabView.swift TranslateHelper/MyDecksView.swift TranslateHelper/RootView.swift 
