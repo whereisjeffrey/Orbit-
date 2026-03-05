@@ -42,15 +42,21 @@ struct CommunityPost: Identifiable {
     var avatarInitials: String = ""
     var avatarColor: Color = .tsAccent
     var avatarURL: String? = nil
+    var imageURL: String? = nil
+    var linkPreviewTitle: String? = nil
+    var linkPreviewSite: String? = nil
+    var linkURL: String? = nil
 }
 
 struct CommunityView: View {
+    @EnvironmentObject var auth: AuthManager
     @AppStorage("selected_city_id") private var selectedCityId: String = "mx_cdmx"
     @State private var selectedFilter: PostType = .all
     @State private var showGroupDirectory = false
     @State private var showAskALocal = false
     @State private var showCityPicker = false
-    @State private var showNewPost = false
+    @State private var showCompose = false
+    @State private var posts: [CommunityPost] = []
 
     var selectedCity: City { CityStore.city(id: selectedCityId) ?? CityStore.defaultCity }
 
@@ -73,10 +79,6 @@ struct CommunityView: View {
                       likes: 31, comments: 8, timeAgo: "3h", isVerifiedLocal: false,
                       avatarInitials: "LW", avatarColor: Color(hex: "#FF2D55")),
     ]
-
-    var filteredPosts: [CommunityPost] {
-        selectedFilter == .all ? samplePosts : samplePosts.filter { $0.type == selectedFilter }
-    }
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
@@ -123,6 +125,10 @@ struct CommunityView: View {
                     .padding(.horizontal, 16)
                     .padding(.bottom, 16)
 
+                    // ── Composer bar ────────────────────────────────────
+                    PostComposerBar(onTap: { showCompose = true })
+                        .padding(.bottom, 4)
+
                     // ── New in town ─────────────────────────────────────
                     NewInTownSection()
                         .padding(.bottom, 8)
@@ -145,7 +151,9 @@ struct CommunityView: View {
 
                     // ── Feed ───────────────────────────────────────────
                     LazyVStack(spacing: 12) {
-                        ForEach(filteredPosts) { post in
+                        ForEach(posts.filter { p in
+                        selectedFilter == .all || p.type == selectedFilter
+                    }) { post in
                             CommunityPostCard(post: post)
                         }
                     }
@@ -155,7 +163,7 @@ struct CommunityView: View {
             }
 
             // ── FAB ────────────────────────────────────────────────────
-            Button(action: { showNewPost = true }) {
+            Button(action: { showCompose = true }) {
                 Image(systemName: "plus")
                     .font(.custom("HelveticaNeue-Bold", size: 20))
                     .foregroundColor(.white)
@@ -167,10 +175,14 @@ struct CommunityView: View {
             .padding(.trailing, 24)
             .padding(.bottom, 88)
         }
+        .onAppear { if posts.isEmpty { posts = samplePosts } }
         .sheet(isPresented: $showGroupDirectory) { GroupDirectoryView() }
         .sheet(isPresented: $showAskALocal)     { AskALocalView() }
         .sheet(isPresented: $showCityPicker)    { CityPickerView(selectedId: $selectedCityId) }
-        .sheet(isPresented: $showNewPost)       { NewPostView() }
+        .sheet(isPresented: $showCompose) {
+            ComposePostSheet { newPost in posts.insert(newPost, at: 0) }
+                .environmentObject(auth)
+        }
     }
 }
 
@@ -287,6 +299,27 @@ struct CommunityPostCard: View {
                 .font(.custom("HelveticaNeue", size: 15))
                 .foregroundColor(.tsLabel)
                 .fixedSize(horizontal: false, vertical: true)
+
+            if let imgURL = post.imageURL, let url = URL(string: imgURL) {
+                AsyncImage(url: url) { phase in
+                    if let img = phase.image {
+                        img.resizable().scaledToFill()
+                            .frame(maxWidth: .infinity).frame(height: 200)
+                            .clipped().cornerRadius(14)
+                    } else {
+                        RoundedRectangle(cornerRadius: 14).fill(Color.tsInputBg).frame(height: 200)
+                    }
+                }
+            } else if let title = post.linkPreviewTitle {
+                LinkPreviewCard(preview: LinkPreview(
+                    url: post.linkURL ?? "",
+                    imageURL: post.imageURL,
+                    title: title,
+                    description: nil,
+                    siteName: post.linkPreviewSite
+                ))
+            }
+
             HStack(spacing: 16) {
                 Label("\(post.likes)", systemImage: "heart")
                     .font(.custom("HelveticaNeue", size: 13))
@@ -355,13 +388,35 @@ struct NewPostView: View {
     }
 }
 
-struct GroupDirectoryView: View {
+// GroupDirectoryView is in GroupDirectory.swift
+
+
+// MARK: - Post Composer Bar
+struct PostComposerBar: View {
+    @EnvironmentObject var auth: AuthManager
+    let onTap: () -> Void
+
     var body: some View {
-        NavigationStack {
-            ZStack { TSGradientBackground()
-                Text("Group Directory coming soon").foregroundColor(.tsSecondary)
+        Button(action: onTap) {
+            HStack(spacing: 12) {
+                MiniAvatar(auth: auth, size: 36)
+                Rectangle()
+                    .fill(Color.tsSecondary.opacity(0.15))
+                    .frame(width: 1, height: 28)
+                Text("What's on your mind?")
+                    .font(.custom("HelveticaNeue", size: 15))
+                    .foregroundColor(.tsSecondary.opacity(0.7))
+                Spacer()
+                Image(systemName: "photo.on.rectangle")
+                    .font(.system(size: 18))
+                    .foregroundColor(.tsAccent)
             }
-            .navigationTitle("Groups").navigationBarTitleDisplayMode(.inline)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .background(Color.tsCard)
+            .cornerRadius(16)
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
         }
+        .buttonStyle(PlainButtonStyle())
     }
 }

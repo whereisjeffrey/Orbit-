@@ -104,11 +104,7 @@ struct WorkView: View {
                                     ? Color.tsAccent.opacity(0.12).cornerRadius(10)
                                     : Color.clear.cornerRadius(10)
                                 )
-                                .overlay(
-                                    activeTab == tab
-                                    ? RoundedRectangle(cornerRadius: 10).stroke(Color.tsAccent.opacity(0.35), lineWidth: 1)
-                                    : nil
-                                )
+
                         }
                     }
                 }

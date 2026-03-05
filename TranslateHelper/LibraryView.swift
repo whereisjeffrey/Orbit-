@@ -46,14 +46,6 @@ struct LibraryView: View {
                             .foregroundColor(.tsLabel)
                         Spacer()
                         HStack(spacing: 12) {
-                            Circle()
-                                .fill(Color.tsCard)
-                                .frame(width: 36, height: 36)
-                                .overlay(
-                                    Image(systemName: "magnifyingglass")
-                                        .foregroundColor(.tsAccent)
-                                        .font(.custom("HelveticaNeue", size: 16))
-                                )
                             Button(action: { auth.signOut() }) {
                                 Circle()
                                     .fill(Color.tsCard)
@@ -128,14 +120,24 @@ struct LibraryView: View {
                                 .clipShape(Capsule())
                         }
 
-                        Spacer().frame(maxHeight: 10)
+                        Spacer().frame(maxHeight: 30)
 
                         HStack {
                             // Languages: EN + PT only
-                            HStack(spacing: 4) {
-                                Text("🇺🇸").font(.system(size: 24))
-                                Text("🇪🇸").font(.system(size: 24))
+                            ZStack(alignment: .leading) {
+                                Text("🇺🇸")
+                                    .font(.system(size: 20))
+                                    .frame(width: 34, height: 34)
+                                    .clipShape(Circle())
+                                    .overlay(Circle().stroke(Color.tsCard, lineWidth: 2))
+                                Text("🇪🇸")
+                                    .font(.system(size: 20))
+                                    .frame(width: 34, height: 34)
+                                    .clipShape(Circle())
+                                    .overlay(Circle().stroke(Color.tsCard, lineWidth: 2))
+                                    .offset(x: 22)
                             }
+                            .frame(width: 56)
                             Spacer()
                             if store.activePhrases.isEmpty {
                                 Text("Save phrases from the keyboard")
@@ -149,7 +151,7 @@ struct LibraryView: View {
                         }
                     }
                     .padding(16)
-                    .frame(height: 148)
+                    .frame(height: 172)
                     .background(Color.tsCard)
                     .cornerRadius(24)
                     .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
@@ -214,10 +216,15 @@ struct LibraryView: View {
                         Spacer()
 
                         Button(action: { showingGoalSheet = true }) {
-                            Text("Set Daily Goal")
-                                .font(.custom("HelveticaNeue-Medium", size: 13))
-                                .foregroundColor(.tsAccent)
-                                .padding(.horizontal, 16)
+                            HStack(spacing: 5) {
+                                Image(systemName: "bolt.fill")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundColor(Color(hex: "#FFD60A"))
+                                Text("Set Daily Goal")
+                                    .font(.custom("HelveticaNeue-Medium", size: 13))
+                                    .foregroundColor(.tsAccent)
+                            }
+                            .padding(.horizontal, 16)
                                 .padding(.vertical, 6)
                                 .overlay(Capsule().stroke(Color.tsAccent.opacity(0.4), lineWidth: 1))
                         }

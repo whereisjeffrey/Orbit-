@@ -21,17 +21,17 @@ struct PlacePhotoCarousel: View {
                             switch phase {
                             case .success(let img):
                                 img.resizable().scaledToFill()
-                                    .frame(width: 260, height: 140).clipped()
+                                    .frame(width: 260, height: 200).clipped()
                             default:
                                 ZStack {
                                     Color.tsInputBg
                                     Image(systemName: "photo")
                                         .foregroundColor(.tsSecondary)
                                 }
-                                .frame(width: 260, height: 140)
+                                .frame(width: 260, height: 200)
                             }
                         }
-                        .frame(width: 260, height: 140).clipped()
+                        .frame(width: 260, height: 200).clipped()
                     }
                 }
 
@@ -40,7 +40,7 @@ struct PlacePhotoCarousel: View {
                     ZStack {
                         RoundedRectangle(cornerRadius: 0)
                             .fill(Color.tsAccent.opacity(0.08))
-                            .frame(width: 100, height: 140)
+                            .frame(width: 100, height: 200)
                         VStack(spacing: 6) {
                             Image(systemName: "camera.badge.plus")
                                 .font(.system(size: 22))
@@ -54,7 +54,7 @@ struct PlacePhotoCarousel: View {
                 }
             }
         }
-        .frame(height: 140)
+        .frame(height: 200)
         .clipShape(UnevenRoundedRectangle(
             topLeadingRadius: 16, bottomLeadingRadius: 0,
             bottomTrailingRadius: 0, topTrailingRadius: 16
