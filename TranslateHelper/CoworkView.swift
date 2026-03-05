@@ -286,11 +286,12 @@ struct CoworkLocationCard: View {
                 }
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
         .background(Color.tsCard)
         .cornerRadius(16)
         .overlay(RoundedRectangle(cornerRadius: 16)
-            .stroke(Color.tsAccent.opacity(0.2), lineWidth: 1))
+            .stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
     }
 }
 
@@ -315,6 +316,7 @@ struct CoworkFilterChip: View {
 
 // MARK: - Space Card
 struct CoworkCard: View {
+    @Environment(\.colorScheme) var colorScheme
     let space: CoworkSpace
     let userLocation: CLLocation?
     let onTap: () -> Void
@@ -369,7 +371,7 @@ struct CoworkCard: View {
                 }
                 .padding(16)
             }
-            .background(Color.tsCard)
+            .background(colorScheme == .dark ? Color.tsCard : Color(UIColor.systemGray6).opacity(0.65))
             .cornerRadius(16)
             .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
         }

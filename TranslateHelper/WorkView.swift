@@ -28,6 +28,7 @@ struct WorkView: View {
     @State private var filterCafeWifi = false
     @State private var filterNoLimit  = false
 
+    @State private var selectedHood:   String       = "All"
     @State private var selectedSpace:  CoworkSpace? = nil
     @State private var selectedCafe:   CafeSpace?   = nil
     @State private var showSubmit:     Bool          = false
@@ -35,6 +36,7 @@ struct WorkView: View {
     // MARK: - Cowork list
     var filteredSpaces: [CoworkSpace] {
         var list = cdmxCoworkSpaces.filter { $0.cityId == cityId }
+        if selectedHood != "All" { list = list.filter { $0.neighbourhood == selectedHood } }
         if filterCallRoom { list = list.filter { $0.hasCallRooms } }
         if filterCoffee   { list = list.filter { $0.hasCoffee } }
         if filterFastWifi { list = list.filter { $0.hasFastWifi } }
@@ -48,6 +50,7 @@ struct WorkView: View {
     // MARK: - Café list
     var filteredCafes: [CafeSpace] {
         var list = cdmxCafeSpaces.filter { $0.cityId == cityId }
+        if selectedHood != "All" { list = list.filter { $0.neighbourhood == selectedHood } }
         if filterQuiet   { list = list.filter { $0.noiseLevel == .quiet } }
         if filterOutlets { list = list.filter { $0.outlets != .none } }
         if filterCafeWifi { list = list.filter { $0.hasFastWifi } }
@@ -69,15 +72,27 @@ struct WorkView: View {
 
                 // ── Header ─────────────────────────────────────────
                 HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Work")
-                            .font(.custom("HelveticaNeue-Bold", size: 28))
-                            .foregroundColor(.tsLabel)
-                        Text("Mexico City")
-                            .font(.custom("HelveticaNeue", size: 13))
-                            .foregroundColor(.tsSecondary)
-                    }
+                    Text("Work")
+                        .font(.custom("HelveticaNeue-Bold", size: 28))
+                        .foregroundColor(.tsLabel)
                     Spacer()
+                    Menu {
+                        ForEach(["All", "Condesa", "Roma Norte", "Polanco", "Juárez", "Coyoacán", "Centro", "Narvarte", "Del Valle"], id: \.self) { hood in
+                            Button(hood) { selectedHood = hood }
+                        }
+                    } label: {
+                        HStack(spacing: 5) {
+                            Text(selectedHood == "All" ? "All areas" : selectedHood)
+                                .font(.custom("HelveticaNeue-Medium", size: 13))
+                                .foregroundColor(.tsAccent)
+                            Image(systemName: "chevron.down")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundColor(.tsAccent)
+                        }
+                        .padding(.horizontal, 12).padding(.vertical, 7)
+                        .background(Color.tsAccent.opacity(0.1))
+                        .clipShape(Capsule())
+                    }
                     if hasLocation {
                         HStack(spacing: 4) {
                             Circle().fill(Color(hex: "#34C759")).frame(width: 7, height: 7)
@@ -253,6 +268,7 @@ struct CafeTabContent: View {
 
 // MARK: - Café card
 struct CafeCard: View {
+    @Environment(\.colorScheme) var colorScheme
     let cafe: CafeSpace
     let userLocation: CLLocation?
     let onTap: () -> Void
@@ -314,7 +330,7 @@ struct CafeCard: View {
                 }
                 .padding(16)
             }
-            .background(Color.tsCard)
+            .background(colorScheme == .dark ? Color.tsCard : Color(UIColor.systemGray6).opacity(0.65))
             .cornerRadius(16)
             .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
         }
