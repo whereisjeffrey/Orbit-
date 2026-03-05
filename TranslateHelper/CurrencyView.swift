@@ -273,6 +273,7 @@ struct WiseCurrencyRow: View {
     @Binding var text: String
     let isActive: Bool
     let onChange: (String) -> Void
+    @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
         HStack(spacing: 12) {
@@ -294,7 +295,7 @@ struct WiseCurrencyRow: View {
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 18)
-        .background(Color.white)
+        .background(colorScheme == .dark ? Color.black : Color.white)
         .cornerRadius(12)
     }
 }
