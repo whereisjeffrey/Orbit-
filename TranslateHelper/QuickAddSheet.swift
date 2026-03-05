@@ -380,6 +380,52 @@ private struct CreateDeckPane: View {
         ("yellow", .yellow), ("mint", .mint)
     ]
 
+
+    // MARK: - Auto Suggest
+    func autoSuggest(for name: String) -> (emoji: String, tint: String) {
+        let w = name.lowercased()
+        switch true {
+        case ["sport","soccer","football","basketball","futbol","fútbol","baseball","tennis","golf","hockey","rugby","volleyball"].contains(where: w.contains):
+            return ("⚽", "orange")
+        case ["food","cook","restaurant","eat","kitchen","recipe","taco","sushi","brunch","coffee","cafe"].contains(where: w.contains):
+            return ("🍽️", "orange")
+        case ["travel","trip","vacation","flight","tour","airport","hotel","airbnb","hostel"].contains(where: w.contains):
+            return ("✈️", "blue")
+        case ["medical","doctor","health","hospital","nurse","pharmacy","emergency","dental"].contains(where: w.contains):
+            return ("🏥", "red")
+        case ["music","song","concert","band","guitar","piano","playlist","album"].contains(where: w.contains):
+            return ("🎵", "purple")
+        case ["work","business","office","meeting","professional","career","job","interview"].contains(where: w.contains):
+            return ("💼", "blue")
+        case ["flirt","romantic","love","date","relationship","banter","hookup","tinder","dating"].contains(where: w.contains):
+            return ("💃", "pink")
+        case ["family","kid","child","parent","mom","dad","sibling","baby"].contains(where: w.contains):
+            return ("👨‍👩‍👧", "green")
+        case ["science","lab","research","biology","chemistry","physics","study"].contains(where: w.contains):
+            return ("🔬", "mint")
+        case ["city","neighbourhood","neighborhood","slang","local","street","barrio","colonia"].contains(where: w.contains):
+            return ("🌆", "orange")
+        case ["shop","shopping","market","store","buy","mall","tianguis"].contains(where: w.contains):
+            return ("🛒", "green")
+        case ["theater","theatre","culture","art","museum","gallery","film","movie"].contains(where: w.contains):
+            return ("🎭", "purple")
+        case ["fitness","gym","workout","exercise","yoga","run","running","cycling"].contains(where: w.contains):
+            return ("🏋️", "orange")
+        case ["world","global","international","country","countries","nations"].contains(where: w.contains):
+            return ("🌍", "mint")
+        case ["tech","computer","software","code","coding","app","startup","ai"].contains(where: w.contains):
+            return ("💡", "blue")
+        case ["conversation","phrase","speak","talking","chat","small talk","greeting"].contains(where: w.contains):
+            return ("💬", "blue")
+        case ["winter","christmas","holiday","season","festival","navidad"].contains(where: w.contains):
+            return ("❄️", "mint")
+        case ["nature","environment","outdoor","hiking","mountain","beach","ocean"].contains(where: w.contains):
+            return ("🌍", "green")
+        default:
+            return ("📚", "blue")
+        }
+    }
+
     var canCreate:     Bool { !deckName.trimmingCharacters(in: .whitespaces).isEmpty }
     var aiLimitReached: Bool { useAI && !deckStore.canCreateAIDeck }
 
@@ -448,6 +494,11 @@ private struct CreateDeckPane: View {
                     TextField("e.g. Medical Radiology, Sports Slang…", text: $deckName)
                         .font(.custom("HelveticaNeue", size: 17)).foregroundColor(.tsLabel)
                         .padding(16).background(Color.tsCard).cornerRadius(14)
+                        .onChange(of: deckName) { _, newName in
+                            let suggestion = autoSuggest(for: newName)
+                            selectedEmoji = suggestion.emoji
+                            selectedTint  = suggestion.tint
+                        }
                         .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.tsBorder, lineWidth: 1))
                 }
 

@@ -270,6 +270,7 @@ struct SectionHeader: View {
 struct AutoDeckCard: View {
     let deck: DeckModel
     var onTap: (() -> Void)? = nil
+    @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
         Button(action: { onTap?() }) {
@@ -293,10 +294,9 @@ struct AutoDeckCard: View {
             .frame(width: 148, height: 148)
             .background(Color.tsCard)
             .cornerRadius(20)
-            .overlay(
-                RoundedRectangle(cornerRadius: 20)
-                    .stroke(deck.tint.opacity(0.2), lineWidth: 1)
-            )
+            .overlay(RoundedRectangle(cornerRadius: 20).stroke(
+                colorScheme == .dark ? deck.tint.opacity(0.25) : Color.tsAccent.opacity(0.08),
+                lineWidth: colorScheme == .dark ? 1 : 0.5))
         }
         .buttonStyle(DeckTapStyle())
     }
@@ -307,6 +307,7 @@ struct AutoDeckCard: View {
 struct UserDeckCard: View {
     let deck: DeckModel
     var onTap: (() -> Void)? = nil
+    @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
         Button(action: { onTap?() }) {
@@ -339,7 +340,9 @@ struct UserDeckCard: View {
             .frame(width: 148, height: 148)
             .background(Color.tsCard)
             .cornerRadius(20)
-            .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
+            .overlay(RoundedRectangle(cornerRadius: 20).stroke(
+                colorScheme == .dark ? deck.tint.opacity(0.25) : Color.tsAccent.opacity(0.08),
+                lineWidth: colorScheme == .dark ? 1 : 0.5))
         }
         .buttonStyle(DeckTapStyle())
     }
@@ -400,6 +403,7 @@ struct CreateDeckCell: View {
 struct FeaturedDeckRow: View {
     let deck: FeaturedDeckModel
     @State private var importing = false
+    @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
         HStack(spacing: 16) {
@@ -438,7 +442,9 @@ struct FeaturedDeckRow: View {
         .padding(16)
         .background(Color.tsCard)
         .cornerRadius(16)
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(
+            colorScheme == .dark ? deck.tint.opacity(0.25) : Color.tsAccent.opacity(0.08),
+            lineWidth: colorScheme == .dark ? 1 : 0.5))
     }
 }
 

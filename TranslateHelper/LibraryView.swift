@@ -333,6 +333,7 @@ struct LibraryDeckCard: View {
     let count: Int
     let tint: Color
     var onTap: (() -> Void)? = nil
+    @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
         Button(action: { onTap?() }) {
@@ -359,7 +360,9 @@ struct LibraryDeckCard: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color.tsCard)
             .cornerRadius(24)
-            .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
+            .overlay(RoundedRectangle(cornerRadius: 24).stroke(
+                colorScheme == .dark ? tint.opacity(0.25) : Color.tsAccent.opacity(0.08),
+                lineWidth: colorScheme == .dark ? 1 : 0.5))
         }
         .buttonStyle(DeckTapStyle())
     }
