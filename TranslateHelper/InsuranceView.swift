@@ -144,15 +144,24 @@ struct WhyInsuranceCard: View {
 }
 
 // MARK: - Coverage types grid
+// Captures the tallest tile height so all tiles can match it
+private struct TileHeightKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
 struct CoverageTypesSection: View {
     let cols = [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)]
+    @State private var tileH: CGFloat = 80
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             SectionLabel("WHAT TO LOOK FOR")
             LazyVGrid(columns: cols, spacing: 10) {
                 ForEach(coverageTypes, id: \.title) { c in
-                    HStack(spacing: 10) {
+                    HStack(alignment: .top, spacing: 10) {
                         ZStack {
                             RoundedRectangle(cornerRadius: 10)
                                 .fill(Color(hex: c.color).opacity(0.12))
@@ -161,7 +170,7 @@ struct CoverageTypesSection: View {
                                 .font(.system(size: 15))
                                 .foregroundColor(Color(hex: c.color))
                         }
-                        VStack(alignment: .leading, spacing: 2) {
+                        VStack(alignment: .leading, spacing: 3) {
                             Text(c.title)
                                 .font(.custom("HelveticaNeue-Bold", size: 12))
                                 .foregroundColor(.tsLabel)
@@ -172,11 +181,25 @@ struct CoverageTypesSection: View {
                         }
                     }
                     .padding(12)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(maxWidth: .infinity, minHeight: tileH, alignment: .topLeading)
+                    .background(
+                        // Measure natural height of each tile
+                        GeometryReader { geo in
+                            Color.clear
+                                .preference(key: TileHeightKey.self, value: geo.size.height)
+                        }
+                    )
                     .background(Color.tsCard)
                     .cornerRadius(14)
-                    .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14)
+                            .stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5)
+                    )
                 }
+            }
+            // Only ever grow — prevents layout loops
+            .onPreferenceChange(TileHeightKey.self) { h in
+                if h > tileH { tileH = h }
             }
         }
     }
