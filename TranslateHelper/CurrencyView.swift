@@ -411,6 +411,219 @@ struct ATMTipsCard: View {
     }
 }
 
+
+// MARK: - Free ATM Banks
+struct FreeATMSection: View {
+    struct ATMBank {
+        let name: String
+        let tagline: String
+        let detail: String
+        let logoURL: String
+        let initial: String
+        let color: String
+        let url: String
+    }
+
+    let banks: [ATMBank] = [
+        ATMBank(
+            name:    "Charles Schwab",
+            tagline: "Reimburses every ATM fee globally",
+            detail:  "No cap. No monthly fee. Best card for nomads.",
+            logoURL: "https://logo.clearbit.com/schwab.com",
+            initial: "S", color: "#00A0DC",
+            url:     "https://www.schwab.com/checking"
+        ),
+        ATMBank(
+            name:    "Fidelity Cash Management",
+            tagline: "Unlimited ATM fee reimbursements",
+            detail:  "All domestic + international ATM fees refunded.",
+            logoURL: "https://logo.clearbit.com/fidelity.com",
+            initial: "F", color: "#317D2E",
+            url:     "https://www.fidelity.com/cash-management/fidelity-cash-management-account/overview"
+        ),
+        ATMBank(
+            name:    "Revolut",
+            tagline: "Free ATM up to $400/month",
+            detail:  "Great app, real exchange rate, easy sign-up.",
+            logoURL: "https://logo.clearbit.com/revolut.com",
+            initial: "R", color: "#0075EB",
+            url:     "https://www.revolut.com"
+        ),
+    ]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("FREE ATM WORLDWIDE")
+                .font(.custom("HelveticaNeue-Bold", size: 11))
+                .foregroundColor(.tsSecondary)
+                .tracking(1.2)
+
+            VStack(spacing: 0) {
+                ForEach(Array(banks.enumerated()), id: \.offset) { i, bank in
+                    Link(destination: URL(string: bank.url)!) {
+                        HStack(spacing: 12) {
+                            AsyncImage(url: URL(string: bank.logoURL)) { phase in
+                                if let img = phase.image {
+                                    img.resizable().scaledToFit()
+                                } else {
+                                    ZStack {
+                                        Color(hex: bank.color)
+                                        Text(bank.initial)
+                                            .font(.custom("HelveticaNeue-Bold", size: 17))
+                                            .foregroundColor(.white)
+                                    }
+                                }
+                            }
+                            .frame(width: 40, height: 40)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(bank.name)
+                                    .font(.custom("HelveticaNeue-Bold", size: 14))
+                                    .foregroundColor(.tsLabel)
+                                Text(bank.tagline)
+                                    .font(.custom("HelveticaNeue", size: 12))
+                                    .foregroundColor(.tsSecondary)
+                            }
+                            Spacer()
+                            Image(systemName: "arrow.up.right")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(.tsAccent)
+                        }
+                        .padding(.horizontal, 16).padding(.vertical, 12)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    if i < banks.count - 1 {
+                        Divider().background(Color.tsAccent.opacity(0.06)).padding(.leading, 68)
+                    }
+                }
+            }
+            .background(Color.tsCard)
+            .cornerRadius(16)
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
+        }
+    }
+}
+
+// MARK: - Best Travel Cards
+struct TravelCardsSection: View {
+    struct TravelCard {
+        let name: String
+        let issuer: String
+        let annualFee: String
+        let bonus: String
+        let perk: String
+        let logoURL: String
+        let initial: String
+        let color: String
+        let url: String
+    }
+
+    let cards: [TravelCard] = [
+        TravelCard(
+            name:      "Sapphire Preferred",
+            issuer:    "Chase",
+            annualFee: "$95/yr",
+            bonus:     "60K pts sign-up (~$750)",
+            perk:      "3x dining · no foreign fees",
+            logoURL:   "https://logo.clearbit.com/chase.com",
+            initial:   "C", color: "#117ACA",
+            url:       "https://creditcards.chase.com/rewards-credit-cards/sapphire/preferred"
+        ),
+        TravelCard(
+            name:      "Venture Rewards",
+            issuer:    "Capital One",
+            annualFee: "$95/yr",
+            bonus:     "75K miles sign-up (~$750)",
+            perk:      "2x on everything · no foreign fees",
+            logoURL:   "https://logo.clearbit.com/capitalone.com",
+            initial:   "C", color: "#D03027",
+            url:       "https://www.capitalone.com/credit-cards/venture/"
+        ),
+        TravelCard(
+            name:      "Double Cash",
+            issuer:    "Citi",
+            annualFee: "No annual fee",
+            bonus:     "No sign-up bonus",
+            perk:      "2% on everything · no foreign fees",
+            logoURL:   "https://logo.clearbit.com/citi.com",
+            initial:   "C", color: "#003B70",
+            url:       "https://www.citi.com/credit-cards/citi-double-cash-credit-card"
+        ),
+    ]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("BEST TRAVEL CARDS")
+                    .font(.custom("HelveticaNeue-Bold", size: 11))
+                    .foregroundColor(.tsSecondary)
+                    .tracking(1.2)
+                Text("Zero foreign transaction fees")
+                    .font(.custom("HelveticaNeue", size: 12))
+                    .foregroundColor(.tsSecondary)
+            }
+
+            VStack(spacing: 0) {
+                ForEach(Array(cards.enumerated()), id: \.offset) { i, card in
+                    Link(destination: URL(string: card.url)!) {
+                        HStack(spacing: 12) {
+                            AsyncImage(url: URL(string: card.logoURL)) { phase in
+                                if let img = phase.image {
+                                    img.resizable().scaledToFit()
+                                } else {
+                                    ZStack {
+                                        Color(hex: card.color)
+                                        Text(card.initial)
+                                            .font(.custom("HelveticaNeue-Bold", size: 17))
+                                            .foregroundColor(.white)
+                                    }
+                                }
+                            }
+                            .frame(width: 40, height: 40)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                HStack(spacing: 6) {
+                                    Text(card.name)
+                                        .font(.custom("HelveticaNeue-Bold", size: 14))
+                                        .foregroundColor(.tsLabel)
+                                    Text(card.annualFee)
+                                        .font(.custom("HelveticaNeue", size: 11))
+                                        .foregroundColor(.white)
+                                        .padding(.horizontal, 7).padding(.vertical, 2)
+                                        .background(card.annualFee == "No annual fee"
+                                            ? Color(hex: "#34C759")
+                                            : Color.tsSecondary.opacity(0.4))
+                                        .clipShape(Capsule())
+                                }
+                                Text(card.bonus)
+                                    .font(.custom("HelveticaNeue-Medium", size: 12))
+                                    .foregroundColor(.tsAccent)
+                                Text(card.perk)
+                                    .font(.custom("HelveticaNeue", size: 12))
+                                    .foregroundColor(.tsSecondary)
+                            }
+                            Spacer()
+                            Image(systemName: "arrow.up.right")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(.tsAccent)
+                        }
+                        .padding(.horizontal, 16).padding(.vertical, 14)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    if i < cards.count - 1 {
+                        Divider().background(Color.tsAccent.opacity(0.06)).padding(.leading, 68)
+                    }
+                }
+            }
+            .background(Color.tsCard)
+            .cornerRadius(16)
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
+        }
+    }
+}
+
 // MARK: - Main View
 struct CurrencyView: View {
     @StateObject private var store = CurrencyStore.shared
@@ -439,6 +652,10 @@ struct CurrencyView: View {
                     }
 
                     ATMTipsCard()
+
+                    FreeATMSection()
+
+                    TravelCardsSection()
 
                     Spacer().frame(height: 32)
                 }
