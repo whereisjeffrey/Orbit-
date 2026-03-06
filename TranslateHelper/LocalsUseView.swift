@@ -650,14 +650,23 @@ struct LocalRecCard: View {
                         .font(.system(size: 26))
                 }
 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 3) {
                     Text(rec.businessName)
                         .font(.custom("HelveticaNeue-Bold", size: 16))
                         .foregroundColor(.tsLabel)
+                    HStack(spacing: 4) {
+                        Image(systemName: "mappin")
+                            .font(.system(size: 10))
+                            .foregroundColor(.tsSecondary)
+                        Text(rec.neighbourhood)
+                            .font(.custom("HelveticaNeue", size: 12))
+                            .foregroundColor(.tsSecondary)
+                    }
                     Text(rec.description)
                         .font(.custom("HelveticaNeue", size: 12))
                         .foregroundColor(.tsSecondary)
                         .lineLimit(2)
+                        .padding(.top, 2)
                 }
                 Spacer()
                 // Price — only shown when set
@@ -670,6 +679,8 @@ struct LocalRecCard: View {
             .padding(.horizontal, 16)
             .padding(.top, 16)
             .padding(.bottom, 14)
+
+            Divider().background(Color.tsBorder).padding(.horizontal, 16)
 
             // ── Reviews ───────────────────────────────────────────
             if !rec.reviews.isEmpty {
@@ -787,12 +798,6 @@ struct LocalRecCard: View {
 
             // ── Footer ────────────────────────────────────────────────
             HStack(spacing: 6) {
-                Image(systemName: "mappin")
-                    .font(.system(size: 10))
-                    .foregroundColor(.tsSecondary)
-                Text(rec.neighbourhood)
-                    .font(.custom("HelveticaNeue", size: 12))
-                    .foregroundColor(.tsSecondary)
                 Spacer()
                 Button(action: {
                     guard !endorsed else { return }
