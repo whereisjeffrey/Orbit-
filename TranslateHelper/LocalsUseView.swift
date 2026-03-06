@@ -564,11 +564,7 @@ struct LocalsUseView: View {
 
                             LazyVStack(spacing: 12) {
                                 ForEach(filtered) { rec in
-                                    LocalRecCard(rec: rec) { id in
-                                        if let i = recs.firstIndex(where: { $0.id == id }) {
-                                            recs[i].endorsements += 1
-                                        }
-                                    }
+                                    LocalRecCard(rec: rec)
                                 }
                             }
                             .padding(.horizontal, 16)
@@ -612,8 +608,6 @@ struct LocalsUseView: View {
 
 struct LocalRecCard: View {
     let rec: LocalRec
-    let onEndorse: (UUID) -> Void
-    @State private var endorsed    = false
     @State private var ogImageURL: String? = nil
     @State private var ogFetchDone = false
     @State private var showAllReviews = false
@@ -677,8 +671,8 @@ struct LocalRecCard: View {
                 }
             }
             .padding(.horizontal, 16)
-            .padding(.top, 16)
-            .padding(.bottom, 14)
+            .padding(.top, 12)
+            .padding(.bottom, 10)
 
             Divider().background(Color.tsBorder).padding(.horizontal, 16)
 
@@ -686,6 +680,7 @@ struct LocalRecCard: View {
             if !rec.reviews.isEmpty {
                 VStack(alignment: .leading, spacing: 0) {
                     ReviewBlock(review: rec.reviews[0])
+                        .padding(.top, 12)
 
                     if rec.reviews.count > 1 {
                         if showAllReviews {
@@ -724,7 +719,7 @@ struct LocalRecCard: View {
                         }
                     }
                 }
-                .padding(.bottom, 14)
+                .padding(.bottom, 10)
             }
 
             // ── Website + Instagram ───────────────────────────────────
@@ -794,37 +789,9 @@ struct LocalRecCard: View {
                 .padding(.bottom, 14)
             }
 
-            Divider().background(Color.tsBorder).padding(.horizontal, 16)
 
-            // ── Footer ────────────────────────────────────────────────
-            HStack(spacing: 6) {
-                Spacer()
-                Button(action: {
-                    guard !endorsed else { return }
-                    endorsed = true
-                    onEndorse(rec.id)
-                }) {
-                    HStack(spacing: 4) {
-                        Image(systemName: endorsed ? "hand.thumbsup.fill" : "hand.thumbsup")
-                            .font(.system(size: 12))
-                        Text("\(rec.endorsements + (endorsed ? 1 : 0))")
-                            .font(.custom("HelveticaNeue-Medium", size: 12))
-                    }
-                    .foregroundColor(endorsed ? .tsAccent : .tsSecondary)
-                    .padding(.horizontal, 12).padding(.vertical, 7)
-                    .background(endorsed ? Color.tsAccent.opacity(0.10) : Color(UIColor.systemBackground))
-                    .clipShape(Capsule())
-                    .overlay(Capsule().stroke(
-                        endorsed ? Color.tsAccent.opacity(0.3) : Color.tsBorder.opacity(0.5),
-                        lineWidth: 0.5
-                    ))
-                }
-                .buttonStyle(PlainButtonStyle())
-                .animation(.spring(response: 0.2, dampingFraction: 0.7), value: endorsed)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 14)
         }
+        .padding(.bottom, 14)
         .background(Color(UIColor.secondarySystemBackground))
         .cornerRadius(18)
         .overlay(RoundedRectangle(cornerRadius: 18)
