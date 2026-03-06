@@ -35,42 +35,13 @@ struct SettingsView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     
-                    // ── Profile Header ─────────────────────────────
-                    HStack(spacing: 16) {
-                        // Avatar
-                        Group {
-                            if let url = auth.photoURL {
-                                AsyncImage(url: url) { phase in
-                                    if let img = phase.image {
-                                        img.resizable().scaledToFill()
-                                            .frame(width: 64, height: 64)
-                                            .clipShape(Circle())
-                                    } else {
-                                        initialsCircle(auth: auth)
-                                    }
-                                }
-                            } else {
-                                initialsCircle(auth: auth)
-                            }
-                        }
-                        .frame(width: 64, height: 64)
-
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(auth.displayName)
-                                .font(.custom("HelveticaNeue-Bold", size: 20))
-                                .foregroundColor(.tsLabel)
-                            if !auth.email.isEmpty {
-                                Text(auth.email)
-                                    .font(.custom("HelveticaNeue", size: 14))
-                                    .foregroundColor(.tsSecondary)
-                                    .lineLimit(1)
-                            }
-                        }
-                        Spacer()
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.top, 24)
-                    .padding(.bottom, 24)
+                    // ── Page title ─────────────────────────────────
+                    Text("Settings")
+                        .font(.custom("HelveticaNeue-Bold", size: 30))
+                        .foregroundColor(.tsLabel)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 24)
+                        .padding(.bottom, 24)
                     
                     // Appearance Section
                     SectionHeader(title: "Appearance")
