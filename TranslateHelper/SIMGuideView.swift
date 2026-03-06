@@ -9,7 +9,7 @@ enum StayLength { case short, monthly, longStay }
 struct SIMCarrier: Identifiable {
     let id           = UUID()
     let name:        String
-    let logoURL:     String          // Clearbit logo — fetched & cached at runtime
+    let logoAsset:   String          // asset catalog name (e.g. "carrier-telcel")
     let tagline:     String
     let badgeIcon:   String
     let badgeColor:  String
@@ -25,7 +25,7 @@ struct SIMCarrier: Identifiable {
 private let simCarriers: [SIMCarrier] = [
     SIMCarrier(
         name:       "Telcel",
-        logoURL:    "https://www.google.com/s2/favicons?domain=telcel.com&sz=256",
+        logoURL:    "carrier-telcel",
         tagline:    "Best coverage — 65% market share",
         badgeIcon:  "antenna.radiowaves.left.and.right",
         badgeColor: "#FF6B00",
@@ -43,7 +43,7 @@ private let simCarriers: [SIMCarrier] = [
     ),
     SIMCarrier(
         name:       "AT&T Mexico",
-        logoURL:    "https://www.google.com/s2/favicons?domain=att.com.mx&sz=256",
+        logoURL:    "carrier-att-mexico",
         tagline:    "Strong in cities — good data speeds",
         badgeIcon:  "wifi",
         badgeColor: "#0099FF",
@@ -59,7 +59,7 @@ private let simCarriers: [SIMCarrier] = [
     ),
     SIMCarrier(
         name:       "Movistar",
-        logoURL:    "https://www.google.com/s2/favicons?domain=movistar.com&sz=256",
+        logoURL:    "carrier-movistar",
         tagline:    "Budget option — major cities only",
         badgeIcon:  "cellularbars",
         badgeColor: "#34C759",
@@ -218,8 +218,8 @@ struct StayRecommendationCard: View {
 // Falls back to SF Symbol if unavailable (offline / rate limit).
 
 struct CarrierLogoView: View {
-    let logoURL:  String
-    let name:     String          // used for branded initial fallback
+    let logoAsset: String
+    let name:      String          // used for branded initial fallback
     let color:    String
     var size:     CGFloat = 44
 
@@ -229,17 +229,19 @@ struct CarrierLogoView: View {
     private var initial: String { String(name.prefix(1).uppercased()) }
 
     var body: some View {
-        AsyncImage(url: URL(string: logoURL)) { phase in
-            switch phase {
-            case .success(let img):
-                img.resizable()
+        ZStack {
+            RoundedRectangle(cornerRadius: size * 0.27)
+                .fill(Color(UIColor.systemBackground))
+                .frame(width: size, height: size)
+
+            if UIImage(named: logoAsset) != nil {
+                Image(logoAsset)
+                    .resizable()
                     .scaledToFit()
                     .padding(size * 0.12)
-                    .background(Color(UIColor.systemBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: size * 0.27))
                     .frame(width: size, height: size)
-            default:
-                // Branded initial circle — looks intentional even offline
+            } else {
+                // Branded initial fallback
                 ZStack {
                     RoundedRectangle(cornerRadius: size * 0.27)
                         .fill(Color(hex: color))
@@ -251,6 +253,11 @@ struct CarrierLogoView: View {
             }
         }
         .frame(width: size, height: size)
+        .clipShape(RoundedRectangle(cornerRadius: size * 0.27))
+        .overlay(
+            RoundedRectangle(cornerRadius: size * 0.27)
+                .stroke(Color(UIColor.separator).opacity(0.2), lineWidth: 0.5)
+        )
     }
 }
 
@@ -267,7 +274,7 @@ struct SIMCarrierCard: View {
             Button(action: onTap) {
                 HStack(spacing: 12) {
                     CarrierLogoView(
-                        logoURL:   carrier.logoURL,
+                        logoAsset: carrier.logoAsset,
                         name:      carrier.name,
                         color:     carrier.badgeColor
                     )
@@ -399,7 +406,7 @@ struct SIMESIMSection: View {
     private let providers: [ESIMProvider] = [
         ESIMProvider(
             name:    "Airalo",
-            logoURL: "https://www.google.com/s2/favicons?domain=airalo.com&sz=256",
+            logoURL: "carrier-airalo",
             tagline: "Buy before you land",
             detail:  "From $5 USD / 1GB",
             color:   "#1B4DFF",
@@ -408,7 +415,7 @@ struct SIMESIMSection: View {
         ),
         ESIMProvider(
             name:    "Holafly",
-            logoURL: "https://www.google.com/s2/favicons?domain=holafly.com&sz=256",
+            logoURL: "carrier-holafly",
             tagline: "Unlimited data, easiest setup",
             detail:  "From $27 USD / 7 days unlimited",
             color:   "#FF6B35",
@@ -428,7 +435,7 @@ struct SIMESIMSection: View {
                     } label: {
                         HStack(spacing: 12) {
                             CarrierLogoView(
-                                logoURL:   provider.logoURL,
+                                logoAsset: provider.logoAsset,
                                 name:      provider.name,
                                 color:     provider.color,
                                 size:      40
@@ -499,28 +506,28 @@ struct USCarrierSection: View {
     private let carriers: [USCarrier] = [
         USCarrier(
             name:   "T-Mobile",
-            logoURL: "https://www.google.com/s2/favicons?domain=t-mobile.com&sz=256",
+            logoURL: "carrier-tmobile",
             badge:  "Best for US users",
             color:  "#E20074",
             detail: "Free unlimited calls, texts + data (reduced speeds) included on most plans. Full LTE on Magenta Plus / Go5G. Uses Telcel network."
         ),
         USCarrier(
             name:   "AT&T US",
-            logoURL: "https://www.google.com/s2/favicons?domain=att.com&sz=256",
+            logoURL: "carrier-att-us",
             badge:  "Day Pass or add-on",
             color:  "#00A8E0",
             detail: "International Day Pass $10/day for full speeds. Some plans include basic Mexico coverage. Check your plan."
         ),
         USCarrier(
             name:   "Verizon",
-            logoURL: "https://www.google.com/s2/favicons?domain=verizon.com&sz=256",
+            logoURL: "carrier-verizon",
             badge:  "Most expensive option",
             color:  "#CD040B",
             detail: "TravelPass $10/day. No free Mexico roaming. Roams on Telcel. Fine if you need it but pricey."
         ),
         USCarrier(
             name:   "Sprint / T-Mobile",
-            logoURL: "https://www.google.com/s2/favicons?domain=sprint.com&sz=256",
+            logoURL: "carrier-sprint",
             badge:  "Merged → same as T-Mobile",
             color:  "#6B2D8B",
             detail: "Sprint is now T-Mobile — same coverage applies. If you have an old Sprint plan, check your T-Mobile benefits."
@@ -535,7 +542,7 @@ struct USCarrierSection: View {
                 ForEach(Array(carriers.enumerated()), id: \.offset) { i, carrier in
                     HStack(alignment: .top, spacing: 12) {
                         CarrierLogoView(
-                            logoURL:   carrier.logoURL,
+                            logoAsset: carrier.logoAsset,
                             name:      carrier.name,
                             color:     carrier.color,
                             size:      36
