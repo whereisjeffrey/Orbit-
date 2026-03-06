@@ -548,9 +548,9 @@ struct LocalsUseView: View {
                             .frame(maxWidth: .infinity)
                             .padding(.top, 60)
                         } else {
-                            // ── Category insight card ───────────────────────────
-                            if selectedCategory != .all,
-                               let insight = categoryInsights[selectedCategory] {
+                            // ── Subcategory insight card ───────────────────────
+                            if let sub = selectedSubcategory,
+                               let insight = subcategoryInsights[sub] {
                                 CategoryInsightCard(insight: insight)
                                     .padding(.horizontal, 16)
                                     .padding(.bottom, 4)
@@ -1123,99 +1123,7 @@ struct CategoryInsight {
     let bullets:   [String]
 }
 
-private let categoryInsights: [RecCategory: CategoryInsight] = [
 
-    .health: CategoryInsight(
-        category:  .health,
-        headline:  "World-class care at a fraction of the price",
-        stat:      "Save 50–70% vs. US & Canada",
-        statColor: "#34C759",
-        bullets: [
-            "Dental, specialist consultations, and lab work cost a fraction of what they do at home — same equipment, often US/EU-trained doctors.",
-            "Private hospitals (ABC Medical Center, Médica Sur, Ángeles) are excellent. Avoid IMSS — it's the public system for Mexican citizens only.",
-            "Always ask for the \"precio de contado\" (cash price) — saves you another 15–20% on top of the already lower base rate.",
-            "Bring prior X-rays, prescriptions, or medical history. Doctors here appreciate the context and won't make you redo everything."
-        ]
-    ),
-
-    .beauty: CategoryInsight(
-        category:  .beauty,
-        headline:  "Great results — but know what you're buying",
-        stat:      nil,
-        statColor: "#FF2D55",
-        bullets: [
-            "Aesthetic treatments (Botox, fillers, laser) don't require the same licensure as in the US or EU. Ask if your provider is a board-certified dermatologist (\"dermatólogo certificado\").",
-            "Always ask what brand of injectables they use. Legitimate clinics will tell you — Allergan Botox vs. generics is a real difference.",
-            "Hair salons in Roma and Condesa are genuinely excellent — expect 40–60% less than equivalent work back home.",
-            "Tipping is appreciated, not mandatory. 10–15% is considered generous."
-        ]
-    ),
-
-    .fitness: CategoryInsight(
-        category:  .fitness,
-        headline:  "Thriving wellness scene — no rigid cert system",
-        stat:      nil,
-        statColor: "#34C759",
-        bullets: [
-            "There's no national PT certification body equivalent to NASM or ACE. Ask trainers where they studied and what their background is.",
-            "Drop-in yoga and boutique fitness classes are the norm — no long-term contracts, pay as you go.",
-            "Standard gym memberships run $300–800 MXN/month. Boutique studios (pilates, barre, boxing) are $150–200 MXN per class.",
-            "CrossFit, functional training, and martial arts communities are strong here. Most studios mix expats and locals."
-        ]
-    ),
-
-    .home: CategoryInsight(
-        category:  .home,
-        headline:  "Good help is out there — vet it carefully",
-        stat:      nil,
-        statColor: "#FF9500",
-        bullets: [
-            "Plumbers and electricians don't require formal licensing in CDMX. Word-of-mouth referrals matter more than credentials — hence this section.",
-            "Always get 2–3 quotes. Cash is standard. Agree on the price before work starts and get it in writing for anything significant.",
-            "Standard apartment cleaning runs $350–500 MXN for a 2BR. Weekly arrangements are common and usually discounted.",
-            "For AC service, most techs specialize by brand. Tell them your unit's make when you book — a Daikin tech may not carry Carrier parts."
-        ]
-    ),
-
-    .legal: CategoryInsight(
-        category:  .legal,
-        headline:  "A Notario Público is not your average notary",
-        stat:      nil,
-        statColor: "#5856D6",
-        bullets: [
-            "In Mexico, a Notario Público is a state-appointed attorney with near-judicial authority. You need one for real estate, company formation, wills, and apostilles — far more powerful than a notary back home.",
-            "For residency (Temporal or Permanente), an immigration attorney is strongly recommended. INM (immigration office) processes are inconsistent — a good lawyer knows which office does what.",
-            "Incorporating a business (SA de CV) requires a notary and typically runs $8,000–15,000 MXN in fees, plus the notary's time.",
-            "Verify attorneys are registered with the Barra Mexicana de Abogados. Ask for their cédula profesional number — it's public record."
-        ]
-    ),
-
-    .finance: CategoryInsight(
-        category:  .finance,
-        headline:  "The Mexican tax system is its own universe",
-        stat:      nil,
-        statColor: "#30B0C7",
-        bullets: [
-            "If you're working remotely or running a business here, you need a contador registered with SAT (Mexico's tax authority) — don't try to wing it.",
-            "The RFC (tax ID) and CFDI electronic invoicing system are mandatory for any formal business. Your accountant handles this.",
-            "Most traditional banks require a CURP + proof of address to open an account. Nubank Mexico and Hey Banco are significantly easier for expats.",
-            "Wise and Revolut work well day-to-day. Watch MXN/USD rates — they move, and timing your transfers matters."
-        ]
-    ),
-
-    .tech: CategoryInsight(
-        category:  .tech,
-        headline:  "No Apple Stores — but there are real options",
-        stat:      "Apple products run 20–35% more than US prices",
-        statColor: "#007AFF",
-        bullets: [
-            "There are no official Apple Stores in Mexico City. Authorized Service Providers (MacStore, iShop) can handle warranty repairs and AppleCare+ service.",
-            "Using an unauthorized repair shop voids AppleCare+ coverage. If you're covered, use an authorized provider — the price difference is worth it.",
-            "Android parts are widely available in Tepito and Centro Histórico at competitive prices. Quality varies — ask if parts are OEM or aftermarket.",
-            "Mexican voltage is 127V/60Hz — compatible with most modern devices (laptops, phones charge fine). No adapters needed, just the right plug shape."
-        ]
-    ),
-]
 
 // MARK: - Category Insight Card View
 
