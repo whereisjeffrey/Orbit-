@@ -252,17 +252,22 @@ struct RecRecommender {
     }
 }
 
+struct RecReview: Identifiable {
+    let id           = UUID()
+    let text:        String
+    let recommender: RecRecommender
+}
+
 struct LocalRec: Identifiable {
     let id           = UUID()
     let businessName:  String
     let category:      RecCategory
     let subcategory:   RecSubcategory?
     let description:   String
-    let testimonial:   String
+    var reviews:       [RecReview]
     let price:         PriceTier?
     let neighbourhood: String
     let tags:          [String]
-    let recommender:   RecRecommender
     var endorsements:  Int
     var website:       String?
     var instagram:     String?  = nil    // handle without @
@@ -277,10 +282,12 @@ private let seedRecs: [LocalRec] = [
         businessName: "Dr. Alejandro Reyes",
         category: .health, subcategory: .dentistry,
         description: "General dentistry & implants · Condesa",
-        testimonial: "Saved me $2,400 on two implants vs what I was quoted back home. English-speaking, clean, modern clinic. Gets booked up fast — message ahead.",
+        reviews: [
+            RecReview(text: "Saved me $2,400 on two implants vs what I was quoted back home. English-speaking, clean, modern clinic. Gets booked up fast — message ahead.", recommender: RecRecommender(name: "Sarah M.", initials: "SM", trustLevel: .trustedLocal, monthsInCity: 18)),
+            RecReview(text: "Three years of avoiding the dentist, fixed in two appointments. Clear pricing up front, no surprises. My whole household goes here now.", recommender: RecRecommender(name: "Tom W.", initials: "TW", trustLevel: .settling, monthsInCity: 7)),
+        ],
         price: .mid, neighbourhood: "Condesa",
         tags: ["English-friendly", "Implants", "Walk-in OK"],
-        recommender: RecRecommender(name: "Sarah M.", initials: "SM", trustLevel: .trustedLocal, monthsInCity: 18),
         endorsements: 14, website: nil,
         photoURL: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=800&q=80"
     ),
@@ -288,10 +295,9 @@ private let seedRecs: [LocalRec] = [
         businessName: "Fernanda Orozco",
         category: .fitness, subcategory: .pt,
         description: "NASM-certified PT · trains outdoors & at your gym",
-        testimonial: "Best trainer I've had in any city. She speaks English, adapts to your level, and actually shows up on time — which in CDMX is saying something. ~$35/session.",
+        reviews: [RecReview(text: "Best trainer I've had in any city. She speaks English, adapts to your level, and actually shows up on time — which in CDMX is saying something. ~$35/session.", recommender: RecRecommender(name: "Jake T.", initials: "JT", trustLevel: .local, monthsInCity: 9))],
         price: .mid, neighbourhood: "Roma Norte",
         tags: ["English-friendly", "Outdoor sessions", "Nutrition coaching"],
-        recommender: RecRecommender(name: "Jake T.", initials: "JT", trustLevel: .local, monthsInCity: 9),
         endorsements: 11, website: nil,
         photoURL: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&q=80"
     ),
@@ -329,40 +335,33 @@ private let seedRecs: [LocalRec] = [
         businessName: "Clínica Derma MX",
         category: .health, subcategory: .dermatology,
         description: "Dermatology, Botox & skincare treatments · Polanco",
-        testimonial: "Botox was $180 USD all-in, same product I get at home for $550. Dr. Vargas is meticulous. Clinic is spotless. Bring a photo of what you want.",
-        price: .mid, neighbourhood: "Polanco",
-        tags: ["Botox", "Fillers", "English-friendly"],
-        recommender: RecRecommender(name: "Tara S.", initials: "TS", trustLevel: .local, monthsInCity: 11),
+        reviews: [RecReview(text: "Botox was $180 USD all-in, same product I get at home for $550. Dr. Vargas is meticulous. Clinic is spotless. Bring a photo of what you want.", recommender: RecRecommender(name: "Tara S.", initials: "TS", trustLevel: .local, monthsInCity: 11))],
         endorsements: 17, website: "clinicadermamx.com"
     ),
     LocalRec(
         businessName: "Roberto Solís",
         category: .home, subcategory: .plumbing,
         description: "Reliable plumber, same-day in most colonias",
-        testimonial: "Fixed a leak my landlord had been ignoring for months. Showed up in 2 hours, charged $400 MXN and was done in 45 min. Saved his number immediately.",
-        price: .budget, neighbourhood: "Narvarte",
-        tags: ["Same-day", "Leak repair", "Water heater"],
-        recommender: RecRecommender(name: "Ben A.", initials: "BA", trustLevel: .settling, monthsInCity: 5),
+        reviews: [RecReview(text: "Fixed a leak my landlord had been ignoring for months. Showed up in 2 hours, charged $400 MXN and was done in 45 min. Saved his number immediately.", recommender: RecRecommender(name: "Ben A.", initials: "BA", trustLevel: .settling, monthsInCity: 5))],
         endorsements: 6, website: nil
     ),
     LocalRec(
         businessName: "Paz Contadores",
         category: .finance, subcategory: .accounting,
         description: "Tax, RFC registration & expat finances",
-        testimonial: "Handled my RFC setup and monthly taxes as a freelancer. Everything done remotely, very organised, explains everything in plain English. ~$80/mo.",
-        price: .mid, neighbourhood: "Cuauhtémoc",
-        tags: ["RFC setup", "Freelancer-friendly", "Remote"],
-        recommender: RecRecommender(name: "Mia C.", initials: "MC", trustLevel: .trustedLocal, monthsInCity: 14),
+        reviews: [RecReview(text: "Handled my RFC setup and monthly taxes as a freelancer. Everything done remotely, very organised, explains everything in plain English. ~$80/mo.", recommender: RecRecommender(name: "Mia C.", initials: "MC", trustLevel: .trustedLocal, monthsInCity: 14))],
         endorsements: 12, website: "pazcontadores.mx"
     ),
     LocalRec(
         businessName: "FlexYoga CDMX",
         category: .fitness, subcategory: .yoga,
         description: "Drop-in yoga, English & Spanish classes",
-        testimonial: "Best yoga community in the city. Drop-in is $120 MXN, packs are cheaper. Morning classes fill up — book the night before on their app.",
+        reviews: [
+            RecReview(text: "Best yoga community in the city. Drop-in is $120 MXN, packs are cheaper. Morning classes fill up — book the night before on their app.", recommender: RecRecommender(name: "Ana P.", initials: "AP", trustLevel: .local, monthsInCity: 8)),
+            RecReview(text: "I've tried four yoga studios here. This one has the best English instruction and the most welcoming vibe — locals and expats mixed, which I love.", recommender: RecRecommender(name: "Chris B.", initials: "CB", trustLevel: .newArrival, monthsInCity: 2)),
+        ],
         price: .budget, neighbourhood: "Condesa",
         tags: ["Drop-in", "English classes", "Community vibe"],
-        recommender: RecRecommender(name: "Ana P.", initials: "AP", trustLevel: .local, monthsInCity: 8),
         endorsements: 9, website: "flexyogacdmx.com",
         photoURL: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80"
     ),
@@ -370,10 +369,7 @@ private let seedRecs: [LocalRec] = [
         businessName: "iRepara CDMX",
         category: .tech, subcategory: .phoneRepair,
         description: "iPhone & Android repairs, Condesa",
-        testimonial: "Cracked my screen on day two. This guy fixed it in 45 minutes for 350 pesos. Legit parts, not knock-offs. Saved me a long trip to the Apple Store.",
-        price: .budget, neighbourhood: "Condesa",
-        tags: ["iPhone", "Android", "Walk-in"],
-        recommender: RecRecommender(name: "Marcus T.", initials: "MT", trustLevel: .settling, monthsInCity: 8),
+        reviews: [RecReview(text: "Cracked my screen on day two. This guy fixed it in 45 minutes for 350 pesos. Legit parts, not knock-offs. Saved me a long trip to the Apple Store.", recommender: RecRecommender(name: "Marcus T.", initials: "MT", trustLevel: .settling, monthsInCity: 8))],
         endorsements: 9,
         englishSpeaking: true,
         photoURL: "https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=800&q=80"
@@ -382,10 +378,7 @@ private let seedRecs: [LocalRec] = [
         businessName: "Dr. Wei Acupunctura",
         category: .health, subcategory: .acupuncture,
         description: "Traditional Chinese acupuncture, Roma Norte",
-        testimonial: "Three sessions for lower back pain and I felt like a different person. She explains everything in English and the space is beautiful.",
-        price: .mid, neighbourhood: "Roma Norte",
-        tags: ["Back pain", "Traditional Chinese Medicine", "English-speaking"],
-        recommender: RecRecommender(name: "Priya N.", initials: "PN", trustLevel: .local, monthsInCity: 14),
+        reviews: [RecReview(text: "Three sessions for lower back pain and I felt like a different person. She explains everything in English and the space is beautiful.", recommender: RecRecommender(name: "Priya N.", initials: "PN", trustLevel: .local, monthsInCity: 14))],
         endorsements: 7,
         englishSpeaking: true,
         photoURL: "https://images.unsplash.com/photo-1512678080530-7760d81faba6?w=800&q=80"
@@ -616,6 +609,7 @@ struct LocalRecCard: View {
     @State private var endorsed    = false
     @State private var ogImageURL: String? = nil
     @State private var ogFetchDone = false
+    @State private var showAllReviews = false
     @Environment(\.openURL) private var openURL
 
     private var accentColor: Color { rec.subcategory?.color ?? rec.category.color }
@@ -748,44 +742,14 @@ struct LocalRecCard: View {
             Divider().background(Color.tsBorder).padding(.horizontal, 16)
 
             // ── Footer ────────────────────────────────────────────────
-            HStack(spacing: 10) {
-                // Avatar
-                ZStack {
-                    Circle()
-                        .fill(rec.recommender.trustLevel.color.opacity(0.15))
-                        .frame(width: 30, height: 30)
-                    Text(rec.recommender.initials)
-                        .font(.custom("HelveticaNeue-Bold", size: 10))
-                        .foregroundColor(rec.recommender.trustLevel.color)
-                }
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(rec.recommender.name)
-                        .font(.custom("HelveticaNeue-Medium", size: 12))
-                        .foregroundColor(.tsLabel)
-                    HStack(spacing: 4) {
-                        TrustBadge(level: rec.recommender.trustLevel, compact: true)
-                        Text("·")
-                            .font(.system(size: 10))
-                            .foregroundColor(.tsSecondary)
-                        Text(rec.recommender.tenure)
-                            .font(.custom("HelveticaNeue", size: 11))
-                            .foregroundColor(.tsSecondary)
-                        Text("·")
-                            .font(.system(size: 10))
-                            .foregroundColor(.tsSecondary)
-                        Image(systemName: "mappin")
-                            .font(.system(size: 10))
-                            .foregroundColor(.tsSecondary)
-                        Text(rec.neighbourhood)
-                            .font(.custom("HelveticaNeue", size: 11))
-                            .foregroundColor(.tsSecondary)
-                    }
-                }
-
+            HStack(spacing: 6) {
+                Image(systemName: "mappin")
+                    .font(.system(size: 10))
+                    .foregroundColor(.tsSecondary)
+                Text(rec.neighbourhood)
+                    .font(.custom("HelveticaNeue", size: 12))
+                    .foregroundColor(.tsSecondary)
                 Spacer()
-
-                // Endorse
                 Button(action: {
                     guard !endorsed else { return }
                     endorsed = true
@@ -829,6 +793,101 @@ struct LocalRecCard: View {
     }
 }
 
+
+// MARK: - Review Block (person first, quote below)
+
+private struct ReviewBlock: View {
+    let review: RecReview
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 10) {
+                ZStack {
+                    Circle()
+                        .fill(review.recommender.trustLevel.color.opacity(0.15))
+                        .frame(width: 30, height: 30)
+                    Text(review.recommender.initials)
+                        .font(.custom("HelveticaNeue-Bold", size: 10))
+                        .foregroundColor(review.recommender.trustLevel.color)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(review.recommender.name)
+                        .font(.custom("HelveticaNeue-Medium", size: 13))
+                        .foregroundColor(.tsLabel)
+                    HStack(spacing: 4) {
+                        TrustBadge(level: review.recommender.trustLevel, compact: true)
+                        Text("·")
+                            .font(.system(size: 10))
+                            .foregroundColor(.tsSecondary)
+                        Text(review.recommender.tenure)
+                            .font(.custom("HelveticaNeue", size: 11))
+                            .foregroundColor(.tsSecondary)
+                    }
+                }
+                Spacer()
+            }
+            Text("“\(review.text)”")
+                .font(.custom("HelveticaNeue", size: 14))
+                .foregroundColor(.tsLabel)
+                .lineSpacing(4)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.horizontal, 16)
+    }
+}
+
+// MARK: - Tag Options (per subcategory)
+
+private let subcategoryTagOptions: [RecSubcategory: [String]] = [
+    // Health
+    .dentistry:    ["Walk-ins welcome", "Implants", "Orthodontics", "Cosmetic dentistry", "Root canals", "Children’s dentistry", "Same-day appointments", "X-rays on-site"],
+    .dermatology:  ["Cosmetic procedures", "Medical dermatology", "Laser treatments", "Chemical peels", "Mole removal", "Acne treatment", "Anti-aging", "Same-day"],
+    .mentalHealth: ["Video sessions", "Sliding scale fees", "CBT", "Trauma-informed", "LGBTQ+ affirming", "Couples therapy", "Anxiety & stress", "Depression"],
+    .generalDoc:   ["Same-day appointments", "Blood tests on-site", "Prescriptions", "Physicals & check-ups", "Urgent care", "Vaccinations"],
+    .physio:       ["Sports injuries", "Post-surgery rehab", "Dry needling", "Manual therapy", "Back & neck", "Home visits", "Pilates rehab"],
+    .nutrition:    ["Weight management", "Sports nutrition", "Plant-based", "Eating disorders", "Meal planning", "Lab analysis"],
+    .acupuncture:  ["Traditional Chinese medicine", "Sports injury", "Stress & anxiety", "Fertility", "Chronic pain", "Digestion issues", "Insomnia"],
+    // Beauty
+    .hair:         ["Cuts", "Color", "Balayage", "Highlights", "Keratin treatment", "Extensions", "Men’s cuts", "Beards", "Natural hair", "Blowouts"],
+    .nails:        ["Gel", "Acrylics", "Nail art", "Walk-ins welcome", "Pedicures", "Dip powder"],
+    .botox:        ["Licensed MD", "Board-certified surgeon", "Botox", "Fillers", "Threads", "Laser", "Chemical peel", "Microneedling", "PRP"],
+    .spa:          ["Swedish massage", "Deep tissue", "Facials", "Body scrubs", "Couples sessions", "Hot stone", "Prenatal massage"],
+    .waxing:       ["Brazilian", "Full body", "Men’s waxing", "Eyebrows", "Walk-ins welcome"],
+    // Fitness
+    .pt:           ["Weight loss", "Muscle building", "Injury rehab", "Outdoor sessions", "Home visits", "Nutrition coaching", "Pre/postnatal", "Seniors"],
+    .yoga:         ["Vinyasa", "Hatha", "Yin", "Hot yoga", "Prenatal", "Aerial yoga", "English classes", "Drop-in"],
+    .gym:          ["24/7 access", "Personal training", "Pool", "Sauna", "Classes included", "Month-to-month", "Lockers"],
+    .pilates:      ["Reformer", "Mat pilates", "Prenatal", "Injury rehab", "Small groups", "Private sessions"],
+    .martialArts:  ["Boxing", "MMA", "BJJ", "Muay Thai", "Judo", "Kids classes", "Sparring", "Beginners welcome"],
+    // Home
+    .cleaning:     ["Deep clean", "Move-in/out clean", "Regular schedule", "Brings supplies", "Eco-friendly products", "Laundry included", "Ironing"],
+    .plumbing:     ["Emergency callouts", "Water heaters", "Leak repair", "Drain cleaning", "Pipe installation", "Same-day"],
+    .electrician:  ["Emergency callouts", "Panel upgrades", "AC installation", "Smart home", "Rewiring", "Same-day"],
+    .acRepair:     ["Daikin", "Carrier", "LG", "Samsung", "Mitsubishi", "All brands", "Installation", "Maintenance contracts", "Emergency"],
+    .gardening:    ["Garden design", "Maintenance", "Irrigation", "Planting", "Tree trimming"],
+    // Legal
+    .immigration:  ["Temporal residency", "Permanente residency", "FMM extensions", "Work permits", "Apostilles", "RFC for foreigners", "Citizenship"],
+    .notary:       ["Real estate", "Company formation", "Wills", "Power of attorney", "Apostilles", "Document legalization"],
+    .bizLaw:       ["SA de CV formation", "Employment contracts", "IP protection", "Freelance contracts", "Due diligence"],
+    // Finance
+    .accounting:   ["Freelancers", "Companies", "RFC setup", "Monthly declarations", "Annual declaration", "VAT / IVA", "SAT disputes", "Remote service"],
+    .banking:      ["Account opening help", "FX transfers", "Investment advice", "Crypto", "Mortgage", "Retirement planning"],
+    // Tech
+    .phoneRepair:  ["iPhone", "Android", "Screen repair", "Battery replacement", "Water damage", "Data recovery", "Same-day", "OEM parts"],
+    .computerRepair: ["Mac", "PC / Windows", "Screen repair", "Data recovery", "Virus removal", "RAM / SSD upgrades", "Same-day"],
+    .dataRecovery: ["External drives", "Phone data", "Laptop recovery", "RAID arrays", "Water damage", "No-fix no-fee"],
+]
+
+private let categoryTagOptions: [RecCategory: [String]] = [
+    .health:   ["English-speaking", "Same-day", "Walk-ins welcome", "Payment plans", "Home visits"],
+    .beauty:   ["Walk-ins welcome", "Appointment required", "English-speaking", "Online booking"],
+    .fitness:  ["English-speaking", "Drop-in available", "Online sessions", "Outdoor sessions"],
+    .home:     ["Same-day", "Emergency callouts", "References available", "Brings supplies"],
+    .legal:    ["English-speaking", "Free consultation", "Fixed fee", "Remote consultations"],
+    .finance:  ["English-speaking", "Remote service", "Fixed monthly fee", "First consult free"],
+    .tech:     ["Same-day", "Walk-in", "OEM parts", "Pick-up service"],
+]
+
 // MARK: - Add Rec Sheet
 
 struct AddRecSheet: View {
@@ -842,7 +901,7 @@ struct AddRecSheet: View {
     @State private var testimonial   = ""
     @State private var price: PriceTier? = nil
     @State private var neighbourhood = ""
-    @State private var tagsText      = ""
+    @State private var selectedTags: Set<String> = []
     @State private var website       = ""
     @State private var instagram     = ""
     @State private var englishAnswer = ""   // "Yes" / "No" / "Not sure" / ""
@@ -1028,12 +1087,58 @@ struct AddRecSheet: View {
                             }
                         }
 
-                        // Tags
-                        RecFormField(label: "Tags, comma separated") {
-                            TextField("e.g. English-friendly, Walk-in OK", text: $tagsText)
-                                .font(.custom("HelveticaNeue", size: 16))
-                                .foregroundColor(.tsLabel)
+                        // Tags — pill picker
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Tags")
+                                .font(.custom("HelveticaNeue-Medium", size: 13))
+                                .foregroundColor(.tsSecondary)
+                            let opts = subcategory.flatMap { subcategoryTagOptions[$0] }
+                                ?? categoryTagOptions[category]
+                                ?? []
+                            if opts.isEmpty {
+                                Text("Select a category above to see tag options")
+                                    .font(.custom("HelveticaNeue", size: 13))
+                                    .foregroundColor(.tsSecondary.opacity(0.7))
+                                    .padding(14)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .background(Color.tsCard)
+                                    .cornerRadius(12)
+                            } else {
+                                LazyVGrid(
+                                    columns: [GridItem(.adaptive(minimum: 88, maximum: 180), spacing: 8)],
+                                    alignment: .leading, spacing: 8
+                                ) {
+                                    ForEach(opts, id: \.self) { tag in
+                                        let on = selectedTags.contains(tag)
+                                        Button(action: {
+                                            if on { selectedTags.remove(tag) } else { selectedTags.insert(tag) }
+                                        }) {
+                                            Text(tag)
+                                                .font(.custom("HelveticaNeue", size: 12))
+                                                .foregroundColor(on ? .white : .tsLabel)
+                                                .lineLimit(2)
+                                                .multilineTextAlignment(.center)
+                                                .padding(.horizontal, 10)
+                                                .padding(.vertical, 7)
+                                                .frame(maxWidth: .infinity)
+                                                .background(on ? Color.tsAccent : Color.tsCard)
+                                                .clipShape(Capsule())
+                                                .overlay(Capsule().stroke(
+                                                    on ? Color.clear : Color.tsBorder.opacity(0.4),
+                                                    lineWidth: 0.5
+                                                ))
+                                                .animation(.easeInOut(duration: 0.12), value: on)
+                                        }
+                                        .buttonStyle(PlainButtonStyle())
+                                    }
+                                }
+                                .padding(12)
+                                .background(Color.tsCard)
+                                .cornerRadius(12)
+                            }
                         }
+                        .onChange(of: subcategory) { _, _ in selectedTags = [] }
+                        .onChange(of: category)    { _, _ in selectedTags = [] }
 
                         // Save
                         Button(action: save) {
@@ -1062,19 +1167,18 @@ struct AddRecSheet: View {
     }
 
     private func save() {
-        let tags = tagsText.split(separator: ",")
-            .map { $0.trimmingCharacters(in: .whitespaces) }
-            .filter { !$0.isEmpty }
         let newRec = LocalRec(
             businessName:  businessName.trimmingCharacters(in: .whitespaces),
             category:      category,
             subcategory:   subcategory,
             description:   description.trimmingCharacters(in: .whitespaces),
-            testimonial:   testimonial.trimmingCharacters(in: .whitespaces),
+            reviews:       [RecReview(
+                text: testimonial.trimmingCharacters(in: .whitespaces),
+                recommender: RecRecommender(name: "You", initials: "ME", trustLevel: .settling, monthsInCity: 0)
+            )],
             price:         price,
             neighbourhood: neighbourhood.trimmingCharacters(in: .whitespaces),
-            tags:          tags,
-            recommender:   RecRecommender(name: "You", initials: "ME", trustLevel: .settling, monthsInCity: 0),
+            tags:          Array(selectedTags),
             endorsements:  0,
             website:       website.trimmingCharacters(in: .whitespaces).isEmpty ? nil : website.trimmingCharacters(in: .whitespaces),
             instagram:     instagram.trimmingCharacters(in: .whitespaces).isEmpty ? nil : instagram.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: "@", with: ""),
