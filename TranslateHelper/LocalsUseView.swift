@@ -599,7 +599,9 @@ struct LocalsUseView: View {
 struct LocalRecCard: View {
     let rec: LocalRec
     let onEndorse: (UUID) -> Void
-    @State private var endorsed = false
+    @State private var endorsed    = false
+    @State private var ogImageURL: String? = nil
+    @State private var ogFetchDone = false
     @Environment(\.openURL) private var openURL
 
     private var accentColor: Color { rec.subcategory?.color ?? rec.category.color }
