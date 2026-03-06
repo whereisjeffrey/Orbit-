@@ -25,7 +25,7 @@ struct SIMCarrier: Identifiable {
 private let simCarriers: [SIMCarrier] = [
     SIMCarrier(
         name:       "Telcel",
-        logoURL:    "carrier-telcel",
+        logoAsset: "carrier-telcel",
         tagline:    "Best coverage — 65% market share",
         badgeIcon:  "antenna.radiowaves.left.and.right",
         badgeColor: "#FF6B00",
@@ -43,7 +43,7 @@ private let simCarriers: [SIMCarrier] = [
     ),
     SIMCarrier(
         name:       "AT&T Mexico",
-        logoURL:    "carrier-att-mexico",
+        logoAsset: "carrier-att-mexico",
         tagline:    "Strong in cities — good data speeds",
         badgeIcon:  "wifi",
         badgeColor: "#0099FF",
@@ -59,7 +59,7 @@ private let simCarriers: [SIMCarrier] = [
     ),
     SIMCarrier(
         name:       "Movistar",
-        logoURL:    "carrier-movistar",
+        logoAsset: "carrier-movistar",
         tagline:    "Budget option — major cities only",
         badgeIcon:  "cellularbars",
         badgeColor: "#34C759",
@@ -395,7 +395,7 @@ struct SIMESIMSection: View {
     private struct ESIMProvider: Identifiable {
         let id      = UUID()
         let name:    String
-        let logoURL: String
+        let logoAsset: String
         let tagline: String
         let detail:  String
         let color:   String
@@ -406,7 +406,7 @@ struct SIMESIMSection: View {
     private let providers: [ESIMProvider] = [
         ESIMProvider(
             name:    "Airalo",
-            logoURL: "carrier-airalo",
+            logoAsset: "carrier-airalo",
             tagline: "Buy before you land",
             detail:  "From $5 USD / 1GB",
             color:   "#1B4DFF",
@@ -415,7 +415,7 @@ struct SIMESIMSection: View {
         ),
         ESIMProvider(
             name:    "Holafly",
-            logoURL: "carrier-holafly",
+            logoAsset: "carrier-holafly",
             tagline: "Unlimited data, easiest setup",
             detail:  "From $27 USD / 7 days unlimited",
             color:   "#FF6B35",
@@ -497,7 +497,7 @@ struct USCarrierSection: View {
     private struct USCarrier: Identifiable {
         let id      = UUID()
         let name:    String
-        let logoURL: String
+        let logoAsset: String
         let badge:   String
         let color:   String
         let detail:  String
@@ -506,28 +506,28 @@ struct USCarrierSection: View {
     private let carriers: [USCarrier] = [
         USCarrier(
             name:   "T-Mobile",
-            logoURL: "carrier-tmobile",
+            logoAsset: "carrier-tmobile",
             badge:  "Best for US users",
             color:  "#E20074",
             detail: "Free unlimited calls, texts + data (reduced speeds) included on most plans. Full LTE on Magenta Plus / Go5G. Uses Telcel network."
         ),
         USCarrier(
             name:   "AT&T US",
-            logoURL: "carrier-att-us",
+            logoAsset: "carrier-att-us",
             badge:  "Day Pass or add-on",
             color:  "#00A8E0",
             detail: "International Day Pass $10/day for full speeds. Some plans include basic Mexico coverage. Check your plan."
         ),
         USCarrier(
             name:   "Verizon",
-            logoURL: "carrier-verizon",
+            logoAsset: "carrier-verizon",
             badge:  "Most expensive option",
             color:  "#CD040B",
             detail: "TravelPass $10/day. No free Mexico roaming. Roams on Telcel. Fine if you need it but pricey."
         ),
         USCarrier(
             name:   "Sprint / T-Mobile",
-            logoURL: "carrier-sprint",
+            logoAsset: "carrier-sprint",
             badge:  "Merged → same as T-Mobile",
             color:  "#6B2D8B",
             detail: "Sprint is now T-Mobile — same coverage applies. If you have an old Sprint plan, check your T-Mobile benefits."
