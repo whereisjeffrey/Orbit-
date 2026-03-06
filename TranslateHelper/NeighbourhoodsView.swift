@@ -40,6 +40,7 @@ struct Neighbourhood: Identifiable {
     let highlights: [String]
     let watchOut: String?
     let soul: SoulCard
+    let polygon: [CLLocationCoordinate2D]
 }
 
 private let neighbourhoods: [Neighbourhood] = [
@@ -71,6 +72,7 @@ private let neighbourhoods: [Neighbourhood] = [
             "Most expats and nomads land here first — strong community",
         ],
         watchOut: "Priciest neighbourhood for rent. Gets touristy on weekends.",
+        polygon: NeighbourhoodPolygon.romaNorte,
         soul: SoulCard(
             icon: "laptopcomputer",
             title: "Where Everyone Lands First",
@@ -105,6 +107,7 @@ private let neighbourhoods: [Neighbourhood] = [
             "Very walkable, bike-friendly streets",
         ],
         watchOut: "Slightly pricier than Roma Norte. Street parking chaos on weekends.",
+        polygon: NeighbourhoodPolygon.condesa,
         soul: SoulCard(
             icon: "leaf.fill",
             title: "CDMX's Living Room",
@@ -138,6 +141,7 @@ private let neighbourhoods: [Neighbourhood] = [
             "Great value now — prices will catch up",
         ],
         watchOut: "Some areas around Zona Rosa can feel sketchy late at night.",
+        polygon: NeighbourhoodPolygon.juarez,
         soul: SoulCard(
             icon: "paintpalette.fill",
             title: "New Artist District",
@@ -171,6 +175,7 @@ private let neighbourhoods: [Neighbourhood] = [
             "Considered the safest neighbourhood in CDMX",
         ],
         watchOut: "Most expensive in the city. Very corporate — quieter on weekends.",
+        polygon: NeighbourhoodPolygon.polanco,
         soul: SoulCard(
             icon: "star.fill",
             title: "The City's Best Address",
@@ -203,6 +208,7 @@ private let neighbourhoods: [Neighbourhood] = [
             "One of the most atmospheric parts of the city — feels like a different era",
         ],
         watchOut: "40–50 min from Roma Norte. Less connected to the nomad scene.",
+        polygon: NeighbourhoodPolygon.coyoacan,
         soul: SoulCard(
             icon: "building.columns.fill",
             title: "A City Within the City",
@@ -234,6 +240,7 @@ private let neighbourhoods: [Neighbourhood] = [
             "Cheapest rents close to the centre of the city",
         ],
         watchOut: "Chaotic and loud. Less safe at night in some streets. Not ideal for long stays.",
+        polygon: NeighbourhoodPolygon.centro,
         soul: SoulCard(
             icon: "map.fill",
             title: "5,000 Years on Your Doorstep",
@@ -267,6 +274,7 @@ private let neighbourhoods: [Neighbourhood] = [
             "Strong local community — less touristy than Roma",
         ],
         watchOut: nil,
+        polygon: NeighbourhoodPolygon.narvarte,
         soul: SoulCard(
             icon: "sparkles",
             title: "Roma's Cooler Little Sibling",
@@ -294,7 +302,16 @@ struct NeighbourhoodsView: View {
 
                         // ── Interactive map ───────────────────────────────
                         Map(position: $mapPosition) {
-                            ForEach(neighbourhoods) { hood in
+                            // ── Neighbourhood polygon overlays ────────
+                        ForEach(neighbourhoods) { hood in
+                            if #available(iOS 17, *) {
+                                MapPolygon(coordinates: hood.polygon)
+                                    .foregroundStyle(hood.color.opacity(selected?.id == hood.id ? 0.22 : 0.10))
+                                    .stroke(hood.color.opacity(selected?.id == hood.id ? 0.75 : 0.35), lineWidth: selected?.id == hood.id ? 2 : 1)
+                            }
+                        }
+                        // ── Pins ──────────────────────────────────────────
+                        ForEach(neighbourhoods) { hood in
                                 Annotation("", coordinate: hood.coordinate, anchor: .bottom) {
                                     Button {
                                         withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
