@@ -27,6 +27,7 @@ struct SettingsView: View {
     @State private var notificationsEnabled: Bool = true
     @AppStorage("instagram_handle") private var instagramHandle = ""
     @AppStorage("linkedin_handle")  private var linkedinHandle  = ""
+    @AppStorage("facebook_handle")  private var facebookHandle  = ""
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -230,21 +231,11 @@ struct SettingsView: View {
                     // Social Section
                     SectionHeader(title: "Social")
                     VStack(spacing: 0) {
-                        SocialHandleRow(
-                            icon: "instagram",
-                            iconColor: Color(hex: "#E1306C"),
-                            platform: "Instagram",
-                            placeholder: "your_handle",
-                            handle: $instagramHandle 
-                        )
+                        SocialConnectRow(platform: .instagram, handle: $instagramHandle)
                         Divider().background(Color.tsBorder).padding(.leading, 56)
-                        SocialHandleRow(
-                            icon: "linkedin",
-                            iconColor: Color(hex: "#0A66C2"),
-                            platform: "LinkedIn",
-                            placeholder: "your-name",
-                            handle: $linkedinHandle 
-                        )
+                        SocialConnectRow(platform: .linkedin,  handle: $linkedinHandle)
+                        Divider().background(Color.tsBorder).padding(.leading, 56)
+                        SocialConnectRow(platform: .facebook,  handle: $facebookHandle)
                     }
                     .background(Color.tsCard)
                     .cornerRadius(12)
@@ -501,71 +492,201 @@ struct LocationSettingsSheet: View {
 }
 
 
-// MARK: - Social Handle Row
-struct SocialHandleRow: View {
-    let icon: String
-    let iconColor: Color
-    let platform: String
-    let placeholder: String
+// MARK: - Social Connect Row
+
+enum SocialPlatform {
+    case instagram, linkedin, facebook
+
+    var label: String {
+        switch self { case .instagram: return "Instagram"
+                      case .linkedin:  return "LinkedIn"
+                      case .facebook:  return "Facebook" }
+    }
+
+    var color: Color {
+        switch self { case .instagram: return Color(hex: "#E1306C")
+                      case .linkedin:  return Color(hex: "#0A66C2")
+                      case .facebook:  return Color(hex: "#1877F2") }
+    }
+
+    var profileBase: String {
+        switch self { case .instagram: return "https://instagram.com/"
+                      case .linkedin:  return "https://linkedin.com/in/"
+                      case .facebook:  return "https://facebook.com/" }
+    }
+
+    @ViewBuilder var badge: some View {
+        switch self {
+        case .instagram:
+            ZStack {
+                LinearGradient(colors: [Color(hex: "#F58529"), Color(hex: "#DD2A7B"), Color(hex: "#8134AF")],
+                               startPoint: .bottomLeading, endPoint: .topTrailing)
+                Image(systemName: "camera.fill")
+                    .font(.system(size: 13, weight: .medium)).foregroundColor(.white)
+            }
+        case .linkedin:
+            ZStack {
+                Color(hex: "#0A66C2")
+                Text("in").font(.custom("HelveticaNeue-Bold", size: 14)).foregroundColor(.white)
+            }
+        case .facebook:
+            ZStack {
+                Color(hex: "#1877F2")
+                Text("f").font(.custom("HelveticaNeue-Bold", size: 17)).foregroundColor(.white)
+            }
+        }
+    }
+}
+
+struct SocialConnectRow: View {
+    let platform: SocialPlatform
     @Binding var handle: String
-    @FocusState private var focused: Bool
+    @State private var showConnectSheet = false
+    @State private var showDisconnectAlert = false
+    @Environment(\..openURL) private var openURL
+
+    var isConnected: Bool { !handle.isEmpty }
 
     var body: some View {
         HStack(spacing: 12) {
-            // Platform icon badge
-            ZStack {
-                if icon == "instagram" {
-                    LinearGradient(
-                        colors: [
-                            Color(hex: "#F58529"),
-                            Color(hex: "#DD2A7B"),
-                            Color(hex: "#8134AF")
-                        ],
-                        startPoint: .bottomLeading,
-                        endPoint: .topTrailing
-                    )
-                    Image(systemName: "camera.fill")
-                        .font(.custom("HelveticaNeue-Medium", size: 14))
-                        .foregroundColor(.white)
-                } else if icon == "linkedin" {
-                    Color(hex: "#0A66C2")
-                    Text("in")
-                        .font(.custom("HelveticaNeue-Bold", size: 15))
-                        .foregroundColor(.white)
-                } else {
-                    iconColor
-                    Image(systemName: icon)
-                        .font(.custom("HelveticaNeue-Medium", size: 15))
-                        .foregroundColor(.white)
-                }
-            }
-            .frame(width: 28, height: 28)
-            .clipShape(RoundedRectangle(cornerRadius: 7))
+            platform.badge
+                .frame(width: 28, height: 28)
+                .clipShape(RoundedRectangle(cornerRadius: 7))
 
-            Text(platform)
+            Text(platform.label)
                 .font(.custom("HelveticaNeue", size: 17))
                 .foregroundColor(.tsLabel)
 
             Spacer()
 
-            // Inline editable handle
-            HStack(spacing: 4) {
-                Text("@")
-                    .font(.custom("HelveticaNeue", size: 15))
-                    .foregroundColor(handle.isEmpty ? .tsSecondary : .tsAccent)
-                TextField(placeholder, text: $handle)
-                    .font(.custom("HelveticaNeue", size: 15))
+            if isConnected {
+                // Connected state — show handle + green dot
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(Color(hex: "#34C759"))
+                        .frame(width: 7, height: 7)
+                    Text("@\(handle)")
+                        .font(.custom("HelveticaNeue-Medium", size: 14))
+                        .foregroundColor(.tsSecondary)
+                }
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.tsSecondary.opacity(0.4))
+            } else {
+                // Disconnected state — Connect button
+                Text("Connect")
+                    .font(.custom("HelveticaNeue-Medium", size: 14))
                     .foregroundColor(.tsAccent)
-                    .multilineTextAlignment(.trailing)
-                    .autocapitalization(.none)
-                    .autocorrectionDisabled()
-                    .focused($focused)
-                    .frame(maxWidth: 160)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 6)
+                    .background(Color.tsAccent.opacity(0.10))
+                    .clipShape(Capsule())
             }
         }
         .padding(.horizontal, 16)
-        .frame(height: 52)
+        .frame(height: 56)
         .contentShape(Rectangle())
-        .onTapGesture { focused = true }
+        .onTapGesture {
+            if isConnected { showDisconnectAlert = true }
+            else           { showConnectSheet    = true }
+        }
+        // ── Connect sheet ──────────────────────────────────────────────
+        .sheet(isPresented: $showConnectSheet) {
+            ConnectHandleSheet(platform: platform, handle: $handle)
+        }
+        // ── Connected options ──────────────────────────────────────────
+        .confirmationDialog("@\(handle)", isPresented: $showDisconnectAlert, titleVisibility: .visible) {
+            Button("Open Profile") {
+                if let url = URL(string: platform.profileBase + handle) { openURL(url) }
+            }
+            Button("Change Handle") { showConnectSheet = true }
+            Button("Disconnect", role: .destructive) { handle = "" }
+            Button("Cancel", role: .cancel) {}
+        }
+    }
+}
+
+// ── Sheet where the user enters their handle ──────────────────────────────────
+struct ConnectHandleSheet: View {
+    let platform: SocialPlatform
+    @Binding var handle: String
+    @Environment(\..dismiss) var dismiss
+    @State private var draft = ""
+    @FocusState private var focused: Bool
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 32) {
+                // Icon
+                platform.badge
+                    .frame(width: 64, height: 64)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+
+                VStack(spacing: 8) {
+                    Text("Connect \(platform.label)")
+                        .font(.custom("HelveticaNeue-Bold", size: 22))
+                        .foregroundColor(.tsLabel)
+                    Text("Enter your \(platform.label) handle to link your profile to the community.")
+                        .font(.custom("HelveticaNeue", size: 14))
+                        .foregroundColor(.tsSecondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 16)
+                }
+
+                // Handle field
+                HStack(spacing: 6) {
+                    Text("@")
+                        .font(.custom("HelveticaNeue-Bold", size: 17))
+                        .foregroundColor(.tsAccent)
+                    TextField("yourhandle", text: $draft)
+                        .font(.custom("HelveticaNeue", size: 17))
+                        .foregroundColor(.tsLabel)
+                        .autocapitalization(.none)
+                        .autocorrectionDisabled()
+                        .focused($focused)
+                }
+                .padding(.horizontal, 16)
+                .frame(height: 52)
+                .background(Color(UIColor.systemBackground))
+                .cornerRadius(12)
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.25), lineWidth: 1))
+                .padding(.horizontal, 24)
+
+                // Save button
+                Button {
+                    let cleaned = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+                                       .replacingOccurrences(of: "@", with: "")
+                    if !cleaned.isEmpty { handle = cleaned }
+                    dismiss()
+                } label: {
+                    Text("Save")
+                        .font(.custom("HelveticaNeue-Bold", size: 17))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 52)
+                        .background(draft.trimmingCharacters(in: .whitespaces).isEmpty
+                                    ? Color.tsSecondary.opacity(0.35)
+                                    : Color.tsAccent)
+                        .cornerRadius(14)
+                }
+                .disabled(draft.trimmingCharacters(in: .whitespaces).isEmpty)
+                .padding(.horizontal, 24)
+
+                Spacer()
+            }
+            .padding(.top, 40)
+            .background(Color.tsBackground.ignoresSafeArea())
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                        .font(.custom("HelveticaNeue", size: 17))
+                        .foregroundColor(.tsAccent)
+                }
+            }
+            .onAppear {
+                draft = handle
+                focused = true
+            }
+        }
     }
 }
