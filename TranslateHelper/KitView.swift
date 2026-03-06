@@ -19,6 +19,7 @@ enum KitDestination {
     case bureaucracy
     case scamRadar
     case insurance
+    case transportation
 }
 
 struct KitView: View {
@@ -36,6 +37,7 @@ struct KitView: View {
         KitTool(icon: "doc.plaintext",               name: "Bureaucracy",   description: "Banking, visa & healthcare tips",         color: Color(hex: "#5856D6"), destination: .bureaucracy),
         KitTool(icon: "exclamationmark.shield",      name: "Scam Radar",    description: "What to watch out for locally",           color: Color(hex: "#FF3B30"), destination: .scamRadar),
         KitTool(icon: "shield.checkered",             name: "Insurance",     description: "Coverage, providers & Mexico tips",       color: Color(hex: "#34C759"), destination: .insurance),
+        KitTool(icon: "tram.fill",                    name: "Transportation",description: "Ride-hailing, transit, cars & more",      color: Color(hex: "#FF6B00"), destination: .transportation),
     ]
 
     let columns = [GridItem(.flexible(), spacing: 16), GridItem(.flexible(), spacing: 16)]
@@ -96,7 +98,11 @@ struct KitView: View {
             set: { if !$0 { activeDestination = nil } }
         )) { SIMGuideView() }
         .sheet(isPresented: Binding(
-            get: { activeDestination != nil && activeDestination != .work && activeDestination != .currency && activeDestination != .insurance && activeDestination != .sim },
+            get: { activeDestination == .transportation },
+            set: { if !$0 { activeDestination = nil } }
+        )) { TransportationView() }
+        .sheet(isPresented: Binding(
+            get: { activeDestination != nil && activeDestination != .work && activeDestination != .currency && activeDestination != .insurance && activeDestination != .sim && activeDestination != .transportation },
             set: { if !$0 { activeDestination = nil } }
         )) {
             if let dest = activeDestination {
