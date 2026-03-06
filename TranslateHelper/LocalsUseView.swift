@@ -663,9 +663,8 @@ struct LocalRecCard: View {
         }
         .background(Color.tsCard)
         .cornerRadius(18)
-        // Card border tinted by category — My Decks style
         .overlay(RoundedRectangle(cornerRadius: 18)
-            .stroke(accentColor.opacity(0.15), lineWidth: 1))
+            .stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
     }
 }
 
