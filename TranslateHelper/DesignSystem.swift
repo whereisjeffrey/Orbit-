@@ -192,7 +192,7 @@ struct TSTextField: View {
             if isSecure {
                 SecureField(placeholder, text: $text)
                     .focused($secureFocused)
-                    .onChange(of: secureFocused) { focused in
+                    .onChange(of: secureFocused) { _, focused in
                         withAnimation(.easeInOut(duration: 0.2)) { isFocused = focused }
                     }
             } else {

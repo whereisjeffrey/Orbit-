@@ -209,7 +209,7 @@ struct OnboardingPaywallView: View {
                             trailingIcon: "creditcard"
                         )
                         .focused($focusedField, equals: .number)
-                        .onChange(of: cardNumber) { val in
+                        .onChange(of: cardNumber) { _, val in
                             cardNumber = formatCardNumber(val)
                         }
 
@@ -223,7 +223,7 @@ struct OnboardingPaywallView: View {
                                 keyboardType: .numberPad
                             )
                             .focused($focusedField, equals: .expiry)
-                            .onChange(of: expiry) { val in
+                            .onChange(of: expiry) { _, val in
                                 expiry = formatExpiry(val)
                             }
 
@@ -237,7 +237,7 @@ struct OnboardingPaywallView: View {
                                 isSecure: true
                             )
                             .focused($focusedField, equals: .cvv)
-                            .onChange(of: cvv) { val in
+                            .onChange(of: cvv) { _, val in
                                 if val.count > 4 { cvv = String(val.prefix(4)) }
                             }
                         }

@@ -132,7 +132,7 @@ private struct AddWordPane: View {
                         .background(Color.tsCard)
                         .cornerRadius(14)
                         .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.tsBorder, lineWidth: 1))
-                        .onChange(of: wordText) { newVal in
+                        .onChange(of: wordText) { _, newVal in
                             // Debounce-style: clear old translation; translate after brief pause
                             translateError = nil
                             guard !newVal.trimmingCharacters(in: .whitespaces).isEmpty else {

@@ -396,7 +396,7 @@ struct LocalRecCard: View {
             .padding(.bottom, 12)
 
             // ── Testimonial ───────────────────────────────────────────
-            Text(""\(rec.testimonial)"")
+            Text("\u{201C}\(rec.testimonial)\u{201D}")
                 .font(.custom("HelveticaNeue", size: 14))
                 .foregroundColor(.tsLabel)
                 .lineSpacing(3)
