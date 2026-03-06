@@ -62,6 +62,7 @@ private struct RideApp: Identifiable {
     let icon: String
     let badge: String?
     let url: String
+    var logoAsset: String? = nil
 }
 
 private struct RideshareSection: View {
@@ -71,16 +72,16 @@ private struct RideshareSection: View {
     let apps: [RideApp] = [
         RideApp(name: "DiDi",    tagline: "Usually 20–30% cheaper than Uber",
                 detail: "Chinese-owned app that launched in Mexico in 2018. Works exactly like Uber — request, track, pay in-app. Widely available in CDMX, GDL, MTY and expanding fast. Prices are consistently lower. Worth downloading before Uber.",
-                color: Color(hex: "#FF6B00"), icon: "car.fill", badge: "CHEAPEST", url: "https://web.didiglobal.com/mx/"),
+                color: Color(hex: "#FF6B00"), icon: "car.fill", badge: "CHEAPEST", url: "https://apps.apple.com/mx/app/didi/id1362398401", logoAsset: "app-didi"),
         RideApp(name: "Uber",    tagline: "Reliable, familiar, good coverage",
                 detail: "Largest network in Mexico. Works in almost every city. Slightly more expensive than DiDi. Good for late nights or unfamiliar areas when you want maximum driver availability.",
-                color: Color(hex: "#000000"), icon: "car.fill", badge: nil, url: "https://uber.com"),
+                color: Color(hex: "#000000"), icon: "car.fill", badge: nil, url: "https://apps.apple.com/us/app/uber/id368677368", logoAsset: "app-uber"),
         RideApp(name: "inDriver", tagline: "You name your price — driver accepts or counters",
                 detail: "Unique model: you propose a fare, nearby drivers accept or make a counter-offer. Often the cheapest for longer rides. Great for airport trips. Less available in smaller areas.",
-                color: Color(hex: "#1BC464"), icon: "car.fill", badge: "NEGOTIATE", url: "https://indriver.com"),
+                color: Color(hex: "#1BC464"), icon: "car.fill", badge: "NEGOTIATE", url: "https://apps.apple.com/mx/app/indrive/id780125801", logoAsset: "app-indriver"),
         RideApp(name: "Cabify",  tagline: "Professional drivers, slightly premium",
                 detail: "Spanish ride-hailing company. Drivers tend to be more formal, cars cleaner. Slightly pricier. Good option if you want a more consistent experience for client meetings or the airport.",
-                color: Color(hex: "#7B2D8B"), icon: "car.fill", badge: nil, url: "https://cabify.com/mx"),
+                color: Color(hex: "#7B2D8B"), icon: "car.fill", badge: nil, url: "https://apps.apple.com/us/app/cabify/id476087442", logoAsset: "app-cabify"),
     ]
 
     var body: some View {
@@ -101,6 +102,7 @@ private struct RideshareSection: View {
                 }
             }
             .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color(hex: "#FF3B30").opacity(0.08))
             .cornerRadius(12)
             .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(hex: "#FF3B30").opacity(0.15), lineWidth: 0.5))
@@ -131,9 +133,17 @@ private struct RideAppCard: View {
                         RoundedRectangle(cornerRadius: 10)
                             .fill(app.color.opacity(0.12))
                             .frame(width: 40, height: 40)
-                        Image(systemName: app.icon)
-                            .font(.system(size: 16))
-                            .foregroundColor(app.color)
+                        if let asset = app.logoAsset, UIImage(named: asset) != nil {
+                            Image(asset)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 28, height: 28)
+                                .clipShape(RoundedRectangle(cornerRadius: 6))
+                        } else {
+                            Image(systemName: app.icon)
+                                .font(.system(size: 16))
+                                .foregroundColor(app.color)
+                        }
                     }
                     VStack(alignment: .leading, spacing: 3) {
                         HStack(spacing: 6) {

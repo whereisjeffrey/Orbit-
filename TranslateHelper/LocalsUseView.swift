@@ -442,7 +442,7 @@ struct LocalsUseView: View {
                         .background(Color(UIColor.systemBackground))
                         .cornerRadius(12)
                         .overlay(RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color(UIColor.separator).opacity(0.25), lineWidth: 0.5))
+                            .stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                         .padding(.horizontal, 16).padding(.top, 8).padding(.bottom, 12)
 
                         // ── Category pills — top row ──────────────────
@@ -982,7 +982,7 @@ struct AddRecSheet: View {
                         // Testimonial
                         VStack(alignment: .leading, spacing: 8) {
                             HStack {
-                                RecFieldLabel("Your experience", required: true)
+                                RecFieldLabel("Your experience")
                                 Spacer()
                                 Text("\(testimonial.count)/280")
                                     .font(.custom("HelveticaNeue", size: 12))
@@ -993,9 +993,7 @@ struct AddRecSheet: View {
                                 .foregroundColor(.tsLabel)
                                 .scrollContentBackground(.hidden)
                                 .frame(minHeight: 100)
-                                .padding(12)
-                                .background(Color.tsCard)
-                                .cornerRadius(12)
+
                                 .overlay(RoundedRectangle(cornerRadius: 12)
                                     .stroke(testimonial.count > 280 ? Color.red.opacity(0.5) : Color.tsBorder.opacity(0.4), lineWidth: 0.5))
                         }
@@ -1126,9 +1124,7 @@ struct AddRecSheet: View {
                                         .buttonStyle(PlainButtonStyle())
                                     }
                                 }
-                                .padding(12)
-                                .background(Color.tsCard)
-                                .cornerRadius(12)
+
                             }
                         }
                         .onChange(of: subcategory) { _, _ in selectedTags = [] }

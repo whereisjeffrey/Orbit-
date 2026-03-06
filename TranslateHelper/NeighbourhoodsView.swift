@@ -365,7 +365,8 @@ struct NeighbourhoodsView: View {
                             }
                             .padding(.horizontal, 16)
                         }
-                        .padding(.vertical, 5)
+                        .padding(.top, 12)
+                        .padding(.bottom, 12)
 
                         // ── Neighbourhood cards ────────────────────────────
                         VStack(spacing: 12) {
@@ -552,7 +553,7 @@ private struct NeighbourhoodCard: View {
             }
         }
         .background(isHighlighted ? hood.color.opacity(0.07) : Color.tsCard)
-        .cornerRadius(16)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay(
             RoundedRectangle(cornerRadius: 16)
                 .stroke(isHighlighted ? hood.color : Color.tsAccent.opacity(0.08),
