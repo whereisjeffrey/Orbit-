@@ -305,30 +305,27 @@ private let seedRecs: [LocalRec] = [
         businessName: "Limpia Total",
         category: .home, subcategory: .cleaning,
         description: "Weekly & deep-clean service trusted by expats",
-        testimonial: "Maria and her team have been cleaning my apartment for 8 months. Super reliable, thorough, totally fair. About $25 for a 1BR deep clean.",
+        reviews: [RecReview(text: "Maria and her team have been cleaning my apartment for 8 months. Super reliable, thorough, totally fair. About $25 for a 1BR deep clean.", recommender: RecRecommender(name: "Priya K.", initials: "PK", trustLevel: .trustedLocal, monthsInCity: 22))],
         price: .budget, neighbourhood: "Juárez",
         tags: ["Weekly available", "Deep clean", "Key-holder trusted"],
-        recommender: RecRecommender(name: "Priya K.", initials: "PK", trustLevel: .trustedLocal, monthsInCity: 22),
         endorsements: 19, website: nil
     ),
     LocalRec(
         businessName: "Diego Hernández",
         category: .legal, subcategory: .immigration,
         description: "Residency, visas & apostilles · Polanco",
-        testimonial: "Got my temporary residency done in 6 weeks flat. Diego was transparent about costs upfront — no hidden fees. Worth every peso. Fluent in English.",
+        reviews: [RecReview(text: "Got my temporary residency done in 6 weeks flat. Diego was transparent about costs upfront — no hidden fees. Worth every peso. Fluent in English.", recommender: RecRecommender(name: "Carlos R.", initials: "CR", trustLevel: .cityExpert, monthsInCity: 36))],
         price: .mid, neighbourhood: "Polanco",
         tags: ["English-speaking", "Residency", "Apostilles"],
-        recommender: RecRecommender(name: "Carlos R.", initials: "CR", trustLevel: .cityExpert, monthsInCity: 36),
         endorsements: 23, website: "diegohernandez.mx"
     ),
     LocalRec(
         businessName: "Studio Bloom",
         category: .beauty, subcategory: .hair,
         description: "Balayage, cuts & colour · Roma Norte",
-        testimonial: "Finally found a colorist who gets fine hair. Lucia did exactly what I asked for — and charged me 60% less than I'd pay in NYC. Book online, she fills up.",
+        reviews: [RecReview(text: "Finally found a colorist who gets fine hair. Lucia did exactly what I asked for — and charged me 60% less than I'd pay in NYC. Book online, she fills up.", recommender: RecRecommender(name: "Emma L.", initials: "EL", trustLevel: .settling, monthsInCity: 4))],
         price: .mid, neighbourhood: "Roma Norte",
         tags: ["Colour specialist", "Fine hair", "Online booking"],
-        recommender: RecRecommender(name: "Emma L.", initials: "EL", trustLevel: .settling, monthsInCity: 4),
         endorsements: 8, website: "studiobloom.mx"
     ),
     LocalRec(
@@ -664,13 +661,50 @@ struct LocalRecCard: View {
             .padding(.top, 16)
             .padding(.bottom, 14)
 
-            // ── Testimonial ───────────────────────────────────────────
-            Text("\u{201C}\(rec.testimonial)\u{201D}")
-                .font(.custom("HelveticaNeue", size: 14))
-                .foregroundColor(.tsLabel)
-                .lineSpacing(4)
-                .padding(.horizontal, 16)
+            // ── Reviews ───────────────────────────────────────────
+            if !rec.reviews.isEmpty {
+                VStack(alignment: .leading, spacing: 0) {
+                    ReviewBlock(review: rec.reviews[0])
+
+                    if rec.reviews.count > 1 {
+                        if showAllReviews {
+                            ForEach(Array(rec.reviews.dropFirst())) { review in
+                                Divider()
+                                    .background(Color.tsBorder)
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 10)
+                                ReviewBlock(review: review)
+                            }
+                            Button(action: { withAnimation(.easeInOut(duration: 0.2)) { showAllReviews = false } }) {
+                                HStack(spacing: 4) {
+                                    Text("Show less")
+                                        .font(.custom("HelveticaNeue", size: 12))
+                                    Image(systemName: "chevron.up")
+                                        .font(.system(size: 10))
+                                }
+                                .foregroundColor(.tsSecondary)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            .padding(.horizontal, 16)
+                            .padding(.top, 10)
+                        } else {
+                            Button(action: { withAnimation(.easeInOut(duration: 0.2)) { showAllReviews = true } }) {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "plus.circle")
+                                        .font(.system(size: 11))
+                                    Text("\(rec.reviews.count - 1) more review\(rec.reviews.count - 1 == 1 ? \"\" : \"s\")")
+                                        .font(.custom("HelveticaNeue", size: 12))
+                                }
+                                .foregroundColor(.tsAccent)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            .padding(.horizontal, 16)
+                            .padding(.top, 10)
+                        }
+                    }
+                }
                 .padding(.bottom, 14)
+            }
 
             // ── Website + Instagram ───────────────────────────────────
             let hasLinks = (rec.website != nil && !rec.website!.isEmpty) || (rec.instagram != nil && !rec.instagram!.isEmpty)
