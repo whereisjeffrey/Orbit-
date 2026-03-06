@@ -396,7 +396,7 @@ private let seedRecs: [LocalRec] = [
 
 struct LocalsUseView: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var selectedCategory:    RecCategory    = .all
+    @State private var selectedCategory:    RecCategory    = .health
     @State private var selectedSubcategory: RecSubcategory? = nil
     @State private var searchText  = ""
     @State private var showAddRec  = false
@@ -404,7 +404,7 @@ struct LocalsUseView: View {
 
     var filtered: [LocalRec] {
         recs.filter { rec in
-            let catMatch  = selectedCategory == .all || rec.category == selectedCategory
+            let catMatch  = rec.category == selectedCategory
             let subMatch  = selectedSubcategory == nil || rec.subcategory == selectedSubcategory
             let txtMatch  = searchText.isEmpty
                 || rec.businessName.localizedCaseInsensitiveContains(searchText)
@@ -445,10 +445,10 @@ struct LocalsUseView: View {
                             .stroke(Color(UIColor.separator).opacity(0.25), lineWidth: 0.5))
                         .padding(.horizontal, 16).padding(.top, 8).padding(.bottom, 12)
 
-                        // ── Category pills (simple stroke style) ──────
+                        // ── Category pills — top row ──────────────────
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 8) {
-                                ForEach(RecCategory.allCases) { cat in
+                                ForEach(RecCategory.allCases.filter { $0 != .all }) { cat in
                                     Button(action: {
                                         withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
                                             selectedCategory    = cat
@@ -471,63 +471,41 @@ struct LocalsUseView: View {
                             }
                             .padding(.horizontal, 16)
                         }
-                        .padding(.bottom, 8)
+                        .padding(.bottom, 6)
 
-                        // ── Subcategory pills (appear when category selected) ─
-                        if selectedCategory != .all && !selectedCategory.subcategories.isEmpty {
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                HStack(spacing: 6) {
-                                    // "All [Category]" reset pill
+                        // ── Subcategory pills — bottom row (always visible) ──
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 6) {
+                                ForEach(selectedCategory.subcategories) { sub in
                                     Button(action: {
                                         withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
-                                            selectedSubcategory = nil
+                                            selectedSubcategory = selectedSubcategory == sub ? nil : sub
                                         }
                                     }) {
-                                        Text("All \(selectedCategory.rawValue)")
-                                            .font(.custom("HelveticaNeue-Medium", size: 12))
-                                            .foregroundColor(selectedSubcategory == nil ? .tsAccent : .tsSecondary)
-                                            .padding(.horizontal, 12).padding(.vertical, 6)
-                                            .background(Color.tsAccent.opacity(0.08))
-                                            .clipShape(Capsule())
-                                            .overlay(Capsule().stroke(
-                                                selectedSubcategory == nil ? Color.tsAccent : Color.clear,
-                                                lineWidth: 1.5
-                                            ))
+                                        HStack(spacing: 4) {
+                                            Image(systemName: sub.icon)
+                                                .font(.system(size: 10, weight: .medium))
+                                            Text(sub.rawValue)
+                                                .font(.custom("HelveticaNeue-Medium", size: 12))
+                                        }
+                                        .foregroundColor(selectedSubcategory == sub ? .tsAccent : .tsSecondary)
+                                        .padding(.horizontal, 12).padding(.vertical, 6)
+                                        .background(Color.tsAccent.opacity(0.08))
+                                        .clipShape(Capsule())
+                                        .overlay(Capsule().stroke(
+                                            selectedSubcategory == sub ? Color.tsAccent : Color.clear,
+                                            lineWidth: 1.5
+                                        ))
                                     }
                                     .buttonStyle(PlainButtonStyle())
-
-                                    ForEach(selectedCategory.subcategories) { sub in
-                                        Button(action: {
-                                            withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
-                                                selectedSubcategory = selectedSubcategory == sub ? nil : sub
-                                            }
-                                        }) {
-                                            HStack(spacing: 4) {
-                                                Image(systemName: sub.icon)
-                                                    .font(.system(size: 10, weight: .medium))
-                                                Text(sub.rawValue)
-                                                .font(.custom("HelveticaNeue-Medium", size: 12))
-                                            }
-                                            .foregroundColor(selectedSubcategory == sub ? .tsAccent : .tsSecondary)
-                                            .padding(.horizontal, 12).padding(.vertical, 6)
-                                            .background(Color.tsAccent.opacity(0.08))
-                                            .clipShape(Capsule())
-                                            .overlay(Capsule().stroke(
-                                                selectedSubcategory == sub ? Color.tsAccent : Color.clear,
-                                                lineWidth: 1.5
-                                            ))
-                                        }
-                                        .buttonStyle(PlainButtonStyle())
-                                    }
                                 }
-                                .padding(.horizontal, 16).padding(.vertical, 3)
                             }
-                            .padding(.bottom, 12)
-                            .transition(.opacity.combined(with: .move(edge: .top)))
+                            .padding(.horizontal, 16).padding(.vertical, 3)
                         }
+                        .padding(.bottom, 10)
 
                         // ── Count ─────────────────────────────────────
-                        if !searchText.isEmpty || selectedCategory != .all {
+                        if !searchText.isEmpty || selectedSubcategory != nil {
                             Text("\(filtered.count) rec\(filtered.count == 1 ? "" : "s")")
                                 .font(.custom("HelveticaNeue", size: 12))
                                 .foregroundColor(.tsSecondary)
