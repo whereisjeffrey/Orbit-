@@ -1126,6 +1126,230 @@ struct CategoryInsight {
 
 
 
+private let subcategoryInsights: [RecSubcategory: CategoryInsight] = [
+
+    // ── Health ────────────────────────────────────────────────────────────────
+    .dentistry: CategoryInsight(
+        headline:  "You could see a dentist tomorrow for less than a copay at home",
+        stat:      "Save 60–80% vs. US & Canada",
+        statColor: "#0099FF",
+        bullets: [
+            "A full cleaning + checkup runs $300–600 MXN (~$15–30 USD). Crowns, implants, and root canals are a fraction of US prices.",
+            "Most dentists in Roma and Condesa are well-trained — many studied in the US or Europe. Don't equate lower price with lower quality.",
+            "Bring recent X-rays if you have them. Dentists appreciate the context and won't charge you to redo work unnecessarily.",
+            "Cash pricing is standard. No dental insurance needed — just show up and pay."
+        ]
+    ),
+    .botox: CategoryInsight(
+        headline:  "Proceed with knowledge — not all providers are equal",
+        stat:      nil,
+        statColor: "#FF375F",
+        bullets: [
+            "Mexico doesn't require the same medical licensure for aesthetic injectables as the US or EU. Ask if your provider is a board-certified dermatologist or plastic surgeon.",
+            "Always ask what brand of product they're using. Allergan Botox and Juvederm fillers are available here — legitimate clinics will tell you the brand without hesitation.",
+            "Pricing is significantly lower than the US, but avoid walk-in deals at unvetted studios. This is a medical procedure.",
+            "A recommendation from someone who's been here a while is worth more than any online review."
+        ]
+    ),
+    .dermatology: CategoryInsight(
+        headline:  "Strong scene — verify credentials before you book",
+        stat:      nil,
+        statColor: "#FF2D55",
+        bullets: [
+            "Ask if they're a dermatólogo certificado by the Consejo Mexicano de Dermatología — not all practitioners carry equivalent certification.",
+            "Consultations run $800–1,500 MXN. Treatments (chemical peels, laser, mole removal) are substantially cheaper than the US.",
+            "Sun exposure in CDMX is intense — altitude amplifies UV. Worth seeing a derm if you're staying long-term.",
+            "Many CDMX dermatologists speak English. Ask when booking if that's a priority."
+        ]
+    ),
+    .mentalHealth: CategoryInsight(
+        headline:  "More options than you'd expect — find one before you need one",
+        stat:      nil,
+        statColor: "#AF52DE",
+        bullets: [
+            "English-speaking therapists exist but book up quickly in expat-heavy neighborhoods. Start looking before you urgently need one.",
+            "Sessions typically run $800–1,500 MXN ($40–75 USD) — significantly cheaper than US out-of-pocket rates.",
+            "Online sessions (video) are widely accepted and often easier to schedule around language preference.",
+            "Ask whether your therapist is a psicólogo (psychology degree) or psicoterapeuta — training and licensing requirements differ."
+        ]
+    ),
+    .generalDoc: CategoryInsight(
+        headline:  "Private clinics are fast, affordable, and genuinely good",
+        stat:      "Consultations from $400–800 MXN (~$20–40 USD)",
+        statColor: "#FF3B30",
+        bullets: [
+            "Private hospitals (ABC Medical Center, Médica Sur, Ángeles) are excellent — same equipment, shorter waits, English-speaking staff available.",
+            "Avoid IMSS and ISSSTE — those are the public systems for Mexican citizens, not tourists or expats.",
+            "Always ask for the precio de contado (cash price) — saves another 15–20% on top of the already lower rate.",
+            "Lab work is dramatically cheaper. A full blood panel with same-day results runs $500–1,200 MXN."
+        ]
+    ),
+    .acupuncture: CategoryInsight(
+        headline:  "Traditional Chinese medicine has a genuine presence here",
+        stat:      nil,
+        statColor: "#30D158",
+        bullets: [
+            "CDMX has a real TCM community — many practitioners trained in China or Taiwan. It's not just a wellness trend.",
+            "Sessions typically run $500–900 MXN. A course of 4–6 sessions is standard for most conditions.",
+            "Ask whether your practitioner uses disposable single-use needles — reputable clinics always do.",
+            "Particularly effective for back pain, stress, and chronic issues. Give it a few sessions before judging."
+        ]
+    ),
+
+    // ── Fitness ───────────────────────────────────────────────────────────────
+    .pt: CategoryInsight(
+        headline:  "No national cert body — so the recommendation really matters",
+        stat:      nil,
+        statColor: "#FF9500",
+        bullets: [
+            "There's no Mexican equivalent of NASM or ACE. Ask trainers where they studied and whether they hold international certifications.",
+            "1-on-1 sessions typically run $400–800 MXN. Package deals are common and usually significantly discounted.",
+            "Many PTs in Roma and Condesa have trained internationally or work primarily with expat clients — English is common.",
+            "Nutrition is often included in PT conversations — ask whether your trainer has formal nutrition training."
+        ]
+    ),
+    .gym: CategoryInsight(
+        headline:  "Affordable, well-equipped, and everywhere in the right areas",
+        stat:      "$300–800 MXN/month for most gyms",
+        statColor: "#FF3B30",
+        bullets: [
+            "Smart Fit has locations everywhere and costs ~$300 MXN/month. More than adequate for most workouts.",
+            "Boutique studios (pilates, barre, boxing) run $150–200 MXN/class or $1,500–2,500 MXN/month unlimited.",
+            "Ask specifically about month-to-month options — some gyms push annual contracts. You can usually negotiate.",
+            "Bring a lock. Most lockers don't include them."
+        ]
+    ),
+
+    // ── Home ──────────────────────────────────────────────────────────────────
+    .cleaning: CategoryInsight(
+        headline:  "The standard is high and the price is genuinely right",
+        stat:      "2BR cleaning: $350–500 MXN (~$18–25 USD)",
+        statColor: "#0099FF",
+        bullets: [
+            "Weekly arrangements are the norm — $350–500 MXN per session for a 2BR, $500–700 MXN for larger places.",
+            "Communicate expectations clearly up front — especially around products, fragile items, or areas that are off-limits.",
+            "Many cleaners prefer their own products. If you have preferences, buy them and leave them out.",
+            "Tips aren't expected but appreciated. $50–100 MXN extra for recurring help goes a long way."
+        ]
+    ),
+    .plumbing: CategoryInsight(
+        headline:  "No licensing required — vetting is entirely on you",
+        stat:      nil,
+        statColor: "#30B0C7",
+        bullets: [
+            "Plumbers in CDMX don't require formal licensing. Reputation and word-of-mouth matter more than any credential.",
+            "Agree on the total price before work starts. For anything significant, get it in writing.",
+            "Get 2–3 quotes for larger jobs — pricing varies wildly. A peer recommendation gives you a fair baseline.",
+            "Know someone reliable before a crisis — emergency plumbers charge a premium."
+        ]
+    ),
+    .electrician: CategoryInsight(
+        headline:  "Skilled work available — same caveats as plumbing",
+        stat:      nil,
+        statColor: "#FFD60A",
+        bullets: [
+            "Electricians in CDMX don't require formal licensing. A trusted referral is your best quality indicator.",
+            "CDMX electricity is 127V/60Hz. Most international devices handle this fine — old US appliances rated only for 110V may run warm.",
+            "Agree on scope and price before work begins. 'Small job' pricing can escalate quickly.",
+            "For major electrical work in a rented apartment, check with your landlord first — it may be their responsibility."
+        ]
+    ),
+    .acRepair: CategoryInsight(
+        headline:  "AC techs are usually brand-specific — tell them up front",
+        stat:      nil,
+        statColor: "#5AC8FA",
+        bullets: [
+            "Most technicians specialize by brand. Tell them your unit's make and model when booking — a Daikin tech won't carry Carrier parts.",
+            "Standard service (filter cleaning, refrigerant check) for a mini-split runs $500–900 MXN.",
+            "Service contracts through building management are often cheaper than calling a tech independently.",
+            "If your landlord installed the unit, ask them for the original service contact first — they may cover maintenance."
+        ]
+    ),
+
+    // ── Legal ─────────────────────────────────────────────────────────────────
+    .immigration: CategoryInsight(
+        headline:  "Don't wing the visa process — get an attorney",
+        stat:      nil,
+        statColor: "#5E5CE6",
+        bullets: [
+            "INM (Instituto Nacional de Migración) is notoriously inconsistent between offices. A good attorney knows which office to use and how.",
+            "Temporal Resident visa (1–4 years) requires proof of income or savings. Permanente requires 4 years as Temporal first.",
+            "You cannot leave Mexico while a change of status is pending. Plan around this.",
+            "Attorney fees run $5,000–12,000 MXN ($250–600 USD) — worth every peso for the time and frustration they save."
+        ]
+    ),
+    .notary: CategoryInsight(
+        headline:  "A Mexican notary is nothing like a US or UK notary",
+        stat:      nil,
+        statColor: "#BF5AF2",
+        bullets: [
+            "A Notario Público is a state-appointed attorney with near-judicial authority. Without one, real estate transactions and company formations are legally void.",
+            "You need one for: buying/selling property, forming a company, signing a will, apostilling documents for use abroad.",
+            "Fees are regulated by state law — typically 0.5–1.5% of transaction value for real estate. Get a fee estimate upfront.",
+            "Verify your notary is licensed via the Colegio de Notarios del Distrito Federal official registry."
+        ]
+    ),
+    .bizLaw: CategoryInsight(
+        headline:  "Incorporating in Mexico is more involved than most countries",
+        stat:      "SA de CV formation: $8,000–15,000 MXN in notary fees",
+        statColor: "#0A84FF",
+        bullets: [
+            "The most common structures are SA de CV (corp equivalent) and SAPI de CV (for startups seeking investment). Both require a notary.",
+            "You'll need an RFC (tax ID), a registered address in Mexico, and at least two shareholders for an SA de CV.",
+            "The full process takes 4–8 weeks. Your attorney handles notary coordination and SAT registration.",
+            "Verify your attorney with the Barra Mexicana de Abogados — ask for their cédula profesional number."
+        ]
+    ),
+
+    // ── Finance ───────────────────────────────────────────────────────────────
+    .accounting: CategoryInsight(
+        headline:  "SAT is not the IRS — treat it accordingly",
+        stat:      nil,
+        statColor: "#30D158",
+        bullets: [
+            "SAT uses RFC tax IDs and CFDI electronic invoicing — a completely different system from US or EU tax infrastructure.",
+            "If you're receiving Mexican-sourced income, you're required to register with SAT and file monthly declarations.",
+            "A good contador costs $1,500–3,000 MXN/month for basic freelancer accounting. Worth it to avoid SAT penalties.",
+            "Annual declaration (Declaración Anual) is due in April for the previous calendar year. Don't miss it."
+        ]
+    ),
+    .banking: CategoryInsight(
+        headline:  "Traditional banks are painful — there are better options",
+        stat:      nil,
+        statColor: "#34C759",
+        bullets: [
+            "Most traditional banks (BBVA, Banamex, Santander) require a CURP + Mexican address. Difficult for new arrivals.",
+            "Nubank Mexico and Hey Banco are significantly easier for expats — open via app, fewer documents required.",
+            "Wise and Revolut work well day-to-day. Watch the MXN/USD rate — it moves, and timing transfers matters.",
+            "ATM fees add up fast. Withdraw larger amounts less often, or use a no-foreign-fee card if you have one."
+        ]
+    ),
+
+    // ── Tech ──────────────────────────────────────────────────────────────────
+    .phoneRepair: CategoryInsight(
+        headline:  "No Apple Store — but your warranty can still be protected",
+        stat:      "Apple products cost 20–35% more than US prices here",
+        statColor: "#007AFF",
+        bullets: [
+            "There are no official Apple Stores in Mexico City. MacStore and iShop are the main Authorized Service Providers for AppleCare+ repairs.",
+            "Using an unauthorized repair shop voids AppleCare+ coverage. If you're covered, always use an authorized provider.",
+            "For unlocked Android phones, parts are widely available in Tepito and Centro Histórico — ask if parts are OEM or aftermarket.",
+            "If you need a replacement device, ordering from the US will save you 20–35% on most Apple products."
+        ]
+    ),
+    .computerRepair: CategoryInsight(
+        headline:  "Know your warranty status before handing anything over",
+        stat:      nil,
+        statColor: "#636366",
+        bullets: [
+            "MacStore and iShop are the authorized Apple service centers for Mac computers. Bring your serial number and AppleCare info.",
+            "For Windows/PC repairs, ask for a written quote and timeline before work starts.",
+            "Always backup before you hand it over — especially important when there's a potential language barrier.",
+            "SSD upgrades and RAM replacements are often cheaper here than at Apple-certified US centers."
+        ]
+    ),
+]
+
 // MARK: - Category Insight Card View
 
 struct CategoryInsightCard: View {
