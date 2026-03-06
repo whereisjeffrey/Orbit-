@@ -39,8 +39,8 @@ struct Neighbourhood: Identifiable {
     let vibes: [VibeTag]
     let highlights: [String]
     let watchOut: String?
-    let soul: SoulCard
     let polygon: [CLLocationCoordinate2D]
+    let soul: SoulCard
 }
 
 private let neighbourhoods: [Neighbourhood] = [
