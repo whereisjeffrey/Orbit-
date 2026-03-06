@@ -98,11 +98,15 @@ struct KitView: View {
             set: { if !$0 { activeDestination = nil } }
         )) { SIMGuideView() }
         .sheet(isPresented: Binding(
+            get: { activeDestination == .neighbourhoods },
+            set: { if !$0 { activeDestination = nil } }
+        )) { NeighbourhoodsView() }
+        .sheet(isPresented: Binding(
             get: { activeDestination == .transportation },
             set: { if !$0 { activeDestination = nil } }
         )) { TransportationView() }
         .sheet(isPresented: Binding(
-            get: { activeDestination != nil && activeDestination != .work && activeDestination != .currency && activeDestination != .insurance && activeDestination != .sim && activeDestination != .transportation },
+            get: { activeDestination != nil && activeDestination != .work && activeDestination != .currency && activeDestination != .insurance && activeDestination != .sim && activeDestination != .transportation && activeDestination != .neighbourhoods },
             set: { if !$0 { activeDestination = nil } }
         )) {
             if let dest = activeDestination {
