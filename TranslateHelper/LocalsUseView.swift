@@ -477,28 +477,27 @@ struct LocalsUseView: View {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 6) {
                                 ForEach(selectedCategory.subcategories) { sub in
-                                    Button(action: {
-                                        withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
-                                            selectedSubcategory = selectedSubcategory == sub ? nil : sub
-                                        }
-                                    }) {
-                                        HStack(spacing: 4) {
-                                            Image(systemName: sub.icon)
-                                                .font(.system(size: 10, weight: .medium))
-                                            Text(sub.rawValue)
-                                                .font(.custom("HelveticaNeue-Medium", size: 12))
-                                        }
-                                        .foregroundColor(selectedSubcategory == sub ? .tsAccent : .tsSecondary)
-                                        .padding(.horizontal, 12).padding(.vertical, 6)
-                                        .background(Color.tsAccent.opacity(0.08))
-                                        .clipShape(Capsule())
-                                        .overlay(Capsule().stroke(
-                                            selectedSubcategory == sub ? Color.tsAccent : Color.clear,
-                                            lineWidth: 1.5
-                                        ))
-                                        .contentShape(Rectangle())
+                                    let isActive = selectedSubcategory == sub
+                                    HStack(spacing: 4) {
+                                        Image(systemName: sub.icon)
+                                            .font(.system(size: 10, weight: .medium))
+                                        Text(sub.rawValue)
+                                            .font(.custom("HelveticaNeue-Medium", size: 12))
                                     }
-                                    .buttonStyle(PlainButtonStyle())
+                                    .foregroundColor(isActive ? .tsAccent : .tsSecondary)
+                                    .padding(.horizontal, 12).padding(.vertical, 6)
+                                    .background(Color.tsAccent.opacity(0.08))
+                                    .clipShape(Capsule())
+                                    .overlay(Capsule().stroke(
+                                        isActive ? Color.tsAccent : Color.clear,
+                                        lineWidth: 1.5
+                                    ))
+                                    .contentShape(Capsule())
+                                    .onTapGesture {
+                                        withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
+                                            selectedSubcategory = isActive ? nil : sub
+                                        }
+                                    }
                                 }
                             }
                             .padding(.horizontal, 16).padding(.vertical, 3)
