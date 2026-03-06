@@ -167,15 +167,31 @@ struct SettingsView: View {
                     VStack(spacing: 0) {
                         Button(action: {}) {
                             HStack(spacing: 12) {
-                                Circle()
-                                    .fill(Color(hex: "FFD7BE"))
-                                    .frame(width: 32, height: 32)
+                                // Profile photo: Firebase/Google photo → initials fallback
+                                Group {
+                                    if let photoURL = auth.photoURL {
+                                        AsyncImage(url: photoURL) { phase in
+                                            switch phase {
+                                            case .success(let img):
+                                                img.resizable().scaledToFill()
+                                                    .frame(width: 36, height: 36)
+                                                    .clipShape(Circle())
+                                            default:
+                                                initialsCircle(auth: auth)
+                                                    .frame(width: 36, height: 36)
+                                            }
+                                        }
+                                    } else {
+                                        initialsCircle(auth: auth)
+                                            .frame(width: 36, height: 36)
+                                    }
+                                }
                                 
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text("Profile")
-                                        .font(.custom("HelveticaNeue", size: 17))
+                                    Text(auth.displayName)
+                                        .font(.custom("HelveticaNeue-Medium", size: 16))
                                         .foregroundColor(.tsLabel)
-                                    Text(auth.user?.email ?? "sarah.doe@example.com")
+                                    Text(auth.user?.email ?? "")
                                         .font(.custom("HelveticaNeue", size: 12))
                                         .foregroundColor(Color.tsSecondary)
                                 }
@@ -186,7 +202,7 @@ struct SettingsView: View {
                                     .foregroundColor(Color.tsSecondary.opacity(0.6))
                             }
                             .padding(.horizontal, 16)
-                            .frame(height: 56)
+                            .frame(height: 60)
                         }
                         
                         Divider().background(Color.tsBorder).padding(.leading, 16)
@@ -217,7 +233,9 @@ struct SettingsView: View {
                             Spacer()
                             Toggle("", isOn: $notificationsEnabled)
                                 .labelsHidden()
-                                .tint(Color(hex: "34C759"))
+                                .tint(Color(hex: "#34C759"))
+                                .scaleEffect(CGSize(width: 0.82, height: 0.82), anchor: .trailing)
+                                .frame(width: 42)
                         }
                         .padding(.horizontal, 16)
                         .frame(height: 48)
