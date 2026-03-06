@@ -26,6 +26,7 @@ struct Neighbourhood: Identifiable {
     let vibes: [VibeTag]
     let highlights: [String]
     let watchOut: String?
+    let sceneNote: String?
 }
 
 private let neighbourhoods: [Neighbourhood] = [
@@ -42,7 +43,7 @@ private let neighbourhoods: [Neighbourhood] = [
             VibeTag(icon: "paintpalette.fill",      label: "Arts District",  color: Color(hex: "#AF52DE")),
             VibeTag(icon: "figure.walk",            label: "Walkable",       color: Color(hex: "#34C759")),
             VibeTag(icon: "sparkles",               label: "Nightlife",      color: Color(hex: "#FFD60A")),
-            VibeTag(icon: "checkmark.shield.fill",   label: "Safe at Night",  color: Color(hex: "#34C759")),
+            VibeTag(icon: "checkmark.shield.fill",  label: "Safe at Night",  color: Color(hex: "#34C759")),
         ],
         highlights: [
             "Highest café and cowork density in the city",
@@ -51,7 +52,8 @@ private let neighbourhoods: [Neighbourhood] = [
             "15-min walk to Condesa, Juárez, Doctores Metro",
             "Most expats and nomads land here first — strong community",
         ],
-        watchOut: "Priciest neighbourhood for rent. Gets touristy on weekends."
+        watchOut: "Priciest neighbourhood for rent. Gets touristy on weekends.",
+        sceneNote: nil
     ),
     Neighbourhood(
         number: 2, name: "Condesa", shortName: "Condesa",
@@ -66,7 +68,7 @@ private let neighbourhoods: [Neighbourhood] = [
             VibeTag(icon: "sparkles",               label: "Nightlife",      color: Color(hex: "#FFD60A")),
             VibeTag(icon: "figure.walk",            label: "Walkable",       color: Color(hex: "#34C759")),
             VibeTag(icon: "person.2.fill",          label: "Expat Friendly", color: Color(hex: "#0099FF")),
-            VibeTag(icon: "checkmark.shield.fill",   label: "Safe at Night",  color: Color(hex: "#34C759")),
+            VibeTag(icon: "checkmark.shield.fill",  label: "Safe at Night",  color: Color(hex: "#34C759")),
         ],
         highlights: [
             "Parque México and Parque España — incredible green space",
@@ -75,13 +77,14 @@ private let neighbourhoods: [Neighbourhood] = [
             "Excellent brunch and café scene",
             "Very walkable, bike-friendly streets",
         ],
-        watchOut: "Slightly pricier than Roma Norte. Street parking chaos on weekends."
+        watchOut: "Slightly pricier than Roma Norte. Street parking chaos on weekends.",
+        sceneNote: nil
     ),
     Neighbourhood(
         number: 3, name: "Colonia Juárez", shortName: "Juárez",
         color: Color(hex: "#AF52DE"),
         coordinate: CLLocationCoordinate2D(latitude: 19.4271, longitude: -99.1598),
-        tagline: "Creative, queer-friendly, up and coming",
+        tagline: "Creative, queer-friendly, up-and-coming",
         bestFor: "Creative types, LGBTQ+ travellers, value seekers",
         rentRange: "$700–1,200 USD / month",
         vibes: [
@@ -89,16 +92,17 @@ private let neighbourhoods: [Neighbourhood] = [
             VibeTag(icon: "heart.fill",             label: "LGBTQ+ Friendly",color: Color(hex: "#FF2D55")),
             VibeTag(icon: "fork.knife",             label: "Food Scene",     color: Color(hex: "#FF3B30")),
             VibeTag(icon: "sparkles",               label: "Nightlife",      color: Color(hex: "#FFD60A")),
-            VibeTag(icon: "cup.and.saucer.fill",   label: "Café Culture",   color: Color(hex: "#FF9500")),
+            VibeTag(icon: "cup.and.saucer.fill",    label: "Café Culture",   color: Color(hex: "#FF9500")),
         ],
         highlights: [
             "Zona Rosa — CDMX's LGBTQ+ hub with bars, clubs, restaurants",
             "Gallery scene and independent boutiques",
             "Mercado de Medellín — one of the best food markets in the city",
             "More authentic local feel than Roma or Condesa",
-            "Rapidly growing — great value before prices catch up",
+            "Great value now — prices will catch up",
         ],
-        watchOut: "Some areas around Zona Rosa can feel sketchy late at night."
+        watchOut: "Some areas around Zona Rosa can feel sketchy late at night.",
+        sceneNote: "This is where CDMX's artists, photographers, and designers are moving. Independent galleries, concept cafés, and underground bars are opening monthly — it has the raw creative energy Roma Norte had five years ago, before the rents followed."
     ),
     Neighbourhood(
         number: 4, name: "Polanco", shortName: "Polanco",
@@ -112,7 +116,7 @@ private let neighbourhoods: [Neighbourhood] = [
             VibeTag(icon: "bag.fill",               label: "Shopping",       color: Color(hex: "#FF9500")),
             VibeTag(icon: "briefcase.fill",         label: "Business Hub",   color: Color(hex: "#0099FF")),
             VibeTag(icon: "fork.knife",             label: "Fine Dining",    color: Color(hex: "#FF3B30")),
-            VibeTag(icon: "checkmark.shield.fill",   label: "Safe at Night",  color: Color(hex: "#34C759")),
+            VibeTag(icon: "checkmark.shield.fill",  label: "Safe at Night",  color: Color(hex: "#34C759")),
         ],
         highlights: [
             "Presidente Masaryk — Mexico's answer to Fifth Avenue",
@@ -121,7 +125,8 @@ private let neighbourhoods: [Neighbourhood] = [
             "Museo Nacional de Antropología — world-class, right next door",
             "Considered the safest neighbourhood in CDMX",
         ],
-        watchOut: "Most expensive in the city. Very corporate — quieter on weekends."
+        watchOut: "Most expensive in the city. Very corporate — quieter on weekends.",
+        sceneNote: nil
     ),
     Neighbourhood(
         number: 5, name: "Coyoacán", shortName: "Coyoacán",
@@ -143,7 +148,8 @@ private let neighbourhoods: [Neighbourhood] = [
             "Weekly artisan markets on weekends",
             "One of the most atmospheric parts of the city — feels like a different era",
         ],
-        watchOut: "40–50 min from Roma Norte. Less connected to the nomad scene."
+        watchOut: "40–50 min from Roma Norte. Less connected to the nomad scene.",
+        sceneNote: nil
     ),
     Neighbourhood(
         number: 6, name: "Centro Histórico", shortName: "Centro",
@@ -164,13 +170,14 @@ private let neighbourhoods: [Neighbourhood] = [
             "Incredible street food — tacos, tlayudas, tamales everywhere",
             "Cheapest rents close to the centre of the city",
         ],
-        watchOut: "Chaotic and loud. Less safe at night in some streets. Not ideal for long stays."
+        watchOut: "Chaotic and loud. Less safe at night in some streets. Not ideal for long stays.",
+        sceneNote: nil
     ),
     Neighbourhood(
         number: 7, name: "Narvarte", shortName: "Narvarte",
         color: Color(hex: "#FF2D55"),
         coordinate: CLLocationCoordinate2D(latitude: 19.3998, longitude: -99.1583),
-        tagline: "Local vibe, great value, growing fast",
+        tagline: "Local vibe, great value, up-and-coming",
         bestFor: "Budget-conscious nomads, locals-first experience",
         rentRange: "$500–900 USD / month",
         vibes: [
@@ -178,7 +185,7 @@ private let neighbourhoods: [Neighbourhood] = [
             VibeTag(icon: "fork.knife",             label: "Food Scene",     color: Color(hex: "#FF3B30")),
             VibeTag(icon: "dollarsign.circle.fill", label: "Budget Friendly",color: Color(hex: "#34C759")),
             VibeTag(icon: "figure.walk",            label: "Walkable",       color: Color(hex: "#34C759")),
-            VibeTag(icon: "checkmark.shield.fill",   label: "Safe at Night",  color: Color(hex: "#34C759")),
+            VibeTag(icon: "checkmark.shield.fill",  label: "Safe at Night",  color: Color(hex: "#34C759")),
         ],
         highlights: [
             "15-min walk south of Roma Norte — same quality, lower prices",
@@ -187,7 +194,8 @@ private let neighbourhoods: [Neighbourhood] = [
             "Farmers market on Sundays near Parque Delta",
             "Strong local community — less touristy than Roma",
         ],
-        watchOut: nil
+        watchOut: nil,
+        sceneNote: "Mexican chefs, café owners, and creatives priced out of Roma Norte have been quietly settling here. Less Instagrammed, more real — the new bars and restaurants opening up are the same quality you'd find in Condesa, just without the tourist markup."
     ),
 ]
 
@@ -220,13 +228,13 @@ struct NeighbourhoodsView: View {
                                         ZStack {
                                             Circle()
                                                 .fill(selected?.id == hood.id ? hood.color : Color.white)
-                                                .frame(width: 34, height: 34)
-                                                .shadow(color: hood.color.opacity(0.4), radius: selected?.id == hood.id ? 6 : 2)
+                                                .frame(width: 24, height: 24)
+                                                .shadow(color: hood.color.opacity(0.4), radius: selected?.id == hood.id ? 5 : 2)
                                             Text("\(hood.number)")
-                                                .font(.system(size: 13, weight: .bold))
+                                                .font(.system(size: 10, weight: .bold))
                                                 .foregroundColor(selected?.id == hood.id ? .white : hood.color)
                                         }
-                                        .overlay(Circle().stroke(hood.color, lineWidth: 2))
+                                        .overlay(Circle().stroke(hood.color, lineWidth: 1.5))
                                         .scaleEffect(selected?.id == hood.id ? 1.2 : 1.0)
                                     }
                                     .buttonStyle(PlainButtonStyle())
@@ -304,10 +312,12 @@ private struct NeighbourhoodCard: View {
                 HStack(spacing: 12) {
                     // Number badge
                     ZStack {
-                        Circle().fill(hood.color).frame(width: 36, height: 36)
+                        Circle()
+                            .fill(isHighlighted ? hood.color : hood.color.opacity(0.15))
+                            .frame(width: 25, height: 25)
                         Text("\(hood.number)")
-                            .font(.system(size: 15, weight: .bold))
-                            .foregroundColor(.white)
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundColor(isHighlighted ? .white : hood.color)
                     }
 
                     VStack(alignment: .leading, spacing: 3) {
@@ -325,32 +335,9 @@ private struct NeighbourhoodCard: View {
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(.tsSecondary.opacity(0.5))
                 }
-                .padding(16)
+                .padding(.top, 8).padding(.horizontal, 16).padding(.bottom, 16)
             }
             .buttonStyle(PlainButtonStyle())
-
-            // Vibe tags — always visible
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 6) {
-                    ForEach(hood.vibes) { vibe in
-                        HStack(spacing: 5) {
-                            Image(systemName: vibe.icon)
-                                .font(.system(size: 11))
-                                .foregroundColor(vibe.color)
-                            Text(vibe.label)
-                                .font(.custom("HelveticaNeue-Medium", size: 12))
-                                .foregroundColor(.tsLabel)
-                        }
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .background(vibe.color.opacity(0.10))
-                        .cornerRadius(20)
-                        .overlay(RoundedRectangle(cornerRadius: 20).stroke(vibe.color.opacity(0.20), lineWidth: 0.5))
-                    }
-                }
-                .padding(.horizontal, 16)
-            }
-            .padding(.bottom, 12)
 
             // Expanded detail
             if expanded {
@@ -367,6 +354,26 @@ private struct NeighbourhoodCard: View {
 
                     Divider().background(Color.tsAccent.opacity(0.08))
 
+                    // Scene note for up-and-coming hoods
+                    if let note = hood.sceneNote {
+                        HStack(alignment: .top, spacing: 10) {
+                            Image(systemName: "sparkles")
+                                .font(.system(size: 12))
+                                .foregroundColor(hood.color)
+                                .padding(.top, 1)
+                            Text(note)
+                                .font(.custom("HelveticaNeue-Medium", size: 13))
+                                .foregroundColor(.tsLabel.opacity(0.85))
+                                .fixedSize(horizontal: false, vertical: true)
+                                .lineSpacing(3)
+                        }
+                        .padding(14)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(hood.color.opacity(0.07))
+
+                        Divider().background(Color.tsAccent.opacity(0.08))
+                    }
+
                     // Highlights
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Highlights")
@@ -375,10 +382,15 @@ private struct NeighbourhoodCard: View {
                             .padding(.bottom, 2)
                         ForEach(hood.highlights, id: \.self) { h in
                             HStack(alignment: .top, spacing: 8) {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .font(.system(size: 13))
-                                    .foregroundColor(hood.color)
-                                    .padding(.top, 1)
+                                ZStack {
+                                    Circle()
+                                        .fill(hood.color.opacity(0.15))
+                                        .frame(width: 20, height: 20)
+                                    Image(systemName: "checkmark")
+                                        .font(.system(size: 9, weight: .bold))
+                                        .foregroundColor(hood.color)
+                                }
+                                .padding(.top, 1)
                                 Text(h)
                                     .font(.custom("HelveticaNeue", size: 14))
                                     .foregroundColor(.tsLabel)
@@ -388,32 +400,48 @@ private struct NeighbourhoodCard: View {
                     }
                     .padding(16)
 
-                    // Watch out
+                    // Watch out — notes-style box
                     if let warn = hood.watchOut {
-                        Divider().background(Color.tsAccent.opacity(0.08))
-                        HStack(alignment: .top, spacing: 10) {
-                            Image(systemName: "exclamationmark.circle.fill")
-                                .font(.system(size: 14))
-                                .foregroundColor(Color(hex: "#FF9500"))
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "exclamationmark.circle.fill")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(Color(hex: "#FF9500"))
+                                Text("HEADS UP")
+                                    .font(.custom("HelveticaNeue-Bold", size: 11))
+                                    .foregroundColor(Color(hex: "#FF9500"))
+                                    .tracking(1.5)
+                            }
                             Text(warn)
                                 .font(.custom("HelveticaNeue", size: 13))
-                                .foregroundColor(.tsSecondary)
+                                .foregroundColor(.tsLabel.opacity(0.85))
                                 .fixedSize(horizontal: false, vertical: true)
+                                .lineSpacing(3)
                         }
                         .padding(14)
-                        .background(Color(hex: "#FF9500").opacity(0.06))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color(hex: "#FF9500").opacity(0.08))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color(hex: "#FF9500").opacity(0.22), lineWidth: 1)
+                        )
+                        .padding(.horizontal, 14)
+                        .padding(.bottom, 16)
                     }
                 }
             }
         }
-        .background(Color.tsCard)
+        .background(isHighlighted ? hood.color.opacity(0.07) : Color.tsCard)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(isHighlighted ? hood.color.opacity(0.5) : Color.tsAccent.opacity(0.08),
+                .stroke(isHighlighted ? hood.color : Color.tsAccent.opacity(0.08),
                         lineWidth: isHighlighted ? 1.5 : 0.5)
         )
-        .shadow(color: isHighlighted ? hood.color.opacity(0.12) : .clear, radius: 8, y: 3)
+        .shadow(color: isHighlighted ? hood.color.opacity(0.15) : .clear, radius: 8, y: 3)
         .onChange(of: isHighlighted) { _, highlighted in
             if highlighted { withAnimation(.easeInOut(duration: 0.22)) { expanded = true } }
         }

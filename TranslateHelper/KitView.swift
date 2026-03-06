@@ -149,7 +149,7 @@ struct KitToolCard: View {
                 }
                 Spacer()
             }
-            .padding(16)
+            .padding(.top, 8).padding(.horizontal, 16).padding(.bottom, 16)
             .frame(maxWidth: .infinity, minHeight: 148, alignment: .leading)
             .background(Color.tsCard)
             .cornerRadius(20)
