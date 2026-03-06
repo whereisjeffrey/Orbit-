@@ -692,7 +692,7 @@ struct LocalRecCard: View {
                                 HStack(spacing: 4) {
                                     Image(systemName: "plus.circle")
                                         .font(.system(size: 11))
-                                    Text("\(rec.reviews.count - 1) more review\(rec.reviews.count - 1 == 1 ? \"\" : \"s\")")
+                                     Text("\(rec.reviews.count - 1) more review" + (rec.reviews.count - 1 == 1 ? "" : "s"))
                                         .font(.custom("HelveticaNeue", size: 12))
                                 }
                                 .foregroundColor(.tsAccent)
