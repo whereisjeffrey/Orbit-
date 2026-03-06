@@ -14,6 +14,12 @@ struct OnboardingPaywallView: View {
     @State private var cvv           = ""
     @State private var cardholderName = ""
     @FocusState private var focusedField: CardField?
+    @State private var showSuccess = false
+
+    var cardLastFour: String {
+        let digits = cardNumber.filter(\.isNumber)
+        return digits.count >= 4 ? String(digits.suffix(4)) : ""
+    }
 
     enum CardField { case number, expiry, cvv, name }
 
@@ -116,6 +122,74 @@ struct OnboardingPaywallView: View {
                     .padding(.top, 8)
                     .padding(.bottom, 24)
 
+                    // ── Express checkout ──────────────────────────────
+                    VStack(spacing: 10) {
+                        // Apple Pay
+                        Button(action: { showSuccess = true }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "applelogo")
+                                    .font(.system(size: 16, weight: .semibold))
+                                Text("Pay")
+                                    .font(.custom("HelveticaNeue-Bold", size: 17))
+                            }
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 52)
+                            .background(Color.black)
+                            .clipShape(Capsule())
+                        }
+                        .buttonStyle(PlainButtonStyle())
+
+                        // Google Pay
+                        Button(action: { showSuccess = true }) {
+                            HStack(spacing: 6) {
+                                Text("G")
+                                    .font(.system(size: 18, weight: .bold))
+                                    .foregroundColor(Color(hex: "#4285F4"))
+                                Text("Pay")
+                                    .font(.custom("HelveticaNeue-Bold", size: 17))
+                                    .foregroundColor(.tsLabel)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 52)
+                            .background(Color.tsCard)
+                            .clipShape(Capsule())
+                            .overlay(Capsule().stroke(Color.tsBorder, lineWidth: 1))
+                        }
+                        .buttonStyle(PlainButtonStyle())
+
+                        // PayPal
+                        Button(action: { showSuccess = true }) {
+                            HStack(spacing: 6) {
+                                Text("Pay")
+                                    .font(.custom("HelveticaNeue-Bold", size: 17))
+                                    .foregroundColor(Color(hex: "#003087"))
+                                + Text("Pal")
+                                    .font(.custom("HelveticaNeue-Bold", size: 17))
+                                    .foregroundColor(Color(hex: "#009CDE"))
+                            }
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 52)
+                            .background(Color(hex: "#FFC439"))
+                            .clipShape(Capsule())
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 16)
+
+                    // Divider
+                    HStack(spacing: 12) {
+                        Rectangle().fill(Color.tsBorder).frame(height: 0.5)
+                        Text("or pay with card")
+                            .font(.custom("HelveticaNeue", size: 12))
+                            .foregroundColor(.tsSecondary)
+                            .fixedSize()
+                        Rectangle().fill(Color.tsBorder).frame(height: 0.5)
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 16)
+
                     // ── Card form ─────────────────────────────────────
                     VStack(spacing: 12) {
 
@@ -187,7 +261,11 @@ struct OnboardingPaywallView: View {
                 .allowsHitTesting(false)
 
                 VStack(spacing: 12) {
-                    Button(action: onComplete) {
+                    Button(action: {
+                            let gen = UIImpactFeedbackGenerator(style: .medium)
+                            gen.impactOccurred()
+                            showSuccess = true
+                        }) {
                         HStack(spacing: 8) {
                             Image(systemName: "lock.fill")
                                 .font(.custom("HelveticaNeue", size: 14))
@@ -200,7 +278,7 @@ struct OnboardingPaywallView: View {
                         .background(
                             isFormComplete
                                 ? AnyShapeStyle(LinearGradient(
-                                    colors: [Color.tsAccent, Color(hex: "#004775")],
+                                    colors: [Color(hex: "#3B99FC"), Color(hex: "#007AFF")],
                                     startPoint: .topLeading, endPoint: .bottomTrailing))
                                 : AnyShapeStyle(Color.tsCard)
                         )
@@ -226,6 +304,13 @@ struct OnboardingPaywallView: View {
             }
         }
         .onTapGesture { focusedField = nil }
+        .fullScreenCover(isPresented: $showSuccess) {
+            TrialSuccessView(
+                onDone: onComplete,
+                chargeDate: chargeDate,
+                cardLastFour: cardLastFour
+            )
+        }
     }
 
     // MARK: - Formatters
