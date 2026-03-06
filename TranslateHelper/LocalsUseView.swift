@@ -458,13 +458,10 @@ struct LocalsUseView: View {
                                             .foregroundColor(selectedSubcategory == sub ? .tsAccent : .tsSecondary)
                                             .padding(.horizontal, 12).padding(.vertical, 6)
                                             .background(Color.tsAccent.opacity(0.08))
-                                            )
                                             .clipShape(Capsule())
                                             .overlay(Capsule().stroke(
-                                                selectedSubcategory == sub
-                                            selectedSubcategory == sub ? Color.tsAccent : Color.clear,
-                                                    : Color.tsBorder.opacity(0.4),
-                                            lineWidth: 1.5
+                                                selectedSubcategory == sub ? Color.tsAccent : Color.clear,
+                                                lineWidth: 1.5
                                             ))
                                         }
                                         .buttonStyle(PlainButtonStyle())
