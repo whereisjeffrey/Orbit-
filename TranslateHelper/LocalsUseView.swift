@@ -52,7 +52,7 @@ enum RecSubcategory: String, Hashable, Identifiable {
         switch self {
         case .dentistry:   return "mouth.fill"
         case .dermatology: return "face.smiling"
-        case .mentalHealth:return "brain.head.profile"
+        case .mentalHealth:return "brain"
         case .generalDoc:  return "stethoscope"
         case .physio:      return "figure.walk"
         case .nutrition:   return "leaf.fill"
@@ -61,11 +61,11 @@ enum RecSubcategory: String, Hashable, Identifiable {
         case .spa:         return "sparkles"
         case .botox:       return "syringe.fill"
         case .waxing:      return "wind"
-        case .pt:          return "figure.strengthtraining.traditional"
-        case .yoga:        return "figure.mind.and.body"
+        case .pt:          return "flame.fill"
+        case .yoga:        return "wind"
         case .gym:         return "dumbbell.fill"
-        case .pilates:     return "figure.core.training"
-        case .martialArts: return "figure.martial.arts"
+        case .pilates:     return "circle.grid.cross.fill"
+        case .martialArts: return "bolt.shield.fill"
         case .cleaning:    return "bubbles.and.sparkles.fill"
         case .plumbing:    return "drop.fill"
         case .electrician: return "bolt.fill"
@@ -78,7 +78,7 @@ enum RecSubcategory: String, Hashable, Identifiable {
         case .tax:         return "percent"
         case .banking:     return "banknote.fill"
         case .acupuncture: return "waveform.path.ecg"
-        case .phoneRepair: return "iphone.gen2.slash"
+        case .phoneRepair: return "wrench.and.screwdriver.fill"
         case .computerRepair: return "laptopcomputer"
         case .dataRecovery: return "externaldrive.fill"
         }
@@ -496,6 +496,7 @@ struct LocalsUseView: View {
                                             selectedSubcategory == sub ? Color.tsAccent : Color.clear,
                                             lineWidth: 1.5
                                         ))
+                                        .contentShape(Rectangle())
                                     }
                                     .buttonStyle(PlainButtonStyle())
                                 }
