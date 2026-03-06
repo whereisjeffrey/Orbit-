@@ -333,6 +333,8 @@ private let seedRecs: [LocalRec] = [
         category: .health, subcategory: .dermatology,
         description: "Dermatology, Botox & skincare treatments · Polanco",
         reviews: [RecReview(text: "Botox was $180 USD all-in, same product I get at home for $550. Dr. Vargas is meticulous. Clinic is spotless. Bring a photo of what you want.", recommender: RecRecommender(name: "Tara S.", initials: "TS", trustLevel: .local, monthsInCity: 11))],
+        price: .mid, neighbourhood: "Polanco",
+        tags: ["Botox", "Fillers", "Skincare"],
         endorsements: 17, website: "clinicadermamx.com"
     ),
     LocalRec(
@@ -340,6 +342,8 @@ private let seedRecs: [LocalRec] = [
         category: .home, subcategory: .plumbing,
         description: "Reliable plumber, same-day in most colonias",
         reviews: [RecReview(text: "Fixed a leak my landlord had been ignoring for months. Showed up in 2 hours, charged $400 MXN and was done in 45 min. Saved his number immediately.", recommender: RecRecommender(name: "Ben A.", initials: "BA", trustLevel: .settling, monthsInCity: 5))],
+        price: .budget, neighbourhood: "Condesa",
+        tags: ["Same-day", "Emergency", "Leak repair"],
         endorsements: 6, website: nil
     ),
     LocalRec(
@@ -347,6 +351,8 @@ private let seedRecs: [LocalRec] = [
         category: .finance, subcategory: .accounting,
         description: "Tax, RFC registration & expat finances",
         reviews: [RecReview(text: "Handled my RFC setup and monthly taxes as a freelancer. Everything done remotely, very organised, explains everything in plain English. ~$80/mo.", recommender: RecRecommender(name: "Mia C.", initials: "MC", trustLevel: .trustedLocal, monthsInCity: 14))],
+        price: .mid, neighbourhood: "Remote",
+        tags: ["RFC setup", "Freelancer taxes", "English speaking"],
         endorsements: 12, website: "pazcontadores.mx"
     ),
     LocalRec(
@@ -367,6 +373,8 @@ private let seedRecs: [LocalRec] = [
         category: .tech, subcategory: .phoneRepair,
         description: "iPhone & Android repairs, Condesa",
         reviews: [RecReview(text: "Cracked my screen on day two. This guy fixed it in 45 minutes for 350 pesos. Legit parts, not knock-offs. Saved me a long trip to the Apple Store.", recommender: RecRecommender(name: "Marcus T.", initials: "MT", trustLevel: .settling, monthsInCity: 8))],
+        price: .budget, neighbourhood: "Condesa",
+        tags: ["iPhone repair", "Screen replacement", "Fast turnaround"],
         endorsements: 9,
         englishSpeaking: true,
         photoURL: "https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=800&q=80"
@@ -376,6 +384,8 @@ private let seedRecs: [LocalRec] = [
         category: .health, subcategory: .acupuncture,
         description: "Traditional Chinese acupuncture, Roma Norte",
         reviews: [RecReview(text: "Three sessions for lower back pain and I felt like a different person. She explains everything in English and the space is beautiful.", recommender: RecRecommender(name: "Priya N.", initials: "PN", trustLevel: .local, monthsInCity: 14))],
+        price: .mid, neighbourhood: "Roma Norte",
+        tags: ["Traditional Chinese", "Back pain", "English speaking"],
         endorsements: 7,
         englishSpeaking: true,
         photoURL: "https://images.unsplash.com/photo-1512678080530-7760d81faba6?w=800&q=80"
