@@ -6,6 +6,8 @@ struct CommunityUserProfileView: View {
     let user: CommunityUser
     @Environment(\.dismiss) var dismiss
     @State private var showMessageRequest = false
+    @State private var showUpgrade = false
+    @ObservedObject private var sub = SubscriptionManager.shared
 
     var body: some View {
         NavigationStack {
@@ -91,18 +93,20 @@ struct CommunityUserProfileView: View {
 
                         // ── Social links ───────────────────────────
                         if user.instagramHandle != nil || user.linkedinHandle != nil {
-                            VStack(spacing: 8) {
-                                if let ig = user.instagramHandle {
-                                    SocialLinkRow(icon: "camera", color: Color(hex: "#E1306C"), handle: "@\(ig)") {
-                                        if let url = URL(string: "https://instagram.com/\(ig)") {
-                                            UIApplication.shared.open(url)
+                            BlurGate(reason: .socialLinks) {
+                                VStack(spacing: 8) {
+                                    if let ig = user.instagramHandle {
+                                        SocialLinkRow(icon: "camera", color: Color(hex: "#E1306C"), handle: "@\(ig)") {
+                                            if sub.isPro, let url = URL(string: "https://instagram.com/\(ig)") {
+                                                UIApplication.shared.open(url)
+                                            }
                                         }
                                     }
-                                }
-                                if let li = user.linkedinHandle {
-                                    SocialLinkRow(icon: "briefcase", color: Color(hex: "#0A66C2"), handle: li) {
-                                        if let url = URL(string: "https://linkedin.com/in/\(li)") {
-                                            UIApplication.shared.open(url)
+                                    if let li = user.linkedinHandle {
+                                        SocialLinkRow(icon: "briefcase", color: Color(hex: "#0A66C2"), handle: li) {
+                                            if sub.isPro, let url = URL(string: "https://linkedin.com/in/\(li)") {
+                                                UIApplication.shared.open(url)
+                                            }
                                         }
                                     }
                                 }
@@ -112,11 +116,19 @@ struct CommunityUserProfileView: View {
                         }
 
                         // ── CTA ────────────────────────────────────
-                        TSButton(title: "Send a message request") {
-                            showMessageRequest = true
+                        TSButton(title: sub.isPro ? "Send a message request" : "🔒  Send a message request") {
+                            if sub.isPro {
+                                showMessageRequest = true
+                            } else {
+                                showUpgrade = true
+                            }
                         }
                         .padding(.horizontal, 24)
                         .padding(.bottom, 48)
+                        .sheet(isPresented: $showUpgrade) {
+                            UpgradeSheet(reason: .messaging)
+                                .presentationDetents([.large])
+                        }
                     }
                 }
             }

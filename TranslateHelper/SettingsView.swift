@@ -19,6 +19,7 @@ private func initialsCircle(auth: AuthManager) -> some View {
 }
 
 struct SettingsView: View {
+    @ObservedObject private var sub = SubscriptionManager.shared
     @EnvironmentObject var auth: AuthManager
     @StateObject private var locStore = UserLocationsStore.shared
     @State private var showLocationSheet = false
@@ -276,6 +277,43 @@ struct SettingsView: View {
                     }
                     .padding(.horizontal, 16)
                     
+                    // Subscription (debug toggle)
+                    SectionHeader(title: "Subscription")
+                    VStack(spacing: 0) {
+                        HStack {
+                            Image(systemName: sub.isPro ? "star.fill" : "star")
+                                .foregroundColor(.tsAccent)
+                                .frame(width: 28, height: 28)
+                                .background(Color.tsAccent.opacity(0.12))
+                                .clipShape(RoundedRectangle(cornerRadius: 6))
+                            Toggle(sub.isPro ? "TalkSwitch Pro ✓" : "TalkSwitch Pro", isOn: $sub.isPro)
+                                .font(.custom("HelveticaNeue-Medium", size: 17))
+                                .foregroundColor(.tsLabel)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        if !sub.isPro {
+                            Divider().padding(.leading, 60)
+                            HStack {
+                                Image(systemName: "keyboard.fill")
+                                    .foregroundColor(.tsSecondary)
+                                    .frame(width: 28, height: 28)
+                                    .background(Color.tsSecondary.opacity(0.1))
+                                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                                Text("\(sub.keyboardUsesRemaining) keyboard translations left today")
+                                    .font(.custom("HelveticaNeue", size: 15))
+                                    .foregroundColor(.tsSecondary)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                        }
+                    }
+                    .background(Color.tsCard)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 8)
+
                     // Debug
                     VStack(spacing: 0) {
                         Button(action: {

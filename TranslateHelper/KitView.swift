@@ -9,6 +9,7 @@ struct KitTool: Identifiable {
     let description: String
     let color: Color
     let destination: KitDestination
+    var isFree: Bool = false
 }
 
 enum KitDestination {
@@ -33,9 +34,9 @@ struct KitView: View {
         KitTool(icon: "laptopcomputer",              name: "Work",        description: "Find spaces with call rooms & fast WiFi", color: Color.tsAccent, destination: .work),
         KitTool(icon: "dollarsign.arrow.circlepath", name: "Currency",      description: "Live rates + quick converter",            color: Color(hex: "#34C759"), destination: .currency),
         KitTool(icon: "simcard",                     name: "SIM Guide",     description: "Best carriers, plans & cost",             color: Color(hex: "#FF9500"), destination: .sim),
-        KitTool(icon: "map",                         name: "Neighbourhoods",description: "Find your area by vibe",                  color: Color(hex: "#AF52DE"), destination: .neighbourhoods),
+        KitTool(icon: "map",                         name: "Neighbourhoods",description: "Find your area by vibe",                  color: Color(hex: "#AF52DE"), destination: .neighbourhoods, isFree: true),
         KitTool(icon: "doc.plaintext",               name: "Bureaucracy",   description: "Banking, visa & healthcare tips",         color: Color(hex: "#5856D6"), destination: .bureaucracy),
-        KitTool(icon: "exclamationmark.shield",      name: "Scam Radar",    description: "What to watch out for locally",           color: Color(hex: "#FF3B30"), destination: .scamRadar),
+        KitTool(icon: "exclamationmark.shield",      name: "Scam Radar",    description: "What to watch out for locally",           color: Color(hex: "#FF3B30"), destination: .scamRadar, isFree: true),
         KitTool(icon: "shield.checkered",             name: "Insurance",     description: "Coverage, providers & Mexico tips",       color: Color(hex: "#34C759"), destination: .insurance),
         KitTool(icon: "tram.fill",                    name: "Transportation",description: "Ride-hailing, transit, cars & more",      color: Color(hex: "#FF6B00"), destination: .transportation),
     ]
@@ -127,21 +128,49 @@ struct KitView: View {
 struct KitToolCard: View {
     let tool: KitTool
     let action: () -> Void
+    @ObservedObject private var sub = SubscriptionManager.shared
+    @State private var showUpgrade = false
+
+    private var isLocked: Bool { !tool.isFree && !sub.isPro }
+
     var body: some View {
-        Button(action: action) {
+        Button(action: {
+            if isLocked { showUpgrade = true } else { action() }
+        }) {
             VStack(alignment: .leading, spacing: 12) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(tool.color.opacity(0.15))
-                        .frame(width: 48, height: 48)
-                    Image(systemName: tool.icon)
-                        .font(.custom("HelveticaNeue-Medium", size: 22))
-                        .foregroundColor(tool.color)
+                ZStack(alignment: .topTrailing) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(tool.color.opacity(isLocked ? 0.07 : 0.15))
+                            .frame(width: 48, height: 48)
+                        Image(systemName: tool.icon)
+                            .font(.custom("HelveticaNeue-Medium", size: 22))
+                            .foregroundColor(tool.color.opacity(isLocked ? 0.4 : 1.0))
+                    }
+                    if isLocked {
+                        Image(systemName: "lock.fill")
+                            .font(.system(size: 9, weight: .bold))
+                            .foregroundColor(.white)
+                            .padding(4)
+                            .background(Color.tsAccent)
+                            .clipShape(Circle())
+                            .offset(x: 4, y: -4)
+                    }
                 }
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(tool.name)
-                        .font(.custom("HelveticaNeue-Bold", size: 16))
-                        .foregroundColor(.tsLabel)
+                    HStack(spacing: 6) {
+                        Text(tool.name)
+                            .font(.custom("HelveticaNeue-Bold", size: 16))
+                            .foregroundColor(isLocked ? .tsSecondary : .tsLabel)
+                        if !tool.isFree && !sub.isPro {
+                            Text("PRO")
+                                .font(.custom("HelveticaNeue-Bold", size: 9))
+                                .foregroundColor(.tsAccent)
+                                .padding(.horizontal, 5).padding(.vertical, 2)
+                                .background(Color.tsAccent.opacity(0.12))
+                                .cornerRadius(4)
+                        }
+                    }
                     Text(tool.description)
                         .font(.custom("HelveticaNeue", size: 12))
                         .foregroundColor(.tsSecondary)
@@ -153,9 +182,15 @@ struct KitToolCard: View {
             .frame(maxWidth: .infinity, minHeight: 148, alignment: .leading)
             .background(Color.tsCard)
             .cornerRadius(20)
-            .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
+            .overlay(RoundedRectangle(cornerRadius: 20).stroke(
+                isLocked ? Color.tsAccent.opacity(0.05) : Color.tsAccent.opacity(0.08),
+                lineWidth: 0.5))
         }
         .buttonStyle(ScaleButtonStyle())
+        .sheet(isPresented: $showUpgrade) {
+            UpgradeSheet(reason: .kitTool(name: tool.name))
+                .presentationDetents([.large])
+        }
     }
 }
 
