@@ -467,7 +467,7 @@ struct LocalsUseView: View {
                                         .buttonStyle(PlainButtonStyle())
                                     }
                                 }
-                                .padding(.horizontal, 16)
+                                .padding(.horizontal, 16).padding(.vertical, 3)
                             }
                             .padding(.bottom, 12)
                             .transition(.opacity.combined(with: .move(edge: .top)))
