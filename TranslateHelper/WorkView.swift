@@ -105,25 +105,24 @@ struct WorkView: View {
                 .padding(.top, 32)
                 .padding(.bottom, 12)
 
-                // ── Segmented control ───────────────────────────────
-                HStack(spacing: 0) {
+                // ── Segmented control (matches Settings theme slider) ────
+                HStack(spacing: 2) {
                     ForEach(WorkTab.allCases, id: \.self) { tab in
-                        Button(action: { withAnimation(.easeInOut(duration: 0.2)) { activeTab = tab } }) {
+                        Button(action: { withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) { activeTab = tab } }) {
                             Text(tab.rawValue)
-                                .font(.custom("HelveticaNeue-Medium", size: 15))
+                                .font(.custom("HelveticaNeue-Medium", size: 14))
                                 .foregroundColor(activeTab == tab ? .tsAccent : .tsSecondary)
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, 10)
-                                .background(activeTab == tab
-                                    ? Color.tsAccent.opacity(0.12)
-                                    : Color.clear)
+                                .padding(.vertical, 8)
+                                .background(activeTab == tab ? Color(UIColor.systemBackground) : Color.clear)
+                                .cornerRadius(8)
                         }
+                        .buttonStyle(PlainButtonStyle())
                     }
                 }
-                .background(Color.tsCard)
-                .cornerRadius(13)
-                .clipped()
-                .overlay(RoundedRectangle(cornerRadius: 13).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
+                .padding(3)
+                .background(Color.tsInputBg)
+                .cornerRadius(11)
                 .padding(.horizontal, 16)
                 .padding(.bottom, 12)
 
