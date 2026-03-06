@@ -267,6 +267,7 @@ struct LocalRec: Identifiable {
     var website:       String?
     var instagram:     String?  = nil    // handle without @
     var englishSpeaking: Bool?   = nil    // nil = not specified
+    var photoURL:       String?  = nil    // direct photo URL (overrides OG scrape)
 }
 
 // MARK: - Seed Data
@@ -280,7 +281,8 @@ private let seedRecs: [LocalRec] = [
         price: .mid, neighbourhood: "Condesa",
         tags: ["English-friendly", "Implants", "Walk-in OK"],
         recommender: RecRecommender(name: "Sarah M.", initials: "SM", trustLevel: .trustedLocal, monthsInCity: 18),
-        endorsements: 14, website: nil
+        endorsements: 14, website: nil,
+        photoURL: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=800&q=80"
     ),
     LocalRec(
         businessName: "Fernanda Orozco",
@@ -290,7 +292,8 @@ private let seedRecs: [LocalRec] = [
         price: .mid, neighbourhood: "Roma Norte",
         tags: ["English-friendly", "Outdoor sessions", "Nutrition coaching"],
         recommender: RecRecommender(name: "Jake T.", initials: "JT", trustLevel: .local, monthsInCity: 9),
-        endorsements: 11, website: nil
+        endorsements: 11, website: nil,
+        photoURL: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&q=80"
     ),
     LocalRec(
         businessName: "Limpia Total",
@@ -360,7 +363,8 @@ private let seedRecs: [LocalRec] = [
         price: .budget, neighbourhood: "Condesa",
         tags: ["Drop-in", "English classes", "Community vibe"],
         recommender: RecRecommender(name: "Ana P.", initials: "AP", trustLevel: .local, monthsInCity: 8),
-        endorsements: 9, website: "flexyogacdmx.com"
+        endorsements: 9, website: "flexyogacdmx.com",
+        photoURL: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80"
     ),
     LocalRec(
         businessName: "iRepara CDMX",
@@ -371,7 +375,8 @@ private let seedRecs: [LocalRec] = [
         tags: ["iPhone", "Android", "Walk-in"],
         recommender: RecRecommender(name: "Marcus T.", initials: "MT", trustLevel: .settling, monthsInCity: 8),
         endorsements: 9,
-        englishSpeaking: true
+        englishSpeaking: true,
+        photoURL: "https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=800&q=80"
     ),
     LocalRec(
         businessName: "Dr. Wei Acupunctura",
@@ -382,7 +387,8 @@ private let seedRecs: [LocalRec] = [
         tags: ["Back pain", "Traditional Chinese Medicine", "English-speaking"],
         recommender: RecRecommender(name: "Priya N.", initials: "PN", trustLevel: .local, monthsInCity: 14),
         endorsements: 7,
-        englishSpeaking: true
+        englishSpeaking: true,
+        photoURL: "https://images.unsplash.com/photo-1512678080530-7760d81faba6?w=800&q=80"
     ),
 ]
 
@@ -553,7 +559,7 @@ struct LocalsUseView: View {
                                let insight = subcategoryInsights[sub] {
                                 CategoryInsightCard(insight: insight)
                                     .padding(.horizontal, 16)
-                                    .padding(.bottom, 4)
+                                    .padding(.bottom, 12)
                             }
 
                             LazyVStack(spacing: 12) {
@@ -811,8 +817,13 @@ struct LocalRecCard: View {
         .overlay(RoundedRectangle(cornerRadius: 18)
             .stroke(Color(UIColor.separator).opacity(0.3), lineWidth: 0.5))
         .task {
-            guard !ogFetchDone, let site = rec.website, !site.isEmpty else { return }
+            guard !ogFetchDone else { return }
             ogFetchDone = true
+            if let direct = rec.photoURL, !direct.isEmpty {
+                ogImageURL = direct
+                return
+            }
+            guard let site = rec.website, !site.isEmpty else { return }
             ogImageURL = await OGImageFetcher.shared.imageURL(for: site)
         }
     }
