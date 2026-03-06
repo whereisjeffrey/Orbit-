@@ -352,41 +352,120 @@ private struct RentingSection: View {
                 title: "The fiador system — biggest surprise for foreigners",
                 bodyText: "Most Mexican landlords require a 'fiador' — a Mexican co-signer who owns property in Mexico and can be held liable if you don't pay. If you don't know anyone in Mexico, this is a real obstacle. Here's how to get around it.")
 
-            BureauSectionLabel(title: "GETTING AN APARTMENT")
+            // ── Fiador & Guarantor Services ──────────────────────────
+            BureauSectionLabel(title: "FIADOR & GUARANTOR SERVICES")
             VStack(spacing: 0) {
-                BureauTipRow(icon: "person.fill.checkmark", color: Color(hex: "#34C759"),
-                             title: "Homie.mx — no fiador required",
-                             detail: "Platform designed for exactly this problem. No fiador. Pay a deposit instead. Listed apartments are pre-vetted. Great for CDMX, GDL, MTY. Most listings are furnished or semi-furnished.")
-                Divider().padding(.leading, 50)
                 BureauTipRow(icon: "shield.fill", color: Color.tsAccent,
-                             title: "Aval Plus — paid fiador service",
-                             detail: "A company that acts as your fiador for a fee (~$3,000 MXN / $150 USD first year). Accepted by most traditional landlords. Legitimate and widely used by expats. Google 'Aval Plus Mexico' to apply.")
+                             title: "Aval Plus — paid guarantor service",
+                             detail: "Acts as your fiador for a fee (~$3,000 MXN / ~$150 USD first year, ~$1,500 MXN renewals). Accepted by most traditional landlords. Apply online or in person. Most popular expat solution. Search 'Aval Plus Mexico'.")
+                Divider().padding(.leading, 50)
+                BureauTipRow(icon: "shield.lefthalf.filled", color: Color(hex: "#5856D6"),
+                             title: "Rentica — newer guarantor service",
+                             detail: "Similar to Aval Plus, growing in CDMX. Slightly cheaper on some plans. Worth comparing rates. rentica.mx")
                 Divider().padding(.leading, 50)
                 BureauTipRow(icon: "house.fill", color: Color(hex: "#FF9500"),
-                             title: "3–6 months deposit",
-                             detail: "Many landlords will accept extra deposit in lieu of a fiador. 2 months rent is standard; offering 3–4 upfront often closes the deal. Get everything in writing.")
+                             title: "Extra deposit instead of fiador",
+                             detail: "Offer 3–4 months rent as deposit upfront. Many landlords accept this from foreigners. Standard deposit is 1–2 months; as a foreigner expect 2–3 months minimum. Always get a signed receipt (recibo) — required to get it back.")
                 Divider().padding(.leading, 50)
-                BureauTipRow(icon: "calendar", color: Color(hex: "#AF52DE"),
-                             title: "Airbnb / Furnished long-term",
-                             detail: "30+ day Airbnb stays are common in CDMX and significantly cheaper per night than short stays. No fiador needed, no contract complexity. Good bridge while you find a permanent place.")
+                BureauTipRow(icon: "person.fill.checkmark", color: Color(hex: "#34C759"),
+                             title: "Homie.mx — no fiador, no guarantor",
+                             detail: "Platform where the fiador requirement is built out of the process entirely. Vetted listings, online contract, digital deposit. No guarantor needed at all. Great for first-time renters in CDMX, GDL, MTY.")
             }
             .background(Color.tsCard).cornerRadius(16)
             .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
 
-            BureauSectionLabel(title: "TYPICAL COSTS — CDMX")
+            // ── Where to Find Listings ───────────────────────────────
+            BureauSectionLabel(title: "WHERE TO FIND LISTINGS")
             VStack(spacing: 0) {
-                RentRow(type: "Studio / 1BR — Roma Norte, Condesa",   range: "$800–1,400 USD/mo")
-                Divider().padding(.leading, 16)
-                RentRow(type: "1BR — Juárez, Narvarte",               range: "$600–1,000 USD/mo")
-                Divider().padding(.leading, 16)
-                RentRow(type: "1BR — Polanco",                        range: "$1,200–2,200 USD/mo")
-                Divider().padding(.leading, 16)
-                RentRow(type: "2BR — Roma / Condesa",                 range: "$1,400–2,400 USD/mo")
-                Divider().padding(.leading, 16)
-                RentRow(type: "Furnished short-term (30+ days)",      range: "$1,200–2,000 USD/mo")
+                BureauTipRow(icon: "magnifyingglass", color: Color(hex: "#FF3B30"),
+                             title: "Inmuebles24 — Mexico's biggest portal",
+                             detail: "The MX equivalent of Zillow or Idealista. Largest inventory of rentals across the country. Mix of agency and private listings. inmuebles24.com or the app. Filter by furnished/unfurnished, zone, price.")
+                Divider().padding(.leading, 50)
+                BureauTipRow(icon: "magnifyingglass.circle.fill", color: Color(hex: "#FF6B00"),
+                             title: "Vivanuncios",
+                             detail: "Second-largest rental portal. Good for finding individual landlords posting directly — sometimes better deals than agency listings. vivanuncios.com.mx")
+                Divider().padding(.leading, 50)
+                BureauTipRow(icon: "house.circle.fill", color: Color(hex: "#0099FF"),
+                             title: "Lamudi.com.mx",
+                             detail: "Premium and mid-range rentals. Good UI, well-filtered. Skews toward higher-end furnished listings in Roma, Condesa, Polanco.")
+                Divider().padding(.leading, 50)
+                BureauTipRow(icon: "person.2.circle.fill", color: Color(hex: "#1877F2"),
+                             title: "Facebook Marketplace & Groups",
+                             detail: "Huge for CDMX rentals. Search 'Cuarto en renta Roma Norte', 'Depa en renta Condesa', or join groups like 'Expats in Mexico City' and 'CDMX Housing & Rentals'. Many private landlords post here first — often no fiador required if you negotiate directly.")
+                Divider().padding(.leading, 50)
+                BureauTipRow(icon: "calendar", color: Color(hex: "#FF5A5F"),
+                             title: "Airbnb — long stays (30+ days)",
+                             detail: "Monthly rates are dramatically cheaper than nightly. No fiador, no contract complexity, fully furnished. Great as a base while apartment hunting. Many hosts prefer long-stay guests.")
             }
             .background(Color.tsCard).cornerRadius(16)
             .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
+
+            // ── Finding a Roommate ───────────────────────────────────
+            BureauSectionLabel(title: "FINDING A ROOMMATE")
+            VStack(spacing: 0) {
+                BureauTipRow(icon: "person.2.fill", color: Color(hex: "#1877F2"),
+                             title: "Facebook Groups (most popular)",
+                             detail: "Search 'Roommates CDMX', 'Compañero de cuarto Roma Norte', or 'Mexico City Expats'. Facebook is the primary roommate platform in Mexico — not apps like SpareRoom. Post what you're looking for; responses are fast.")
+                Divider().padding(.leading, 50)
+                BureauTipRow(icon: "globe", color: Color(hex: "#4A90D9"),
+                             title: "NomadList Community",
+                             detail: "nomadlist.com has a CDMX section with a community forum. Good for finding other remote workers open to co-living or shared apartments in nomad-popular areas.")
+                Divider().padding(.leading, 50)
+                BureauTipRow(icon: "sparkles", color: Color(hex: "#FF2D55"),
+                             title: "Bumble BFF + coworking notice boards",
+                             detail: "Bumble BFF is actually used in CDMX for social connections that can turn into roommate leads. Physical coworking notice boards (Selina, WeWork) are also worth checking — people post roommate notices there regularly.")
+            }
+            .background(Color.tsCard).cornerRadius(16)
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
+
+            // ── Furnished Apartments ────────────────────────────────
+            BureauSectionLabel(title: "FURNISHED APARTMENTS")
+            VStack(spacing: 0) {
+                BureauTipRow(icon: "sofa.fill", color: Color(hex: "#AF52DE"),
+                             title: "Very common in nomad neighbourhoods",
+                             detail: "Roma Norte, Condesa, Polanco and Juárez have a high percentage of furnished rentals — partly driven by the expat/Airbnb market. Most include: bed, sofa, kitchen appliances, sometimes washer. Always confirm what's included in writing.")
+                Divider().padding(.leading, 50)
+                BureauTipRow(icon: "tag.fill", color: Color(hex: "#FF9500"),
+                             title: "Furnished adds ~20–40% to rent",
+                             detail: "A furnished 1BR in Roma runs $900–1,400 USD vs $700–1,000 unfurnished. Worth it for stays under 6 months — buying furniture and selling it back is a hassle.")
+                Divider().padding(.leading, 50)
+                BureauTipRow(icon: "doc.text.fill", color: Color(hex: "#34C759"),
+                             title: "Inventory list at move-in",
+                             detail: "Always photograph everything and get a signed inventory list before handing over any deposit. Landlords sometimes claim furniture damage at move-out. Photos dated on day 1 protect you.")
+            }
+            .background(Color.tsCard).cornerRadius(16)
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
+
+            // ── Typical Costs ────────────────────────────────────────
+            BureauSectionLabel(title: "TYPICAL COSTS — CDMX")
+            VStack(spacing: 0) {
+                RentRow(type: "Studio / 1BR — Roma Norte, Condesa",     range: "$800–1,400 USD/mo")
+                Divider().padding(.leading, 16)
+                RentRow(type: "1BR furnished — Roma / Condesa",         range: "$1,000–1,600 USD/mo")
+                Divider().padding(.leading, 16)
+                RentRow(type: "1BR — Juárez, Narvarte",                 range: "$600–1,000 USD/mo")
+                Divider().padding(.leading, 16)
+                RentRow(type: "1BR — Polanco",                          range: "$1,200–2,200 USD/mo")
+                Divider().padding(.leading, 16)
+                RentRow(type: "2BR — Roma / Condesa",                   range: "$1,400–2,400 USD/mo")
+                Divider().padding(.leading, 16)
+                RentRow(type: "Room in shared apartment",               range: "$350–600 USD/mo")
+                Divider().padding(.leading, 16)
+                RentRow(type: "Airbnb long-stay (30+ days)",            range: "$1,200–2,000 USD/mo")
+            }
+            .background(Color.tsCard).cornerRadius(16)
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
+
+            // ── Deposit note ─────────────────────────────────────────
+            HStack(spacing: 10) {
+                Image(systemName: "info.circle.fill")
+                    .font(.system(size: 14)).foregroundColor(Color.tsAccent)
+                Text("Standard deposit: 1–2 months. Foreigners are often asked for 2–3 months. Furnished apartments may ask for more. Always get a signed receipt — you'll need it to recover your deposit.")
+                    .font(.custom("HelveticaNeue", size: 12)).foregroundColor(.tsSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(12)
+            .background(Color.tsAccent.opacity(0.06)).cornerRadius(10)
 
             Text("Prices in USD. MXN contracts are common — factor in exchange rate fluctuation.")
                 .font(.custom("HelveticaNeue", size: 12)).foregroundColor(.tsSecondary)
