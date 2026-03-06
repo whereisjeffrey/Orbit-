@@ -17,15 +17,16 @@ struct KitSegmentedPicker<T: Hashable>: View {
     @Binding var selection: T
     let label: (T) -> String
     var scrollable: Bool = false
+    var horizontalPadding: CGFloat = 16   // set to 0 when parent already pads
 
     var body: some View {
         Group {
             if scrollable {
                 ScrollView(.horizontal, showsIndicators: false) {
-                    track.padding(.horizontal, 16)
+                    track.padding(.horizontal, horizontalPadding)
                 }
             } else {
-                track.padding(.horizontal, 16)
+                track.padding(.horizontal, horizontalPadding)
             }
         }
     }

@@ -13,6 +13,7 @@ struct SIMCarrier: Identifiable {
     let tagline:     String
     let badgeIcon:   String
     let badgeColor:  String
+    var cardTint:    Color? = nil    // optional brand tint for card background
     let residency:   String
     let plans:       [String]
     let postpaid:    String
@@ -27,7 +28,8 @@ private let simCarriers: [SIMCarrier] = [
         logoURL:    "https://logo.clearbit.com/telcel.com",
         tagline:    "Best coverage — 65% market share",
         badgeIcon:  "antenna.radiowaves.left.and.right",
-        badgeColor: "#FF3B30",
+        badgeColor: "#FF6B00",
+        cardTint:   Color(hex: "#FF6B00").opacity(0.08),
         residency:  "No residency needed for prepaid",
         plans: [
             "Amigo PAYG ~$0.50 USD/day for 1GB + calls",
@@ -146,7 +148,7 @@ struct StayDurationPicker: View {
     ]
 
     var body: some View {
-        KitSegmentedPicker(items: options.map(\.id), selection: $selected) { id in
+        KitSegmentedPicker(items: options.map(\.id), selection: $selected, horizontalPadding: 0) { id in
             options.first { $0.id == id }?.label ?? ""
         }
     }
@@ -217,9 +219,14 @@ struct StayRecommendationCard: View {
 
 struct CarrierLogoView: View {
     let logoURL:  String
-    let sfSymbol: String
+    let name:     String          // used for branded initial fallback
     let color:    String
     var size:     CGFloat = 44
+
+    // Keep sfSymbol param for backward compat but ignore it — initial is cleaner
+    var sfSymbol: String = "antenna.radiowaves.left.and.right"
+
+    private var initial: String { String(name.prefix(1).uppercased()) }
 
     var body: some View {
         AsyncImage(url: URL(string: logoURL)) { phase in
@@ -232,13 +239,14 @@ struct CarrierLogoView: View {
                     .clipShape(RoundedRectangle(cornerRadius: size * 0.27))
                     .frame(width: size, height: size)
             default:
+                // Branded initial circle — looks intentional even offline
                 ZStack {
                     RoundedRectangle(cornerRadius: size * 0.27)
-                        .fill(Color(hex: color).opacity(0.12))
+                        .fill(Color(hex: color))
                         .frame(width: size, height: size)
-                    Image(systemName: sfSymbol)
-                        .font(.system(size: size * 0.40))
-                        .foregroundColor(Color(hex: color))
+                    Text(initial)
+                        .font(.custom("HelveticaNeue-Bold", size: size * 0.44))
+                        .foregroundColor(.white)
                 }
             }
         }
@@ -260,7 +268,7 @@ struct SIMCarrierCard: View {
                 HStack(spacing: 12) {
                     CarrierLogoView(
                         logoURL:   carrier.logoURL,
-                        sfSymbol:  carrier.badgeIcon,
+                        name:      carrier.name,
                         color:     carrier.badgeColor
                     )
                     VStack(alignment: .leading, spacing: 2) {
@@ -364,9 +372,11 @@ struct SIMCarrierCard: View {
                 .padding(.bottom, 16)
             }
         }
-        .background(Color.tsCard)
+        .background(carrier.cardTint != nil ? AnyView(Color.tsCard.overlay(carrier.cardTint!)) : AnyView(Color.tsCard))
         .cornerRadius(16)
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(
+            carrier.cardTint != nil ? Color(hex: carrier.badgeColor).opacity(0.15) : Color.tsAccent.opacity(0.08),
+            lineWidth: 0.5))
     }
 }
 
@@ -419,7 +429,7 @@ struct SIMESIMSection: View {
                         HStack(spacing: 12) {
                             CarrierLogoView(
                                 logoURL:   provider.logoURL,
-                                sfSymbol:  "esim",
+                                name:      provider.name,
                                 color:     provider.color,
                                 size:      40
                             )
@@ -526,7 +536,7 @@ struct USCarrierSection: View {
                     HStack(alignment: .top, spacing: 12) {
                         CarrierLogoView(
                             logoURL:   carrier.logoURL,
-                            sfSymbol:  "antenna.radiowaves.left.and.right",
+                            name:      carrier.name,
                             color:     carrier.color,
                             size:      36
                         )
