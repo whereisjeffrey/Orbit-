@@ -307,16 +307,15 @@ struct TSGradientPill: View {
         Button(action: action) {
             HStack(spacing: 6) {
                 Image(systemName: icon)
-                    .font(.custom("HelveticaNeue-Medium", size: 16))
+                    .font(.system(size: 16, weight: .medium))
                 Text(title)
                     .font(.custom("HelveticaNeue-Bold", size: 15))
             }
-            .foregroundColor(.white)
+            .foregroundColor(.tsAccent)
             .padding(.horizontal, 20)
             .padding(.vertical, 10)
-            .background(LinearGradient.tsBluePrimary)
+            .background(Color.tsAccent.opacity(0.12))
             .clipShape(Capsule())
-            .shadow(color: Color.tsAccent.opacity(0.39), radius: 10, x: 0, y: 4)
         }
     }
 }
