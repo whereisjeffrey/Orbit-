@@ -407,21 +407,14 @@ struct LocalsUseView: View {
                                                 .font(.system(size: 11, weight: .medium))
                                             Text(cat.rawValue)
                                                 .font(.custom(
-                                                    selectedCategory == cat ? "HelveticaNeue-Medium" : "HelveticaNeue",
+                                            .font(.custom("HelveticaNeue-Medium", size: 14))
                                                     size: 13))
                                         }
-                                        .foregroundColor(selectedCategory == cat ? Color(hex: "#0099FF") : .tsSecondary)
+                                        .foregroundColor(selectedCategory == cat ? .white : .tsLabel)
                                         .padding(.horizontal, 14).padding(.vertical, 8)
-                                        .background(
-                                            selectedCategory == cat
-                                                ? Color.tsAccent.opacity(0.08)
-                                                : Color.tsCard
+                                        .background(selectedCategory == cat ? Color.tsAccent : Color.tsCard)
                                         )
                                         .clipShape(Capsule())
-                                        .overlay(Capsule().stroke(
-                                            selectedCategory == cat ? Color.tsAccent : Color.tsBorder.opacity(0.5),
-                                            lineWidth: selectedCategory == cat ? 1.5 : 0.5
-                                        ))
                                     }
                                     .buttonStyle(PlainButtonStyle())
                                 }
@@ -464,22 +457,19 @@ struct LocalsUseView: View {
                                                     .font(.system(size: 10, weight: .medium))
                                                 Text(sub.rawValue)
                                                     .font(.custom(
-                                                        selectedSubcategory == sub ? "HelveticaNeue-Medium" : "HelveticaNeue",
+                                                .font(.custom("HelveticaNeue-Medium", size: 12))
                                                         size: 12))
                                             }
-                                            .foregroundColor(selectedSubcategory == sub ? selectedCategory.color : .tsSecondary)
+                                            .foregroundColor(selectedSubcategory == sub ? .tsAccent : .tsSecondary)
                                             .padding(.horizontal, 12).padding(.vertical, 6)
-                                            .background(
-                                                selectedSubcategory == sub
-                                                    ? selectedCategory.color.opacity(0.10)
-                                                    : Color.tsCard
+                                            .background(Color.tsAccent.opacity(0.08))
                                             )
                                             .clipShape(Capsule())
                                             .overlay(Capsule().stroke(
                                                 selectedSubcategory == sub
-                                                    ? selectedCategory.color.opacity(0.5)
+                                            selectedSubcategory == sub ? Color.tsAccent : Color.clear,
                                                     : Color.tsBorder.opacity(0.4),
-                                                lineWidth: 0.5
+                                            lineWidth: 1.5
                                             ))
                                         }
                                         .buttonStyle(PlainButtonStyle())
