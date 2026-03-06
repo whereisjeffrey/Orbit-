@@ -14,7 +14,7 @@ private enum ScamSeverity: String {
         switch self {
         case .high:    return Color(hex: "#FF3B30")
         case .caution: return Color(hex: "#FF9500")
-        case .headsUp: return Color(hex: "#34C759")
+        case .headsUp: return Color(hex: "#FFCC00")
         }
     }
     var badgeIcon: String {
@@ -213,10 +213,10 @@ struct ScamRadarView: View {
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text("Scam Alert")
                                             .font(.custom("HelveticaNeue-Bold", size: 17))
-                                            .foregroundColor(.tsLabel)
+                                            .foregroundColor(Color(hex: "#1C1C1E"))
                                         Text("Seen something suspicious? Help protect the community.")
                                             .font(.custom("HelveticaNeue", size: 13))
-                                            .foregroundColor(.tsSecondary)
+                                            .foregroundColor(Color(hex: "#3C3C43").opacity(0.8))
                                             .fixedSize(horizontal: false, vertical: true)
                                     }
                                     Spacer(minLength: 4)
@@ -230,7 +230,7 @@ struct ScamRadarView: View {
                                     }
                                 }
                                 .padding(16)
-                                .background(Color.tsCard)
+                                .background(Color.white)
                                 .cornerRadius(16)
                                 .overlay(RoundedRectangle(cornerRadius: 16)
                                     .stroke(Color(hex: "#FF3B30").opacity(0.22), lineWidth: 1))
@@ -280,7 +280,7 @@ struct ScamRadarView: View {
                                         scams: highRisk, expanded: $expanded)
                             ScamSection(label: "🟠  USE CAUTION", color: Color(hex: "#FF9500"),
                                         scams: caution, expanded: $expanded)
-                            ScamSection(label: "🟢  HEADS UP", color: Color(hex: "#34C759"),
+                            ScamSection(label: "🟡  HEADS UP", color: Color(hex: "#FFCC00"),
                                         scams: headsUp, expanded: $expanded)
                         }
                         .padding(.horizontal, 16)
@@ -373,11 +373,11 @@ private struct ScamCard: View {
                 HStack(spacing: 12) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 10)
-                            .fill(scam.severity.color.opacity(0.12))
+                            .fill(Color.tsSecondary.opacity(0.1))
                             .frame(width: 40, height: 40)
                         Image(systemName: scam.icon)
                             .font(.system(size: 16))
-                            .foregroundColor(scam.severity.color)
+                            .foregroundColor(.tsSecondary)
                     }
                     VStack(alignment: .leading, spacing: 4) {
                         HStack(spacing: 6) {
