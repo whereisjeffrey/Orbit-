@@ -304,11 +304,9 @@ struct NeighbourhoodsView: View {
                         Map(position: $mapPosition) {
                             // ── Neighbourhood polygon overlays ────────
                         ForEach(neighbourhoods) { hood in
-                            if #available(iOS 17, *) {
-                                MapPolygon(coordinates: hood.polygon)
-                                    .foregroundStyle(hood.color.opacity(selected?.id == hood.id ? 0.22 : 0.10))
-                                    .stroke(hood.color.opacity(selected?.id == hood.id ? 0.75 : 0.35), lineWidth: selected?.id == hood.id ? 2 : 1)
-                            }
+                            MapPolygon(coordinates: hood.polygon)
+                                .foregroundStyle(hood.color.opacity(selected?.id == hood.id ? 0.22 : 0.10))
+                                .stroke(hood.color.opacity(selected?.id == hood.id ? 0.75 : 0.35), lineWidth: selected?.id == hood.id ? 2 : 1)
                         }
                         // ── Pins ──────────────────────────────────────────
                         ForEach(neighbourhoods) { hood in
