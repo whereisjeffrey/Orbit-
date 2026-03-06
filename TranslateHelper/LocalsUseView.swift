@@ -609,6 +609,21 @@ struct LocalRecCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
 
+
+            // ── OG image banner ───────────────────────────────────────
+            if let imgStr = ogImageURL, let imgURL = URL(string: imgStr) {
+                AsyncImage(url: imgURL) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image.resizable().scaledToFill().frame(height: 160).clipped()
+                    case .empty:
+                        Rectangle().fill(Color(UIColor.secondarySystemBackground))
+                            .frame(height: 160).overlay(ProgressView().tint(.tsSecondary))
+                    default: EmptyView()
+                    }
+                }
+                .frame(maxWidth: .infinity).frame(height: 160).clipped()
+            }
             // ── Header ────────────────────────────────────────────────
             HStack(alignment: .top, spacing: 14) {
                 // Icon — My Decks style: colored SF symbol in rounded rect
