@@ -232,3 +232,9 @@ TranslateHelper/AddCardSheet.swift TranslateHelper/AskALocalView.swift Translate
 ?? TranslateHelper/PlacePhotoStore.swift
 ### Files
 TranslateHelper/AddCardSheet.swift TranslateHelper/AskALocalView.swift TranslateHelper/AuthManager.swift TranslateHelper/CafeSpace.swift TranslateHelper/CommunityUserProfileView.swift TranslateHelper/CommunityView.swift TranslateHelper/CoworkSpace.swift TranslateHelper/CoworkSubmitView.swift TranslateHelper/CoworkView.swift TranslateHelper/DeckPhraseListView.swift TranslateHelper/DesignSystem.swift TranslateHelper/KeyboardSetupBanner.swift TranslateHelper/KitView.swift TranslateHelper/LibraryView.swift TranslateHelper/Localizable.xcstrings TranslateHelper/MainTabView.swift TranslateHelper/MyDecksView.swift TranslateHelper/NewInTownSection.swift TranslateHelper/OnboardingPaywallView.swift TranslateHelper/SettingsView.swift TranslateHelper/WorkView.swift TranslateHelper/PlacePhotoCarousel.swift TranslateHelper/PlacePhotoStore.swift 
+
+## 2026-03-06 08:45 — Auto-handoff (auto-heartbeat)
+### Changed (uncommitted)
+ M TranslateHelper/Localizable.xcstrings
+### Files
+TranslateHelper/Localizable.xcstrings 

@@ -1,6 +1,6 @@
 # HANDOFF.md
 Last agent: Nigel (OpenClaw)
-Date: 2026-03-05 16:44
+Date: 2026-03-06 08:45
 Session type: Architecture / Feature build
 
 ## What was done this session
