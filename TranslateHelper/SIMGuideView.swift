@@ -9,10 +9,10 @@ enum StayLength { case short, monthly, longStay }
 struct SIMCarrier: Identifiable {
     let id           = UUID()
     let name:        String
+    let logoURL:     String          // Clearbit logo — fetched & cached at runtime
     let tagline:     String
     let badgeIcon:   String
     let badgeColor:  String
-    let logoURL:     String          // Clearbit logo — fetched & cached at runtime
     let residency:   String
     let plans:       [String]
     let postpaid:    String
@@ -378,12 +378,12 @@ struct SIMESIMSection: View {
     private struct ESIMProvider: Identifiable {
         let id      = UUID()
         let name:    String
+        let logoURL: String
         let tagline: String
         let detail:  String
         let color:   String
         let url:     String
         let initial: String
-        let logoURL: String
     }
 
     private let providers: [ESIMProvider] = [
@@ -480,10 +480,10 @@ struct USCarrierSection: View {
     private struct USCarrier: Identifiable {
         let id      = UUID()
         let name:    String
+        let logoURL: String
         let badge:   String
         let color:   String
         let detail:  String
-        let logoURL: String
     }
 
     private let carriers: [USCarrier] = [

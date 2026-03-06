@@ -16,8 +16,8 @@ struct TrialSuccessView: View {
         let f = DateFormatter()
         f.dateFormat = "MMMM d, yyyy"
         guard let d = f.date(from: chargeDate),
-              let r = Calendar.current.date(byAdding: .day, value: -2, to: d) else { return "" }
-        return f.string(from: d)
+              let reminder = Calendar.current.date(byAdding: .day, value: -2, to: d) else { return "" }
+        return f.string(from: reminder)
     }
 
     var body: some View {

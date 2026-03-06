@@ -3,7 +3,7 @@ import FirebaseAuth
 import MapKit
 import PhotosUI
 
-@ViewBuilder
+@MainActor @ViewBuilder
 private func initialsCircle(auth: AuthManager) -> some View {
     let initials = String(auth.displayName.prefix(2)).uppercased()
     ZStack {
