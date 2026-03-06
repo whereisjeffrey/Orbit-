@@ -142,27 +142,9 @@ struct StayDurationPicker: View {
     ]
 
     var body: some View {
-        HStack(spacing: 2) {
-            ForEach(options) { opt in
-                Button(action: {
-                    withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
-                        selected = opt.id
-                    }
-                }) {
-                    Text(opt.label)
-                        .font(.custom("HelveticaNeue-Medium", size: 14))
-                        .foregroundColor(selected == opt.id ? .tsAccent : .tsSecondary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
-                        .background(selected == opt.id ? Color(UIColor.systemBackground) : Color.clear)
-                        .cornerRadius(8)
-                }
-                .buttonStyle(PlainButtonStyle())
-            }
+        KitSegmentedPicker(items: options.map(\.id), selection: $selected) { id in
+            options.first { $0.id == id }?.label ?? ""
         }
-        .padding(3)
-        .background(Color.tsInputBg)
-        .cornerRadius(11)
     }
 }
 

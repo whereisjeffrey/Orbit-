@@ -26,28 +26,8 @@ struct BureaucracyView: View {
                     VStack(spacing: 0) {
 
                         // ── Tab picker ────────────────────────────────────
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 6) {
-                                ForEach(BureauTab.allCases, id: \.self) { t in
-                                    Button {
-                                        withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) { tab = t }
-                                    } label: {
-                                        Text(t.rawValue)
-                                            .font(.custom("HelveticaNeue-Medium", size: 13))
-                                            .foregroundColor(tab == t ? .tsAccent : .tsSecondary)
-                                            .padding(.vertical, 8).padding(.horizontal, 14)
-                                            .background(tab == t ? Color(UIColor.systemBackground) : Color.clear)
-                                            .cornerRadius(8)
-                                    }
-                                    .buttonStyle(PlainButtonStyle())
-                                }
-                            }
-                            .padding(3)
-                            .background(Color.tsInputBg)
-                            .cornerRadius(11)
-                            .padding(.horizontal, 16)
-                        }
-                        .padding(.bottom, 20)
+                        KitSegmentedPicker(items: Array(BureauTab.allCases), selection: $tab, scrollable: true) { $0.rawValue }
+                            .padding(.bottom, 20)
 
                         Group {
                             switch tab {

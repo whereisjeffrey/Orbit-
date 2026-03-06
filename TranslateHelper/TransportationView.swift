@@ -26,29 +26,8 @@ struct TransportationView: View {
                     VStack(spacing: 0) {
 
                         // ── Mode picker ───────────────────────────────────
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 6) {
-                                ForEach(TransportMode.allCases, id: \.self) { m in
-                                    Button {
-                                        withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) { mode = m }
-                                    } label: {
-                                        Text(m.rawValue)
-                                            .font(.custom("HelveticaNeue-Medium", size: 13))
-                                            .foregroundColor(mode == m ? .tsAccent : .tsSecondary)
-                                            .padding(.vertical, 8)
-                                            .padding(.horizontal, 14)
-                                            .background(mode == m ? Color(UIColor.systemBackground) : Color.clear)
-                                            .cornerRadius(8)
-                                    }
-                                    .buttonStyle(PlainButtonStyle())
-                                }
-                            }
-                            .padding(3)
-                            .background(Color.tsInputBg)
-                            .cornerRadius(11)
-                            .padding(.horizontal, 16)
-                        }
-                        .padding(.bottom, 20)
+                        KitSegmentedPicker(items: Array(TransportMode.allCases), selection: $mode, scrollable: true) { $0.rawValue }
+                            .padding(.bottom, 20)
 
                         // ── Section content ───────────────────────────────
                         Group {
