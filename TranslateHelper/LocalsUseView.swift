@@ -785,6 +785,11 @@ struct LocalRecCard: View {
         .cornerRadius(18)
         .overlay(RoundedRectangle(cornerRadius: 18)
             .stroke(Color(UIColor.separator).opacity(0.3), lineWidth: 0.5))
+        .task {
+            guard !ogFetchDone, let site = rec.website, !site.isEmpty else { return }
+            ogFetchDone = true
+            ogImageURL = await OGImageFetcher.shared.imageURL(for: site)
+        }
     }
 }
 
