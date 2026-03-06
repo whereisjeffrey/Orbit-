@@ -292,11 +292,11 @@ struct AutoDeckCard: View {
             }
             .padding(16)
             .frame(width: 148, height: 148)
-            .background(Color.tsCard)
+            .background(Color(UIColor.systemGray6))
             .cornerRadius(20)
             .overlay(RoundedRectangle(cornerRadius: 20).stroke(
-                colorScheme == .dark ? deck.tint.opacity(0.25) : Color.tsAccent.opacity(0.08),
-                lineWidth: colorScheme == .dark ? 1 : 0.5))
+                deck.tint.opacity(colorScheme == .dark ? 0.45 : 0.35),
+                lineWidth: 1))
         }
         .buttonStyle(DeckTapStyle())
     }
@@ -338,11 +338,11 @@ struct UserDeckCard: View {
             }
             .padding(16)
             .frame(width: 148, height: 148)
-            .background(Color.tsCard)
+            .background(Color(UIColor.systemGray6))
             .cornerRadius(20)
             .overlay(RoundedRectangle(cornerRadius: 20).stroke(
-                colorScheme == .dark ? deck.tint.opacity(0.25) : Color.tsAccent.opacity(0.08),
-                lineWidth: colorScheme == .dark ? 1 : 0.5))
+                deck.tint.opacity(colorScheme == .dark ? 0.45 : 0.35),
+                lineWidth: 1))
         }
         .buttonStyle(DeckTapStyle())
     }
@@ -440,11 +440,11 @@ struct FeaturedDeckRow: View {
             }
         }
         .padding(16)
-        .background(Color.tsCard)
+        .background(Color(UIColor.systemGray6))
         .cornerRadius(16)
         .overlay(RoundedRectangle(cornerRadius: 16).stroke(
-            colorScheme == .dark ? deck.tint.opacity(0.25) : Color.tsAccent.opacity(0.08),
-            lineWidth: colorScheme == .dark ? 1 : 0.5))
+            deck.tint.opacity(colorScheme == .dark ? 0.45 : 0.35),
+            lineWidth: 1))
     }
 }
 
@@ -454,6 +454,7 @@ struct LockedFlirtingRow: View {
     let deck: FeaturedDeckModel
     let isAdded: Bool
     let onSetUp: () -> Void
+    @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
         HStack(spacing: 16) {
@@ -514,17 +515,17 @@ struct LockedFlirtingRow: View {
                     .foregroundColor(.white)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 8)
-                    .background(LinearGradient.tsBluePrimary)
+                    .background(Color.tsAccent)
                     .clipShape(Capsule())
                 }
             }
         }
         .padding(16)
-        .background(Color.tsCard)
+        .background(Color(UIColor.systemGray6))
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(deck.tint.opacity(0.25), lineWidth: 1)
+                .stroke(deck.tint.opacity(colorScheme == .dark ? 0.45 : 0.35), lineWidth: 1)
         )
     }
 }
