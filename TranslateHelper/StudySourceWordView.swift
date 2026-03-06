@@ -496,9 +496,9 @@ struct BackCardView: View {
                     let generator = UIImpactFeedbackGenerator(style: .medium)
                     generator.impactOccurred()
 
-                    // Always speak the translation (answer) in its own language
-                    let langCode = displayTranslationLang == "en" ? "en-US" : "es-MX"
-                    TTSService.shared.speak(displayTranslationText, language: langCode)
+                    // Always speak the language being learned (target = Spanish), regardless of card orientation
+                    let langCode = phrase.targetLang == "en" ? "en-US" : "es-MX"
+                    TTSService.shared.speak(phrase.translatedText, language: langCode)
                 }) {
                     Image(systemName: "speaker.wave.2.fill")
                         .font(.custom("HelveticaNeue", size: 24))

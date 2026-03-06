@@ -131,11 +131,9 @@ struct StudyRevealedCardView: View {
                                 let generator = UIImpactFeedbackGenerator(style: .medium)
                                 generator.impactOccurred()
                                 
-                                let targetText = swapLanguage ? phrase.sourceText : phrase.translatedText
-                                let targetLangCode = swapLanguage ? phrase.sourceLang : phrase.targetLang
-                                let langCode = targetLangCode == "en" ? "en-US" : "es-MX"
-                                
-                                TTSService.shared.speak(targetText, language: langCode)
+                                // Always speak the language being learned (target = Spanish), regardless of card orientation
+                                let langCode = phrase.targetLang == "en" ? "en-US" : "es-MX"
+                                TTSService.shared.speak(phrase.translatedText, language: langCode)
                             }) {
                                 Image(systemName: "speaker.wave.2.fill")
                                     .font(.custom("HelveticaNeue", size: 24))
