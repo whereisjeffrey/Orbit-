@@ -238,3 +238,9 @@ TranslateHelper/AddCardSheet.swift TranslateHelper/AskALocalView.swift Translate
  M TranslateHelper/Localizable.xcstrings
 ### Files
 TranslateHelper/Localizable.xcstrings 
+
+## 2026-03-06 09:45 — Auto-handoff (auto-heartbeat)
+### Changed (uncommitted)
+ M TranslateHelper/Localizable.xcstrings
+### Files
+TranslateHelper/Localizable.xcstrings 
