@@ -1233,8 +1233,9 @@ struct CategoryInsightCard: View {
                     RoundedRectangle(cornerRadius: 12)
                         .fill(accent.opacity(0.12))
                         .frame(width: 44, height: 44)
-                    Text(insight.category.emoji)
-                        .font(.system(size: 22))
+                    Image(systemName: "info.circle.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(accent)
                 }
                 VStack(alignment: .leading, spacing: 3) {
                     Text(insight.headline)
