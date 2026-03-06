@@ -236,7 +236,7 @@ struct LocalRec: Identifiable {
     let subcategory:   RecSubcategory?
     let description:   String
     let testimonial:   String
-    let price:         PriceTier
+    let price:         PriceTier?
     let neighbourhood: String
     let tags:          [String]
     let recommender:   RecRecommender
@@ -388,8 +388,10 @@ struct LocalsUseView: View {
                             }
                         }
                         .padding(.horizontal, 14).padding(.vertical, 11)
-                        .background(Color.tsInputBg)
+                        .background(Color(UIColor.systemBackground))
                         .cornerRadius(12)
+                        .overlay(RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color(UIColor.separator).opacity(0.25), lineWidth: 0.5))
                         .padding(.horizontal, 16).padding(.top, 8).padding(.bottom, 12)
 
                         // ── Category pills (simple stroke style) ──────
@@ -587,9 +589,9 @@ struct LocalRecCard: View {
                         .lineLimit(2)
                 }
                 Spacer()
-                // Price — dollar signs, not emoji
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text(rec.price.symbol)
+                // Price — only shown when set
+                if let price = rec.price {
+                    Text(price.symbol)
                         .font(.custom("HelveticaNeue-Medium", size: 13))
                         .foregroundColor(.tsSecondary)
                 }
@@ -758,7 +760,7 @@ struct AddRecSheet: View {
     @State private var subcategory: RecSubcategory? = nil
     @State private var description   = ""
     @State private var testimonial   = ""
-    @State private var price: PriceTier = .mid
+    @State private var price: PriceTier? = nil
     @State private var neighbourhood = ""
     @State private var tagsText      = ""
     @State private var website       = ""
@@ -859,20 +861,21 @@ struct AddRecSheet: View {
                             TextEditor(text: $testimonial)
                                 .font(.custom("HelveticaNeue", size: 15))
                                 .foregroundColor(.tsLabel)
+                                .scrollContentBackground(.hidden)
                                 .frame(minHeight: 100)
                                 .padding(12)
-                                .background(Color.tsInputBg)
+                                .background(Color.tsCard)
                                 .cornerRadius(12)
                                 .overlay(RoundedRectangle(cornerRadius: 12)
-                                    .stroke(testimonial.count > 280 ? Color.red.opacity(0.5) : Color.tsBorder.opacity(0.5), lineWidth: 0.5))
+                                    .stroke(testimonial.count > 280 ? Color.red.opacity(0.5) : Color.tsBorder.opacity(0.4), lineWidth: 0.5))
                         }
 
                         // Price
                         VStack(alignment: .leading, spacing: 8) {
-                            RecFieldLabel("Price range")
+                            RecFieldLabel("Price range (optional)")
                             HStack(spacing: 8) {
                                 ForEach(PriceTier.allCases, id: \.rawValue) { tier in
-                                    Button(action: { price = tier }) {
+                                    Button(action: { price = price == tier ? nil : tier }) {
                                         VStack(spacing: 2) {
                                             Text(tier.symbol)
                                                 .font(.custom("HelveticaNeue-Bold", size: 15))
@@ -1022,10 +1025,10 @@ private struct RecFormField<Content: View>: View {
             RecFieldLabel(label)
             content()
                 .padding(.horizontal, 14).padding(.vertical, 12)
-                .background(Color.tsInputBg)
+                .background(Color.tsCard)
                 .cornerRadius(12)
                 .overlay(RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.tsBorder.opacity(0.5), lineWidth: 0.5))
+                    .stroke(Color.tsBorder.opacity(0.4), lineWidth: 0.5))
         }
     }
 }
