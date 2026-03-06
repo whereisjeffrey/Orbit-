@@ -819,7 +819,7 @@ struct AddRecSheet: View {
                     VStack(alignment: .leading, spacing: 24) {
 
                         // Business name
-                        RecFormField(label: "Business or person") {
+                        RecFormField(label: "Business or person", required: true) {
                             TextField("e.g. Dr. Martinez, Studio Bloom…", text: $businessName)
                                 .font(.custom("HelveticaNeue", size: 16))
                                 .foregroundColor(.tsLabel)
@@ -837,16 +837,12 @@ struct AddRecSheet: View {
                                         }) {
                                             HStack(spacing: 5) {
                                                 Image(systemName: cat.icon).font(.system(size: 11))
-                                                Text(cat.rawValue).font(.custom("HelveticaNeue-Medium", size: 13))
+                                                Text(cat.rawValue).font(.custom("HelveticaNeue-Medium", size: 14))
                                             }
-                                            .foregroundColor(category == cat ? Color(hex: "#0099FF") : .tsSecondary)
+                                            .foregroundColor(category == cat ? .white : .tsLabel)
                                             .padding(.horizontal, 14).padding(.vertical, 8)
-                                            .background(category == cat ? Color.tsAccent.opacity(0.08) : Color.tsCard)
+                                            .background(category == cat ? Color.tsAccent : Color.tsCard)
                                             .clipShape(Capsule())
-                                            .overlay(Capsule().stroke(
-                                                category == cat ? Color.tsAccent : Color.tsBorder.opacity(0.5),
-                                                lineWidth: category == cat ? 1.5 : 0.5
-                                            ))
                                         }
                                         .buttonStyle(PlainButtonStyle())
                                     }
@@ -863,26 +859,27 @@ struct AddRecSheet: View {
                                             }) {
                                                 HStack(spacing: 4) {
                                                     Image(systemName: sub.icon).font(.system(size: 10))
-                                                    Text(sub.rawValue).font(.custom("HelveticaNeue", size: 12))
+                                                    Text(sub.rawValue).font(.custom("HelveticaNeue-Medium", size: 12))
                                                 }
-                                                .foregroundColor(subcategory == sub ? category.color : .tsSecondary)
+                                                .foregroundColor(subcategory == sub ? .tsAccent : .tsSecondary)
                                                 .padding(.horizontal, 12).padding(.vertical, 6)
-                                                .background(subcategory == sub ? category.color.opacity(0.10) : Color.tsCard)
+                                                .background(Color.tsAccent.opacity(0.08))
                                                 .clipShape(Capsule())
                                                 .overlay(Capsule().stroke(
-                                                    subcategory == sub ? category.color.opacity(0.5) : Color.tsBorder.opacity(0.4),
-                                                    lineWidth: 0.5
+                                                    subcategory == sub ? Color.tsAccent : Color.clear,
+                                                    lineWidth: 1.5
                                                 ))
                                             }
                                             .buttonStyle(PlainButtonStyle())
                                         }
                                     }
+                                    .padding(.vertical, 3)
                                 }
                             }
                         }
 
                         // One-liner
-                        RecFormField(label: "One-liner (optional)") {
+                        RecFormField(label: "One-liner") {
                             TextField("e.g. Dentist in Condesa, English-speaking", text: $description)
                                 .font(.custom("HelveticaNeue", size: 16))
                                 .foregroundColor(.tsLabel)
@@ -891,7 +888,7 @@ struct AddRecSheet: View {
                         // Testimonial
                         VStack(alignment: .leading, spacing: 8) {
                             HStack {
-                                RecFieldLabel("Your experience")
+                                RecFieldLabel("Your experience", required: true)
                                 Spacer()
                                 Text("\(testimonial.count)/280")
                                     .font(.custom("HelveticaNeue", size: 12))
@@ -911,7 +908,7 @@ struct AddRecSheet: View {
 
                         // Price
                         VStack(alignment: .leading, spacing: 8) {
-                            RecFieldLabel("Price range (optional)")
+                            RecFieldLabel("Price range")
                             HStack(spacing: 8) {
                                 ForEach(PriceTier.allCases, id: \.rawValue) { tier in
                                     Button(action: { price = price == tier ? nil : tier }) {
@@ -943,7 +940,7 @@ struct AddRecSheet: View {
                         }
 
                         // Website
-                        RecFormField(label: "Website (optional)") {
+                        RecFormField(label: "Website") {
                             TextField("e.g. example.com", text: $website)
                                 .font(.custom("HelveticaNeue", size: 16))
                                 .foregroundColor(.tsLabel)
@@ -953,7 +950,7 @@ struct AddRecSheet: View {
                         }
 
                         // Instagram
-                        RecFormField(label: "Instagram handle (optional)") {
+                        RecFormField(label: "Instagram handle") {
                             HStack(spacing: 8) {
                                 Text("@")
                                     .font(.custom("HelveticaNeue-Medium", size: 16))
@@ -968,7 +965,7 @@ struct AddRecSheet: View {
 
                         // English speaking
                         VStack(alignment: .leading, spacing: 10) {
-                            RecFieldLabel("Do they speak English? (optional)")
+                            RecFieldLabel("Do they speak English?")
                             HStack(spacing: 10) {
                                 ForEach(["Yes", "No", "Not sure"], id: \.self) { opt in
                                     Button(action: {
@@ -991,7 +988,7 @@ struct AddRecSheet: View {
                         }
 
                         // Tags
-                        RecFormField(label: "Tags, comma separated (optional)") {
+                        RecFormField(label: "Tags, comma separated") {
                             TextField("e.g. English-friendly, Walk-in OK", text: $tagsText)
                                 .font(.custom("HelveticaNeue", size: 16))
                                 .foregroundColor(.tsLabel)
@@ -1051,10 +1048,11 @@ struct AddRecSheet: View {
 
 private struct RecFormField<Content: View>: View {
     let label: String
+    var required: Bool = false
     @ViewBuilder let content: () -> Content
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            RecFieldLabel(label)
+            RecFieldLabel(label, required: required)
             content()
                 .padding(.horizontal, 14).padding(.vertical, 12)
                 .background(Color.tsCard)
@@ -1067,10 +1065,21 @@ private struct RecFormField<Content: View>: View {
 
 private struct RecFieldLabel: View {
     let text: String
-    init(_ text: String) { self.text = text }
+    var required: Bool = false
+    init(_ text: String, required: Bool = false) {
+        self.text = text
+        self.required = required
+    }
     var body: some View {
-        Text(text)
-            .font(.custom("HelveticaNeue-Medium", size: 13))
-            .foregroundColor(.tsSecondary)
+        HStack(spacing: 3) {
+            Text(text)
+                .font(.custom("HelveticaNeue-Medium", size: 13))
+                .foregroundColor(.tsSecondary)
+            if required {
+                Text("*")
+                    .font(.custom("HelveticaNeue-Bold", size: 14))
+                    .foregroundColor(Color(hex: "#FF3B30"))
+            }
+        }
     }
 }
