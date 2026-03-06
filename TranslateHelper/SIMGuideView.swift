@@ -25,7 +25,7 @@ struct SIMCarrier: Identifiable {
 private let simCarriers: [SIMCarrier] = [
     SIMCarrier(
         name:       "Telcel",
-        logoURL:    "https://logo.clearbit.com/telcel.com",
+        logoURL:    "https://www.google.com/s2/favicons?domain=telcel.com&sz=256",
         tagline:    "Best coverage — 65% market share",
         badgeIcon:  "antenna.radiowaves.left.and.right",
         badgeColor: "#FF6B00",
@@ -43,7 +43,7 @@ private let simCarriers: [SIMCarrier] = [
     ),
     SIMCarrier(
         name:       "AT&T Mexico",
-        logoURL:    "https://logo.clearbit.com/att.com.mx",
+        logoURL:    "https://www.google.com/s2/favicons?domain=att.com.mx&sz=256",
         tagline:    "Strong in cities — good data speeds",
         badgeIcon:  "wifi",
         badgeColor: "#0099FF",
@@ -59,7 +59,7 @@ private let simCarriers: [SIMCarrier] = [
     ),
     SIMCarrier(
         name:       "Movistar",
-        logoURL:    "https://logo.clearbit.com/movistar.com",
+        logoURL:    "https://www.google.com/s2/favicons?domain=movistar.com&sz=256",
         tagline:    "Budget option — major cities only",
         badgeIcon:  "cellularbars",
         badgeColor: "#34C759",
@@ -399,7 +399,7 @@ struct SIMESIMSection: View {
     private let providers: [ESIMProvider] = [
         ESIMProvider(
             name:    "Airalo",
-            logoURL: "https://logo.clearbit.com/airalo.com",
+            logoURL: "https://www.google.com/s2/favicons?domain=airalo.com&sz=256",
             tagline: "Buy before you land",
             detail:  "From $5 USD / 1GB",
             color:   "#1B4DFF",
@@ -408,7 +408,7 @@ struct SIMESIMSection: View {
         ),
         ESIMProvider(
             name:    "Holafly",
-            logoURL: "https://logo.clearbit.com/holafly.com",
+            logoURL: "https://www.google.com/s2/favicons?domain=holafly.com&sz=256",
             tagline: "Unlimited data, easiest setup",
             detail:  "From $27 USD / 7 days unlimited",
             color:   "#FF6B35",
@@ -499,28 +499,28 @@ struct USCarrierSection: View {
     private let carriers: [USCarrier] = [
         USCarrier(
             name:   "T-Mobile",
-            logoURL: "https://logo.clearbit.com/t-mobile.com",
+            logoURL: "https://www.google.com/s2/favicons?domain=t-mobile.com&sz=256",
             badge:  "Best for US users",
             color:  "#E20074",
             detail: "Free unlimited calls, texts + data (reduced speeds) included on most plans. Full LTE on Magenta Plus / Go5G. Uses Telcel network."
         ),
         USCarrier(
             name:   "AT&T US",
-            logoURL: "https://logo.clearbit.com/att.com",
+            logoURL: "https://www.google.com/s2/favicons?domain=att.com&sz=256",
             badge:  "Day Pass or add-on",
             color:  "#00A8E0",
             detail: "International Day Pass $10/day for full speeds. Some plans include basic Mexico coverage. Check your plan."
         ),
         USCarrier(
             name:   "Verizon",
-            logoURL: "https://logo.clearbit.com/verizon.com",
+            logoURL: "https://www.google.com/s2/favicons?domain=verizon.com&sz=256",
             badge:  "Most expensive option",
             color:  "#CD040B",
             detail: "TravelPass $10/day. No free Mexico roaming. Roams on Telcel. Fine if you need it but pricey."
         ),
         USCarrier(
             name:   "Sprint / T-Mobile",
-            logoURL: "https://logo.clearbit.com/sprint.com",
+            logoURL: "https://www.google.com/s2/favicons?domain=sprint.com&sz=256",
             badge:  "Merged → same as T-Mobile",
             color:  "#6B2D8B",
             detail: "Sprint is now T-Mobile — same coverage applies. If you have an old Sprint plan, check your T-Mobile benefits."
