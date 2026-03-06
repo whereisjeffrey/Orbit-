@@ -53,6 +53,12 @@ struct OnboardingPaywallView: View {
                         }
                         .frame(width: 40, height: 40)
                         Spacer()
+                        // DEBUG: skip paywall during testing
+                        Button("Skip") {
+                            showSuccess = true
+                        }
+                        .font(.custom("HelveticaNeue", size: 15))
+                        .foregroundColor(.tsSecondary)
                     }
                     .padding(.horizontal, 16)
                     .padding(.top, 8)
