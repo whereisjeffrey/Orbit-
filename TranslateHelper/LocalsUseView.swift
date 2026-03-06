@@ -591,7 +591,7 @@ struct LocalRecCard: View {
                 VStack(alignment: .trailing, spacing: 2) {
                     Text(rec.price.symbol)
                         .font(.custom("HelveticaNeue-Medium", size: 13))
-                        .foregroundColor(accentColor)
+                        .foregroundColor(.tsSecondary)
                 }
             }
             .padding(.horizontal, 16)
