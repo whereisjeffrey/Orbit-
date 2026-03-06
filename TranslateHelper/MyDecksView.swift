@@ -292,11 +292,11 @@ struct AutoDeckCard: View {
             }
             .padding(16)
             .frame(width: 148, height: 148)
-            .background(Color(UIColor.systemGray6))
+            .background(Color.tsCard)
             .cornerRadius(20)
             .overlay(RoundedRectangle(cornerRadius: 20).stroke(
-                deck.tint.opacity(colorScheme == .dark ? 0.45 : 0.35),
-                lineWidth: 1))
+                Color.tsAccent.opacity(0.08),
+                lineWidth: 0.5))
         }
         .buttonStyle(DeckTapStyle())
     }
@@ -338,11 +338,11 @@ struct UserDeckCard: View {
             }
             .padding(16)
             .frame(width: 148, height: 148)
-            .background(Color(UIColor.systemGray6))
+            .background(Color.tsCard)
             .cornerRadius(20)
             .overlay(RoundedRectangle(cornerRadius: 20).stroke(
-                deck.tint.opacity(colorScheme == .dark ? 0.45 : 0.35),
-                lineWidth: 1))
+                Color.tsAccent.opacity(0.08),
+                lineWidth: 0.5))
         }
         .buttonStyle(DeckTapStyle())
     }
@@ -440,7 +440,7 @@ struct FeaturedDeckRow: View {
             }
         }
         .padding(16)
-        .background(Color(UIColor.systemGray6))
+        .background(Color.tsCard)
         .cornerRadius(16)
         .overlay(RoundedRectangle(cornerRadius: 16).stroke(
             deck.tint.opacity(colorScheme == .dark ? 0.45 : 0.35),
@@ -521,7 +521,7 @@ struct LockedFlirtingRow: View {
             }
         }
         .padding(16)
-        .background(Color(UIColor.systemGray6))
+        .background(Color.tsCard)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
