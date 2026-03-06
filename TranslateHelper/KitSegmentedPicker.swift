@@ -15,9 +15,9 @@ import SwiftUI
 struct KitSegmentedPicker<T: Hashable>: View {
     let items: [T]
     @Binding var selection: T
-    let label: (T) -> String
     var scrollable: Bool = false
     var horizontalPadding: CGFloat = 16   // set to 0 when parent already pads
+    let label: (T) -> String              // must be last — enables trailing closure
 
     var body: some View {
         Group {
