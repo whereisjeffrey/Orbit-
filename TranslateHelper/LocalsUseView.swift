@@ -242,6 +242,8 @@ struct LocalRec: Identifiable {
     let recommender:   RecRecommender
     var endorsements:  Int
     var website:       String?
+    var instagram:     String?  = nil    // handle without @
+    var englishSpeaking: Bool?   = nil    // nil = not specified
 }
 
 // MARK: - Seed Data
@@ -439,22 +441,14 @@ struct LocalsUseView: View {
                                         }
                                     }) {
                                         Text("All \(selectedCategory.rawValue)")
-                                            .font(.custom(
-                                                selectedSubcategory == nil ? "HelveticaNeue-Medium" : "HelveticaNeue",
-                                                size: 12))
-                                            .foregroundColor(selectedSubcategory == nil ? selectedCategory.color : .tsSecondary)
+                                            .font(.custom("HelveticaNeue-Medium", size: 12))
+                                            .foregroundColor(selectedSubcategory == nil ? .tsAccent : .tsSecondary)
                                             .padding(.horizontal, 12).padding(.vertical, 6)
-                                            .background(
-                                                selectedSubcategory == nil
-                                                    ? selectedCategory.color.opacity(0.10)
-                                                    : Color.tsCard
-                                            )
+                                            .background(Color.tsAccent.opacity(0.08))
                                             .clipShape(Capsule())
                                             .overlay(Capsule().stroke(
-                                                selectedSubcategory == nil
-                                                    ? selectedCategory.color.opacity(0.5)
-                                                    : Color.tsBorder.opacity(0.4),
-                                                lineWidth: 0.5
+                                                selectedSubcategory == nil ? Color.tsAccent : Color.clear,
+                                                lineWidth: 1.5
                                             ))
                                     }
                                     .buttonStyle(PlainButtonStyle())
@@ -630,20 +624,49 @@ struct LocalRecCard: View {
                 .padding(.horizontal, 16)
                 .padding(.bottom, 14)
 
-            // ── Website ───────────────────────────────────────────────
-            if let site = rec.website, !site.isEmpty {
-                Button(action: {
-                    if let url = URL(string: "https://\(site)") { openURL(url) }
-                }) {
-                    HStack(spacing: 5) {
-                        Image(systemName: "globe")
-                            .font(.system(size: 11))
-                        Text(site)
-                            .font(.custom("HelveticaNeue", size: 12))
+            // ── Website + Instagram ───────────────────────────────────
+            let hasLinks = (rec.website != nil && !rec.website!.isEmpty) || (rec.instagram != nil && !rec.instagram!.isEmpty)
+            if hasLinks {
+                HStack(spacing: 14) {
+                    if let site = rec.website, !site.isEmpty {
+                        Button(action: { if let url = URL(string: "https://\(site)") { openURL(url) } }) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "globe").font(.system(size: 11))
+                                Text(site).font(.custom("HelveticaNeue", size: 12))
+                            }
+                            .foregroundColor(.tsAccent)
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
-                    .foregroundColor(.tsAccent)
+                    if let ig = rec.instagram, !ig.isEmpty {
+                        Button(action: {
+                            if let url = URL(string: "https://instagram.com/\(ig)") { openURL(url) }
+                        }) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "camera").font(.system(size: 11))
+                                Text("@\(ig)").font(.custom("HelveticaNeue", size: 12))
+                            }
+                            .foregroundColor(Color(hex: "#E1306C"))
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
                 }
-                .buttonStyle(PlainButtonStyle())
+                .padding(.horizontal, 16)
+                .padding(.bottom, 12)
+            }
+
+            // ── English badge ─────────────────────────────────────────
+            if rec.englishSpeaking == true {
+                HStack(spacing: 4) {
+                    Image(systemName: "text.bubble.fill")
+                        .font(.system(size: 10))
+                    Text("Speaks English")
+                        .font(.custom("HelveticaNeue-Medium", size: 11))
+                }
+                .foregroundColor(Color(hex: "#34C759"))
+                .padding(.horizontal, 10).padding(.vertical, 5)
+                .background(Color(hex: "#34C759").opacity(0.10))
+                .clipShape(Capsule())
                 .padding(.horizontal, 16)
                 .padding(.bottom, 12)
             }
@@ -757,6 +780,8 @@ struct AddRecSheet: View {
     @State private var neighbourhood = ""
     @State private var tagsText      = ""
     @State private var website       = ""
+    @State private var instagram     = ""
+    @State private var englishAnswer = ""   // "Yes" / "No" / "Not sure" / ""
 
     private var isValid: Bool {
         !businessName.trimmingCharacters(in: .whitespaces).isEmpty &&
@@ -903,6 +928,44 @@ struct AddRecSheet: View {
                                 .autocorrectionDisabled()
                         }
 
+                        // Instagram
+                        RecFormField(label: "Instagram handle (optional)") {
+                            HStack(spacing: 8) {
+                                Text("@")
+                                    .font(.custom("HelveticaNeue-Medium", size: 16))
+                                    .foregroundColor(.tsSecondary)
+                                TextField("their_handle", text: $instagram)
+                                    .font(.custom("HelveticaNeue", size: 16))
+                                    .foregroundColor(.tsLabel)
+                                    .autocapitalization(.none)
+                                    .autocorrectionDisabled()
+                            }
+                        }
+
+                        // English speaking
+                        VStack(alignment: .leading, spacing: 10) {
+                            RecFieldLabel("Do they speak English? (optional)")
+                            HStack(spacing: 10) {
+                                ForEach(["Yes", "No", "Not sure"], id: \.self) { opt in
+                                    Button(action: {
+                                        if englishAnswer == opt { englishAnswer = "" }
+                                        else { englishAnswer = opt }
+                                    }) {
+                                        Text(opt)
+                                            .font(.custom("HelveticaNeue-Medium", size: 14))
+                                            .foregroundColor(englishAnswer == opt ? .white : .tsLabel)
+                                            .frame(maxWidth: .infinity).padding(.vertical, 10)
+                                            .background(englishAnswer == opt ? Color.tsAccent : Color.tsCard)
+                                            .cornerRadius(10)
+                                            .overlay(RoundedRectangle(cornerRadius: 10)
+                                                .stroke(englishAnswer == opt ? Color.tsAccent : Color.tsBorder.opacity(0.4),
+                                                        lineWidth: englishAnswer == opt ? 0 : 0.5))
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
+                                }
+                            }
+                        }
+
                         // Tags
                         RecFormField(label: "Tags, comma separated (optional)") {
                             TextField("e.g. English-friendly, Walk-in OK", text: $tagsText)
@@ -958,7 +1021,9 @@ struct AddRecSheet: View {
             tags:          tags,
             recommender:   RecRecommender(name: "You", initials: "ME", trustLevel: .settling, monthsInCity: 0),
             endorsements:  0,
-            website:       website.trimmingCharacters(in: .whitespaces).isEmpty ? nil : website.trimmingCharacters(in: .whitespaces)
+            website:       website.trimmingCharacters(in: .whitespaces).isEmpty ? nil : website.trimmingCharacters(in: .whitespaces),
+            instagram:     instagram.trimmingCharacters(in: .whitespaces).isEmpty ? nil : instagram.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: "@", with: ""),
+            englishSpeaking: englishAnswer == "Yes" ? true : (englishAnswer == "No" ? false : nil)
         )
         onSave(newRec)
         dismiss()
