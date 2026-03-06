@@ -1116,12 +1116,13 @@ private struct RecFieldLabel: View {
 // MARK: - Category Insight Data
 
 struct CategoryInsight {
-    let category:  RecCategory
     let headline:  String
-    let stat:      String?       // highlighted callout, nil = none
+    let stat:      String?
     let statColor: String
     let bullets:   [String]
 }
+
+
 
 
 
