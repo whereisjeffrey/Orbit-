@@ -105,24 +105,28 @@ struct WorkView: View {
                 .padding(.top, 32)
                 .padding(.bottom, 12)
 
-                // ── Segmented control (matches Settings theme slider) ────
+                // ── Segmented control — pill form ────────────────────
                 HStack(spacing: 2) {
                     ForEach(WorkTab.allCases, id: \.self) { tab in
                         Button(action: { withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) { activeTab = tab } }) {
                             Text(tab.rawValue)
-                                .font(.custom("HelveticaNeue-Medium", size: 14))
-                                .foregroundColor(activeTab == tab ? .tsAccent : .tsSecondary)
+                                .font(.custom(activeTab == tab ? "HelveticaNeue-Medium" : "HelveticaNeue", size: 14))
+                                .foregroundColor(activeTab == tab ? Color(hex: "#0099FF") : .tsSecondary)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 8)
-                                .background(activeTab == tab ? Color(UIColor.systemBackground) : Color.clear)
-                                .cornerRadius(8)
+                                .background(
+                                    activeTab == tab
+                                        ? Color(UIColor.systemBackground)
+                                        : Color.clear
+                                )
+                                .clipShape(Capsule())
                         }
                         .buttonStyle(PlainButtonStyle())
                     }
                 }
-                .padding(3)
+                .padding(4)
                 .background(Color.tsInputBg)
-                .cornerRadius(11)
+                .clipShape(Capsule())
                 .padding(.horizontal, 16)
                 .padding(.bottom, 12)
 
