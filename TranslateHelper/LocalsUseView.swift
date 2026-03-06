@@ -539,13 +539,7 @@ struct LocalsUseView: View {
             }
             .navigationTitle("Locals Use")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") { dismiss() }
-                        .font(.custom("HelveticaNeue-Medium", size: 16))
-                        .foregroundColor(.tsAccent)
-                }
-            }
+
         }
         .sheet(isPresented: $showAddRec) {
             AddRecSheet { newRec in
@@ -979,15 +973,8 @@ struct AddRecSheet: View {
                     .padding(24)
                 }
             }
-            .navigationTitle("Add a rec")
+            .navigationTitle("Add a Recommendation")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                        .font(.custom("HelveticaNeue", size: 16))
-                        .foregroundColor(.tsAccent)
-                }
-            }
         }
     }
 
