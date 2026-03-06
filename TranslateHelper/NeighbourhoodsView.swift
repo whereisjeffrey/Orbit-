@@ -42,6 +42,7 @@ private let neighbourhoods: [Neighbourhood] = [
             VibeTag(icon: "paintpalette.fill",      label: "Arts District",  color: Color(hex: "#AF52DE")),
             VibeTag(icon: "figure.walk",            label: "Walkable",       color: Color(hex: "#34C759")),
             VibeTag(icon: "sparkles",               label: "Nightlife",      color: Color(hex: "#FFD60A")),
+            VibeTag(icon: "checkmark.shield.fill",   label: "Safe at Night",  color: Color(hex: "#34C759")),
         ],
         highlights: [
             "Highest café and cowork density in the city",
@@ -65,6 +66,7 @@ private let neighbourhoods: [Neighbourhood] = [
             VibeTag(icon: "sparkles",               label: "Nightlife",      color: Color(hex: "#FFD60A")),
             VibeTag(icon: "figure.walk",            label: "Walkable",       color: Color(hex: "#34C759")),
             VibeTag(icon: "person.2.fill",          label: "Expat Friendly", color: Color(hex: "#0099FF")),
+            VibeTag(icon: "checkmark.shield.fill",   label: "Safe at Night",  color: Color(hex: "#34C759")),
         ],
         highlights: [
             "Parque México and Parque España — incredible green space",
@@ -110,6 +112,7 @@ private let neighbourhoods: [Neighbourhood] = [
             VibeTag(icon: "bag.fill",               label: "Shopping",       color: Color(hex: "#FF9500")),
             VibeTag(icon: "briefcase.fill",         label: "Business Hub",   color: Color(hex: "#0099FF")),
             VibeTag(icon: "fork.knife",             label: "Fine Dining",    color: Color(hex: "#FF3B30")),
+            VibeTag(icon: "checkmark.shield.fill",   label: "Safe at Night",  color: Color(hex: "#34C759")),
         ],
         highlights: [
             "Presidente Masaryk — Mexico's answer to Fifth Avenue",
@@ -175,6 +178,7 @@ private let neighbourhoods: [Neighbourhood] = [
             VibeTag(icon: "fork.knife",             label: "Food Scene",     color: Color(hex: "#FF3B30")),
             VibeTag(icon: "dollarsign.circle.fill", label: "Budget Friendly",color: Color(hex: "#34C759")),
             VibeTag(icon: "figure.walk",            label: "Walkable",       color: Color(hex: "#34C759")),
+            VibeTag(icon: "checkmark.shield.fill",   label: "Safe at Night",  color: Color(hex: "#34C759")),
         ],
         highlights: [
             "15-min walk south of Roma Norte — same quality, lower prices",
