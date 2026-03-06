@@ -29,7 +29,7 @@ private let simCarriers: [SIMCarrier] = [
         tagline:    "Best coverage — 65% market share",
         badgeIcon:  "antenna.radiowaves.left.and.right",
         badgeColor: "#FF6B00",
-        cardTint:   Color(hex: "#FF6B00").opacity(0.08),
+        cardTint:   Color(hex: "#FF6B00").opacity(0.14),
         residency:  "No residency needed for prepaid",
         plans: [
             "Amigo PAYG ~$0.50 USD/day for 1GB + calls",

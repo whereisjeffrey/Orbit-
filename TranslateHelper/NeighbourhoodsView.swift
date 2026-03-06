@@ -351,11 +351,11 @@ struct NeighbourhoodsView: View {
                                                 .frame(width: 10, height: 10)
                                             Text("\(hood.number). \(hood.shortName)")
                                                 .font(.custom("HelveticaNeue-Medium", size: 13))
-                                                .foregroundColor(selected?.id == hood.id ? .white : .tsLabel)
+                                                .foregroundColor(selected?.id == hood.id ? hood.color : .tsLabel)
                                         }
                                         .padding(.horizontal, 12)
                                         .padding(.vertical, 8)
-                                        .background(selected?.id == hood.id ? hood.color : Color.tsCard)
+                                        .background(selected?.id == hood.id ? hood.color.opacity(0.13) : Color.tsCard)
                                         .cornerRadius(20)
                                         .overlay(RoundedRectangle(cornerRadius: 20)
                                             .stroke(selected?.id == hood.id ? hood.color : Color.tsAccent.opacity(0.12), lineWidth: 1))
@@ -403,11 +403,11 @@ private struct NeighbourhoodCard: View {
                 HStack(spacing: 12) {
                     ZStack {
                         Circle()
-                            .fill(isHighlighted ? hood.color : hood.color.opacity(0.15))
+                            .fill(hood.color.opacity(isHighlighted ? 0.20 : 0.15))
                             .frame(width: 25, height: 25)
                         Text("\(hood.number)")
                             .font(.system(size: 11, weight: .bold))
-                            .foregroundColor(isHighlighted ? .white : hood.color)
+                            .foregroundColor(hood.color)
                     }
 
                     VStack(alignment: .leading, spacing: 3) {
@@ -433,8 +433,6 @@ private struct NeighbourhoodCard: View {
             if expanded {
                 VStack(spacing: 0) {
 
-                    Divider().background(Color.tsAccent.opacity(0.08))
-
                     // ── Soul card ──────────────────────────────────────────
                     VStack(alignment: .leading, spacing: 8) {
                         HStack(spacing: 6) {
@@ -459,8 +457,6 @@ private struct NeighbourhoodCard: View {
                         RoundedRectangle(cornerRadius: 0)
                             .stroke(hood.color.opacity(0.15), lineWidth: 0)
                     )
-
-                    Divider().background(Color.tsAccent.opacity(0.08))
 
                     // ── Meta row ───────────────────────────────────────────
                     HStack(spacing: 0) {
@@ -518,7 +514,8 @@ private struct NeighbourhoodCard: View {
                             }
                         }
                     }
-                    .padding(16)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
 
                     // ── Watch out ─────────────────────────────────────────
                     if let warn = hood.watchOut {
