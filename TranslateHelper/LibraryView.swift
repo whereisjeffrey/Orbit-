@@ -358,11 +358,11 @@ struct LibraryDeckCard: View {
             .padding(16)
             .frame(height: 176)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.tsCard)
+            .background(Color(UIColor.systemGray6))
             .cornerRadius(24)
             .overlay(RoundedRectangle(cornerRadius: 24).stroke(
-                colorScheme == .dark ? tint.opacity(0.25) : Color.tsAccent.opacity(0.08),
-                lineWidth: colorScheme == .dark ? 1 : 0.5))
+                tint.opacity(colorScheme == .dark ? 0.45 : 0.35),
+                lineWidth: 1))
         }
         .buttonStyle(DeckTapStyle())
     }
