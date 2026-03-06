@@ -21,9 +21,14 @@ struct NewInTownSection: View {
         VStack(alignment: .leading, spacing: 12) {
 
             HStack {
-                Text("New in town")
-                    .font(.custom("HelveticaNeue-Bold", size: 17))
-                    .foregroundColor(.tsLabel)
+                HStack(spacing: 6) {
+                    Image(systemName: "building.2.fill")
+                        .font(.system(size: 14))
+                        .foregroundColor(.tsAccent)
+                    Text("New in town")
+                        .font(.custom("HelveticaNeue-Bold", size: 17))
+                        .foregroundColor(.tsLabel)
+                }
                 Spacer()
                 Text("\(newArrivals.count) people")
                     .font(.custom("HelveticaNeue", size: 13))
