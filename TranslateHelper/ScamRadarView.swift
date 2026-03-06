@@ -268,10 +268,10 @@ struct ScamRadarView: View {
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text("Scam Alert")
                                             .font(.custom("HelveticaNeue-Bold", size: 17))
-                                            .foregroundColor(Color(hex: "#1C1C1E"))
+                                            .foregroundColor(.tsLabel)
                                         Text("Seen something suspicious? Help protect the community.")
                                             .font(.custom("HelveticaNeue", size: 13))
-                                            .foregroundColor(Color(hex: "#3C3C43").opacity(0.8))
+                                            .foregroundColor(.tsSecondary)
                                             .fixedSize(horizontal: false, vertical: true)
                                     }
                                     Spacer(minLength: 4)
@@ -285,7 +285,7 @@ struct ScamRadarView: View {
                                     }
                                 }
                                 .padding(16)
-                                .background(Color.white)
+                                .background(Color(hex: "#FF3B30").opacity(0.10))
                                 .cornerRadius(16)
                                 .overlay(RoundedRectangle(cornerRadius: 16)
                                     .stroke(Color(hex: "#FF3B30").opacity(0.22), lineWidth: 1))

@@ -27,6 +27,7 @@ struct TransportationView: View {
 
                         // ── Mode picker ───────────────────────────────────
                         KitSegmentedPicker(items: Array(TransportMode.allCases), selection: $mode, scrollable: true) { $0.rawValue }
+                            .padding(.horizontal, 16)
                             .padding(.bottom, 20)
 
                         // ── Section content ───────────────────────────────

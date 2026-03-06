@@ -124,7 +124,7 @@ struct WhyInsuranceCard: View {
                 RoundedRectangle(cornerRadius: 16)
                     .fill(Color(hex: "#FF3B30").opacity(0.12))
                     .frame(width: 56, height: 56)
-                Image(systemName: "cross.fill")
+                Image(systemName: "cross.case.fill")
                     .font(.system(size: 24, weight: .medium))
                     .foregroundColor(Color(hex: "#FF3B30"))
             }
@@ -139,7 +139,8 @@ struct WhyInsuranceCard: View {
             }
         }
         .padding(16)
-        .background(Color(UIColor.systemBackground))
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(hex: "#FF3B30").opacity(0.10))
         .cornerRadius(16)
         .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(hex: "#FF3B30").opacity(0.15), lineWidth: 1))
     }

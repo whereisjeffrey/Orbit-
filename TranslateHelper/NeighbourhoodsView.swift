@@ -552,7 +552,7 @@ private struct NeighbourhoodCard: View {
                 }
             }
         }
-        .background(isHighlighted ? hood.color.opacity(0.07) : Color.tsCard)
+        .background(Color.tsCard)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay(
             RoundedRectangle(cornerRadius: 16)
