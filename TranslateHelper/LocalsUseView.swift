@@ -1403,7 +1403,7 @@ struct CategoryInsightCard: View {
             }
         }
         .padding(16)
-        .background(Color(UIColor.secondarySystemBackground))
+        .background(Color(UIColor.systemBackground))
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
