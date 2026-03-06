@@ -406,14 +406,11 @@ struct LocalsUseView: View {
                                             Image(systemName: cat.icon)
                                                 .font(.system(size: 11, weight: .medium))
                                             Text(cat.rawValue)
-                                                .font(.custom(
-                                            .font(.custom("HelveticaNeue-Medium", size: 14))
-                                                    size: 13))
+                                                .font(.custom("HelveticaNeue-Medium", size: 14))
                                         }
                                         .foregroundColor(selectedCategory == cat ? .white : .tsLabel)
                                         .padding(.horizontal, 14).padding(.vertical, 8)
                                         .background(selectedCategory == cat ? Color.tsAccent : Color.tsCard)
-                                        )
                                         .clipShape(Capsule())
                                     }
                                     .buttonStyle(PlainButtonStyle())
@@ -456,9 +453,7 @@ struct LocalsUseView: View {
                                                 Image(systemName: sub.icon)
                                                     .font(.system(size: 10, weight: .medium))
                                                 Text(sub.rawValue)
-                                                    .font(.custom(
                                                 .font(.custom("HelveticaNeue-Medium", size: 12))
-                                                        size: 12))
                                             }
                                             .foregroundColor(selectedSubcategory == sub ? .tsAccent : .tsSecondary)
                                             .padding(.horizontal, 12).padding(.vertical, 6)
@@ -942,7 +937,7 @@ struct AddRecSheet: View {
                                         else { englishAnswer = opt }
                                     }) {
                                         Text(opt)
-                                            .font(.custom("HelveticaNeue-Medium", size: 14))
+                                                .font(.custom("HelveticaNeue-Medium", size: 14))
                                             .foregroundColor(englishAnswer == opt ? .white : .tsLabel)
                                             .frame(maxWidth: .infinity).padding(.vertical, 10)
                                             .background(englishAnswer == opt ? Color.tsAccent : Color.tsCard)
