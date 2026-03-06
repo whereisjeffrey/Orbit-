@@ -311,10 +311,10 @@ struct TSGradientPill: View {
                 Text(title)
                     .font(.custom("HelveticaNeue-Bold", size: 15))
             }
-            .foregroundColor(.tsAccent)
+            .foregroundColor(.white)
             .padding(.horizontal, 20)
             .padding(.vertical, 10)
-            .background(Color.tsAccent.opacity(0.12))
+            .background(Color.tsAccent)
             .clipShape(Capsule())
         }
     }
