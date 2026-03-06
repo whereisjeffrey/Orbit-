@@ -35,6 +35,12 @@ enum RecSubcategory: String, Hashable, Identifiable {
     case immigration  = "Immigration"
     case notary       = "Notary"
     case bizLaw       = "Business Law"
+    // Health (extra)
+    case acupuncture  = "Acupuncture"
+    // Tech
+    case phoneRepair  = "Phone Repair"
+    case computerRepair = "Computer Repair"
+    case dataRecovery = "Data Recovery"
     // Finance
     case accounting   = "Accounting"
     case tax          = "Tax"
@@ -71,6 +77,10 @@ enum RecSubcategory: String, Hashable, Identifiable {
         case .accounting:  return "chart.bar.fill"
         case .tax:         return "percent"
         case .banking:     return "banknote.fill"
+        case .acupuncture: return "waveform.path.ecg"
+        case .phoneRepair: return "iphone.gen2.slash"
+        case .computerRepair: return "laptopcomputer"
+        case .dataRecovery: return "externaldrive.fill"
         }
     }
 
@@ -103,6 +113,10 @@ enum RecSubcategory: String, Hashable, Identifiable {
         case .accounting:   return Color(hex: "#30D158")
         case .tax:          return Color(hex: "#FF9F0A")
         case .banking:      return Color(hex: "#34C759")
+        case .acupuncture:  return Color(hex: "#30D158")
+        case .phoneRepair:  return Color(hex: "#007AFF")
+        case .computerRepair: return Color(hex: "#636366")
+        case .dataRecovery: return Color(hex: "#FF9F0A")
         }
     }
 
@@ -135,6 +149,10 @@ enum RecSubcategory: String, Hashable, Identifiable {
         case .accounting:   return "📊"
         case .tax:          return "🧾"
         case .banking:      return "🏦"
+        case .acupuncture:  return "☯️"
+        case .phoneRepair:  return "📱"
+        case .computerRepair: return "💻"
+        case .dataRecovery: return "💾"
         }
     }
 }
@@ -149,6 +167,7 @@ enum RecCategory: String, CaseIterable, Identifiable {
     case home     = "Home"
     case legal    = "Legal"
     case finance  = "Finance"
+    case tech     = "Tech"
 
     var id: String { rawValue }
 
@@ -161,6 +180,7 @@ enum RecCategory: String, CaseIterable, Identifiable {
         case .home:    return "house.fill"
         case .legal:   return "building.columns.fill"
         case .finance: return "chart.line.uptrend.xyaxis"
+        case .tech:    return "wrench.and.screwdriver.fill"
         }
     }
 
@@ -173,6 +193,7 @@ enum RecCategory: String, CaseIterable, Identifiable {
         case .home:    return Color(hex: "#FF9500")
         case .legal:   return Color(hex: "#5856D6")
         case .finance: return Color(hex: "#30B0C7")
+        case .tech:    return Color(hex: "#636366")
         }
     }
 
@@ -185,18 +206,20 @@ enum RecCategory: String, CaseIterable, Identifiable {
         case .home:    return "🏠"
         case .legal:   return "⚖️"
         case .finance: return "💰"
+        case .tech:    return "🔧"
         }
     }
 
     var subcategories: [RecSubcategory] {
         switch self {
         case .all:     return []
-        case .health:  return [.dentistry, .dermatology, .mentalHealth, .generalDoc, .physio, .nutrition]
+        case .health:  return [.dentistry, .dermatology, .mentalHealth, .generalDoc, .physio, .nutrition, .acupuncture]
         case .beauty:  return [.hair, .nails, .spa, .botox, .waxing]
         case .fitness: return [.pt, .yoga, .gym, .pilates, .martialArts]
         case .home:    return [.cleaning, .plumbing, .electrician, .acRepair, .gardening]
         case .legal:   return [.immigration, .notary, .bizLaw]
         case .finance: return [.accounting, .tax, .banking]
+        case .tech:    return [.phoneRepair, .computerRepair, .dataRecovery]
         }
     }
 }
@@ -338,6 +361,28 @@ private let seedRecs: [LocalRec] = [
         tags: ["Drop-in", "English classes", "Community vibe"],
         recommender: RecRecommender(name: "Ana P.", initials: "AP", trustLevel: .local, monthsInCity: 8),
         endorsements: 9, website: "flexyogacdmx.com"
+    ),
+    LocalRec(
+        businessName: "iRepara CDMX",
+        category: .tech, subcategory: .phoneRepair,
+        description: "iPhone & Android repairs, Condesa",
+        testimonial: "Cracked my screen on day two. This guy fixed it in 45 minutes for 350 pesos. Legit parts, not knock-offs. Saved me a long trip to the Apple Store.",
+        price: .budget, neighbourhood: "Condesa",
+        tags: ["iPhone", "Android", "Walk-in"],
+        recommender: RecRecommender(name: "Marcus T.", initials: "MT", trustLevel: .settling, monthsInCity: 8),
+        endorsements: 9,
+        englishSpeaking: true
+    ),
+    LocalRec(
+        businessName: "Dr. Wei Acupunctura",
+        category: .health, subcategory: .acupuncture,
+        description: "Traditional Chinese acupuncture, Roma Norte",
+        testimonial: "Three sessions for lower back pain and I felt like a different person. She explains everything in English and the space is beautiful.",
+        price: .mid, neighbourhood: "Roma Norte",
+        tags: ["Back pain", "Traditional Chinese Medicine", "English-speaking"],
+        recommender: RecRecommender(name: "Priya N.", initials: "PN", trustLevel: .local, monthsInCity: 14),
+        endorsements: 7,
+        englishSpeaking: true
     ),
 ]
 
