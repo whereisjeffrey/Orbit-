@@ -26,3 +26,68 @@
 
 **AppStorage key to add:** `stay_intent` — enum: short / long / multi_mx / multi_latam
 
+
+## Profile Photos + Social Link Discovery (future)
+
+### Profile Photos
+- Email/password users have no photo — need a profile photo picker
+- Google Sign-In already pulls photoURL automatically
+- Apple Sign-In does not provide a photo
+- Add photo picker (camera + library) in Settings, optional, no prompt
+- Placeholder: initials avatar (already in place)
+
+### Social Link Discovery — Two Separate Things
+
+**1. Seeing others Instagram/LinkedIn → already built, gated behind Pro**
+- Pro users unlock blurred social links on community profiles
+- The upgrade sheet does the selling — no extra prompt needed
+
+**2. Adding your own Instagram/LinkedIn → separate ask, no gate**
+- This is purely about being findable by other Pro users
+- DO NOT prompt during onboarding — zero context, feels invasive
+- DO NOT use time-based nudges — feels like surveillance
+- Best mechanic: PULL not PUSH
+  - Pro users who can now see everyone elses links will naturally wonder
+    "can people see mine?" — Settings satisfies that curiosity
+  - No prompt needed — the product creates the question, Settings answers it
+- If we ever add a nudge: trigger it contextually after first community post
+  ("Nice one. Want people to find you on Instagram? Add your handle in Settings.")
+  — one time only, dismissable, never repeated
+
+### Key Principle
+Never frame social link prompts as verification ("so people know youre real")
+— implies the user is currently untrustworthy. Bad first impression.
+Frame it purely as discoverability and connection.
+
+
+## Profile Photos + Social Link Discovery (future)
+
+### Profile Photos
+- Email/password users have no photo — need a profile photo picker
+- Google Sign-In already pulls photoURL automatically
+- Apple Sign-In does not provide a photo
+- Add photo picker (camera + library) in Settings, optional, no prompt
+- Placeholder: initials avatar (already in place)
+
+### Social Link Discovery — Two Separate Things
+
+**1. Seeing others' Instagram/LinkedIn → already built, gated behind Pro**
+- Pro users unlock blurred social links on community profiles
+- The upgrade sheet does the selling — no extra prompt needed
+
+**2. Adding your own Instagram/LinkedIn → separate ask, no gate**
+- Purely about being findable by other Pro users
+- DO NOT prompt during onboarding — zero context, feels invasive
+- DO NOT use time-based nudges — feels like surveillance
+- Best mechanic: PULL not PUSH
+  - Pro users who can now see everyone else's links will naturally wonder
+    "can people see mine?" — Settings satisfies that curiosity
+  - No prompt needed — the product creates the question, Settings answers it
+- If we ever add a nudge: trigger after first community post only
+  ("Nice one. Want people to find you on Instagram? Add your handle in Settings.")
+  One time, dismissable, never repeated.
+
+### Key Principle
+Never frame social link prompts as verification ("so people know you're real")
+— implies the user is currently untrustworthy. Bad first impression.
+Frame it purely as discoverability and connection.
