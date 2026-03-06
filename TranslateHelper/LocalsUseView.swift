@@ -73,6 +73,44 @@ enum RecSubcategory: String, Hashable, Identifiable {
         case .banking:     return "banknote.fill"
         }
     }
+
+    var color: Color {
+        switch self {
+        // Health — each type has its own clinical colour
+        case .dentistry:    return Color(hex: "#0099FF")   // blue — clean, clinical
+        case .dermatology:  return Color(hex: "#FF2D55")   // pink — skin/beauty
+        case .mentalHealth: return Color(hex: "#AF52DE")   // purple — calm, mindful
+        case .generalDoc:   return Color(hex: "#FF3B30")   // red — medical cross
+        case .physio:       return Color(hex: "#FF9500")   // orange — movement
+        case .nutrition:    return Color(hex: "#34C759")   // green — natural
+        // Beauty
+        case .hair:         return Color(hex: "#FF2D55")   // pink
+        case .nails:        return Color(hex: "#BF5AF2")   // purple
+        case .spa:          return Color(hex: "#5AC8FA")   // light blue — calm/water
+        case .botox:        return Color(hex: "#FF375F")   // hot pink
+        case .waxing:       return Color(hex: "#FF9F0A")   // amber
+        // Fitness
+        case .pt:           return Color(hex: "#FF9500")   // orange — energy
+        case .yoga:         return Color(hex: "#5AC8FA")   // teal — calm
+        case .gym:          return Color(hex: "#FF3B30")   // red — intensity
+        case .pilates:      return Color(hex: "#BF5AF2")   // purple
+        case .martialArts:  return Color(hex: "#FF453A")   // red-orange
+        // Home
+        case .cleaning:     return Color(hex: "#0099FF")   // blue — clean/fresh
+        case .plumbing:     return Color(hex: "#30B0C7")   // cyan — water
+        case .electrician:  return Color(hex: "#FFD60A")   // yellow — electricity
+        case .acRepair:     return Color(hex: "#5AC8FA")   // cool blue — air/cool
+        case .gardening:    return Color(hex: "#30D158")   // green — nature
+        // Legal
+        case .immigration:  return Color(hex: "#5E5CE6")   // indigo — official/govt
+        case .notary:       return Color(hex: "#BF5AF2")   // purple
+        case .bizLaw:       return Color(hex: "#0A84FF")   // blue
+        // Finance
+        case .accounting:   return Color(hex: "#30D158")   // green — money
+        case .tax:          return Color(hex: "#FF9F0A")   // amber
+        case .banking:      return Color(hex: "#34C759")   // green
+        }
+    }
 }
 
 // MARK: - Category
@@ -509,7 +547,7 @@ struct LocalRecCard: View {
     @State private var endorsed = false
     @Environment(\.openURL) private var openURL
 
-    private var accentColor: Color { rec.category.color }
+    private var accentColor: Color { rec.subcategory?.color ?? rec.category.color }
     private var iconName: String { rec.subcategory?.icon ?? rec.category.icon }
 
     var body: some View {
