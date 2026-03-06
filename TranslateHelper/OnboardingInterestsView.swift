@@ -125,7 +125,7 @@ struct InterestTile: View {
                     .font(.custom("HelveticaNeue", size: 32))
                 Text(interest.label)
                     .font(.custom("HelveticaNeue-Medium", size: 14))
-                    .foregroundColor(isSelected ? .white : .tsLabel)
+                    .foregroundColor(.tsLabel)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                     .minimumScaleFactor(0.85)
@@ -134,17 +134,12 @@ struct InterestTile: View {
             .frame(height: 100)
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(isSelected
-                          ? LinearGradient(colors: [Color.tsAccent, Color(hex: "#004775")],
-                                           startPoint: .topLeading, endPoint: .bottomTrailing)
-                          : LinearGradient(colors: [Color.tsCard, Color.tsCard],
-                                           startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .fill(isSelected ? Color.tsAccent.opacity(0.08) : Color.tsCard)
                     .overlay(
                         RoundedRectangle(cornerRadius: 16)
-                            .stroke(isSelected ? Color.clear : Color.tsBorder.opacity(0.5), lineWidth: 1)
+                            .stroke(isSelected ? Color.tsAccent : Color.tsBorder.opacity(0.5), lineWidth: isSelected ? 1.5 : 1)
                     )
             )
-            .shadow(color: isSelected ? Color.tsAccent.opacity(0.3) : .clear, radius: 8, x: 0, y: 4)
         }
         .buttonStyle(ScaleButtonStyle())
     }
