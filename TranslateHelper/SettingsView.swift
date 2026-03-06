@@ -79,11 +79,11 @@ struct SettingsView: View {
                                 .offset(x: 2, y: 2)
                             }
                         }
-                        .onChange(of: photosItem) { item in
-                            Task {
+                        .onChange(of: photosItem) { _, item in
+                            Task { @MainActor in
                                 if let data = try? await item?.loadTransferable(type: Data.self),
                                    let img = UIImage(data: data) {
-                                    await MainActor.run { photoManager.save(img) }
+                                    photoManager.save(img)
                                 }
                             }
                         }
