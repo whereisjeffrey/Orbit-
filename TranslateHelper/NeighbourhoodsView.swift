@@ -452,7 +452,7 @@ private struct NeighbourhoodCard: View {
                             .fixedSize(horizontal: false, vertical: true)
                             .lineSpacing(3)
                     }
-                    .padding(14)
+                    .padding(.horizontal, 16).padding(.vertical, 18)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(hood.color.opacity(0.07))
                     .overlay(
@@ -490,7 +490,7 @@ private struct NeighbourhoodCard: View {
                         }
                     }
                     .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
+                    .padding(.vertical, 16)
 
                     Divider().background(Color.tsAccent.opacity(0.08))
 
