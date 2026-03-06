@@ -34,6 +34,7 @@ struct FeaturedDeckModel: Identifiable {
     var subtitle: String
     var cardCount: Int
     var tint: Color
+    var tintName: String = "blue"
 }
 
 // MARK: - MyDecksView
@@ -49,7 +50,22 @@ struct MyDecksView: View {
     @StateObject private var store = SharedPhraseStore.shared
     @ObservedObject private var deckStore = DeckStore.shared
     @AppStorage("ts_flirty_context_set") private var flirtyContextSet: Bool = false
+    @AppStorage("ts_added_featured_ids") private var addedIdsRaw: String = ""
     @Environment(\.dismiss) var dismiss
+
+    // MARK: - Added IDs persistence
+
+    var addedIds: Set<String> {
+        Set(addedIdsRaw.split(separator: ",").map(String.init))
+    }
+
+    func markAdded(_ id: String) {
+        if addedIdsRaw.isEmpty {
+            addedIdsRaw = id
+        } else {
+            addedIdsRaw += ",\(id)"
+        }
+    }
 
     // ── Real auto deck data ─────────────────────────────────────────────────
     var conqueredCount: Int {
@@ -68,24 +84,51 @@ struct MyDecksView: View {
         ]
     }
 
-    let featuredSample: [FeaturedDeckModel] = [
+    let allFeatured: [FeaturedDeckModel] = [
+        // Primary pool (f1–f6)
         FeaturedDeckModel(id: "f1", emoji: "🌆", title: "Mexico City Slang",
-                          subtitle: "Street Spanish, CDMX style", cardCount: 48, tint: .orange),
+                          subtitle: "Street Spanish, CDMX style", cardCount: 50, tint: .orange,
+                          tintName: "orange"),
         FeaturedDeckModel(id: "f2", emoji: "💃", title: "Romantic Phrases",
-                          subtitle: "Flirting, love & relationships", cardCount: 32, tint: .red),
+                          subtitle: "Flirting, love & relationships", cardCount: 40, tint: .red,
+                          tintName: "red"),
         FeaturedDeckModel(id: "f3", emoji: "🏥", title: "Medical Spanish",
-                          subtitle: "Clinic, pharmacy & emergencies", cardCount: 60, tint: .mint),
+                          subtitle: "Clinic, pharmacy & emergencies", cardCount: 60, tint: .mint,
+                          tintName: "mint"),
         FeaturedDeckModel(id: "f4", emoji: "🍽️", title: "Food & Markets",
-                          subtitle: "Order like a local", cardCount: 40, tint: .orange),
+                          subtitle: "Order like a local", cardCount: 40, tint: .orange,
+                          tintName: "orange"),
         FeaturedDeckModel(id: "f5", emoji: "😏", title: "Flirting & Banter",
-                          subtitle: "Playful, real — not textbook", cardCount: 34, tint: .purple),
+                          subtitle: "Playful, real — not textbook", cardCount: 34, tint: .purple,
+                          tintName: "purple"),
         FeaturedDeckModel(id: "f6", emoji: "⚽", title: "Sports & Fútbol",
-                          subtitle: "Match day vocabulary", cardCount: 36, tint: .green),
+                          subtitle: "Match day vocabulary", cardCount: 36, tint: .green,
+                          tintName: "green"),
+        // Replenishment pool (f7–f12)
+        FeaturedDeckModel(id: "f7", emoji: "🇦🇷", title: "Argentine Slang",
+                          subtitle: "Rioplatense slang & expressions", cardCount: 30, tint: .blue,
+                          tintName: "blue"),
+        FeaturedDeckModel(id: "f8", emoji: "🇨🇺", title: "Cuban Spanish",
+                          subtitle: "Island words & street Cuban", cardCount: 28, tint: .yellow,
+                          tintName: "yellow"),
+        FeaturedDeckModel(id: "f9", emoji: "💼", title: "Business Spanish",
+                          subtitle: "Meetings, deals & office life", cardCount: 30, tint: .indigo,
+                          tintName: "indigo"),
+        FeaturedDeckModel(id: "f10", emoji: "🆘", title: "Travel Emergencies",
+                          subtitle: "Stay safe anywhere", cardCount: 28, tint: .red,
+                          tintName: "red"),
+        FeaturedDeckModel(id: "f11", emoji: "🌙", title: "Nightlife & Going Out",
+                          subtitle: "Bars, clubs & late nights", cardCount: 30, tint: .purple,
+                          tintName: "purple"),
+        FeaturedDeckModel(id: "f12", emoji: "🏠", title: "Home & Daily Life",
+                          subtitle: "Rent, errands & neighbours", cardCount: 30, tint: .green,
+                          tintName: "green"),
     ]
 
     var filteredFeatured: [FeaturedDeckModel] {
-        guard !searchText.isEmpty else { return featuredSample }
-        return featuredSample.filter {
+        let visible = addedIds.isEmpty ? allFeatured : allFeatured.filter { !addedIds.contains($0.id) }
+        guard !searchText.isEmpty else { return visible }
+        return visible.filter {
             $0.title.localizedCaseInsensitiveContains(searchText) ||
             $0.subtitle.localizedCaseInsensitiveContains(searchText)
         }
@@ -183,7 +226,11 @@ struct MyDecksView: View {
                                     onSetUp: { showFlirtySheet = true }
                                 )
                             } else {
-                                FeaturedDeckRow(deck: deck)
+                                FeaturedDeckRow(
+                                    deck: deck,
+                                    isAdded: addedIds.contains(deck.id),
+                                    onAdd: { markAdded(deck.id) }
+                                )
                             }
                         }
                     }
@@ -402,7 +449,8 @@ struct CreateDeckCell: View {
 
 struct FeaturedDeckRow: View {
     let deck: FeaturedDeckModel
-    @State private var importing = false
+    let isAdded: Bool
+    let onAdd: () -> Void
     @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
@@ -421,6 +469,7 @@ struct FeaturedDeckRow: View {
                 Text(deck.subtitle)
                     .font(.custom("HelveticaNeue", size: 13))
                     .foregroundColor(.tsSecondary)
+                    .lineLimit(1)
                 Text("\(deck.cardCount) cards")
                     .font(.custom("HelveticaNeue-Medium", size: 11))
                     .foregroundColor(.tsAccent.opacity(0.8))
@@ -429,16 +478,43 @@ struct FeaturedDeckRow: View {
 
             Spacer()
 
-            Button(action: { importing = true }) {
-                Text("Add")
-                    .font(.custom("HelveticaNeue-Bold", size: 14))
-                    .foregroundColor(.tsAccent)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(Color.tsAccent.opacity(0.1))
-                    .clipShape(Capsule())
+            if isAdded {
+                HStack(spacing: 4) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.custom("HelveticaNeue", size: 14))
+                    Text("Added ✓")
+                        .font(.custom("HelveticaNeue-Bold", size: 14))
+                }
+                .foregroundColor(.green)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(Color.green.opacity(0.1))
+                .clipShape(Capsule())
+            } else {
+                Button(action: {
+                    let cards = FeaturedDeckContent.cards(forId: deck.id)
+                    let newDeck = Deck(
+                        emoji: deck.emoji,
+                        name: deck.title,
+                        deckDescription: deck.subtitle,
+                        isAI: false,
+                        tintName: deck.tintName,
+                        cards: cards
+                    )
+                    DeckStore.shared.addDeck(newDeck)
+                    onAdd()
+                }) {
+                    Text("Add")
+                        .font(.custom("HelveticaNeue-Bold", size: 14))
+                        .foregroundColor(.tsAccent)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(Color.tsAccent.opacity(0.1))
+                        .clipShape(Capsule())
+                }
             }
         }
+        .frame(minHeight: 80)
         .padding(16)
         .background(Color.tsCard)
         .cornerRadius(16)
@@ -472,6 +548,7 @@ struct LockedFlirtingRow: View {
                 Text(deck.subtitle)
                     .font(.custom("HelveticaNeue", size: 13))
                     .foregroundColor(.tsSecondary)
+                    .lineLimit(1)
                 if isAdded {
                     Text("\(deck.cardCount) personalised cards")
                         .font(.custom("HelveticaNeue-Medium", size: 11))
@@ -520,6 +597,7 @@ struct LockedFlirtingRow: View {
                 }
             }
         }
+        .frame(minHeight: 80)
         .padding(16)
         .background(Color.tsCard)
         .cornerRadius(16)
