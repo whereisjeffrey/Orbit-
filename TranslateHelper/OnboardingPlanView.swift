@@ -38,10 +38,10 @@ struct OnboardingPlanView: View {
                 ScrollView {
                     VStack(spacing: 24) {
                         VStack(spacing: 8) {
-                            Text("Master Any Language")
+                            Text("Choose your plan")
                                 .font(.custom("HelveticaNeue-Bold", size: 24))
                                 .foregroundColor(.tsLabel)
-                            Text("Select the plan that works best for your learning goals.")
+                            Text("Try everything free for 7 days. No charge until then.")
                                 .font(.custom("HelveticaNeue", size: 15))
                                 .foregroundColor(.tsSecondary)
                                 .multilineTextAlignment(.center)
@@ -65,7 +65,7 @@ struct OnboardingPlanView: View {
                                                     .font(.custom("HelveticaNeue-Bold", size: 24))
                                                     .foregroundColor(.tsLabel)
                                             }
-                                            Text("Unlock your full potential")
+                                            Text("The full Wandr experience")
                                                 .font(.custom("HelveticaNeue", size: 14))
                                                 .foregroundColor(.tsSecondary)
                                         }
@@ -80,10 +80,11 @@ struct OnboardingPlanView: View {
                                         }
                                     }
                                     VStack(alignment: .leading, spacing: 12) {
-                                        PlanFeatureRow(text: "Unlimited Daily Phrases")
-                                        PlanFeatureRow(text: "Cultural Context Insights")
-                                        PlanFeatureRow(text: "AI Accent Coaching")
-                                        PlanFeatureRow(text: "Offline Mode Enabled")
+                                        PlanFeatureRow(text: "Unlimited keyboard translations")
+                                        PlanFeatureRow(text: "Full Community — locals, expats, events")
+                                        PlanFeatureRow(text: "All Kit tools — cowork, SIM, currency & more")
+                                        PlanFeatureRow(text: "Connect with people — see social profiles")
+                                        PlanFeatureRow(text: "Offline mode")
                                     }
                                 }
                                 .padding(24)
@@ -121,7 +122,7 @@ struct OnboardingPlanView: View {
                                                     .font(.custom("HelveticaNeue-Bold", size: 24))
                                                     .foregroundColor(.tsLabel)
                                             }
-                                            Text("Getting started")
+                                            Text("Explore the basics")
                                                 .font(.custom("HelveticaNeue", size: 14))
                                                 .foregroundColor(.tsSecondary)
                                         }
@@ -136,8 +137,10 @@ struct OnboardingPlanView: View {
                                         }
                                     }
                                     VStack(alignment: .leading, spacing: 12) {
-                                        PlanFeatureRow(text: "20 Phrases per day", isBasic: true)
-                                        PlanFeatureRow(text: "Standard Flashcards", isBasic: true)
+                                        PlanFeatureRow(text: "15 keyboard translations/day", isBasic: true)
+                                        PlanFeatureRow(text: "Scam Radar", isBasic: true)
+                                        PlanFeatureRow(text: "Neighbourhood guides", isBasic: true)
+                                        PlanFeatureRow(text: "Browse Community (read only)", isBasic: true)
                                     }
                                 }
                                 .padding(24)
@@ -170,7 +173,12 @@ struct OnboardingPlanView: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
-                            .background(Color.tsAccent)
+                            .background(
+                                LinearGradient(
+                                    colors: [Color(hex: "#3B99FC"), Color(hex: "#007AFF")],
+                                    startPoint: .topLeading, endPoint: .bottomTrailing
+                                )
+                            )
                             .clipShape(Capsule())
                     }
                     .padding(.horizontal, 24)

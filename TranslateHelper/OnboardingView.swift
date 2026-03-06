@@ -47,7 +47,7 @@ struct OnboardingView: View {
             OnboardingPlanView(
                 onBack: { step = 5 },
                 onFreePlan: { step = 8 },
-                onProTrial: { step = 7 }
+                onProTrial: { step = 8 }  // paywall hidden for now — re-enable by routing to step 7
             )
         case 7:
             OnboardingPaywallView(
