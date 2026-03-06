@@ -661,10 +661,10 @@ struct LocalRecCard: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
         }
-        .background(Color.tsCard)
+        .background(Color(UIColor.secondarySystemBackground))
         .cornerRadius(18)
         .overlay(RoundedRectangle(cornerRadius: 18)
-            .stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
+            .stroke(Color(UIColor.separator).opacity(0.3), lineWidth: 0.5))
     }
 }
 
