@@ -1,6 +1,7 @@
 import SwiftUI
 import FirebaseAuth
 import MapKit
+import PhotosUI
 
 @ViewBuilder
 private func initialsCircle(auth: AuthManager) -> some View {
@@ -22,7 +23,9 @@ struct SettingsView: View {
     @ObservedObject private var sub = SubscriptionManager.shared
     @EnvironmentObject var auth: AuthManager
     @StateObject private var locStore = UserLocationsStore.shared
+    @StateObject private var photoManager = ProfilePhotoManager.shared
     @State private var showLocationSheet = false
+    @State private var photosItem: PhotosPickerItem? = nil
     
     @AppStorage("appTheme") private var appTheme: Int = 1 // 0 for Light, 1 for Dark
     @State private var notificationsEnabled: Bool = true
@@ -37,13 +40,66 @@ struct SettingsView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     
-                    // ── Page title ─────────────────────────────────
-                    Text("Settings")
-                        .font(.custom("HelveticaNeue-Bold", size: 30))
-                        .foregroundColor(.tsLabel)
-                        .padding(.horizontal, 16)
-                        .padding(.top, 24)
-                        .padding(.bottom, 24)
+                    // ── Profile header ─────────────────────────────
+                    VStack(spacing: 12) {
+                        PhotosPicker(selection: $photosItem, matching: .images) {
+                            ZStack(alignment: .bottomTrailing) {
+                                Group {
+                                    if let img = photoManager.customPhoto {
+                                        Image(uiImage: img)
+                                            .resizable().scaledToFill()
+                                            .frame(width: 88, height: 88)
+                                            .clipShape(Circle())
+                                    } else if let url = auth.photoURL {
+                                        AsyncImage(url: url) { phase in
+                                            switch phase {
+                                            case .success(let img):
+                                                img.resizable().scaledToFill()
+                                                    .frame(width: 88, height: 88)
+                                                    .clipShape(Circle())
+                                            default:
+                                                initialsCircle(auth: auth)
+                                                    .frame(width: 88, height: 88)
+                                            }
+                                        }
+                                    } else {
+                                        initialsCircle(auth: auth)
+                                            .frame(width: 88, height: 88)
+                                    }
+                                }
+                                // Camera badge
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.tsAccent)
+                                        .frame(width: 28, height: 28)
+                                    Image(systemName: "camera.fill")
+                                        .font(.system(size: 12, weight: .semibold))
+                                        .foregroundColor(.white)
+                                }
+                                .offset(x: 2, y: 2)
+                            }
+                        }
+                        .onChange(of: photosItem) { item in
+                            Task {
+                                if let data = try? await item?.loadTransferable(type: Data.self),
+                                   let img = UIImage(data: data) {
+                                    await MainActor.run { photoManager.save(img) }
+                                }
+                            }
+                        }
+
+                        VStack(spacing: 3) {
+                            Text(auth.displayName)
+                                .font(.custom("HelveticaNeue-Bold", size: 20))
+                                .foregroundColor(.tsLabel)
+                            Text(auth.user?.email ?? "")
+                                .font(.custom("HelveticaNeue", size: 13))
+                                .foregroundColor(.tsSecondary)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 32)
+                    .padding(.bottom, 28)
                     
                     // Appearance Section
                     SectionHeader(title: "Appearance")
@@ -166,45 +222,19 @@ struct SettingsView: View {
                     // Account Section
                     SectionHeader(title: "Account")
                     VStack(spacing: 0) {
-                        Button(action: {}) {
-                            HStack(spacing: 12) {
-                                // Profile photo: Firebase/Google photo → initials fallback
-                                Group {
-                                    if let photoURL = auth.photoURL {
-                                        AsyncImage(url: photoURL) { phase in
-                                            switch phase {
-                                            case .success(let img):
-                                                img.resizable().scaledToFill()
-                                                    .frame(width: 36, height: 36)
-                                                    .clipShape(Circle())
-                                            default:
-                                                initialsCircle(auth: auth)
-                                                    .frame(width: 36, height: 36)
-                                            }
-                                        }
-                                    } else {
-                                        initialsCircle(auth: auth)
-                                            .frame(width: 36, height: 36)
-                                    }
-                                }
-                                
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(auth.displayName)
-                                        .font(.custom("HelveticaNeue-Medium", size: 16))
-                                        .foregroundColor(.tsLabel)
-                                    Text(auth.user?.email ?? "")
-                                        .font(.custom("HelveticaNeue", size: 12))
-                                        .foregroundColor(Color.tsSecondary)
-                                }
-                                
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .font(.custom("HelveticaNeue-Medium", size: 14))
-                                    .foregroundColor(Color.tsSecondary.opacity(0.6))
+                        HStack(spacing: 0) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(auth.displayName)
+                                    .font(.custom("HelveticaNeue-Medium", size: 16))
+                                    .foregroundColor(.tsLabel)
+                                Text(auth.user?.email ?? "")
+                                    .font(.custom("HelveticaNeue", size: 12))
+                                    .foregroundColor(Color.tsSecondary)
                             }
-                            .padding(.horizontal, 16)
-                            .frame(height: 60)
+                            Spacer()
                         }
+                        .padding(.horizontal, 16)
+                        .frame(height: 56)
                         
                         Divider().background(Color.tsBorder).padding(.leading, 16)
                         
