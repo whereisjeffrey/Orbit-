@@ -12,6 +12,7 @@ struct SIMCarrier: Identifiable {
     let tagline:     String
     let badgeIcon:   String
     let badgeColor:  String
+    let logoURL:     String          // Clearbit logo — fetched & cached at runtime
     let residency:   String
     let plans:       [String]
     let postpaid:    String
@@ -23,6 +24,7 @@ struct SIMCarrier: Identifiable {
 private let simCarriers: [SIMCarrier] = [
     SIMCarrier(
         name:       "Telcel",
+        logoURL:    "https://logo.clearbit.com/telcel.com",
         tagline:    "Best coverage — 65% market share",
         badgeIcon:  "antenna.radiowaves.left.and.right",
         badgeColor: "#FF3B30",
@@ -39,6 +41,7 @@ private let simCarriers: [SIMCarrier] = [
     ),
     SIMCarrier(
         name:       "AT&T Mexico",
+        logoURL:    "https://logo.clearbit.com/att.com.mx",
         tagline:    "Strong in cities — good data speeds",
         badgeIcon:  "wifi",
         badgeColor: "#0099FF",
@@ -54,6 +57,7 @@ private let simCarriers: [SIMCarrier] = [
     ),
     SIMCarrier(
         name:       "Movistar",
+        logoURL:    "https://logo.clearbit.com/movistar.com",
         tagline:    "Budget option — major cities only",
         badgeIcon:  "cellularbars",
         badgeColor: "#34C759",
@@ -207,6 +211,41 @@ struct StayRecommendationCard: View {
     }
 }
 
+// MARK: - Carrier Logo View
+// Fetches brand logo from Clearbit at runtime, cached by URLCache.
+// Falls back to SF Symbol if unavailable (offline / rate limit).
+
+struct CarrierLogoView: View {
+    let logoURL:  String
+    let sfSymbol: String
+    let color:    String
+    var size:     CGFloat = 44
+
+    var body: some View {
+        AsyncImage(url: URL(string: logoURL)) { phase in
+            switch phase {
+            case .success(let img):
+                img.resizable()
+                    .scaledToFit()
+                    .padding(size * 0.12)
+                    .background(Color(UIColor.systemBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: size * 0.27))
+                    .frame(width: size, height: size)
+            default:
+                ZStack {
+                    RoundedRectangle(cornerRadius: size * 0.27)
+                        .fill(Color(hex: color).opacity(0.12))
+                        .frame(width: size, height: size)
+                    Image(systemName: sfSymbol)
+                        .font(.system(size: size * 0.40))
+                        .foregroundColor(Color(hex: color))
+                }
+            }
+        }
+        .frame(width: size, height: size)
+    }
+}
+
 // MARK: - Carrier Card (accordion)
 
 struct SIMCarrierCard: View {
@@ -219,14 +258,11 @@ struct SIMCarrierCard: View {
             // Header row
             Button(action: onTap) {
                 HStack(spacing: 12) {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color(hex: carrier.badgeColor).opacity(0.12))
-                            .frame(width: 44, height: 44)
-                        Image(systemName: carrier.badgeIcon)
-                            .font(.system(size: 18))
-                            .foregroundColor(Color(hex: carrier.badgeColor))
-                    }
+                    CarrierLogoView(
+                        logoURL:   carrier.logoURL,
+                        sfSymbol:  carrier.badgeIcon,
+                        color:     carrier.badgeColor
+                    )
                     VStack(alignment: .leading, spacing: 2) {
                         Text(carrier.name)
                             .font(.custom("HelveticaNeue-Bold", size: 16))
@@ -347,11 +383,13 @@ struct SIMESIMSection: View {
         let color:   String
         let url:     String
         let initial: String
+        let logoURL: String
     }
 
     private let providers: [ESIMProvider] = [
         ESIMProvider(
             name:    "Airalo",
+            logoURL: "https://logo.clearbit.com/airalo.com",
             tagline: "Buy before you land",
             detail:  "From $5 USD / 1GB",
             color:   "#1B4DFF",
@@ -360,6 +398,7 @@ struct SIMESIMSection: View {
         ),
         ESIMProvider(
             name:    "Holafly",
+            logoURL: "https://logo.clearbit.com/holafly.com",
             tagline: "Unlimited data, easiest setup",
             detail:  "From $27 USD / 7 days unlimited",
             color:   "#FF6B35",
@@ -378,15 +417,12 @@ struct SIMESIMSection: View {
                         if let url = URL(string: provider.url) { openURL(url) }
                     } label: {
                         HStack(spacing: 12) {
-                            // Logo square (initial letter)
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 10)
-                                    .fill(Color(hex: provider.color).opacity(0.15))
-                                    .frame(width: 40, height: 40)
-                                Text(provider.initial)
-                                    .font(.custom("HelveticaNeue-Bold", size: 18))
-                                    .foregroundColor(Color(hex: provider.color))
-                            }
+                            CarrierLogoView(
+                                logoURL:   provider.logoURL,
+                                sfSymbol:  "esim",
+                                color:     provider.color,
+                                size:      40
+                            )
 
                             VStack(alignment: .leading, spacing: 2) {
                                 HStack(spacing: 6) {
@@ -444,32 +480,37 @@ struct USCarrierSection: View {
     private struct USCarrier: Identifiable {
         let id      = UUID()
         let name:    String
-        let badge:   String   // short label e.g. "Best for US users"
+        let badge:   String
         let color:   String
         let detail:  String
+        let logoURL: String
     }
 
     private let carriers: [USCarrier] = [
         USCarrier(
             name:   "T-Mobile",
+            logoURL: "https://logo.clearbit.com/t-mobile.com",
             badge:  "Best for US users",
             color:  "#E20074",
             detail: "Free unlimited calls, texts + data (reduced speeds) included on most plans. Full LTE on Magenta Plus / Go5G. Uses Telcel network."
         ),
         USCarrier(
             name:   "AT&T US",
+            logoURL: "https://logo.clearbit.com/att.com",
             badge:  "Day Pass or add-on",
             color:  "#00A8E0",
             detail: "International Day Pass $10/day for full speeds. Some plans include basic Mexico coverage. Check your plan."
         ),
         USCarrier(
             name:   "Verizon",
+            logoURL: "https://logo.clearbit.com/verizon.com",
             badge:  "Most expensive option",
             color:  "#CD040B",
             detail: "TravelPass $10/day. No free Mexico roaming. Roams on Telcel. Fine if you need it but pricey."
         ),
         USCarrier(
             name:   "Sprint / T-Mobile",
+            logoURL: "https://logo.clearbit.com/sprint.com",
             badge:  "Merged → same as T-Mobile",
             color:  "#6B2D8B",
             detail: "Sprint is now T-Mobile — same coverage applies. If you have an old Sprint plan, check your T-Mobile benefits."
@@ -483,15 +524,12 @@ struct USCarrierSection: View {
             VStack(spacing: 0) {
                 ForEach(Array(carriers.enumerated()), id: \.offset) { i, carrier in
                     HStack(alignment: .top, spacing: 12) {
-                        // Carrier dot
-                        ZStack {
-                            Circle()
-                                .fill(Color(hex: carrier.color).opacity(0.15))
-                                .frame(width: 36, height: 36)
-                            Circle()
-                                .fill(Color(hex: carrier.color))
-                                .frame(width: 10, height: 10)
-                        }
+                        CarrierLogoView(
+                            logoURL:   carrier.logoURL,
+                            sfSymbol:  "antenna.radiowaves.left.and.right",
+                            color:     carrier.color,
+                            size:      36
+                        )
 
                         VStack(alignment: .leading, spacing: 3) {
                             HStack(spacing: 6) {
