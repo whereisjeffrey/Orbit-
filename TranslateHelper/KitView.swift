@@ -13,6 +13,7 @@ struct KitTool: Identifiable {
 }
 
 enum KitDestination {
+    case localsUse
     case work
     case currency
     case sim
@@ -31,14 +32,18 @@ struct KitView: View {
     @State private var showCityPicker = false
 
     let tools: [KitTool] = [
-        KitTool(icon: "laptopcomputer",              name: "Work",        description: "Find spaces with call rooms & fast WiFi", color: Color.tsAccent, destination: .work),
-        KitTool(icon: "dollarsign.arrow.circlepath", name: "Currency",      description: "Live rates + quick converter",            color: Color(hex: "#34C759"), destination: .currency),
-        KitTool(icon: "simcard",                     name: "SIM Guide",     description: "Best carriers, plans & cost",             color: Color(hex: "#FF9500"), destination: .sim),
+        // ── High frequency / ongoing ──────────────────────────────
+        KitTool(icon: "person.2.fill",               name: "Locals Use",    description: "Dentists, trainers, cleaners & more",     color: Color(hex: "#FF2D55"), destination: .localsUse),
+        KitTool(icon: "laptopcomputer",              name: "Work",          description: "Find spaces with call rooms & fast WiFi", color: Color.tsAccent,       destination: .work),
         KitTool(icon: "map",                         name: "Neighbourhoods",description: "Find your area by vibe",                  color: Color(hex: "#AF52DE"), destination: .neighbourhoods, isFree: true),
-        KitTool(icon: "doc.plaintext",               name: "Bureaucracy",   description: "Banking, visa & healthcare tips",         color: Color(hex: "#5856D6"), destination: .bureaucracy),
+        KitTool(icon: "tram.fill",                   name: "Transportation", description: "Ride-hailing, transit, cars & more",     color: Color(hex: "#FF6B00"), destination: .transportation),
+        // ── Periodic reference ────────────────────────────────────
+        KitTool(icon: "dollarsign.arrow.circlepath", name: "Currency",      description: "Live rates + quick converter",            color: Color(hex: "#34C759"), destination: .currency),
         KitTool(icon: "exclamationmark.shield",      name: "Scam Radar",    description: "What to watch out for locally",           color: Color(hex: "#FF3B30"), destination: .scamRadar, isFree: true),
-        KitTool(icon: "shield.checkered",             name: "Insurance",     description: "Coverage, providers & Mexico tips",       color: Color(hex: "#34C759"), destination: .insurance),
-        KitTool(icon: "tram.fill",                    name: "Transportation",description: "Ride-hailing, transit, cars & more",      color: Color(hex: "#FF6B00"), destination: .transportation),
+        // ── One-time setup ────────────────────────────────────────
+        KitTool(icon: "simcard",                     name: "SIM Guide",     description: "Best carriers, plans & cost",             color: Color(hex: "#FF9500"), destination: .sim),
+        KitTool(icon: "shield.checkered",            name: "Insurance",     description: "Coverage, providers & Mexico tips",       color: Color(hex: "#34C759"), destination: .insurance),
+        KitTool(icon: "doc.plaintext",               name: "Bureaucracy",   description: "Banking, visa & healthcare tips",         color: Color(hex: "#5856D6"), destination: .bureaucracy),
     ]
 
     let columns = [GridItem(.flexible(), spacing: 16), GridItem(.flexible(), spacing: 16)]
@@ -83,6 +88,10 @@ struct KitView: View {
         }
         .sheet(isPresented: $showCityPicker) { CityPickerView(selectedId: $selectedCityId) }
         .sheet(isPresented: Binding(
+            get: { activeDestination == .localsUse },
+            set: { if !$0 { activeDestination = nil } }
+        )) { LocalsUseView() }
+        .sheet(isPresented: Binding(
             get: { activeDestination == .work },
             set: { if !$0 { activeDestination = nil } }
         )) { WorkView() }
@@ -115,7 +124,7 @@ struct KitView: View {
             set: { if !$0 { activeDestination = nil } }
         )) { TransportationView() }
         .sheet(isPresented: Binding(
-            get: { activeDestination != nil && activeDestination != .work && activeDestination != .currency && activeDestination != .insurance && activeDestination != .sim && activeDestination != .transportation && activeDestination != .neighbourhoods && activeDestination != .bureaucracy && activeDestination != .scamRadar },
+            get: { activeDestination != nil && activeDestination != .localsUse && activeDestination != .work && activeDestination != .currency && activeDestination != .insurance && activeDestination != .sim && activeDestination != .transportation && activeDestination != .neighbourhoods && activeDestination != .bureaucracy && activeDestination != .scamRadar },
             set: { if !$0 { activeDestination = nil } }
         )) {
             if let dest = activeDestination {
