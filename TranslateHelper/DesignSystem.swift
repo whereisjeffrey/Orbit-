@@ -302,6 +302,7 @@ struct TSGradientPill: View {
     let title: String
     let icon: String
     let action: () -> Void
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         Button(action: action) {
@@ -311,11 +312,18 @@ struct TSGradientPill: View {
                 Text(title)
                     .font(.custom("HelveticaNeue-Bold", size: 15))
             }
-            .foregroundColor(.white)
+            .foregroundColor(.tsAccent)
             .padding(.horizontal, 20)
             .padding(.vertical, 10)
-            .background(Color.tsAccent)
+            .background(
+                colorScheme == .dark
+                    ? Color.tsAccent.opacity(0.12)
+                    : Color.white
+            )
             .clipShape(Capsule())
+            .overlay(
+                Capsule().stroke(Color.tsAccent.opacity(colorScheme == .dark ? 0.0 : 0.25), lineWidth: 1)
+            )
         }
     }
 }
