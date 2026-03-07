@@ -48,7 +48,7 @@ struct LibraryView: View {
                     HStack {
                         Text("Library")
                             .font(.custom("HelveticaNeue-Bold", size: 30))
-                            .foregroundColor(.tsLabel)
+                            .foregroundColor(.white)
                         Spacer()
                         HStack(spacing: 12) {
                             Button(action: { auth.signOut() }) {
@@ -94,7 +94,7 @@ struct LibraryView: View {
                     // ── ACTIVE ─────────────────────────────────────────
                     Text("ACTIVE")
                         .font(.custom("HelveticaNeue-Medium", size: 13))
-                        .foregroundColor(.tsSecondary)
+                        .foregroundColor(.white.opacity(0.80))
                         .tracking(1.2)
                         .padding(.horizontal, 20)
                         .padding(.bottom, 10)
@@ -210,7 +210,7 @@ struct LibraryView: View {
                                     .font(.custom("HelveticaNeue-Medium", size: 13))
                                     .foregroundColor(.tsAccent)
                                     .padding(.horizontal, 14).padding(.vertical, 6)
-                                    .background(Color.tsAccent.opacity(0.12))
+                                    .background(Color.white)
                                     .clipShape(Capsule())
                             }
                             .buttonStyle(PlainButtonStyle())
@@ -218,10 +218,10 @@ struct LibraryView: View {
                         GeometryReader { geo in
                             ZStack(alignment: .leading) {
                                 Capsule()
-                                    .fill(Color.tsAccent.opacity(0.12))
+                                    .fill(Color.white.opacity(0.25))
                                     .frame(height: 6)
                                 Capsule()
-                                    .fill(Color.tsAccent)
+                                    .fill(Color.white)
                                     .frame(width: geo.size.width * goalProgress, height: 6)
                                     .animation(.spring(response: 0.4), value: goalProgress)
                             }
@@ -387,7 +387,7 @@ struct NewDeckCard: View {
             VStack(alignment: .leading, spacing: 0) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.tsAccent.opacity(0.12))
+                        .fill(Color.white.opacity(0.25))
                         .frame(width: 40, height: 40)
                     Image(systemName: "plus")
                         .font(.custom("HelveticaNeue-Medium", size: 18))
