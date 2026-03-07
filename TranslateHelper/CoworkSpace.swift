@@ -50,7 +50,7 @@ let cdmxCoworkSpaces: [CoworkSpace] = [
         hasCallRooms: true, hasCoffee: true, hasFastWifi: true, hasLateHours: true,
         wifiSpeed: "~80 Mbps", website: "homework.com.mx",
         notes: "2 soundproof call booths, great natural light, lively crowd.",
-        photoURLs: ["https://picsum.photos/id/260/400/220","https://picsum.photos/id/1082/400/220","https://picsum.photos/id/3183/400/220"],
+        photoURLs: ["https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80","https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=800&q=80","https://images.unsplash.com/photo-1497366754035-f200581695c4?w=800&q=80"],
         latitude: 19.4133, longitude: -99.1707
     ),
     CoworkSpace(
@@ -64,7 +64,7 @@ let cdmxCoworkSpaces: [CoworkSpace] = [
         hasCallRooms: true, hasCoffee: true, hasFastWifi: true, hasLateHours: false,
         wifiSpeed: "~100 Mbps", website: "homework.com.mx",
         notes: "Upscale crowd, quieter than Condesa location, 3 call rooms.",
-        photoURLs: ["https://picsum.photos/id/430/400/220","https://picsum.photos/id/1181/400/220","https://picsum.photos/id/683/400/220"],
+        photoURLs: ["https://images.unsplash.com/photo-1497215842964-222b430dc094?w=800&q=80","https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&q=80","https://images.unsplash.com/photo-1564069114553-7215e1ff1890?w=800&q=80"],
         latitude: 19.4322, longitude: -99.1952
     ),
     CoworkSpace(
@@ -78,7 +78,7 @@ let cdmxCoworkSpaces: [CoworkSpace] = [
         hasCallRooms: true, hasCoffee: true, hasFastWifi: true, hasLateHours: true,
         wifiSpeed: "~150 Mbps", website: "wework.com",
         notes: "Multiple private offices and phone booths. Premium price, premium kit.",
-        photoURLs: ["https://picsum.photos/id/1076/400/220","https://picsum.photos/id/447/400/220","https://picsum.photos/id/1080/400/220"],
+        photoURLs: ["https://images.unsplash.com/photo-1568992687947-868a62a9f521?w=800&q=80","https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=800&q=80","https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=800&q=80"],
         latitude: 19.4284, longitude: -99.1709
     ),
     CoworkSpace(
@@ -92,7 +92,7 @@ let cdmxCoworkSpaces: [CoworkSpace] = [
         hasCallRooms: false, hasCoffee: true, hasFastWifi: true, hasLateHours: false,
         wifiSpeed: "~60 Mbps", website: "selina.com",
         notes: "Open plan only — no private rooms. Good vibe, international crowd, rooftop.",
-        photoURLs: ["https://picsum.photos/id/3760/400/220","https://picsum.photos/id/225/400/220","https://picsum.photos/id/669/400/220"],
+        photoURLs: ["https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&q=80","https://images.unsplash.com/photo-1571624436279-b272aff752b5?w=800&q=80","https://images.unsplash.com/photo-1606857521015-7f9fcf423740?w=800&q=80"],
         latitude: 19.4163, longitude: -99.1594
     ),
     CoworkSpace(
@@ -106,7 +106,7 @@ let cdmxCoworkSpaces: [CoworkSpace] = [
         hasCallRooms: true, hasCoffee: false, hasFastWifi: true, hasLateHours: false,
         wifiSpeed: "~70 Mbps", website: "mexico.impacthub.net",
         notes: "Startup / NGO crowd. 1 phone booth. Coffee nearby but not included.",
-        photoURLs: ["https://picsum.photos/id/366/400/220","https://picsum.photos/id/1060/400/220","https://picsum.photos/id/2041/400/220"],
+        photoURLs: ["https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80","https://images.unsplash.com/photo-1497215842964-222b430dc094?w=800&q=80","https://images.unsplash.com/photo-1568992687947-868a62a9f521?w=800&q=80"],
         latitude: 19.4168, longitude: -99.1631
     ),
     CoworkSpace(
@@ -120,7 +120,7 @@ let cdmxCoworkSpaces: [CoworkSpace] = [
         hasCallRooms: false, hasCoffee: true, hasFastWifi: true, hasLateHours: false,
         wifiSpeed: "~55 Mbps", website: nil,
         notes: "Budget-friendly. Open plan, good WiFi, coffee bar on-site.",
-        photoURLs: ["https://picsum.photos/id/159/400/220","https://picsum.photos/id/164/400/220","https://picsum.photos/id/204/400/220"],
+        photoURLs: ["https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=800&q=80","https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&q=80","https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=800&q=80"],
         latitude: 19.4078, longitude: -99.1712
     ),
     CoworkSpace(
@@ -134,7 +134,7 @@ let cdmxCoworkSpaces: [CoworkSpace] = [
         hasCallRooms: true, hasCoffee: true, hasFastWifi: false, hasLateHours: false,
         wifiSpeed: "~30 Mbps", website: nil,
         notes: "Cozy, design-forward space. WiFi can be slow at peak hours — not ideal for video.",
-        photoURLs: ["https://picsum.photos/id/667/400/220","https://picsum.photos/id/1080/400/220","https://picsum.photos/id/376/400/220"],
+        photoURLs: ["https://images.unsplash.com/photo-1497366754035-f200581695c4?w=800&q=80","https://images.unsplash.com/photo-1564069114553-7215e1ff1890?w=800&q=80","https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=800&q=80"],
         latitude: 19.4155, longitude: -99.1601
     ),
     CoworkSpace(
@@ -148,7 +148,7 @@ let cdmxCoworkSpaces: [CoworkSpace] = [
         hasCallRooms: true, hasCoffee: true, hasFastWifi: true, hasLateHours: true,
         wifiSpeed: "~90 Mbps", website: "bordocoworking.com",
         notes: "Two dedicated call pods. Late hours great for US East Coast timezones.",
-        photoURLs: ["https://picsum.photos/id/403/400/220","https://picsum.photos/id/1067/400/220","https://picsum.photos/id/236/400/220"],
+        photoURLs: ["https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&q=80","https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=800&q=80","https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&q=80"],
         latitude: 19.4271, longitude: -99.1658
     ),
     CoworkSpace(
@@ -162,7 +162,7 @@ let cdmxCoworkSpaces: [CoworkSpace] = [
         hasCallRooms: true, hasCoffee: true, hasFastWifi: true, hasLateHours: false,
         wifiSpeed: "~120 Mbps", website: nil,
         notes: "Corporate feel. Quiet, fast, reliable. Closes early — not for night owls.",
-        photoURLs: ["https://picsum.photos/id/1082/400/220","https://picsum.photos/id/2041/400/220","https://picsum.photos/id/430/400/220"],
+        photoURLs: ["https://images.unsplash.com/photo-1571624436279-b272aff752b5?w=800&q=80","https://images.unsplash.com/photo-1497215842964-222b430dc094?w=800&q=80","https://images.unsplash.com/photo-1568992687947-868a62a9f521?w=800&q=80"],
         latitude: 19.4340, longitude: -99.1984
     ),
     CoworkSpace(
