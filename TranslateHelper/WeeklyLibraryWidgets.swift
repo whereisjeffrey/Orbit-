@@ -480,147 +480,95 @@ struct DeckClipboardWidget: View {
 
 
 
-// MARK: - Horizontal Swipe Detector (UIKit-backed — survives ScrollView)
-// SwiftUI DragGesture loses to the outer vertical ScrollView.
-// A UIKit UIPanGestureRecognizer with shouldRecognizeSimultaneously:true wins.
+import UIKit
 
-struct HorizontalSwipeDetector: UIViewRepresentable {
-    var dragOffset: Binding<CGFloat>
-    var onSwipeLeft:  () -> Void
-    var onSwipeRight: () -> Void
-    var onSnapBack:   () -> Void
+// MARK: - DeckPagerContainer
+// UIPageViewController-based pager.
+// - Swipe RIGHT  → next page  (clipboard → deck1 → deck2 …)
+// - Swipe LEFT   → prev page
+// - Vertical scroll of the outer Library page is NEVER blocked.
+// - Smooth simultaneous slide: current exits right, new enters from left.
 
-    func makeCoordinator() -> Coordinator {
-        Coordinator(dragOffset: dragOffset,
-                    onSwipeLeft:  onSwipeLeft,
-                    onSwipeRight: onSwipeRight,
-                    onSnapBack:   onSnapBack)
-    }
-
-    func makeUIView(context: Context) -> UIView {
-        let v = UIView()
-        v.backgroundColor = .clear
-        let pan = UIPanGestureRecognizer(target: context.coordinator,
-                                         action: #selector(Coordinator.handlePan(_:)))
-        pan.delegate = context.coordinator
-        v.addGestureRecognizer(pan)
-        return v
-    }
-
-    func updateUIView(_ uiView: UIView, context: Context) {
-        let c = context.coordinator
-        c.dragOffset   = dragOffset
-        c.onSwipeLeft  = onSwipeLeft
-        c.onSwipeRight = onSwipeRight
-        c.onSnapBack   = onSnapBack
-    }
-
-    class Coordinator: NSObject, UIGestureRecognizerDelegate {
-        var dragOffset:   Binding<CGFloat>
-        var onSwipeLeft:  () -> Void
-        var onSwipeRight: () -> Void
-        var onSnapBack:   () -> Void
-        private var lockedHorizontal: Bool? = nil
-
-        init(dragOffset: Binding<CGFloat>,
-             onSwipeLeft:  @escaping () -> Void,
-             onSwipeRight: @escaping () -> Void,
-             onSnapBack:   @escaping () -> Void) {
-            self.dragOffset   = dragOffset
-            self.onSwipeLeft  = onSwipeLeft
-            self.onSwipeRight = onSwipeRight
-            self.onSnapBack   = onSnapBack
-        }
-
-        // Allow this recognizer to fire alongside the ScrollView's recognizer
-        func gestureRecognizer(_ gr: UIGestureRecognizer,
-                               shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer) -> Bool { true }
-
-        @objc func handlePan(_ pan: UIPanGestureRecognizer) {
-            let t = pan.translation(in: pan.view)
-            let v = pan.velocity(in: pan.view)
-
-            switch pan.state {
-            case .changed:
-                // Lock direction on first significant movement
-                if lockedHorizontal == nil, max(abs(t.x), abs(t.y)) > 10 {
-                    lockedHorizontal = abs(t.x) > abs(t.y)
-                }
-                if lockedHorizontal == true {
-                    DispatchQueue.main.async { self.dragOffset.wrappedValue = t.x }
-                }
-
-            case .ended:
-                let wasHorizontal = lockedHorizontal ?? false
-                lockedHorizontal = nil
-                DispatchQueue.main.async { self.dragOffset.wrappedValue = 0 }
-                guard wasHorizontal else { return }
-                if      t.x < -60 || v.x < -300 { DispatchQueue.main.async { self.onSwipeLeft()  } }
-                else if t.x >  60 || v.x >  300 { DispatchQueue.main.async { self.onSwipeRight() } }
-                else                             { DispatchQueue.main.async { self.onSnapBack()   } }
-
-            case .cancelled, .failed:
-                lockedHorizontal = nil
-                DispatchQueue.main.async { self.dragOffset.wrappedValue = 0
-                                           self.onSnapBack() }
-            default: break
-            }
-        }
-    }
-}
-
-// MARK: - Throw Swipe Container
-
-struct ThrowSwipeContainer: View {
+struct DeckPagerContainer: UIViewControllerRepresentable {
     let pages: [AnyView]
     @Binding var currentPage: Int
 
-    @State private var dragOffset: CGFloat = 0
-    @State private var cardOpacity: Double  = 1.0
-    @State private var cardScale:   CGFloat = 1.0
-
-    var body: some View {
-        pages[currentPage]
-            .rotationEffect(.degrees(Double(dragOffset) / 28.0))
-            .offset(x: dragOffset)
-            .opacity(cardOpacity)
-            .scaleEffect(cardScale)
-            .overlay(
-                HorizontalSwipeDetector(
-                    dragOffset: $dragOffset,
-                    onSwipeLeft: {
-                        guard currentPage < pages.count - 1 else {
-                            snapBack(); return
-                        }
-                        throwCard(direction: -1) { currentPage += 1 }
-                    },
-                    onSwipeRight: {
-                        guard currentPage > 0 else { snapBack(); return }
-                        throwCard(direction: 1) { currentPage -= 1 }
-                    },
-                    onSnapBack: snapBack
-                )
-            )
+    func makeUIViewController(context: Context) -> UIPageViewController {
+        let vc = UIPageViewController(transitionStyle: .scroll,
+                                      navigationOrientation: .horizontal)
+        vc.view.backgroundColor = .clear
+        vc.dataSource = context.coordinator
+        vc.delegate   = context.coordinator
+        let initial = context.coordinator.hostingVC(for: 0)
+        vc.setViewControllers([initial], direction: .forward, animated: false)
+        return vc
     }
 
-    private func snapBack() {
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) { dragOffset = 0 }
+    func updateUIViewController(_ pageVC: UIPageViewController, context: Context) {
+        let coord = context.coordinator
+        // Sync pages array in case decks changed
+        coord.parent = self
+        guard coord.currentIndex != currentPage else { return }
+        let forward = currentPage > coord.currentIndex
+        let dest = coord.hostingVC(for: currentPage)
+        pageVC.setViewControllers([dest],
+                                  direction: forward ? .reverse : .forward,
+                                  animated: true)
+        coord.currentIndex = currentPage
     }
 
-    private func throwCard(direction: CGFloat, then swap: @escaping () -> Void) {
-        withAnimation(.easeIn(duration: 0.19)) {
-            dragOffset  = direction * 520
-            cardOpacity = 0
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.19) {
-            dragOffset  = 0
-            cardOpacity = 0
-            cardScale   = 0.88
-            swap()
-            withAnimation(.spring(response: 0.34, dampingFraction: 0.62)) {
-                cardOpacity = 1.0
-                cardScale   = 1.0
+    func makeCoordinator() -> Coordinator { Coordinator(self) }
+
+    // ── Coordinator ──────────────────────────────────────────────────────────
+    class Coordinator: NSObject,
+                       UIPageViewControllerDataSource,
+                       UIPageViewControllerDelegate {
+        var parent: DeckPagerContainer
+        var currentIndex: Int = 0
+        private var cache: [Int: UIHostingController<AnyView>] = [:]
+
+        init(_ p: DeckPagerContainer) { parent = p }
+
+        func hostingVC(for index: Int) -> UIHostingController<AnyView> {
+            // Rebuild if pages array changed size
+            if index >= parent.pages.count { return UIHostingController(rootView: AnyView(EmptyView())) }
+            if let existing = cache[index] {
+                existing.rootView = parent.pages[index]   // refresh content
+                return existing
             }
+            let vc = UIHostingController(rootView: parent.pages[index])
+            vc.view.backgroundColor = .clear
+            vc.view.isOpaque = false
+            cache[index] = vc
+            return vc
+        }
+
+        private func index(of vc: UIViewController) -> Int? {
+            cache.first(where: { $0.value === vc })?.key
+        }
+
+        // ── Direction: viewControllerBefore = swipe RIGHT shows NEXT page ──
+        func pageViewController(_ pvc: UIPageViewController,
+                                viewControllerBefore vc: UIViewController) -> UIViewController? {
+            guard let idx = index(of: vc), idx < parent.pages.count - 1 else { return nil }
+            return hostingVC(for: idx + 1)
+        }
+
+        func pageViewController(_ pvc: UIPageViewController,
+                                viewControllerAfter vc: UIViewController) -> UIViewController? {
+            guard let idx = index(of: vc), idx > 0 else { return nil }
+            return hostingVC(for: idx - 1)
+        }
+
+        func pageViewController(_ pvc: UIPageViewController,
+                                didFinishAnimating finished: Bool,
+                                previousViewControllers: [UIViewController],
+                                transitionCompleted completed: Bool) {
+            guard completed,
+                  let current = pvc.viewControllers?.first,
+                  let idx = index(of: current) else { return }
+            currentIndex = idx
+            DispatchQueue.main.async { self.parent.currentPage = idx }
         }
     }
 }

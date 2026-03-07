@@ -118,8 +118,8 @@ struct LibraryView: View {
                         }
                         return views
                     }()
-                    ThrowSwipeContainer(pages: widgetPages,
-                                        currentPage: $activeWidgetPage)
+                    DeckPagerContainer(pages: widgetPages,
+                                       currentPage: $activeWidgetPage)
                     .frame(height: 440)
                     .onChange(of: activeWidgetPage) { p in
                         if p > 0 { hasSwipedToDeck = true }
