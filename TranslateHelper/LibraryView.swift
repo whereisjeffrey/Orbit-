@@ -94,84 +94,23 @@ struct LibraryView: View {
                         .padding(.horizontal, 20)
                         .padding(.bottom, 10)
 
-                    // My Clipboard card
-                    Button(action: { showingStudyMode = true }) {
-                    VStack(alignment: .leading, spacing: 0) {
-                        HStack(alignment: .top) {
-                            HStack(spacing: 12) {
-                                Text("📋").font(.custom("HelveticaNeue", size: 24))
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("My Clipboard")
-                                        .font(.custom("HelveticaNeue-Bold", size: 20))
-                                        .foregroundColor(.tsLabel)
-                                    Text("Synced from keyboard")
-                                        .font(.custom("HelveticaNeue", size: 13))
-                                        .foregroundColor(.tsSecondary)
-                                }
-                            }
-                            Spacer()
-                            // Live count badge
-                            Text(store.activePhrases.isEmpty ? "0 Phrases" : "\(store.activePhrases.count) Phrase\(store.activePhrases.count == 1 ? "" : "s")")
-                                .font(.custom("HelveticaNeue-Bold", size: 11))
-                                .foregroundColor(store.activePhrases.isEmpty ? .tsSecondary : .tsAccent)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 4)
-                                .background(store.activePhrases.isEmpty ? Color.tsCard : Color.tsAccent.opacity(0.1))
-                                .clipShape(Capsule())
-                        }
+                    // ── Weekly Clipboard + Streak ──────────────────────
+                    WeeklyClipboardWidget(store: store, onStudy: { showingStudyMode = true })
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 16)
 
-                        Spacer().frame(maxHeight: 30)
+                    WeeklyStreakCard()
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 24)
 
-                        HStack {
-                            // Languages: EN + PT only
-                            HStack(spacing: -8) {
-                                ZStack {
-                                    Circle()
-                                        .fill(Color.tsAccent)
-                                        .frame(width: 32, height: 32)
-                                        .overlay(Circle().stroke(Color.tsCard, lineWidth: 2))
-                                    Text("EN")
-                                        .font(.custom("HelveticaNeue-Bold", size: 11))
-                                        .foregroundColor(.white)
-                                }
-                                ZStack {
-                                    Circle()
-                                        .fill(Color(hex: "#FF3B30"))
-                                        .frame(width: 32, height: 32)
-                                        .overlay(Circle().stroke(Color.tsCard, lineWidth: 2))
-                                    Text("ES")
-                                        .font(.custom("HelveticaNeue-Bold", size: 11))
-                                        .foregroundColor(.white)
-                                }
-                                .zIndex(1)
-                            }
-                            Spacer()
-                            if store.activePhrases.isEmpty {
-                                Text("Save phrases from the keyboard")
-                                    .font(.custom("HelveticaNeue", size: 12))
-                                    .foregroundColor(.tsSecondary)
-                            } else {
-                                TSGradientPill(title: "Study", icon: "graduationcap.fill") {
-                                    showingStudyMode = true
-                                }
+                    // Study fullScreenCover
+                    Color.clear.frame(height: 0)
+                        .fullScreenCover(isPresented: $showingStudyMode) {
+                            NavigationView {
+                                let duePhrases = store.activePhrases.filter { $0.nextReviewDate <= Date() }
+                                StudySourceWordView(phrases: duePhrases.isEmpty ? store.activePhrases : duePhrases, listName: "Clipboard List")
                             }
                         }
-                    }
-                    .padding(16)
-                    .frame(height: 172)
-                    .background(Color.tsCard)
-                    .cornerRadius(24)
-                    .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
-                    }
-                    .buttonStyle(ScaleButtonStyle())
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 24)
-                    .fullScreenCover(isPresented: $showingStudyMode) {
-                        NavigationView {
-                            let duePhrases = store.activePhrases.filter { $0.nextReviewDate <= Date() }
-                            StudySourceWordView(phrases: duePhrases.isEmpty ? store.activePhrases : duePhrases, listName: "Clipboard List")
-                        }
-                    }
 
                     // ── MY DECKS ───────────────────────────────────────
                     HStack {
