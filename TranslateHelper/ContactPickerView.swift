@@ -1,43 +1,54 @@
 //  ContactPickerView.swift
 //  TalkSwitch
+//
+//  CNContactPickerViewController presented from an embedded UIViewController
+//  so its internal dismiss() never bubbles up into SwiftUI's sheet stack.
 
 import SwiftUI
 import Contacts
 import ContactsUI
 
-/// Wraps CNContactPickerViewController so the user can pick a contact
-/// from their address book. No contacts permission required — the system
-/// picker handles privacy internally.
-struct ContactPickerView: UIViewControllerRepresentable {
+struct ContactPickerPresenter: UIViewControllerRepresentable {
     @Binding var phoneNumber: String
-    @Binding var isPresented: Bool
+    @Binding var shouldPresent: Bool
 
-    func makeUIViewController(context: Context) -> CNContactPickerViewController {
+    func makeUIViewController(context: Context) -> UIViewController {
+        context.coordinator.host
+    }
+
+    func updateUIViewController(_ vc: UIViewController, context: Context) {
+        guard shouldPresent, context.coordinator.picker == nil else { return }
         let picker = CNContactPickerViewController()
         picker.delegate = context.coordinator
         picker.predicateForEnablingContact = NSPredicate(format: "phoneNumbers.@count > 0")
-        return picker
+        context.coordinator.picker = picker
+        DispatchQueue.main.async {
+            context.coordinator.host.present(picker, animated: true)
+        }
     }
-
-    func updateUIViewController(_ vc: CNContactPickerViewController, context: Context) {}
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
     final class Coordinator: NSObject, CNContactPickerDelegate {
-        var parent: ContactPickerView
-        init(_ parent: ContactPickerView) { self.parent = parent }
+        var parent: ContactPickerPresenter
+        let host = UIViewController()
+        var picker: CNContactPickerViewController?
+
+        init(_ parent: ContactPickerPresenter) { self.parent = parent }
 
         func contactPickerDidCancel(_ picker: CNContactPickerViewController) {
-            parent.isPresented = false
+            self.picker = nil
+            DispatchQueue.main.async { self.parent.shouldPresent = false }
         }
 
-        func contactPicker(_ picker: CNContactPickerViewController, didSelect contact: CNContact) {
+        func contactPicker(_ picker: CNContactPickerViewController,
+                           didSelect contact: CNContact) {
             if let phone = contact.phoneNumbers.first?.value.stringValue {
-                // Strip everything that isn't a digit
                 let digits = phone.filter { $0.isNumber }
-                parent.phoneNumber = digits
+                DispatchQueue.main.async { self.parent.phoneNumber = digits }
             }
-            parent.isPresented = false
+            self.picker = nil
+            DispatchQueue.main.async { self.parent.shouldPresent = false }
         }
     }
 }

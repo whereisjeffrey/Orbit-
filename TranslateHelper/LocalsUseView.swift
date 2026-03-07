@@ -1061,23 +1061,36 @@ struct AddRecSheet: View {
                                 Button {
                                     showContactPicker = true
                                 } label: {
-                                    HStack(spacing: 4) {
-                                        Image(systemName: "person.crop.circle")
-                                            .font(.system(size: 13))
-                                        Text("Contacts")
+                                    HStack(spacing: 5) {
+                                        // WhatsApp-style icon: green circle + phone
+                                        ZStack {
+                                            Circle()
+                                                .fill(Color(hex: "#25D366"))
+                                                .frame(width: 22, height: 22)
+                                            Image(systemName: "phone.fill")
+                                                .font(.system(size: 10, weight: .medium))
+                                                .foregroundColor(.white)
+                                        }
+                                        Text("Add contact")
                                             .font(.custom("HelveticaNeue-Medium", size: 12))
+                                            .foregroundColor(Color(hex: "#25D366"))
                                     }
-                                    .foregroundColor(.tsAccent)
-                                    .padding(.horizontal, 10).padding(.vertical, 5)
-                                    .background(Color.tsAccent.opacity(0.08))
+                                    .padding(.horizontal, 10).padding(.vertical, 6)
+                                    .background(Color(hex: "#25D366").opacity(0.12))
                                     .clipShape(Capsule())
                                 }
                                 .buttonStyle(PlainButtonStyle())
                             }
                         }
-                        .sheet(isPresented: $showContactPicker) {
-                            ContactPickerView(phoneNumber: $whatsappNumber, isPresented: $showContactPicker)
-                        }
+                        // Hidden presenter — must live in the view tree so its
+                        // embedded UIViewController is part of the VC hierarchy
+                        .background(
+                            ContactPickerPresenter(
+                                phoneNumber: $whatsappNumber,
+                                shouldPresent: $showContactPicker
+                            )
+                            .frame(width: 0, height: 0)
+                        )
 
                         // Website
                         RecFormField(label: "Website") {
