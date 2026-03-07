@@ -1,9 +1,6 @@
 //  WeeklyLibraryWidgets.swift
-//  Clipboard widget (lined paper, weekly words) + 5/7 streak tracker
 
 import SwiftUI
-
-// MARK: - Helpers
 
 private extension Calendar {
     func isThisWeek(_ date: Date) -> Bool {
@@ -18,54 +15,47 @@ struct WeeklyClipboardWidget: View {
     let onStudy: () -> Void
 
     private var addedThisWeek: [SavedPhrase] {
-        store.phrases.filter { Calendar.current.isThisWeek($0.savedAt) }
+        store.phrases
+            .filter { Calendar.current.isThisWeek($0.savedAt) }
             .sorted { $0.savedAt < $1.savedAt }
     }
 
     private var masteredThisWeek: Int {
         store.phrases.filter {
-            $0.isConquered && $0.conqueredAt.map { Calendar.current.isThisWeek($0) } ?? false
+            $0.isConquered &&
+            ($0.conqueredAt.map { Calendar.current.isThisWeek($0) } ?? false)
         }.count
     }
 
     private var isCatchingUp: Bool {
         let added = addedThisWeek.count
-        let mastered = masteredThisWeek
-        return added > 4 && mastered < added / 2
-    }
-
-    // Week date range label e.g. "Jul 7 – Jul 13"
-    private var weekRangeLabel: String {
-        let cal = Calendar.current
-        let now = Date()
-        guard let weekStart = cal.dateInterval(of: .weekOfYear, for: now)?.start else { return "This week" }
-        let weekEnd = cal.date(byAdding: .day, value: 6, to: weekStart) ?? now
-        let fmt = DateFormatter()
-        fmt.dateFormat = "MMM d"
-        return "\(fmt.string(from: weekStart)) – \(fmt.string(from: weekEnd))"
+        return added > 4 && masteredThisWeek < added / 2
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Header row
-            HStack(alignment: .firstTextBaseline) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("My Clipboard")
-                        .font(.custom("HelveticaNeue-Bold", size: 18))
-                        .foregroundColor(.tsLabel)
-                    Text(weekRangeLabel)
-                        .font(.custom("HelveticaNeue", size: 12))
-                        .foregroundColor(.tsSecondary)
-                }
+
+            // ── Header ──────────────────────────────────────
+            HStack(alignment: .center, spacing: 10) {
+                Text("My Clipboard")
+                    .font(.custom("HelveticaNeue-Bold", size: 18))
+                    .foregroundColor(.tsLabel)
+
+                // "This Week" pill — light gray, same font size
+                Text("This Week")
+                    .font(.custom("HelveticaNeue-Bold", size: 18))
+                    .foregroundColor(.tsSecondary)
+                    .padding(.horizontal, 11).padding(.vertical, 4)
+                    .background(Color(UIColor.systemGray5))
+                    .clipShape(Capsule())
+
                 Spacer()
-                // Study button
+
                 if !store.activePhrases.isEmpty {
                     Button(action: onStudy) {
                         HStack(spacing: 4) {
-                            Image(systemName: "graduationcap.fill")
-                                .font(.system(size: 10))
-                            Text("Study")
-                                .font(.custom("HelveticaNeue-Medium", size: 12))
+                            Image(systemName: "graduationcap.fill").font(.system(size: 10))
+                            Text("Study").font(.custom("HelveticaNeue-Medium", size: 12))
                         }
                         .foregroundColor(.white)
                         .padding(.horizontal, 12).padding(.vertical, 6)
@@ -81,22 +71,20 @@ struct WeeklyClipboardWidget: View {
 
             Divider().background(Color.tsBorder.opacity(0.5))
 
-            // Lined paper body
+            // ── Lined paper word list ────────────────────────
             HStack(alignment: .top, spacing: 0) {
-                // Left margin line (notebook red line)
+                // Red margin line
                 Rectangle()
                     .fill(Color(hex: "#FF6B6B").opacity(0.35))
                     .frame(width: 1.5)
                     .padding(.leading, 36)
 
-                // Words list
                 VStack(alignment: .leading, spacing: 0) {
                     if addedThisWeek.isEmpty {
                         HStack {
                             Spacer()
                             VStack(spacing: 6) {
-                                Text("📋")
-                                    .font(.system(size: 28))
+                                Text("📋").font(.system(size: 28))
                                 Text("No phrases added yet this week")
                                     .font(.custom("HelveticaNeue", size: 13))
                                     .foregroundColor(.tsSecondary)
@@ -113,7 +101,7 @@ struct WeeklyClipboardWidget: View {
                             HStack(alignment: .center, spacing: 8) {
                                 Text("\(idx + 1).")
                                     .font(.custom("HelveticaNeue", size: 12))
-                                    .foregroundColor(.tsSecondary.opacity(0.5))
+                                    .foregroundColor(.tsSecondary.opacity(0.45))
                                     .frame(width: 20, alignment: .trailing)
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text(phrase.translatedText)
@@ -129,10 +117,9 @@ struct WeeklyClipboardWidget: View {
                             }
                             .frame(height: 44)
                             .padding(.horizontal, 12)
-                            .background(Color.clear)
                             if idx < min(addedThisWeek.count, 8) - 1 {
                                 Divider()
-                                    .background(Color.tsBorder.opacity(0.35))
+                                    .background(Color.tsBorder.opacity(0.3))
                                     .padding(.leading, 40)
                             }
                         }
@@ -140,43 +127,31 @@ struct WeeklyClipboardWidget: View {
                             Text("+ \(addedThisWeek.count - 8) more this week")
                                 .font(.custom("HelveticaNeue", size: 12))
                                 .foregroundColor(.tsSecondary)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 8)
+                                .padding(.horizontal, 16).padding(.vertical, 8)
                         }
                     }
                 }
             }
-            .background(Color(UIColor.systemBackground).opacity(0.5))
+            .background(Color(UIColor.systemGray6).opacity(0.5))
 
             Divider().background(Color.tsBorder.opacity(0.5))
 
-            // Footer stats
+            // ── Footer stats ─────────────────────────────────
             HStack(spacing: 16) {
-                StatPill(
-                    icon: "arrow.down.circle.fill",
-                    color: .tsAccent,
-                    value: "\(addedThisWeek.count)",
-                    label: "added"
-                )
-                StatPill(
-                    icon: "checkmark.circle.fill",
-                    color: Color(hex: "#30D158"),
-                    value: "\(masteredThisWeek)",
-                    label: "mastered"
-                )
+                ClipStatPill(icon: "arrow.down.circle.fill", color: .tsAccent,
+                             value: "\(addedThisWeek.count)", label: "added")
+                ClipStatPill(icon: "checkmark.circle.fill",  color: Color(hex: "#30D158"),
+                             value: "\(masteredThisWeek)",   label: "mastered")
                 Spacer()
                 if isCatchingUp {
                     HStack(spacing: 4) {
-                        Image(systemName: "exclamationmark.circle.fill")
-                            .font(.system(size: 11))
-                        Text("Catching up…")
-                            .font(.custom("HelveticaNeue-Medium", size: 12))
+                        Image(systemName: "exclamationmark.circle.fill").font(.system(size: 11))
+                        Text("Catching up…").font(.custom("HelveticaNeue-Medium", size: 12))
                     }
                     .foregroundColor(Color(hex: "#FF9500"))
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
+            .padding(.horizontal, 16).padding(.vertical, 10)
         }
         .background(Color.tsCard)
         .cornerRadius(20)
@@ -184,49 +159,35 @@ struct WeeklyClipboardWidget: View {
     }
 }
 
-// MARK: - Stat pill (clipboard footer)
-
-private struct StatPill: View {
-    let icon: String
-    let color: Color
-    let value: String
-    let label: String
+private struct ClipStatPill: View {
+    let icon: String; let color: Color; let value: String; let label: String
     var body: some View {
         HStack(spacing: 5) {
-            Image(systemName: icon)
-                .font(.system(size: 13))
-                .foregroundColor(color)
-            Text(value)
-                .font(.custom("HelveticaNeue-Bold", size: 14))
-                .foregroundColor(.tsLabel)
-            Text(label)
-                .font(.custom("HelveticaNeue", size: 13))
-                .foregroundColor(.tsSecondary)
+            Image(systemName: icon).font(.system(size: 13)).foregroundColor(color)
+            Text(value).font(.custom("HelveticaNeue-Bold", size: 14)).foregroundColor(.tsLabel)
+            Text(label).font(.custom("HelveticaNeue", size: 13)).foregroundColor(.tsSecondary)
         }
     }
 }
 
-// MARK: - Weekly Streak Card (5/7)
+// MARK: - Weekly Streak Card — dark gradient
 
 struct WeeklyStreakCard: View {
-    // Stored: "2025-28" → "2,4,5" (weekday indices 2=Mon…8=Sun in ISO)
-    @AppStorage("study_week_id")       private var weekId    = ""
-    @AppStorage("study_days_this_week") private var daysStr  = ""
-    @AppStorage("completed_weeks")     private var completed = 0
+    @AppStorage("study_week_id")        private var weekId    = ""
+    @AppStorage("study_days_this_week") private var daysStr   = ""
+    @AppStorage("completed_weeks")      private var completed = 0
 
     private static let goal = 5
 
     private var currentWeekId: String {
         let cal = Calendar.current
-        let year = cal.component(.yearForWeekOfYear, from: Date())
-        let week = cal.component(.weekOfYear, from: Date())
-        return "\(year)-\(week)"
+        let y = cal.component(.yearForWeekOfYear, from: Date())
+        let w = cal.component(.weekOfYear, from: Date())
+        return "\(y)-\(w)"
     }
 
-    // Weekday of today (2=Mon … 8=Sun in ISO week)
     private var todayWeekday: Int {
-        var cal = Calendar.current
-        cal.firstWeekday = 2 // Monday start
+        var cal = Calendar.current; cal.firstWeekday = 2
         return cal.component(.weekday, from: Date())
     }
 
@@ -235,27 +196,34 @@ struct WeeklyStreakCard: View {
         return Set(daysStr.split(separator: ",").compactMap { Int($0) })
     }
 
-    private var daysHit: Int { studiedDays.count }
+    private var daysHit: Int  { studiedDays.count }
     private var weekComplete: Bool { daysHit >= Self.goal }
 
-    // Days of the week Mon–Sun
-    private let dayLabels = ["M","T","W","T","F","S","S"]
-    // ISO weekday numbers Mon=2, Tue=3, Wed=4, Thu=5, Fri=6, Sat=7, Sun=1→8
+    private let dayLabels  = ["M","T","W","T","F","S","S"]
     private let dayNumbers = [2,3,4,5,6,7,8]
 
+    // Gradient
+    private let grad = LinearGradient(
+        colors: [Color(hex: "#0A1628"), Color(hex: "#0E2C77"), Color(hex: "#1A52C8")],
+        startPoint: .topLeading, endPoint: .bottomTrailing
+    )
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 14) {
+
             // Header
             HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("This week")
-                        .font(.custom("HelveticaNeue-Bold", size: 15))
-                        .foregroundColor(.tsLabel)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("This Week")
+                        .font(.custom("HelveticaNeue-Bold", size: 16))
+                        .foregroundColor(.white)
                     Text(weekComplete
                          ? "Week complete 🏆"
                          : "\(daysHit) of \(Self.goal) days — keep going")
                         .font(.custom("HelveticaNeue", size: 12))
-                        .foregroundColor(weekComplete ? Color(hex: "#30D158") : .tsSecondary)
+                        .foregroundColor(weekComplete
+                                         ? Color(hex: "#30D158")
+                                         : Color.white.opacity(0.65))
                 }
                 Spacer()
                 if completed > 0 {
@@ -265,10 +233,10 @@ struct WeeklyStreakCard: View {
                             .foregroundColor(Color(hex: "#FF9500"))
                         Text("\(completed)w")
                             .font(.custom("HelveticaNeue-Bold", size: 12))
-                            .foregroundColor(.tsLabel)
+                            .foregroundColor(.white)
                     }
                     .padding(.horizontal, 10).padding(.vertical, 5)
-                    .background(Color(hex: "#FF9500").opacity(0.12))
+                    .background(Color.white.opacity(0.12))
                     .clipShape(Capsule())
                 }
             }
@@ -276,25 +244,24 @@ struct WeeklyStreakCard: View {
             // Day dots Mon–Sun
             HStack(spacing: 0) {
                 ForEach(Array(zip(dayLabels, dayNumbers)), id: \.1) { label, dayNum in
+                    let studied = studiedDays.contains(dayNum)
+                    let isToday = dayNum == todayWeekday
                     VStack(spacing: 5) {
                         Text(label)
                             .font(.custom("HelveticaNeue-Medium", size: 11))
-                            .foregroundColor(.tsSecondary)
+                            .foregroundColor(Color.white.opacity(0.6))
                         ZStack {
                             Circle()
-                                .fill(studiedDays.contains(dayNum)
-                                      ? Color.tsAccent
-                                      : Color.tsInputBg)
-                                .frame(width: 28, height: 28)
-                            if studiedDays.contains(dayNum) {
+                                .fill(studied ? Color.tsAccent : Color.white.opacity(0.12))
+                                .frame(width: 30, height: 30)
+                            if studied {
                                 Image(systemName: "checkmark")
-                                    .font(.system(size: 10, weight: .bold))
+                                    .font(.system(size: 11, weight: .bold))
                                     .foregroundColor(.white)
                             }
                         }
-                        // Today marker
                         Circle()
-                            .fill(dayNum == todayWeekday ? Color.tsAccent : Color.clear)
+                            .fill(isToday ? Color.white.opacity(0.8) : Color.clear)
                             .frame(width: 4, height: 4)
                     }
                     .frame(maxWidth: .infinity)
@@ -304,30 +271,43 @@ struct WeeklyStreakCard: View {
             // Progress bar
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    Capsule().fill(Color.tsInputBg).frame(height: 4)
+                    Capsule().fill(Color.white.opacity(0.15)).frame(height: 5)
                     Capsule()
                         .fill(weekComplete ? Color(hex: "#30D158") : Color.tsAccent)
-                        .frame(width: geo.size.width * min(Double(daysHit) / Double(Self.goal), 1.0), height: 4)
+                        .frame(
+                            width: geo.size.width * min(Double(daysHit) / Double(Self.goal), 1.0),
+                            height: 5
+                        )
                         .animation(.spring(response: 0.4), value: daysHit)
                 }
             }
-            .frame(height: 4)
+            .frame(height: 5)
         }
         .padding(16)
-        .background(Color.tsCard)
+        .background(grad)
         .cornerRadius(20)
-        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
+        .onAppear {
+#if DEBUG
+            // Seed demo state: Mon ✓ Tue ✗ Wed ✓ Thu ✗ Fri ✓ Sat ✓ = 4 days
+            if daysStr.isEmpty {
+                weekId  = currentWeekId
+                daysStr = "2,4,6,7"
+            }
+#endif
+            checkWeekRollover()
+        }
     }
 
-    // Call this whenever the user completes a study session
-    func markToday() {
+    private func checkWeekRollover() {
         let cid = currentWeekId
-        if weekId != cid {
-            // New week — reset
-            if daysHit >= Self.goal { completed += 1 }
-            weekId  = cid
-            daysStr = ""
-        }
+        guard weekId != cid else { return }
+        if daysHit >= Self.goal { completed += 1 }
+        weekId  = cid
+        daysStr = ""
+    }
+
+    func markToday() {
+        checkWeekRollover()
         var days = studiedDays
         days.insert(todayWeekday)
         daysStr = days.map { "\($0)" }.joined(separator: ",")

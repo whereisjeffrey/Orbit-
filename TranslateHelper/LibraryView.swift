@@ -144,37 +144,52 @@ struct LibraryView: View {
                     }
                     .padding(.bottom, 24)
 
-                    // ── Daily Goal ─────────────────────────────────────
-                    HStack(spacing: 12) {
-                        TSProgressRing(progress: goalProgress, size: 36)
-
-                        Text(dailyGoal == 0
-                             ? "0 / 20 phrases reviewed"
-                             : "\(reviewedToday) / \(dailyGoal) phrases reviewed")
-                            .font(.custom("HelveticaNeue-Medium", size: 14))
-                            .foregroundColor(.tsLabel)
-
-                        Spacer()
-
-                        Button(action: { showingGoalSheet = true }) {
-                            HStack(spacing: 4) {
-                                Image(systemName: "bolt.fill")
-                                    .font(.system(size: 11, weight: .bold))
-                                    .foregroundColor(Color(hex: "#FFD60A"))
-                                Text("Set Goal")
-                                    .font(.custom("HelveticaNeue-Medium", size: 13))
-                                    .foregroundColor(.tsAccent)
+                    // ── Daily Goal — gradient card ────────────────────
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("Daily Goal")
+                                    .font(.custom("HelveticaNeue-Bold", size: 15))
+                                    .foregroundColor(.white)
+                                Text(dailyGoal == 0
+                                     ? "0 / 20 phrases reviewed"
+                                     : "\(reviewedToday) of \(dailyGoal) phrases reviewed")
+                                    .font(.custom("HelveticaNeue", size: 13))
+                                    .foregroundColor(.white.opacity(0.7))
                             }
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 6)
-                            .overlay(Capsule().stroke(Color.tsAccent.opacity(0.35), lineWidth: 1))
+                            Spacer()
+                            Button(action: { showingGoalSheet = true }) {
+                                HStack(spacing: 5) {
+                                    Image(systemName: "bolt.fill")
+                                        .font(.system(size: 10, weight: .bold))
+                                        .foregroundColor(Color(hex: "#FFD60A"))
+                                    Text("Set Goal")
+                                        .font(.custom("HelveticaNeue-Medium", size: 13))
+                                        .foregroundColor(.white)
+                                }
+                                .padding(.horizontal, 14).padding(.vertical, 6)
+                                .overlay(Capsule().stroke(Color.white.opacity(0.45), lineWidth: 1))
+                            }
                         }
+                        GeometryReader { geo in
+                            ZStack(alignment: .leading) {
+                                Capsule().fill(Color.white.opacity(0.15)).frame(height: 6)
+                                Capsule()
+                                    .fill(Color.tsAccent)
+                                    .frame(width: geo.size.width * goalProgress, height: 6)
+                                    .animation(.spring(response: 0.4), value: goalProgress)
+                            }
+                        }
+                        .frame(height: 6)
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
-                    .background(Color.tsCard)
+                    .padding(16)
+                    .background(
+                        LinearGradient(
+                            colors: [Color(hex: "#0A1628"), Color(hex: "#0E2C77"), Color(hex: "#1A52C8")],
+                            startPoint: .topLeading, endPoint: .bottomTrailing
+                        )
+                    )
                     .cornerRadius(20)
-                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                     .padding(.horizontal, 16)
                     .padding(.bottom, 120)
                 }
