@@ -509,6 +509,79 @@ struct FeaturedDeckContent {
                 DeckCard(english: "I'm missing something", spanish: "me falta algo"),
             ]
 
+
+        case "f13":
+            return [
+                DeckCard(english: "Every cloud has a silver lining", spanish: "No hay mal que por bien no venga", notes: "Lit: \"There's no evil that doesn't come for good.\" Used to console someone after something bad happens — things happen for a reason and something good will follow."),
+                DeckCard(english: "Don't look a gift horse in the mouth", spanish: "A caballo regalado no se le ve el diente", notes: "Lit: \"You don't inspect the teeth of a gifted horse.\" Say this when someone complains about something they received for free."),
+                DeckCard(english: "The early bird catches the worm", spanish: "El que madruga, Dios lo ayuda", notes: "Lit: \"God helps the one who rises early.\" Encouragement to be proactive. Still said by abuelas everywhere."),
+                DeckCard(english: "Better late than never", spanish: "Más vale tarde que nunca", notes: "Direct equivalent. Used exactly the same way as in English — often said sarcastically when someone shows up late."),
+                DeckCard(english: "Silence is golden", spanish: "En boca cerrada no entran moscas", notes: "Lit: \"Flies don't enter a closed mouth.\" More vivid than the English version — the image sticks. Said when someone is talking too much or should keep a secret."),
+                DeckCard(english: "You snooze, you lose", spanish: "Camarón que se duerme, se lo lleva la corriente", notes: "Lit: \"The shrimp that falls asleep gets swept away by the current.\" One of the most uniquely Mexican expressions. Said when someone missed an opportunity by not paying attention."),
+                DeckCard(english: "Easier said than done", spanish: "Del dicho al hecho, hay mucho trecho", notes: "Lit: \"From saying to doing, there's a long stretch.\" Said when someone promises big but delivery is uncertain."),
+                DeckCard(english: "A bird in the hand is worth two in the bush", spanish: "Más vale pájaro en mano que ciento volando", notes: "Lit: \"Better a bird in hand than a hundred flying.\" Take what you have now rather than risk it for something uncertain."),
+                DeckCard(english: "He who laughs last, laughs best", spanish: "El que ríe último, ríe mejor", notes: "Direct equivalent. Said after proving someone wrong who doubted you."),
+                DeckCard(english: "Don't put all your eggs in one basket", spanish: "No pongas todos los huevos en una canasta", notes: "Direct equivalent. Financial, romantic, professional — applies everywhere."),
+                DeckCard(english: "You can't make a silk purse out of a sow's ear", spanish: "Aunque la mona se vista de seda, mona se queda", notes: "Lit: \"Even if a monkey dresses in silk, it's still a monkey.\" Blunt — used to say that you can change the exterior but not the nature of something."),
+                DeckCard(english: "You are who you hang out with", spanish: "El que con lobos anda, a aullar se enseña", notes: "Lit: \"He who runs with wolves learns to howl.\" Your environment shapes you. Said as a warning about bad influences."),
+                DeckCard(english: "This too shall pass", spanish: "No hay mal que dure cien años", notes: "Lit: \"There's no ill that lasts a hundred years.\" Comfort during hard times — nothing stays bad forever."),
+                DeckCard(english: "When life gives you lemons", spanish: "A mal tiempo, buena cara", notes: "Lit: \"To bad weather, put on a good face.\" Keep your chin up. Said to someone going through a rough patch."),
+                DeckCard(english: "All that glitters is not gold", spanish: "No todo lo que brilla es oro", notes: "Direct equivalent. Don't be fooled by appearances."),
+                DeckCard(english: "Greed is its own punishment", spanish: "La avaricia rompe el saco", notes: "Lit: \"Greed breaks the bag.\" When you try to take too much, you end up with nothing."),
+                DeckCard(english: "None so blind as those who won't see", spanish: "No hay peor sordo que el que no quiere oír", notes: "Lit: \"There's no worse deaf person than one who refuses to hear.\" Said about someone who ignores the truth because it's inconvenient."),
+                DeckCard(english: "Many a true word is spoken in jest", spanish: "Entre broma y broma, la verdad se asoma", notes: "Lit: \"Between joke and joke, the truth peeks out.\" What people say \\\"just kidding\\\" about is often what they really mean."),
+                DeckCard(english: "Don't put off till tomorrow what you can do today", spanish: "No dejes para mañana lo que puedes hacer hoy", notes: "Direct equivalent. Said with mild exasperation when someone is procrastinating."),
+                DeckCard(english: "Show me your friends, I'll show you who you are", spanish: "Dime con quién andas y te diré quién eres", notes: "Lit: \"Tell me who you walk with and I'll tell you who you are.\" One of the most commonly used in Mexico."),
+            ]
+
+        case "f14":
+            return [
+                DeckCard(english: "To have sex", spanish: "Echar un polvo", notes: "Lit: \"To throw some dust.\" Very widely used, mildly vulgar but said casually between adults. Equivalent to \"getting laid.\""),
+                DeckCard(english: "To flirt aggressively", spanish: "Tirar los perros", notes: "Lit: \"To throw the dogs at someone.\" \"Me estaba tirando los perros\" = He/she was hitting on me hard. Mexico and Central America."),
+                DeckCard(english: "To get completely wasted", spanish: "Ponerse hasta las chanclas", notes: "Lit: \"To get up to your flip-flops.\" Vivid image. More colorful than just \"borracho.\""),
+                DeckCard(english: "To be drunk", spanish: "Estar pedo", notes: "Lit: \"To be a fart.\" One of Mexico's most common slang terms for drunk. Also \"estar bien pedo\" = totally hammered."),
+                DeckCard(english: "Foreplay / warming up", spanish: "Calentar los motores", notes: "Lit: \"To warm up the engines.\" Can be used literally (warming up before exercise) or euphemistically for physical intimacy."),
+                DeckCard(english: "To hook up / make out", spanish: "Enrollarse", notes: "\"Se enrollaron en la fiesta\" = They hooked up at the party. Spain-origin but used across Latin America."),
+                DeckCard(english: "Heavy making out", spanish: "Darse el lote", notes: "Lit: \"To give each other the lot.\" More intense than enrollarse. Used mostly by younger speakers."),
+                DeckCard(english: "To get lucky / eat a lot", spanish: "Ponerse las botas", notes: "Lit: \"To put on your boots.\" Dual meaning — eating very well OR getting lucky sexually. Context tells you which."),
+                DeckCard(english: "To be in a bad mood", spanish: "Tener mala leche", notes: "Lit: \"To have bad milk.\" Vulgar origin but said casually. \"Hoy amaneció con mala leche\" = He woke up on the wrong side of the bed."),
+                DeckCard(english: "To go on a bender", spanish: "Irse de juerga", notes: "\"Se fueron de juerga toda la semana\" = They partied all week. Not just one night out."),
+                DeckCard(english: "To be hungover", spanish: "Estar crudo", notes: "Lit: \"To be raw.\" One of Mexico's most useful words. \"Estoy muy crudo\" = I'm so hungover."),
+                DeckCard(english: "To go all in / go hard", spanish: "Meterle caña", notes: "Lit: \"To put in the sugarcane.\" \"Hay que meterle caña al proyecto\" = We need to really push this project."),
+                DeckCard(english: "To have a lot of nerve", spanish: "Tener mucha cara", notes: "Lit: \"To have a lot of face.\" \"Tiene mucha cara ese tipo\" = That guy has some nerve."),
+                DeckCard(english: "To crash / go to bed", spanish: "Irse al sobre", notes: "Lit: \"To go to the envelope.\" Said when you're exhausted and heading to bed. \"Me voy al sobre\" = I'm crashing."),
+                DeckCard(english: "In the middle of nowhere", spanish: "Estar en el quinto pino", notes: "Lit: \"At the fifth pine tree.\" Far away, difficult to reach. \"Su casa está en el quinto pino\" = His house is in the absolute middle of nowhere."),
+                DeckCard(english: "To have a thing going on", spanish: "Tener rollo", notes: "\"Tienen rollo\" = There's something going on between them. Ambiguous, which is the point."),
+                DeckCard(english: "To hit the jackpot", spanish: "Sacarse el gordo", notes: "Lit: \"To pull out the fat one.\" Could be literal (lottery) or metaphorical (meeting someone amazing)."),
+                DeckCard(english: "To cross the line", spanish: "Pasarse de la raya", notes: "Lit: \"To go past the line.\" \"Se pasó de la raya\" = He went too far. Widely used, socially and physically."),
+                DeckCard(english: "To lose your mind", spanish: "Írsele la olla", notes: "Lit: \"The pot walks away from you.\" \"Se le fue la olla\" = She lost her mind / went off the rails."),
+                DeckCard(english: "To make a move / strike", spanish: "Dar el golpe", notes: "Lit: \"To land the hit.\" Used when someone makes a bold move romantically or professionally. \"Dale el golpe ya\" = Just make your move already."),
+            ]
+
+        case "f15":
+            return [
+                DeckCard(english: "Love at first sight", spanish: "Flechazo", notes: "Lit: \"Arrow hit.\" The exact moment Cupid's arrow lands. \"Fue un flechazo\" = It was instant."),
+                DeckCard(english: "Soulmate / other half", spanish: "Media naranja", notes: "Lit: \"Half orange.\" The idea that you're half and your partner completes you. Widely used in everyday speech."),
+                DeckCard(english: "To have chemistry", spanish: "Tener química", notes: "Direct equivalent. \"Tenemos mucha química\" = We have great chemistry."),
+                DeckCard(english: "To flirt / pick someone up", spanish: "Ligar", notes: "\"Fue al bar a ligar\" = He went to the bar to pick someone up. More direct than coquetear."),
+                DeckCard(english: "To flirt", spanish: "Coquetear", notes: "Lighter, more playful than ligar. Like batting your eyelashes. \"Estaba coqueteando con él\" = She was flirting with him."),
+                DeckCard(english: "You have an incredible smile", spanish: "Tienes una sonrisa increíble", notes: "A compliment safe to use with anyone, any gender. Reliable opener that doesn't feel aggressive."),
+                DeckCard(english: "Can I have your number?", spanish: "¿Me das tu número?", notes: "The standard ask. Direct, no games. Works every time it's going to work."),
+                DeckCard(english: "To be dating someone", spanish: "Salir con alguien", notes: "\"Estoy saliendo con alguien\" = I'm seeing someone. The neutral way to say you're seeing someone."),
+                DeckCard(english: "I really like you", spanish: "Me encantas", notes: "Stronger than \"me gustas.\" Used when feelings are real. \"Me encantas\" lands with weight."),
+                DeckCard(english: "To be in love", spanish: "Estar enamorado/a", notes: "\"Estoy enamorado\" (m) / \"Estoy enamorada\" (f). Gender-inflected. Both mean the same thing — I'm in love."),
+                DeckCard(english: "To be going out with someone", spanish: "Andar con alguien", notes: "MX-specific. \"Ando con ella\" = I'm going out with her. Casual relationship status."),
+                DeckCard(english: "To have a date", spanish: "Tener una cita", notes: "\"Tengo una cita esta noche\" = I have a date tonight."),
+                DeckCard(english: "To make up after a fight", spanish: "Hacer las paces", notes: "Lit: \"To make the peaces.\" The reconciliation moment after an argument. \"Ya hicimos las paces\" = We made up."),
+                DeckCard(english: "Long distance relationship", spanish: "Relación a distancia", notes: "Direct equivalent. Comes with the same eye rolls in any language."),
+                DeckCard(english: "To be exclusive", spanish: "Ser exclusivos", notes: "\"¿Somos exclusivos?\" = Are we exclusive? The \"what are we?\" conversation outcome."),
+                DeckCard(english: "To reject / ghost someone", spanish: "Dar calabazas", notes: "Lit: \"To give them pumpkins.\" The calabaza is historically a symbol of rejection in Spanish. \"Me dio calabazas\" = She rejected me."),
+                DeckCard(english: "To be crazy about someone", spanish: "Estar colado/a", notes: "\"Estoy colado por ella\" (m) / \"Estoy colada por él\" (f). Lit: \"to be filtered through\" — implies you can't think straight."),
+                DeckCard(english: "To confess your feelings", spanish: "Declararse", notes: "\"Se declaró\" = He/she made their feelings known. A bigger deal than just flirting."),
+                DeckCard(english: "Courtship", spanish: "Cortejo", notes: "The old-school pursuit. Still used, often with gentle irony. \"Está en modo cortejo\" = He's in full courtship mode."),
+                DeckCard(english: "To have butterflies", spanish: "Tener mariposas", notes: "\"Cuando lo veo tengo mariposas\" = When I see him I get butterflies. Direct equivalent, same usage."),
+            ]
+
         default:
             return []
         }

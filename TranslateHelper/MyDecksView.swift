@@ -123,6 +123,15 @@ struct MyDecksView: View {
         FeaturedDeckModel(id: "f12", emoji: "🏠", title: "Home & Daily Life",
                           subtitle: "Rent, errands & neighbours", cardCount: 30, tint: .green,
                           tintName: "green"),
+        FeaturedDeckModel(id: "f13", emoji: "📜", title: "Timeless Adages I",
+                          subtitle: "20 proverbs that travel between cultures",
+                          cardCount: 20, tint: .orange, tintName: "orange"),
+        FeaturedDeckModel(id: "f14", emoji: "😏", title: "Euphemisms",
+                          subtitle: "20 phrases with a double meaning",
+                          cardCount: 20, tint: .purple, tintName: "purple"),
+        FeaturedDeckModel(id: "f15", emoji: "💘", title: "Dating & Romance",
+                          subtitle: "20 phrases for love and connection",
+                          cardCount: 20, tint: .pink, tintName: "pink"),
     ]
 
     var filteredFeatured: [FeaturedDeckModel] {
