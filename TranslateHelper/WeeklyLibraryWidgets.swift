@@ -645,78 +645,14 @@ struct DeckPagerContainer: UIViewControllerRepresentable {
 
 // MARK: - Botanical Card Background
 
-/// Dark tropical background — deep navy base, layered teal leaf shadows,
-/// Bird of Paradise orange-flame radial accent. iOS 14 compatible, no assets.
 struct BotanicalCardBackground: View {
     var body: some View {
-        GeometryReader { geo in
-            let w = geo.size.width
-            let h = geo.size.height
-            ZStack {
-                // ── Deep navy-teal base ──────────────────────────────
-                LinearGradient(
-                    colors: [Color(hex: "#061420"), Color(hex: "#0A2820")],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-
-                // ── Large monstera leaf — top-left dark teal ─────────
-                Ellipse()
-                    .fill(Color(hex: "#0D3530").opacity(0.75))
-                    .frame(width: w * 1.1, height: h * 1.6)
-                    .rotationEffect(.degrees(-35))
-                    .offset(x: -w * 0.3, y: -h * 0.05)
-
-                // ── Palm frond shadow — bottom-left ──────────────────
-                Ellipse()
-                    .fill(Color(hex: "#082520").opacity(0.65))
-                    .frame(width: w * 0.9, height: h * 0.55)
-                    .rotationEffect(.degrees(25))
-                    .offset(x: -w * 0.15, y: h * 0.38)
-
-                // ── Fern accent — top-right ──────────────────────────
-                Ellipse()
-                    .fill(Color(hex: "#0B3028").opacity(0.55))
-                    .frame(width: w * 0.6, height: h * 1.2)
-                    .rotationEffect(.degrees(15))
-                    .offset(x: w * 0.38, y: -h * 0.2)
-
-                // ── Bird of Paradise — orange flame glow ─────────────
-                RadialGradient(
-                    colors: [
-                        Color(hex: "#FF8C1A").opacity(0.90),
-                        Color(hex: "#E8302A").opacity(0.55),
-                        Color(hex: "#C0204A").opacity(0.25),
-                        Color.clear
-                    ],
-                    center: UnitPoint(x: 0.68, y: 0.42),
-                    startRadius: 0,
-                    endRadius: h * 0.72
-                )
-
-                // ── Secondary flower accent — lower ──────────────────
-                RadialGradient(
-                    colors: [
-                        Color(hex: "#FF6A10").opacity(0.65),
-                        Color(hex: "#D42A3A").opacity(0.30),
-                        Color.clear
-                    ],
-                    center: UnitPoint(x: 0.52, y: 0.80),
-                    startRadius: 0,
-                    endRadius: h * 0.55
-                )
-
-                // ── Top-right purple hint (strelitzia bract) ─────────
-                RadialGradient(
-                    colors: [
-                        Color(hex: "#7040C8").opacity(0.40),
-                        Color.clear
-                    ],
-                    center: UnitPoint(x: 0.82, y: 0.18),
-                    startRadius: 0,
-                    endRadius: h * 0.45
-                )
-            }
+        ZStack {
+            Image("DailyGoalBackground")
+                .resizable()
+                .scaledToFill()
+            // Dark veil so white text stays legible over the bright flowers
+            Color.black.opacity(0.32)
         }
         .clipped()
     }
