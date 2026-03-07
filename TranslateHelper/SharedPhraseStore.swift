@@ -166,9 +166,9 @@ class SharedPhraseStore: ObservableObject {
 
     // MARK: - Demo seed (remove before public launch — see MOTIVATION.md)
     func seedDemoPhrasesIfNeeded() {
-        let key = "library_demo_seeded_v1"
-        guard !(UserDefaults.standard.bool(forKey: key)) else { return }
-        UserDefaults.standard.set(true, forKey: key)
+        // Always re-seed if clipboard is empty (flag only prevents overwriting real phrases)
+        guard phrases.isEmpty else { return }
+        UserDefaults.standard.set(true, forKey: "library_demo_seeded_v1")
         let demo: [SavedPhrase] = [
         SavedPhrase(id: UUID(), sourceText: "What's up?", translatedText: "¿Qué onda?", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -0, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
         SavedPhrase(id: UUID(), sourceText: "Dude / Man", translatedText: "Güey", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -1, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
@@ -204,13 +204,7 @@ class SharedPhraseStore: ObservableObject {
         SavedPhrase(id: UUID(), sourceText: "Street food taco", translatedText: "Taco de canasta", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -3, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
         ]
         phrases = demo
-        persistRaw()
-    }
-
-    private func persistRaw() {
-        if let data = try? JSONEncoder().encode(phrases) {
-            defaults?.set(data, forKey: SavedPhrase.userDefaultsKey)
-        }
+        persist()
     }
 
     private func persist() {
