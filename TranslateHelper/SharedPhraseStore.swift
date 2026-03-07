@@ -163,6 +163,56 @@ class SharedPhraseStore: ObservableObject {
         persist()
     }
 
+
+    // MARK: - Demo seed (remove before public launch — see MOTIVATION.md)
+    func seedDemoPhrasesIfNeeded() {
+        let key = "library_demo_seeded_v1"
+        guard !(UserDefaults.standard.bool(forKey: key)) else { return }
+        UserDefaults.standard.set(true, forKey: key)
+        let demo: [SavedPhrase] = [
+        SavedPhrase(id: UUID(), sourceText: "What's up?", translatedText: "¿Qué onda?", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -0, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        SavedPhrase(id: UUID(), sourceText: "Dude / Man", translatedText: "Güey", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -1, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        SavedPhrase(id: UUID(), sourceText: "Cool / Awesome", translatedText: "Chido", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -2, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        SavedPhrase(id: UUID(), sourceText: "No way!", translatedText: "¡No manches!", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -3, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        SavedPhrase(id: UUID(), sourceText: "Alright / Lets go", translatedText: "Órale", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -4, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        SavedPhrase(id: UUID(), sourceText: "Its amazing", translatedText: "Está de pelos", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -5, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        SavedPhrase(id: UUID(), sourceText: "Sounds good to me", translatedText: "Me late", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -6, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        SavedPhrase(id: UUID(), sourceText: "Money / Cash", translatedText: "Feria", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -0, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        SavedPhrase(id: UUID(), sourceText: "Working hard", translatedText: "Chambeando", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -1, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        SavedPhrase(id: UUID(), sourceText: "Whats going on?", translatedText: "¿Qué pedo?", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -2, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        SavedPhrase(id: UUID(), sourceText: "Work / Job", translatedText: "Chamba", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -3, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        SavedPhrase(id: UUID(), sourceText: "For real / Seriously", translatedText: "Neta", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -4, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        SavedPhrase(id: UUID(), sourceText: "Hell yeah!", translatedText: "¡A huevo!", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -5, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        SavedPhrase(id: UUID(), sourceText: "Beer", translatedText: "Chela", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -6, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        SavedPhrase(id: UUID(), sourceText: "No", translatedText: "Nel", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -0, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        SavedPhrase(id: UUID(), sourceText: "Yes / Indeed", translatedText: "Simón", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -1, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        SavedPhrase(id: UUID(), sourceText: "Close friend", translatedText: "Carnal", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -2, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        SavedPhrase(id: UUID(), sourceText: "Buddy", translatedText: "Cuate", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -3, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        SavedPhrase(id: UUID(), sourceText: "Guy", translatedText: "Chavo", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -4, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        SavedPhrase(id: UUID(), sourceText: "Girl", translatedText: "Chava", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -5, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        SavedPhrase(id: UUID(), sourceText: "Right now", translatedText: "Ahorita", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -6, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        SavedPhrase(id: UUID(), sourceText: "Pardon me?", translatedText: "Mande", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -0, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        SavedPhrase(id: UUID(), sourceText: "Wow! / Oh my!", translatedText: "Híjole", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -1, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        SavedPhrase(id: UUID(), sourceText: "Hungover", translatedText: "Crudo", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -2, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        SavedPhrase(id: UUID(), sourceText: "To be lazy", translatedText: "Echar la floja", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -3, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        SavedPhrase(id: UUID(), sourceText: "Excellent / Great", translatedText: "A todo dar", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -4, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        SavedPhrase(id: UUID(), sourceText: "OK / Deal", translatedText: "Sale", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -5, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        SavedPhrase(id: UUID(), sourceText: "From Mexico City", translatedText: "Chilango", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -6, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        SavedPhrase(id: UUID(), sourceText: "How boring!", translatedText: "¡Qué hueva!", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -0, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        SavedPhrase(id: UUID(), sourceText: "Do not worry", translatedText: "No te apures", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -1, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        SavedPhrase(id: UUID(), sourceText: "Beautiful", translatedText: "Qué chula", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -2, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        SavedPhrase(id: UUID(), sourceText: "Street food taco", translatedText: "Taco de canasta", sourceLang: "en", targetLang: "es", savedAt: Calendar.current.date(byAdding: .day, value: -3, to: Date()) ?? Date(), repetitions: 0, easinessFactor: 2.5, interval: 0, nextReviewDate: Date(), isConquered: false),
+        ]
+        phrases = demo
+        persistRaw()
+    }
+
+    private func persistRaw() {
+        if let data = try? JSONEncoder().encode(phrases) {
+            defaults?.set(data, forKey: SavedPhrase.userDefaultsKey)
+        }
+    }
+
     private func persist() {
         let formatter = ISO8601DateFormatter()
         let dicts = phrases.map { p -> [String: String] in

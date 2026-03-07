@@ -14,6 +14,12 @@ struct WeeklyClipboardWidget: View {
     @ObservedObject var store: SharedPhraseStore
     let onStudy: () -> Void
 
+    private static let scrollThreshold = 7
+
+    private var allPhrases: [SavedPhrase] {
+        store.phrases.sorted { $0.savedAt > $1.savedAt }
+    }
+
     private var addedThisWeek: [SavedPhrase] {
         store.phrases
             .filter { Calendar.current.isThisWeek($0.savedAt) }
@@ -32,25 +38,44 @@ struct WeeklyClipboardWidget: View {
         return added > 4 && masteredThisWeek < added / 2
     }
 
+    // Week date range e.g. "Mar 1 – Mar 7"
+    private var weekRangeLabel: String {
+        let cal = Calendar.current
+        let now = Date()
+        guard let start = cal.dateInterval(of: .weekOfYear, for: now)?.start else { return "This week" }
+        let end = cal.date(byAdding: .day, value: 6, to: start) ?? now
+        let fmt = DateFormatter(); fmt.dateFormat = "MMM d"
+        return "\(fmt.string(from: start)) – \(fmt.string(from: end))"
+    }
+
+    // The list to show: this week's phrases (or all if week is empty)
+    private var displayPhrases: [SavedPhrase] {
+        addedThisWeek.isEmpty ? allPhrases : addedThisWeek
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
 
             // ── Header ──────────────────────────────────────
-            HStack(alignment: .center, spacing: 10) {
-                Text("My Clipboard")
-                    .font(.custom("HelveticaNeue-Bold", size: 18))
-                    .foregroundColor(.tsLabel)
-
-                // "This Week" pill — light gray, same font size
-                Text("This Week")
-                    .font(.custom("HelveticaNeue-Bold", size: 18))
-                    .foregroundColor(.tsSecondary)
-                    .padding(.horizontal, 11).padding(.vertical, 4)
-                    .background(Color(UIColor.systemGray5))
-                    .clipShape(Capsule())
-
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(spacing: 8) {
+                        Text("My Clipboard")
+                            .font(.custom("HelveticaNeue-Bold", size: 18))
+                            .foregroundColor(.tsLabel)
+                        // Count pill — small, gray
+                        Text("\(store.phrases.count)")
+                            .font(.custom("HelveticaNeue-Bold", size: 12))
+                            .foregroundColor(.tsSecondary)
+                            .padding(.horizontal, 8).padding(.vertical, 3)
+                            .background(Color(UIColor.systemGray5))
+                            .clipShape(Capsule())
+                    }
+                    Text(weekRangeLabel)
+                        .font(.custom("HelveticaNeue", size: 12))
+                        .foregroundColor(.tsSecondary)
+                }
                 Spacer()
-
                 if !store.activePhrases.isEmpty {
                     Button(action: onStudy) {
                         HStack(spacing: 4) {
@@ -72,74 +97,46 @@ struct WeeklyClipboardWidget: View {
             Divider().background(Color.tsBorder.opacity(0.5))
 
             // ── Lined paper word list ────────────────────────
-            HStack(alignment: .top, spacing: 0) {
+            ZStack(alignment: .topLeading) {
                 // Red margin line
                 Rectangle()
                     .fill(Color(hex: "#FF6B6B").opacity(0.35))
                     .frame(width: 1.5)
                     .padding(.leading, 36)
 
-                VStack(alignment: .leading, spacing: 0) {
-                    if addedThisWeek.isEmpty {
-                        HStack {
-                            Spacer()
-                            VStack(spacing: 6) {
-                                Text("📋").font(.system(size: 28))
-                                Text("No phrases added yet this week")
-                                    .font(.custom("HelveticaNeue", size: 13))
-                                    .foregroundColor(.tsSecondary)
-                                    .multilineTextAlignment(.center)
-                                Text("Translate something to start your list")
-                                    .font(.custom("HelveticaNeue", size: 12))
-                                    .foregroundColor(.tsSecondary.opacity(0.6))
-                            }
-                            .padding(.vertical, 24)
-                            Spacer()
-                        }
-                    } else {
-                        ForEach(Array(addedThisWeek.prefix(8).enumerated()), id: \.offset) { idx, phrase in
-                            HStack(alignment: .center, spacing: 8) {
-                                Text("\(idx + 1).")
-                                    .font(.custom("HelveticaNeue", size: 12))
-                                    .foregroundColor(.tsSecondary.opacity(0.45))
-                                    .frame(width: 20, alignment: .trailing)
-                                VStack(alignment: .leading, spacing: 1) {
-                                    Text(phrase.translatedText)
-                                        .font(.custom("HelveticaNeue-Medium", size: 14))
-                                        .foregroundColor(.tsLabel)
-                                        .lineLimit(1)
-                                    Text(phrase.sourceText)
-                                        .font(.custom("HelveticaNeue", size: 11))
-                                        .foregroundColor(.tsSecondary)
-                                        .lineLimit(1)
-                                }
-                                Spacer()
-                            }
-                            .frame(height: 44)
-                            .padding(.horizontal, 12)
-                            if idx < min(addedThisWeek.count, 8) - 1 {
-                                Divider()
-                                    .background(Color.tsBorder.opacity(0.3))
-                                    .padding(.leading, 40)
-                            }
-                        }
-                        if addedThisWeek.count > 8 {
-                            Text("+ \(addedThisWeek.count - 8) more this week")
-                                .font(.custom("HelveticaNeue", size: 12))
+                if displayPhrases.isEmpty {
+                    HStack {
+                        Spacer()
+                        VStack(spacing: 6) {
+                            Text("📋").font(.system(size: 28))
+                            Text("No phrases added yet")
+                                .font(.custom("HelveticaNeue", size: 13))
                                 .foregroundColor(.tsSecondary)
-                                .padding(.horizontal, 16).padding(.vertical, 8)
+                            Text("Translate something to get started")
+                                .font(.custom("HelveticaNeue", size: 12))
+                                .foregroundColor(.tsSecondary.opacity(0.6))
                         }
+                        .padding(.vertical, 24)
+                        Spacer()
                     }
+                } else if displayPhrases.count > Self.scrollThreshold {
+                    // Scrollable when > 7 words
+                    ScrollView(.vertical, showsIndicators: false) {
+                        phraseList(displayPhrases)
+                    }
+                    .frame(height: CGFloat(Self.scrollThreshold) * 44)
+                } else {
+                    phraseList(displayPhrases)
                 }
             }
-            .background(Color(UIColor.systemGray6).opacity(0.5))
+            .background(Color(UIColor.systemGray6).opacity(0.45))
 
             Divider().background(Color.tsBorder.opacity(0.5))
 
             // ── Footer stats ─────────────────────────────────
             HStack(spacing: 16) {
                 ClipStatPill(icon: "arrow.down.circle.fill", color: .tsAccent,
-                             value: "\(addedThisWeek.count)", label: "added")
+                             value: "\(addedThisWeek.count)", label: "this week")
                 ClipStatPill(icon: "checkmark.circle.fill",  color: Color(hex: "#30D158"),
                              value: "\(masteredThisWeek)",   label: "mastered")
                 Spacer()
@@ -156,6 +153,38 @@ struct WeeklyClipboardWidget: View {
         .background(Color.tsCard)
         .cornerRadius(20)
         .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
+    }
+
+    @ViewBuilder
+    private func phraseList(_ phrases: [SavedPhrase]) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            ForEach(Array(phrases.enumerated()), id: \.offset) { idx, phrase in
+                HStack(alignment: .center, spacing: 8) {
+                    Text("\(idx + 1).")
+                        .font(.custom("HelveticaNeue", size: 12))
+                        .foregroundColor(.tsSecondary.opacity(0.45))
+                        .frame(width: 24, alignment: .trailing)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(phrase.translatedText)
+                            .font(.custom("HelveticaNeue-Medium", size: 14))
+                            .foregroundColor(.tsLabel)
+                            .lineLimit(1)
+                        Text(phrase.sourceText)
+                            .font(.custom("HelveticaNeue", size: 11))
+                            .foregroundColor(.tsSecondary)
+                            .lineLimit(1)
+                    }
+                    Spacer()
+                }
+                .frame(height: 44)
+                .padding(.horizontal, 12)
+                if idx < phrases.count - 1 {
+                    Divider()
+                        .background(Color.tsBorder.opacity(0.3))
+                        .padding(.leading, 44)
+                }
+            }
+        }
     }
 }
 
@@ -196,13 +225,12 @@ struct WeeklyStreakCard: View {
         return Set(daysStr.split(separator: ",").compactMap { Int($0) })
     }
 
-    private var daysHit: Int  { studiedDays.count }
+    private var daysHit: Int       { studiedDays.count }
     private var weekComplete: Bool { daysHit >= Self.goal }
 
     private let dayLabels  = ["M","T","W","T","F","S","S"]
     private let dayNumbers = [2,3,4,5,6,7,8]
 
-    // Gradient
     private let grad = LinearGradient(
         colors: [Color(hex: "#0A1628"), Color(hex: "#0E2C77"), Color(hex: "#1A52C8")],
         startPoint: .topLeading, endPoint: .bottomTrailing
@@ -210,8 +238,6 @@ struct WeeklyStreakCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-
-            // Header
             HStack {
                 VStack(alignment: .leading, spacing: 3) {
                     Text("This Week")
@@ -221,19 +247,13 @@ struct WeeklyStreakCard: View {
                          ? "Week complete 🏆"
                          : "\(daysHit) of \(Self.goal) days — keep going")
                         .font(.custom("HelveticaNeue", size: 12))
-                        .foregroundColor(weekComplete
-                                         ? Color(hex: "#30D158")
-                                         : Color.white.opacity(0.65))
+                        .foregroundColor(weekComplete ? Color(hex: "#30D158") : Color.white.opacity(0.65))
                 }
                 Spacer()
                 if completed > 0 {
                     HStack(spacing: 4) {
-                        Image(systemName: "flame.fill")
-                            .font(.system(size: 11))
-                            .foregroundColor(Color(hex: "#FF9500"))
-                        Text("\(completed)w")
-                            .font(.custom("HelveticaNeue-Bold", size: 12))
-                            .foregroundColor(.white)
+                        Image(systemName: "flame.fill").font(.system(size: 11)).foregroundColor(Color(hex: "#FF9500"))
+                        Text("\(completed)w").font(.custom("HelveticaNeue-Bold", size: 12)).foregroundColor(.white)
                     }
                     .padding(.horizontal, 10).padding(.vertical, 5)
                     .background(Color.white.opacity(0.12))
@@ -241,7 +261,6 @@ struct WeeklyStreakCard: View {
                 }
             }
 
-            // Day dots Mon–Sun
             HStack(spacing: 0) {
                 ForEach(Array(zip(dayLabels, dayNumbers)), id: \.1) { label, dayNum in
                     let studied = studiedDays.contains(dayNum)
@@ -268,16 +287,12 @@ struct WeeklyStreakCard: View {
                 }
             }
 
-            // Progress bar
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Capsule().fill(Color.white.opacity(0.15)).frame(height: 5)
                     Capsule()
                         .fill(weekComplete ? Color(hex: "#30D158") : Color.tsAccent)
-                        .frame(
-                            width: geo.size.width * min(Double(daysHit) / Double(Self.goal), 1.0),
-                            height: 5
-                        )
+                        .frame(width: geo.size.width * min(Double(daysHit) / Double(Self.goal), 1.0), height: 5)
                         .animation(.spring(response: 0.4), value: daysHit)
                 }
             }
@@ -288,7 +303,6 @@ struct WeeklyStreakCard: View {
         .cornerRadius(20)
         .onAppear {
 #if DEBUG
-            // Seed demo state: Mon ✓ Tue ✗ Wed ✓ Thu ✗ Fri ✓ Sat ✓ = 4 days
             if daysStr.isEmpty {
                 weekId  = currentWeekId
                 daysStr = "2,4,6,7"
@@ -302,8 +316,7 @@ struct WeeklyStreakCard: View {
         let cid = currentWeekId
         guard weekId != cid else { return }
         if daysHit >= Self.goal { completed += 1 }
-        weekId  = cid
-        daysStr = ""
+        weekId = cid; daysStr = ""
     }
 
     func markToday() {

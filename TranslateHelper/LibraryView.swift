@@ -197,6 +197,7 @@ struct LibraryView: View {
         }
         .onAppear {
             store.load()
+            store.seedDemoPhrasesIfNeeded()
             // Seed starter decks once if empty
             if deckStore.decks.isEmpty {
                 deckStore.addDeck(Deck(emoji: "🍳", name: "Food & Cooking", tintName: "green"))
