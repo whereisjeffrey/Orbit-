@@ -228,9 +228,6 @@ struct WeeklyStreakCard: View {
     private var daysHit: Int       { studiedDays.count }
     private var weekComplete: Bool { daysHit >= Self.goal }
 
-    private let dayLabels  = ["M","T","W","T","F","S","S"]
-    private let dayNumbers = [2,3,4,5,6,7,8]
-
     private let grad = LinearGradient(
         colors: [Color(hex: "#0079C6"), Color(hex: "#69B6C1")],
         startPoint: .top, endPoint: .bottom
@@ -261,29 +258,22 @@ struct WeeklyStreakCard: View {
                 }
             }
 
-            HStack(spacing: 0) {
-                ForEach(Array(zip(dayLabels, dayNumbers)), id: \.1) { label, dayNum in
+            HStack(spacing: 6) {
+                ForEach(1...7, id: \.self) { day in
+                    let dayNum = day + 1  // day1=Mon(2)...day7=Sun(8)
                     let studied = studiedDays.contains(dayNum)
-                    let isToday = dayNum == todayWeekday
-                    VStack(spacing: 5) {
-                        Text(label)
-                            .font(.custom("HelveticaNeue-Medium", size: 11))
-                            .foregroundColor(Color.white.opacity(0.6))
-                        ZStack {
-                            Circle()
-                                .fill(studied ? Color.white : Color.white.opacity(0.18))
-                                .frame(width: 30, height: 30)
-                            if studied {
-                                Image(systemName: "checkmark")
-                                    .font(.system(size: 11, weight: .bold))
-                                    .foregroundColor(.white)
-                            }
-                        }
-                        Circle()
-                            .fill(isToday ? Color.white.opacity(0.8) : Color.clear)
-                            .frame(width: 4, height: 4)
+                    VStack(spacing: 2) {
+                        Text("Day")
+                            .font(.custom("HelveticaNeue-Medium", size: 10))
+                            .foregroundColor(studied ? Color(hex: "#0079C6") : Color.white.opacity(0.4))
+                        Text("\(day)")
+                            .font(.custom("HelveticaNeue-Bold", size: 15))
+                            .foregroundColor(studied ? Color(hex: "#0079C6") : Color.white.opacity(0.4))
                     }
                     .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                    .background(studied ? Color.white : Color.clear)
+                    .cornerRadius(10)
                 }
             }
 
