@@ -94,7 +94,6 @@ struct WeeklyClipboardWidget: View {
             .padding(.top, 14)
             .padding(.bottom, 10)
 
-            Divider().background(Color.tsBorder.opacity(0.5))
 
             // ── Lined paper word list ────────────────────────
             ZStack(alignment: .topLeading) {
@@ -130,8 +129,6 @@ struct WeeklyClipboardWidget: View {
                 }
             }
             .background(Color.white).overlay(Rectangle().stroke(Color(UIColor.systemGray4).opacity(0.5), lineWidth: 0.5))
-
-            Divider().background(Color.tsBorder.opacity(0.5))
 
             // ── Footer stats ─────────────────────────────────
             HStack(spacing: 16) {
@@ -391,8 +388,6 @@ struct DeckClipboardWidget: View {
             .padding(.top, 14)
             .padding(.bottom, 10)
 
-            Divider().background(Color.tsBorder.opacity(0.5))
-
             // ── Lined paper word list ──────────────────────
             ZStack(alignment: .topLeading) {
                 Rectangle()
@@ -423,8 +418,6 @@ struct DeckClipboardWidget: View {
             }
             .background(Color.white)
             .overlay(Rectangle().stroke(Color(UIColor.systemGray4).opacity(0.5), lineWidth: 0.5))
-
-            Divider().background(Color.tsBorder.opacity(0.5))
 
             // ── Footer stats ──────────────────────────────
             HStack(spacing: 16) {
@@ -486,58 +479,144 @@ struct DeckClipboardWidget: View {
 
 
 
+
+// MARK: - Horizontal Swipe Detector (UIKit-backed — survives ScrollView)
+// SwiftUI DragGesture loses to the outer vertical ScrollView.
+// A UIKit UIPanGestureRecognizer with shouldRecognizeSimultaneously:true wins.
+
+struct HorizontalSwipeDetector: UIViewRepresentable {
+    var dragOffset: Binding<CGFloat>
+    var onSwipeLeft:  () -> Void
+    var onSwipeRight: () -> Void
+    var onSnapBack:   () -> Void
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(dragOffset: dragOffset,
+                    onSwipeLeft:  onSwipeLeft,
+                    onSwipeRight: onSwipeRight,
+                    onSnapBack:   onSnapBack)
+    }
+
+    func makeUIView(context: Context) -> UIView {
+        let v = UIView()
+        v.backgroundColor = .clear
+        let pan = UIPanGestureRecognizer(target: context.coordinator,
+                                         action: #selector(Coordinator.handlePan(_:)))
+        pan.delegate = context.coordinator
+        v.addGestureRecognizer(pan)
+        return v
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {
+        let c = context.coordinator
+        c.dragOffset   = dragOffset
+        c.onSwipeLeft  = onSwipeLeft
+        c.onSwipeRight = onSwipeRight
+        c.onSnapBack   = onSnapBack
+    }
+
+    class Coordinator: NSObject, UIGestureRecognizerDelegate {
+        var dragOffset:   Binding<CGFloat>
+        var onSwipeLeft:  () -> Void
+        var onSwipeRight: () -> Void
+        var onSnapBack:   () -> Void
+        private var lockedHorizontal: Bool? = nil
+
+        init(dragOffset: Binding<CGFloat>,
+             onSwipeLeft:  @escaping () -> Void,
+             onSwipeRight: @escaping () -> Void,
+             onSnapBack:   @escaping () -> Void) {
+            self.dragOffset   = dragOffset
+            self.onSwipeLeft  = onSwipeLeft
+            self.onSwipeRight = onSwipeRight
+            self.onSnapBack   = onSnapBack
+        }
+
+        // Allow this recognizer to fire alongside the ScrollView's recognizer
+        func gestureRecognizer(_ gr: UIGestureRecognizer,
+                               shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer) -> Bool { true }
+
+        @objc func handlePan(_ pan: UIPanGestureRecognizer) {
+            let t = pan.translation(in: pan.view)
+            let v = pan.velocity(in: pan.view)
+
+            switch pan.state {
+            case .changed:
+                // Lock direction on first significant movement
+                if lockedHorizontal == nil, max(abs(t.x), abs(t.y)) > 10 {
+                    lockedHorizontal = abs(t.x) > abs(t.y)
+                }
+                if lockedHorizontal == true {
+                    DispatchQueue.main.async { self.dragOffset.wrappedValue = t.x }
+                }
+
+            case .ended:
+                let wasHorizontal = lockedHorizontal ?? false
+                lockedHorizontal = nil
+                DispatchQueue.main.async { self.dragOffset.wrappedValue = 0 }
+                guard wasHorizontal else { return }
+                if      t.x < -60 || v.x < -300 { DispatchQueue.main.async { self.onSwipeLeft()  } }
+                else if t.x >  60 || v.x >  300 { DispatchQueue.main.async { self.onSwipeRight() } }
+                else                             { DispatchQueue.main.async { self.onSnapBack()   } }
+
+            case .cancelled, .failed:
+                lockedHorizontal = nil
+                DispatchQueue.main.async { self.dragOffset.wrappedValue = 0
+                                           self.onSnapBack() }
+            default: break
+            }
+        }
+    }
+}
+
 // MARK: - Throw Swipe Container
-// Matches the keyboard's Tinder-style throw: card flies off with rotation,
-// content swaps instantly, new card pops in from slight scale.
 
 struct ThrowSwipeContainer: View {
     let pages: [AnyView]
     @Binding var currentPage: Int
 
     @State private var dragOffset: CGFloat = 0
-    @State private var cardOpacity: Double = 1.0
-    @State private var cardScale: CGFloat  = 1.0
+    @State private var cardOpacity: Double  = 1.0
+    @State private var cardScale:   CGFloat = 1.0
 
     var body: some View {
         pages[currentPage]
-            // Tilt as you drag (matches keyboard: clamped/800 radians)
             .rotationEffect(.degrees(Double(dragOffset) / 28.0))
             .offset(x: dragOffset)
             .opacity(cardOpacity)
             .scaleEffect(cardScale)
-            .gesture(
-                DragGesture(minimumDistance: 8, coordinateSpace: .local)
-                    .onChanged { v in
-                        dragOffset = v.translation.width
-                    }
-                    .onEnded { v in
-                        let dx  = v.translation.width
-                        let vel = v.predictedEndTranslation.width - v.translation.width
-                        if (dx < -70 || vel < -80), currentPage < pages.count - 1 {
-                            throwCard(direction: -1) { currentPage += 1 }
-                        } else if (dx > 70 || vel > 80), currentPage > 0 {
-                            throwCard(direction: 1)  { currentPage -= 1 }
-                        } else {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
-                                dragOffset = 0
-                            }
+            .overlay(
+                HorizontalSwipeDetector(
+                    dragOffset: $dragOffset,
+                    onSwipeLeft: {
+                        guard currentPage < pages.count - 1 else {
+                            snapBack(); return
                         }
-                    }
+                        throwCard(direction: -1) { currentPage += 1 }
+                    },
+                    onSwipeRight: {
+                        guard currentPage > 0 else { snapBack(); return }
+                        throwCard(direction: 1) { currentPage -= 1 }
+                    },
+                    onSnapBack: snapBack
+                )
             )
     }
 
+    private func snapBack() {
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) { dragOffset = 0 }
+    }
+
     private func throwCard(direction: CGFloat, then swap: @escaping () -> Void) {
-        // 1. Fly current card off screen (0.19s, tilted, faded)
         withAnimation(.easeIn(duration: 0.19)) {
-            dragOffset   = direction * 520
-            cardOpacity  = 0
+            dragOffset  = direction * 520
+            cardOpacity = 0
         }
-        // 2. After it's gone: swap content, reset position, pop in
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.19) {
             dragOffset  = 0
             cardOpacity = 0
             cardScale   = 0.88
-            swap()   // change page — new content loads instantly
+            swap()
             withAnimation(.spring(response: 0.34, dampingFraction: 0.62)) {
                 cardOpacity = 1.0
                 cardScale   = 1.0
