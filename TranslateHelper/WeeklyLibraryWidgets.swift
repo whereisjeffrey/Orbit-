@@ -78,12 +78,12 @@ struct WeeklyClipboardWidget: View {
                 Spacer()
                 if !store.activePhrases.isEmpty {
                     Button(action: onStudy) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "graduationcap.fill").font(.system(size: 10))
-                            Text("Study").font(.custom("HelveticaNeue-Medium", size: 12))
+                        HStack(spacing: 5) {
+                            Image(systemName: "graduationcap.fill").font(.system(size: 13))
+                            Text("Study").font(.custom("HelveticaNeue-Medium", size: 15))
                         }
                         .foregroundColor(.white)
-                        .padding(.horizontal, 12).padding(.vertical, 6)
+                        .padding(.horizontal, 16).padding(.vertical, 9)
                         .background(Color.tsAccent)
                         .clipShape(Capsule())
                     }
@@ -129,7 +129,7 @@ struct WeeklyClipboardWidget: View {
                     phraseList(displayPhrases)
                 }
             }
-            .background(Color(UIColor.systemGray6).opacity(0.45))
+            .background(Color.white).overlay(Rectangle().stroke(Color(UIColor.systemGray4).opacity(0.5), lineWidth: 0.5))
 
             Divider().background(Color.tsBorder.opacity(0.5))
 
