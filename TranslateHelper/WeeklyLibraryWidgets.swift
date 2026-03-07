@@ -61,7 +61,7 @@ struct WeeklyClipboardWidget: View {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 3) {
                     HStack(spacing: 8) {
-                        Text("My Clipboard")
+                        Text("📋 My Clipboard")
                             .font(.custom("HelveticaNeue-Bold", size: 18))
                             .foregroundColor(.tsLabel)
                         // Count pill — small, gray
@@ -385,7 +385,7 @@ struct DeckClipboardWidget: View {
 
             // ── Header ──────────────────────────────────────
             HStack(alignment: .center) {
-                Text(deck.name)
+                Text("\(deck.emoji)  \(deck.name)")
                     .font(.custom("HelveticaNeue-Bold", size: 18))
                     .foregroundColor(.tsLabel)
                 Spacer()
