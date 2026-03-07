@@ -197,12 +197,12 @@ struct LibraryView: View {
                             VStack(alignment: .leading, spacing: 3) {
                                 Text("Daily Goal")
                                     .font(.custom("HelveticaNeue-Bold", size: 15))
-                                    .foregroundColor(.tsLabel)
+                                    .foregroundColor(.white)
                                 Text(dailyGoal == 0
                                      ? "0 / 20 phrases reviewed"
                                      : "\(reviewedToday) of \(dailyGoal) phrases reviewed")
-                                    .font(.custom("HelveticaNeue-Medium", size: 13))
-                                    .foregroundColor(.tsSecondary)
+                                    .font(.custom("HelveticaNeue", size: 13))
+                                    .foregroundColor(.white.opacity(0.75))
                             }
                             Spacer()
                             Button(action: { showingGoalSheet = true }) {
