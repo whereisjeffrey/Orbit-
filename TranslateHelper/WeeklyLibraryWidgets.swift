@@ -232,8 +232,8 @@ struct WeeklyStreakCard: View {
     private let dayNumbers = [2,3,4,5,6,7,8]
 
     private let grad = LinearGradient(
-        colors: [Color(hex: "#0A1628"), Color(hex: "#0E2C77"), Color(hex: "#1A52C8")],
-        startPoint: .topLeading, endPoint: .bottomTrailing
+        colors: [Color(hex: "#0079C6"), Color(hex: "#69B6C1")],
+        startPoint: .top, endPoint: .bottom
     )
 
     var body: some View {
@@ -271,7 +271,7 @@ struct WeeklyStreakCard: View {
                             .foregroundColor(Color.white.opacity(0.6))
                         ZStack {
                             Circle()
-                                .fill(studied ? Color.tsAccent : Color.white.opacity(0.12))
+                                .fill(studied ? Color.white : Color.white.opacity(0.18))
                                 .frame(width: 30, height: 30)
                             if studied {
                                 Image(systemName: "checkmark")
@@ -287,16 +287,7 @@ struct WeeklyStreakCard: View {
                 }
             }
 
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    Capsule().fill(Color.white.opacity(0.15)).frame(height: 5)
-                    Capsule()
-                        .fill(weekComplete ? Color(hex: "#30D158") : Color.tsAccent)
-                        .frame(width: geo.size.width * min(Double(daysHit) / Double(Self.goal), 1.0), height: 5)
-                        .animation(.spring(response: 0.4), value: daysHit)
-                }
-            }
-            .frame(height: 5)
+
         }
         .padding(16)
         .background(grad)

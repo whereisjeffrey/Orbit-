@@ -175,7 +175,7 @@ struct LibraryView: View {
                             ZStack(alignment: .leading) {
                                 Capsule().fill(Color.white.opacity(0.15)).frame(height: 6)
                                 Capsule()
-                                    .fill(Color.tsAccent)
+                                    .fill(Color.white)
                                     .frame(width: geo.size.width * goalProgress, height: 6)
                                     .animation(.spring(response: 0.4), value: goalProgress)
                             }
@@ -185,8 +185,8 @@ struct LibraryView: View {
                     .padding(16)
                     .background(
                         LinearGradient(
-                            colors: [Color(hex: "#0A1628"), Color(hex: "#0E2C77"), Color(hex: "#1A52C8")],
-                            startPoint: .topLeading, endPoint: .bottomTrailing
+                            colors: [Color(hex: "#0079C6"), Color(hex: "#69B6C1")],
+                            startPoint: .top, endPoint: .bottom
                         )
                     )
                     .cornerRadius(20)
