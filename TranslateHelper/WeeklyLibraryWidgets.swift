@@ -61,12 +61,6 @@ struct WeeklyClipboardWidget: View {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 3) {
                     HStack(spacing: 8) {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(Color.tsAccent.opacity(0.15))
-                                .frame(width: 34, height: 34)
-                            Text("📋").font(.system(size: 17))
-                        }
                         Text("My Clipboard")
                             .font(.custom("HelveticaNeue-Bold", size: 18))
                             .foregroundColor(.tsLabel)
@@ -391,12 +385,6 @@ struct DeckClipboardWidget: View {
 
             // ── Header ──────────────────────────────────────
             HStack(alignment: .center) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(deck.tintColor.opacity(0.15))
-                        .frame(width: 34, height: 34)
-                    Text(deck.emoji).font(.system(size: 17))
-                }
                 Text(deck.name)
                     .font(.custom("HelveticaNeue-Bold", size: 18))
                     .foregroundColor(.tsLabel)
