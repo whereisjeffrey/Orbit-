@@ -93,7 +93,7 @@ struct KitView: View {
             get: { activeDestination == .localsUse },
             set: { if !$0 { activeDestination = nil } }
         )) { LocalsUseView() }
-        .navigationDestination(isPresented: Binding(
+        .sheet(isPresented: Binding(
             get: { activeDestination == .fitness },
             set: { if !$0 { activeDestination = nil } }
         )) { FitnessView() }
