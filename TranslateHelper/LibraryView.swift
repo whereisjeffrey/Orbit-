@@ -185,11 +185,8 @@ struct LibraryView: View {
                     .padding(16)
                     .background(
                         LinearGradient(
-                            stops: [
-                                .init(color: Color(hex: "#69B6C1").opacity(0.2), location: 0),
-                                .init(color: Color(hex: "#69B6C1"),              location: 0.77),
-                            ],
-                            startPoint: .top, endPoint: .bottom
+                            colors: [Color(hex: "#7ECAC8"), Color(hex: "#D8C8E8")],
+                            startPoint: .bottomLeading, endPoint: .topTrailing
                         )
                     )
                     .cornerRadius(20)
