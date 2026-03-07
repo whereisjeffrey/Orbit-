@@ -647,12 +647,24 @@ struct DeckPagerContainer: UIViewControllerRepresentable {
 
 struct BotanicalCardBackground: View {
     var body: some View {
-        ZStack {
-            Image("DailyGoalBackground")
-                .resizable()
-                .scaledToFill()
-            // Dark veil so white text stays legible over the bright flowers
-            Color.black.opacity(0.32)
+        GeometryReader { geo in
+            ZStack {
+                // Two tiles side by side — leaves stay small enough to read as leaves
+                HStack(spacing: 0) {
+                    Image("DailyGoalBackground")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: geo.size.width / 2, height: geo.size.height)
+                        .clipped()
+                    Image("DailyGoalBackground")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: geo.size.width / 2, height: geo.size.height)
+                        .clipped()
+                }
+                // Dark veil — bright neons need a dampener for white text
+                Color.black.opacity(0.38)
+            }
         }
         .clipped()
     }
