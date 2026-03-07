@@ -99,21 +99,24 @@ struct LibraryView: View {
                         .padding(.bottom, 10)
 
                     // ── Weekly Clipboard + Streak ──────────────────────
-                    // ── Horizontal swipe: Clipboard + Deck widgets ──
-                    TabView(selection: $activeWidgetPage) {
-                        WeeklyClipboardWidget(store: store, onStudy: { showingStudyMode = true })
-                            .padding(.horizontal, 16)
-                            .tag(0)
-                        ForEach(Array(deckStore.decks.prefix(5).enumerated()), id: \.element.id) { idx, deck in
-                            DeckClipboardWidget(deck: deck, onStudy: {
+                    // ── Horizontal spring swipe: Clipboard + Deck widgets ──
+                    let allWidgets: [AnyView] = {
+                        var views: [AnyView] = [
+                            AnyView(WeeklyClipboardWidget(store: store, onStudy: { showingStudyMode = true })
+                                .padding(.horizontal, 16))
+                        ]
+                        for deck in deckStore.decks.prefix(5) {
+                            views.append(AnyView(DeckClipboardWidget(deck: deck, onStudy: {
                                 deckStudyDeck = deck
                                 showingDeckStudy = true
-                            })
-                            .padding(.horizontal, 16)
-                            .tag(idx + 1)
+                            }).padding(.horizontal, 16)))
                         }
+                        return views
+                    }()
+                    SpringSwipeContainer(pageCount: allWidgets.count,
+                                         currentPage: $activeWidgetPage) { idx in
+                        allWidgets[idx]
                     }
-                    .tabViewStyle(.page(indexDisplayMode: .never))
                     .frame(height: 440)
                     .onChange(of: activeWidgetPage) { p in
                         if p > 0 { hasSwipedToDeck = true }

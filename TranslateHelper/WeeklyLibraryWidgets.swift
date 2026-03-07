@@ -483,3 +483,70 @@ struct DeckClipboardWidget: View {
         }
     }
 }
+
+
+// MARK: - Spring Swipe Container
+// Replaces TabView paging — gives a springy "jump off" feel with real drag physics
+
+struct SpringSwipeContainer<Content: View>: View {
+    let pageCount: Int
+    @Binding var currentPage: Int
+    @ViewBuilder let content: (Int) -> Content
+
+    @State private var dragOffset: CGFloat = 0
+
+    var body: some View {
+        GeometryReader { geo in
+            let w = geo.size.width
+            HStack(spacing: 0) {
+                ForEach(0..<pageCount, id: \.self) { idx in
+                    content(idx)
+                        .frame(width: w)
+                        // Slight scale-down on cards that are off-center during drag
+                        .scaleEffect(scaleFor(idx: idx, width: w))
+                        .opacity(opacityFor(idx: idx, width: w))
+                }
+            }
+            .frame(width: w, alignment: .leading)
+            .offset(x: -CGFloat(currentPage) * w + dragOffset)
+            .clipped()
+            .gesture(
+                DragGesture(minimumDistance: 8)
+                    .onChanged { v in
+                        dragOffset = v.translation.width
+                    }
+                    .onEnded { v in
+                        let dx       = v.translation.width
+                        let velocity = v.predictedEndTranslation.width - v.translation.width
+                        let flick    = abs(velocity) > 80
+
+                        if (dx < -50 || flick && velocity < 0), currentPage < pageCount - 1 {
+                            withAnimation(.spring(response: 0.38, dampingFraction: 0.66)) {
+                                currentPage += 1; dragOffset = 0
+                            }
+                        } else if (dx > 50 || flick && velocity > 0), currentPage > 0 {
+                            withAnimation(.spring(response: 0.38, dampingFraction: 0.66)) {
+                                currentPage -= 1; dragOffset = 0
+                            }
+                        } else {
+                            withAnimation(.spring(response: 0.32, dampingFraction: 0.72)) {
+                                dragOffset = 0
+                            }
+                        }
+                    }
+            )
+        }
+    }
+
+    private func scaleFor(idx: Int, width: CGFloat) -> CGFloat {
+        let offset = dragOffset / width
+        let dist   = abs(CGFloat(idx - currentPage) - offset)
+        return 1.0 - min(dist, 1.0) * 0.04   // shrinks to 0.96 when off-screen
+    }
+
+    private func opacityFor(idx: Int, width: CGFloat) -> Double {
+        let offset = dragOffset / width
+        let dist   = abs(CGFloat(idx - currentPage) - offset)
+        return Double(1.0 - min(dist, 1.0) * 0.25)  // fades to 0.75 when off-screen
+    }
+}
