@@ -229,7 +229,10 @@ struct WeeklyStreakCard: View {
     private var weekComplete: Bool { daysHit >= Self.goal }
 
     private let grad = LinearGradient(
-        colors: [Color(hex: "#0079C6"), Color(hex: "#69B6C1")],
+        stops: [
+            .init(color: Color(hex: "#69B6C1").opacity(0.2), location: 0),
+            .init(color: Color(hex: "#69B6C1"),              location: 0.77),
+        ],
         startPoint: .top, endPoint: .bottom
     )
 
