@@ -63,18 +63,18 @@ struct WeeklyClipboardWidget: View {
                     HStack(spacing: 8) {
                         Text("My Clipboard")
                             .font(.custom("HelveticaNeue-Bold", size: 18))
-                            .foregroundColor(.white)
+                            .foregroundColor(.tsLabel)
                         // Count pill — small, gray
                         Text("\(store.phrases.count)")
                             .font(.custom("HelveticaNeue-Bold", size: 12))
-                            .foregroundColor(.white.opacity(0.65))
+                            .foregroundColor(.tsSecondary)
                             .padding(.horizontal, 8).padding(.vertical, 3)
-                            .background(Color.white.opacity(0.12))
+                            .background(Color(UIColor.systemGray5))
                             .clipShape(Capsule())
                     }
                     Text(weekRangeLabel)
                         .font(.custom("HelveticaNeue", size: 12))
-                        .foregroundColor(.white.opacity(0.65))
+                        .foregroundColor(.tsSecondary)
                 }
                 Spacer()
                 if !store.activePhrases.isEmpty {
@@ -94,7 +94,7 @@ struct WeeklyClipboardWidget: View {
             .padding(.horizontal, 16)
             .padding(.top, 14)
             .padding(.bottom, 10)
-            .background(Color(hex: "#1A2438"))
+            .background(colorScheme == .dark ? Color.tsInputBg : Color(hex: "#F2F8FA"))
 
 
             // ── Lined paper word list ────────────────────────
@@ -112,10 +112,10 @@ struct WeeklyClipboardWidget: View {
                             Text("📋").font(.system(size: 28))
                             Text("No phrases added yet")
                                 .font(.custom("HelveticaNeue", size: 13))
-                                .foregroundColor(.white.opacity(0.65))
+                                .foregroundColor(.tsSecondary)
                             Text("Translate something to get started")
                                 .font(.custom("HelveticaNeue", size: 12))
-                                .foregroundColor(.white.opacity(0.45))
+                                .foregroundColor(.tsSecondary.opacity(0.6))
                         }
                         .padding(.vertical, 24)
                         Spacer()
@@ -130,7 +130,7 @@ struct WeeklyClipboardWidget: View {
                     phraseList(displayPhrases)
                 }
             }
-            .background(Color(hex: "#141D2F"))
+            .background(colorScheme == .dark ? Color.black : Color.white)
 
             // ── Footer stats ─────────────────────────────────
             HStack(spacing: 16) {
@@ -148,11 +148,11 @@ struct WeeklyClipboardWidget: View {
                 }
             }
             .padding(.horizontal, 16).padding(.vertical, 10)
-            .background(Color(hex: "#1A2438"))
+            .background(colorScheme == .dark ? Color.tsInputBg : Color(hex: "#F2F8FA"))
         }
-        .background(Color(hex: "#111829"))
+        .background(Color.tsCard)
         .cornerRadius(20)
-        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.white.opacity(0.10), lineWidth: 0.5))
+        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
     }
 
     @ViewBuilder
@@ -162,16 +162,16 @@ struct WeeklyClipboardWidget: View {
                 HStack(alignment: .center, spacing: 8) {
                     Text("\(idx + 1).")
                         .font(.custom("HelveticaNeue", size: 12))
-                        .foregroundColor(.white.opacity(0.35))
+                        .foregroundColor(.tsSecondary.opacity(0.45))
                         .frame(width: 24, alignment: .trailing)
                     VStack(alignment: .leading, spacing: 1) {
                         Text(phrase.translatedText)
                             .font(.custom("HelveticaNeue-Medium", size: 14))
-                            .foregroundColor(.white)
+                            .foregroundColor(.tsLabel)
                             .lineLimit(1)
                         Text(phrase.sourceText)
                             .font(.custom("HelveticaNeue", size: 11))
-                            .foregroundColor(.white.opacity(0.65))
+                            .foregroundColor(.tsSecondary)
                             .lineLimit(1)
                     }
                     Spacer()
@@ -180,7 +180,7 @@ struct WeeklyClipboardWidget: View {
                 .padding(.horizontal, 12)
                 if idx < phrases.count - 1 {
                     Divider()
-                        .background(Color.white.opacity(0.10))
+                        .background(Color.tsBorder.opacity(0.3))
                         .padding(.leading, 44)
                 }
             }
@@ -193,8 +193,8 @@ private struct ClipStatPill: View {
     var body: some View {
         HStack(spacing: 5) {
             Image(systemName: icon).font(.system(size: 13)).foregroundColor(color)
-            Text(value).font(.custom("HelveticaNeue-Bold", size: 14)).foregroundColor(.white)
-            Text(label).font(.custom("HelveticaNeue", size: 13)).foregroundColor(.white.opacity(0.65))
+            Text(value).font(.custom("HelveticaNeue-Bold", size: 14)).foregroundColor(.tsLabel)
+            Text(label).font(.custom("HelveticaNeue", size: 13)).foregroundColor(.tsSecondary)
         }
     }
 }
@@ -361,10 +361,10 @@ struct SwipeDeckHint: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
-        .background(Color(hex: "#1A2740"))
+        .background(Color(hex: "#E8F4FF"))
         .cornerRadius(10)
         .overlay(RoundedRectangle(cornerRadius: 10)
-            .stroke(Color.white.opacity(0.12), lineWidth: 1))
+            .stroke(Color(hex: "#0079C6").opacity(0.3), lineWidth: 1))
     }
 }
 
@@ -387,7 +387,7 @@ struct DeckClipboardWidget: View {
             HStack(alignment: .center) {
                 Text(deck.name)
                     .font(.custom("HelveticaNeue-Bold", size: 18))
-                    .foregroundColor(.white)
+                    .foregroundColor(.tsLabel)
                 Spacer()
                 if !deck.cards.isEmpty {
                     Button(action: onStudy) {
@@ -406,7 +406,7 @@ struct DeckClipboardWidget: View {
             .padding(.horizontal, 16)
             .padding(.top, 14)
             .padding(.bottom, 10)
-            .background(Color(hex: "#1A2438"))
+            .background(colorScheme == .dark ? Color.tsInputBg : Color(hex: "#F2F8FA"))
 
             // ── Lined paper word list ──────────────────────
             ZStack(alignment: .topLeading) {
@@ -422,7 +422,7 @@ struct DeckClipboardWidget: View {
                             Text("\u{1F4DA}").font(.system(size: 28))
                             Text("No cards in this deck")
                                 .font(.custom("HelveticaNeue", size: 13))
-                                .foregroundColor(.white.opacity(0.65))
+                                .foregroundColor(.tsSecondary)
                         }
                         .padding(.vertical, 24)
                         Spacer()
@@ -436,7 +436,7 @@ struct DeckClipboardWidget: View {
                     cardList(displayCards)
                 }
             }
-            .background(Color(hex: "#141D2F"))
+            .background(colorScheme == .dark ? Color.black : Color.white)
 
             // ── Footer stats ──────────────────────────────
             HStack(spacing: 16) {
@@ -452,11 +452,11 @@ struct DeckClipboardWidget: View {
                 .foregroundColor(Color(hex: "#FF9500"))
             }
             .padding(.horizontal, 16).padding(.vertical, 10)
-            .background(Color(hex: "#1A2438"))
+            .background(colorScheme == .dark ? Color.tsInputBg : Color(hex: "#F2F8FA"))
         }
-        .background(Color(hex: "#111829"))
+        .background(Color.tsCard)
         .cornerRadius(20)
-        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.white.opacity(0.10), lineWidth: 0.5))
+        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
     }
 
     @ViewBuilder
@@ -466,16 +466,16 @@ struct DeckClipboardWidget: View {
                 HStack(alignment: .center, spacing: 8) {
                     Text("\(idx + 1).")
                         .font(.custom("HelveticaNeue", size: 12))
-                        .foregroundColor(.white.opacity(0.35))
+                        .foregroundColor(.tsSecondary.opacity(0.45))
                         .frame(width: 24, alignment: .trailing)
                     VStack(alignment: .leading, spacing: 1) {
                         Text(card.spanish)
                             .font(.custom("HelveticaNeue-Medium", size: 14))
-                            .foregroundColor(.white)
+                            .foregroundColor(.tsLabel)
                             .lineLimit(1)
                         Text(card.english)
                             .font(.custom("HelveticaNeue", size: 11))
-                            .foregroundColor(.white.opacity(0.65))
+                            .foregroundColor(.tsSecondary)
                             .lineLimit(1)
                     }
                     Spacer()
@@ -489,7 +489,7 @@ struct DeckClipboardWidget: View {
                 .padding(.horizontal, 12)
                 if idx < cards.count - 1 {
                     Divider()
-                        .background(Color.white.opacity(0.10))
+                        .background(Color.tsBorder.opacity(0.3))
                         .padding(.leading, 44)
                 }
             }

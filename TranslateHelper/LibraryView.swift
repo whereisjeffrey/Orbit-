@@ -39,7 +39,7 @@ struct LibraryView: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            Color(hex: "#07101F").ignoresSafeArea()
+            TSGradientBackground()
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
@@ -223,10 +223,10 @@ struct LibraryView: View {
                         GeometryReader { geo in
                             ZStack(alignment: .leading) {
                                 Capsule()
-                                    .fill(Color.white.opacity(0.18))
+                                    .fill(Color.tsAccent.opacity(0.15))
                                     .frame(height: 6)
                                 Capsule()
-                                    .fill(Color(hex: "#D4A540"))
+                                    .fill(Color.tsAccent)
                                     .frame(width: geo.size.width * goalProgress, height: 6)
                                     .animation(.spring(response: 0.4), value: goalProgress)
                             }
