@@ -19,7 +19,7 @@ struct LibraryView: View {
     @AppStorage("daily_goal") private var dailyGoal: Int = 20
     @AppStorage("phrases_reviewed_today") private var reviewedToday: Int = 0
     @AppStorage("has_swiped_to_deck") private var hasSwipedToDeck: Bool = false
-    @AppStorage("starter_decks_v5") private var starterDecksSeeded: Bool = false
+    @AppStorage("starter_decks_v6") private var starterDecksSeeded: Bool = false
     @State private var activeWidgetPage: Int = 0
     @State private var deckStudyDeck: Deck? = nil
     @State private var showingDeckStudy: Bool = false
@@ -245,24 +245,22 @@ struct LibraryView: View {
         .onAppear {
             store.load()
             store.seedDemoPhrasesIfNeeded()
-            // Seed starter decks with real card content (v3 — clears old empty placeholders)
+            // Seed starter decks v6 — wipe ALL existing, add in reverse so insert-at-0 gives correct order
             if !starterDecksSeeded {
                 starterDecksSeeded = true
-                for deck in deckStore.decks where deck.cards.isEmpty {
-                    deckStore.deleteDeck(deck)
-                }
-                // Mexico City Slang I — first 20 of f1
-                deckStore.addDeck(Deck(emoji: "🌆", name: "Mexico City Slang I",
-                                       isAI: false, tintName: "blue",
-                                       cards: Array(FeaturedDeckContent.cards(forId: "f1").prefix(20))))
-                // Timeless Adages I
-                deckStore.addDeck(Deck(emoji: "📜", name: "Timeless Adages I",
-                                       isAI: false, tintName: "orange",
-                                       cards: FeaturedDeckContent.cards(forId: "f13")))
-                // Euphemisms I
+                // Clear every existing deck regardless of content
+                for deck in Array(deckStore.decks) { deckStore.deleteDeck(deck) }
+                // Add in reverse order: Euphemisms I → Timeless Adages I → Mexico City Slang I
+                // Because addDeck inserts at index 0, last added = first shown
                 deckStore.addDeck(Deck(emoji: "😏", name: "Euphemisms I",
                                        isAI: false, tintName: "purple",
                                        cards: FeaturedDeckContent.cards(forId: "f14")))
+                deckStore.addDeck(Deck(emoji: "📜", name: "Timeless Adages I",
+                                       isAI: false, tintName: "orange",
+                                       cards: FeaturedDeckContent.cards(forId: "f13")))
+                deckStore.addDeck(Deck(emoji: "🌆", name: "Mexico City Slang I",
+                                       isAI: false, tintName: "blue",
+                                       cards: Array(FeaturedDeckContent.cards(forId: "f1").prefix(20))))
             }
         }
         .sheet(isPresented: $showingGoalSheet) {
