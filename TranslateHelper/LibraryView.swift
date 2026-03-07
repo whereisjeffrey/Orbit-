@@ -18,7 +18,7 @@ struct LibraryView: View {
     @State private var showNewDeck = false
     @AppStorage("daily_goal") private var dailyGoal: Int = 20
     @AppStorage("phrases_reviewed_today") private var reviewedToday: Int = 0
-    @AppStorage("has_swiped_to_deck") private var hasSwipedToDeck: Bool = false
+    @AppStorage("has_swiped_to_deck_v2") private var hasSwipedToDeck: Bool = false
     @AppStorage("starter_decks_v6") private var starterDecksSeeded: Bool = false
     @State private var activeWidgetPage: Int = 0
     @State private var deckStudyDeck: Deck? = nil

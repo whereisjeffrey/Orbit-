@@ -13,6 +13,7 @@ private extension Calendar {
 struct WeeklyClipboardWidget: View {
     @ObservedObject var store: SharedPhraseStore
     let onStudy: () -> Void
+    @Environment(\.colorScheme) var colorScheme
 
     private static let scrollThreshold = 7
 
@@ -93,6 +94,7 @@ struct WeeklyClipboardWidget: View {
             .padding(.horizontal, 16)
             .padding(.top, 14)
             .padding(.bottom, 10)
+            .background(colorScheme == .dark ? Color.tsInputBg : Color(UIColor.systemGray6).opacity(0.65))
 
 
             // ── Lined paper word list ────────────────────────
@@ -128,7 +130,7 @@ struct WeeklyClipboardWidget: View {
                     phraseList(displayPhrases)
                 }
             }
-            .background(Color.white).overlay(Rectangle().stroke(Color(UIColor.systemGray4).opacity(0.5), lineWidth: 0.5))
+            .background(Color.white)
 
             // ── Footer stats ─────────────────────────────────
             HStack(spacing: 16) {
@@ -146,6 +148,7 @@ struct WeeklyClipboardWidget: View {
                 }
             }
             .padding(.horizontal, 16).padding(.vertical, 10)
+            .background(colorScheme == .dark ? Color.tsInputBg : Color(UIColor.systemGray6).opacity(0.65))
         }
         .background(Color.tsCard)
         .cornerRadius(20)
@@ -225,26 +228,42 @@ struct WeeklyStreakCard: View {
     private var daysHit: Int       { studiedDays.count }
     private var weekComplete: Bool { daysHit >= Self.goal }
 
-    // Parrot mesh-style background — stacked radial blobs (iOS 14 compatible)
-    @ViewBuilder private var parrotBackground: some View {
+    // Inspiration mesh background matching the vibrant gradient
+    @ViewBuilder private var inspirationBackground: some View {
         ZStack {
-            Color(hex: "#3B1A7A") // deep purple base
-            RadialGradient(gradient: Gradient(colors: [Color(hex: "#F03870"), Color.clear]),
-                           center: .topLeading, startRadius: 0, endRadius: 220)
-            RadialGradient(gradient: Gradient(colors: [Color(hex: "#F57A28"), Color.clear]),
-                           center: UnitPoint(x: 0.15, y: 0.55), startRadius: 0, endRadius: 200)
-            RadialGradient(gradient: Gradient(colors: [Color(hex: "#5B35D0"), Color.clear]),
-                           center: .topTrailing, startRadius: 0, endRadius: 240)
-            RadialGradient(gradient: Gradient(colors: [Color(hex: "#E86A10"), Color.clear]),
-                           center: UnitPoint(x: 0.05, y: 1.0), startRadius: 0, endRadius: 200)
-            RadialGradient(gradient: Gradient(colors: [Color(hex: "#F5E090"), Color.clear]),
-                           center: UnitPoint(x: 0.42, y: 0.95), startRadius: 0, endRadius: 160)
-            RadialGradient(gradient: Gradient(colors: [Color(hex: "#2CC5C7"), Color.clear]),
-                           center: UnitPoint(x: 0.68, y: 0.9), startRadius: 0, endRadius: 200)
-            RadialGradient(gradient: Gradient(colors: [Color(hex: "#1B6FD8"), Color.clear]),
-                           center: .bottomTrailing, startRadius: 0, endRadius: 240)
-            RadialGradient(gradient: Gradient(colors: [Color(hex: "#C896B8").opacity(0.75), Color.clear]),
-                           center: UnitPoint(x: 0.5, y: 0.45), startRadius: 0, endRadius: 180)
+            Color(hex: "#8B309A") // deep purple-ish mid base
+            
+            // Top Left — Rich Magenta
+            RadialGradient(gradient: Gradient(colors: [Color(hex: "#EE2A69"), Color.clear]),
+                           center: .topLeading, startRadius: 0, endRadius: 250)
+            
+            // Top Right — Deep Indigo Blue
+            RadialGradient(gradient: Gradient(colors: [Color(hex: "#25246D"), Color.clear]),
+                           center: .topTrailing, startRadius: 0, endRadius: 250)
+            
+            // Bottom Right — Vibrant Cyan
+            RadialGradient(gradient: Gradient(colors: [Color(hex: "#14A9CD"), Color.clear]),
+                           center: .bottomTrailing, startRadius: 0, endRadius: 220)
+                           
+            // Mid Right — Deep Blue (to bridge indigo and cyan)
+            RadialGradient(gradient: Gradient(colors: [Color(hex: "#1C6CB1"), Color.clear]),
+                           center: UnitPoint(x: 1.0, y: 0.6), startRadius: 0, endRadius: 200)
+            
+            // Bottom Center — Faded Teal/Yellow-Green
+            RadialGradient(gradient: Gradient(colors: [Color(hex: "#8FBEA6"), Color.clear]),
+                           center: UnitPoint(x: 0.5, y: 1.0), startRadius: 0, endRadius: 180)
+            
+            // Bottom Left — Peach / Yellow-Orange
+            RadialGradient(gradient: Gradient(colors: [Color(hex: "#FFA032"), Color.clear]),
+                           center: .bottomLeading, startRadius: 0, endRadius: 220)
+            
+            // Mid Left — Coral/Orange-Pink mixing into Magenta
+            RadialGradient(gradient: Gradient(colors: [Color(hex: "#F56251"), Color.clear]),
+                           center: UnitPoint(x: 0.0, y: 0.65), startRadius: 0, endRadius: 200)
+            
+            // Center subtle warmth
+            RadialGradient(gradient: Gradient(colors: [Color(hex: "#C5788E").opacity(0.4), Color.clear]),
+                           center: UnitPoint(x: 0.4, y: 0.5), startRadius: 0, endRadius: 160)
         }
     }
 
@@ -295,7 +314,7 @@ struct WeeklyStreakCard: View {
 
         }
         .padding(16)
-        .background(parrotBackground)
+        .background(inspirationBackground)
         .cornerRadius(20)
         .onAppear {
 #if DEBUG
@@ -331,7 +350,7 @@ struct SwipeDeckHint: View {
         HStack(spacing: 10) {
             Text("\u{1F4CB}")
                 .font(.system(size: 15))
-            Text("Swipe right to explore your starter decks")
+            Text("Swipe right to see your starter decks")
                 .font(.custom("HelveticaNeue-Medium", size: 13))
                 .foregroundColor(Color(hex: "#0079C6"))
             Spacer()
@@ -353,6 +372,7 @@ struct SwipeDeckHint: View {
 struct DeckClipboardWidget: View {
     let deck: Deck
     let onStudy: () -> Void
+    @Environment(\.colorScheme) var colorScheme
 
     private static let scrollThreshold = 7
 
@@ -385,6 +405,7 @@ struct DeckClipboardWidget: View {
             .padding(.horizontal, 16)
             .padding(.top, 14)
             .padding(.bottom, 10)
+            .background(colorScheme == .dark ? Color.tsInputBg : Color(UIColor.systemGray6).opacity(0.65))
 
             // ── Lined paper word list ──────────────────────
             ZStack(alignment: .topLeading) {
@@ -415,7 +436,6 @@ struct DeckClipboardWidget: View {
                 }
             }
             .background(Color.white)
-            .overlay(Rectangle().stroke(Color(UIColor.systemGray4).opacity(0.5), lineWidth: 0.5))
 
             // ── Footer stats ──────────────────────────────
             HStack(spacing: 16) {
@@ -431,6 +451,7 @@ struct DeckClipboardWidget: View {
                 .foregroundColor(Color(hex: "#FF9500"))
             }
             .padding(.horizontal, 16).padding(.vertical, 10)
+            .background(colorScheme == .dark ? Color.tsInputBg : Color(UIColor.systemGray6).opacity(0.65))
         }
         .background(Color.tsCard)
         .cornerRadius(20)
