@@ -19,6 +19,7 @@ struct LibraryView: View {
     @AppStorage("daily_goal") private var dailyGoal: Int = 20
     @AppStorage("phrases_reviewed_today") private var reviewedToday: Int = 0
     @AppStorage("has_swiped_to_deck") private var hasSwipedToDeck: Bool = false
+    @AppStorage("starter_decks_v3") private var starterDecksSeeded: Bool = false
     @State private var activeWidgetPage: Int = 0
     @State private var deckStudyDeck: Deck? = nil
     @State private var showingDeckStudy: Bool = false
@@ -243,10 +244,26 @@ struct LibraryView: View {
         .onAppear {
             store.load()
             store.seedDemoPhrasesIfNeeded()
-            // Seed starter decks once if empty
-            if deckStore.decks.isEmpty {
-                deckStore.addDeck(Deck(emoji: "🍳", name: "Food & Cooking", tintName: "green"))
-                deckStore.addDeck(Deck(emoji: "❄️", name: "Winter 2026",    tintName: "blue"))
+            // Seed starter decks with real card content (v3 — clears old empty placeholders)
+            if !starterDecksSeeded {
+                starterDecksSeeded = true
+                for deck in deckStore.decks where deck.cards.isEmpty {
+                    deckStore.deleteDeck(deck)
+                }
+                let starters: [(id: String, emoji: String, name: String, tint: String)] = [
+                    ("f1",  "🌆", "Mexico City Slang",  "blue"),
+                    ("f4",  "🍽️", "Food & Markets",     "orange"),
+                    ("f10", "🆘", "Travel Emergencies", "red"),
+                ]
+                for st in starters {
+                    deckStore.addDeck(Deck(
+                        emoji: st.emoji,
+                        name: st.name,
+                        isAI: false,
+                        tintName: st.tint,
+                        cards: FeaturedDeckContent.cards(forId: st.id)
+                    ))
+                }
             }
         }
         .sheet(isPresented: $showingGoalSheet) {
