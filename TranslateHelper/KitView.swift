@@ -14,6 +14,7 @@ struct KitTool: Identifiable {
 
 enum KitDestination {
     case localsUse
+    case fitness
     case work
     case currency
     case sim
@@ -35,6 +36,7 @@ struct KitView: View {
         // ── High frequency / ongoing ──────────────────────────────
         KitTool(icon: "laptopcomputer",              name: "Work",          description: "Find spaces with call rooms & fast WiFi", color: Color.tsAccent,       destination: .work),
         KitTool(icon: "person.2.fill",               name: "Locals Use",    description: "Dentists, trainers, cleaners & more",     color: Color(hex: "#17C2E1"), destination: .localsUse),
+        KitTool(icon: "figure.run",                 name: "Fitness",        description: "Gyms, studios, outdoors & class guide",    color: Color(hex: "#34C759"), destination: .fitness),
         KitTool(icon: "map",                         name: "Neighbourhoods",description: "Find your area by vibe",                  color: Color(hex: "#AF52DE"), destination: .neighbourhoods, isFree: true),
         KitTool(icon: "tram.fill",                   name: "Transportation", description: "Ride-hailing, transit, cars & more",     color: Color(hex: "#FF6B00"), destination: .transportation),
         // ── Periodic reference ────────────────────────────────────
@@ -91,6 +93,10 @@ struct KitView: View {
             get: { activeDestination == .localsUse },
             set: { if !$0 { activeDestination = nil } }
         )) { LocalsUseView() }
+        .navigationDestination(isPresented: Binding(
+            get: { activeDestination == .fitness },
+            set: { if !$0 { activeDestination = nil } }
+        )) { FitnessView() }
         .sheet(isPresented: Binding(
             get: { activeDestination == .work },
             set: { if !$0 { activeDestination = nil } }
@@ -124,7 +130,7 @@ struct KitView: View {
             set: { if !$0 { activeDestination = nil } }
         )) { TransportationView() }
         .sheet(isPresented: Binding(
-            get: { activeDestination != nil && activeDestination != .localsUse && activeDestination != .work && activeDestination != .currency && activeDestination != .insurance && activeDestination != .sim && activeDestination != .transportation && activeDestination != .neighbourhoods && activeDestination != .bureaucracy && activeDestination != .scamRadar },
+            get: { activeDestination != nil && activeDestination != .localsUse && activeDestination != .fitness && activeDestination != .work && activeDestination != .currency && activeDestination != .insurance && activeDestination != .sim && activeDestination != .transportation && activeDestination != .neighbourhoods && activeDestination != .bureaucracy && activeDestination != .scamRadar },
             set: { if !$0 { activeDestination = nil } }
         )) {
             if let dest = activeDestination {
