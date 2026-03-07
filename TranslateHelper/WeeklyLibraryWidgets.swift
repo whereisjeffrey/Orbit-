@@ -649,15 +649,15 @@ struct BotanicalCardBackground: View {
     var body: some View {
         GeometryReader { geo in
             ZStack {
-                // Image is already 2:1 (pattern doubled) — one tile fills the card
-                // scaledToFill crops top/bottom to card height, full width shows
+                // Full card fill — repeating leaf pattern, scale ~19% so many
+                // leaves visible across the width rather than one zoomed blob
                 Image("DailyGoalBackground")
                     .resizable()
                     .scaledToFill()
                     .frame(width: geo.size.width, height: geo.size.height)
                     .clipped()
-                // Overlay so white text reads cleanly over busy neon pattern
-                Color.black.opacity(0.40)
+                // Light veil — enough for white text, not enough to kill the green
+                Color.black.opacity(0.28)
             }
         }
         .clipped()

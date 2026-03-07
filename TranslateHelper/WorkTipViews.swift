@@ -39,6 +39,7 @@ struct WorkTipNudgeCard: View {
                 }
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
         .background(Color.tsCard)
         .cornerRadius(16)
