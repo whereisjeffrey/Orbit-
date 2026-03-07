@@ -94,14 +94,14 @@ struct WeeklyClipboardWidget: View {
             .padding(.horizontal, 16)
             .padding(.top, 14)
             .padding(.bottom, 10)
-            .background(colorScheme == .dark ? Color.tsInputBg : Color(UIColor.systemGray6).opacity(0.65))
+            .background(colorScheme == .dark ? Color.tsInputBg : Color(hex: "#F2F8FA"))
 
 
             // ── Lined paper word list ────────────────────────
             ZStack(alignment: .topLeading) {
                 // Red margin line
                 Rectangle()
-                    .fill(Color(hex: "#FF6B6B").opacity(0.35))
+                    .fill(Color(hex: "#FF6B6B").opacity(colorScheme == .dark ? 0.6 : 0.35))
                     .frame(width: 1.5)
                     .padding(.leading, 36)
 
@@ -130,7 +130,7 @@ struct WeeklyClipboardWidget: View {
                     phraseList(displayPhrases)
                 }
             }
-            .background(Color.white)
+            .background(colorScheme == .dark ? Color.black : Color.white)
 
             // ── Footer stats ─────────────────────────────────
             HStack(spacing: 16) {
@@ -148,7 +148,7 @@ struct WeeklyClipboardWidget: View {
                 }
             }
             .padding(.horizontal, 16).padding(.vertical, 10)
-            .background(colorScheme == .dark ? Color.tsInputBg : Color(UIColor.systemGray6).opacity(0.65))
+            .background(colorScheme == .dark ? Color.tsInputBg : Color(hex: "#F2F8FA"))
         }
         .background(Color.tsCard)
         .cornerRadius(20)
@@ -292,22 +292,32 @@ struct WeeklyStreakCard: View {
                 }
             }
 
-            HStack(spacing: 8) {
+            HStack(spacing: 6) {
                 ForEach(1...7, id: \.self) { day in
                     let dayNum = day + 1  // day1=Mon(2)...day7=Sun(8)
                     let studied = studiedDays.contains(dayNum)
-                    VStack(spacing: 2) {
-                        Text("Day")
-                            .font(.custom("HelveticaNeue-Medium", size: 10))
-                            .foregroundColor(studied ? Color(hex: "#0079C6") : Color.white.opacity(0.5))
-                        Text("\(day)")
-                            .font(.custom("HelveticaNeue-Bold", size: 14))
-                            .foregroundColor(studied ? Color(hex: "#0079C6") : Color.white.opacity(0.5))
+                    
+                    ZStack {
+                        Circle()
+                            .fill(studied ? Color.white : Color.white.opacity(0.12))
+                            .shadow(color: studied ? Color.black.opacity(0.15) : .clear, radius: 4, x: 0, y: 3)
+                        
+                        Circle()
+                            .stroke(Color.white.opacity(studied ? 1.0 : 0.4), lineWidth: 1)
+                        
+                        VStack(spacing: 1) {
+                            Text("Day")
+                                .font(.custom("HelveticaNeue", size: 10))
+                                .minimumScaleFactor(0.6)
+                            Text("\(day)")
+                                .font(.custom("HelveticaNeue-Medium", size: 18))
+                                .minimumScaleFactor(0.7)
+                        }
+                        .foregroundColor(studied ? Color(hex: "#25246D") : Color.white.opacity(0.8))
+                        .padding(2)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 7)
-                    .background(studied ? Color.white : Color.white.opacity(0.2))
-                    .cornerRadius(12)
+                    .aspectRatio(1, contentMode: .fit)
                 }
             }
 
@@ -350,9 +360,10 @@ struct SwipeDeckHint: View {
         HStack(spacing: 10) {
             Text("\u{1F4CB}")
                 .font(.system(size: 15))
-            Text("Swipe right to see your starter decks")
+            Text("See more, swipe right on your clipboard to view your starter decks")
                 .font(.custom("HelveticaNeue-Medium", size: 13))
                 .foregroundColor(Color(hex: "#0079C6"))
+                .lineLimit(nil)
             Spacer()
             Image(systemName: "arrow.right")
                 .font(.system(size: 12, weight: .semibold))
@@ -405,12 +416,12 @@ struct DeckClipboardWidget: View {
             .padding(.horizontal, 16)
             .padding(.top, 14)
             .padding(.bottom, 10)
-            .background(colorScheme == .dark ? Color.tsInputBg : Color(UIColor.systemGray6).opacity(0.65))
+            .background(colorScheme == .dark ? Color.tsInputBg : Color(hex: "#F2F8FA"))
 
             // ── Lined paper word list ──────────────────────
             ZStack(alignment: .topLeading) {
                 Rectangle()
-                    .fill(Color(hex: "#FF6B6B").opacity(0.35))
+                    .fill(Color(hex: "#FF6B6B").opacity(colorScheme == .dark ? 0.6 : 0.35))
                     .frame(width: 1.5)
                     .padding(.leading, 36)
 
@@ -435,7 +446,7 @@ struct DeckClipboardWidget: View {
                     cardList(displayCards)
                 }
             }
-            .background(Color.white)
+            .background(colorScheme == .dark ? Color.black : Color.white)
 
             // ── Footer stats ──────────────────────────────
             HStack(spacing: 16) {
@@ -451,7 +462,7 @@ struct DeckClipboardWidget: View {
                 .foregroundColor(Color(hex: "#FF9500"))
             }
             .padding(.horizontal, 16).padding(.vertical, 10)
-            .background(colorScheme == .dark ? Color.tsInputBg : Color(UIColor.systemGray6).opacity(0.65))
+            .background(colorScheme == .dark ? Color.tsInputBg : Color(hex: "#F2F8FA"))
         }
         .background(Color.tsCard)
         .cornerRadius(20)
@@ -639,5 +650,59 @@ struct DeckPagerContainer: UIViewControllerRepresentable {
             currentIndex = idx
             DispatchQueue.main.async { self.parent.currentPage = idx }
         }
+    }
+}
+
+// MARK: - Botanical Card Background
+
+/// Sage-green card background with flowing leaf-stripe pattern,
+/// built from layered bezier curves — no image asset, iOS 14 compatible.
+struct BotanicalCardBackground: View {
+    var body: some View {
+        GeometryReader { geo in
+            let w = geo.size.width
+            let h = geo.size.height
+            ZStack {
+                // ── Base colour ──────────────────────────────────────
+                Color(hex: "#5A9E8A")
+
+                // ── Horizontal leaf groups ───────────────────────────
+                // 6 lines per group, alternating arc direction → creates
+                // the impression of rows of horizontally-oriented leaves.
+                Path { p in
+                    let spacing: CGFloat = 7
+                    let count = Int(h / spacing) + 6
+                    for i in 0..<count {
+                        let y   = CGFloat(i) * spacing - spacing
+                        let arc: CGFloat = ((i / 6) % 2 == 0) ? -18 : 18
+                        p.move(to: CGPoint(x: -30, y: y))
+                        p.addCurve(to:     CGPoint(x: w + 30, y: y),
+                                   control1: CGPoint(x: w * 0.30, y: y + arc),
+                                   control2: CGPoint(x: w * 0.70, y: y - arc))
+                    }
+                }
+                .stroke(Color(hex: "#A8D4C8").opacity(0.50), lineWidth: 0.9)
+
+                // ── Diagonal leaf groups ─────────────────────────────
+                // Same logic rotated ~45°, layered at lower opacity to
+                // add depth without overwhelming the horizontal lines.
+                Path { p in
+                    let spacing: CGFloat = 8
+                    let total  = Int((w + h) / spacing) + 4
+                    for i in 0..<total {
+                        let d   = CGFloat(i) * spacing - spacing * 2
+                        let arc: CGFloat = ((i / 6) % 2 == 0) ? 14 : -14
+                        let x0  = d - h * 0.6
+                        let x1  = d + h * 0.6
+                        p.move(to: CGPoint(x: x0, y: -20))
+                        p.addCurve(to:     CGPoint(x: x1, y: h + 20),
+                                   control1: CGPoint(x: x0 + h * 0.3 + arc, y: h * 0.35),
+                                   control2: CGPoint(x: d            + arc, y: h * 0.65))
+                    }
+                }
+                .stroke(Color(hex: "#A8D4C8").opacity(0.28), lineWidth: 0.9)
+            }
+        }
+        .clipped()
     }
 }

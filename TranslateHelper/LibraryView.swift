@@ -191,38 +191,37 @@ struct LibraryView: View {
                     }
                     .padding(.bottom, 24)
 
-                    // ── Daily Goal — gradient card ────────────────────
+                    // ── Daily Goal — botanical card ───────────────────
                     VStack(alignment: .leading, spacing: 12) {
                         HStack {
                             VStack(alignment: .leading, spacing: 3) {
                                 Text("Daily Goal")
                                     .font(.custom("HelveticaNeue-Bold", size: 15))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(Color(hex: "#1A3A30"))
                                 Text(dailyGoal == 0
                                      ? "0 / 20 phrases reviewed"
                                      : "\(reviewedToday) of \(dailyGoal) phrases reviewed")
                                     .font(.custom("HelveticaNeue", size: 13))
-                                    .foregroundColor(.white.opacity(0.7))
+                                    .foregroundColor(Color(hex: "#1A3A30").opacity(0.65))
                             }
                             Spacer()
                             Button(action: { showingGoalSheet = true }) {
-                                HStack(spacing: 5) {
-                                    Image(systemName: "bolt.fill")
-                                        .font(.system(size: 10, weight: .bold))
-                                        .foregroundColor(Color(hex: "#FFD60A"))
-                                    Text("Set Goal")
-                                        .font(.custom("HelveticaNeue-Medium", size: 13))
-                                        .foregroundColor(.white)
-                                }
-                                .padding(.horizontal, 14).padding(.vertical, 6)
-                                .overlay(Capsule().stroke(Color.white.opacity(0.45), lineWidth: 1))
+                                Text("Set Goal")
+                                    .font(.custom("HelveticaNeue-Medium", size: 13))
+                                    .foregroundColor(.tsAccent)
+                                    .padding(.horizontal, 14).padding(.vertical, 6)
+                                    .background(Color.white)
+                                    .clipShape(Capsule())
                             }
+                            .buttonStyle(PlainButtonStyle())
                         }
                         GeometryReader { geo in
                             ZStack(alignment: .leading) {
-                                Capsule().fill(Color.white.opacity(0.15)).frame(height: 6)
                                 Capsule()
-                                    .fill(Color.white)
+                                    .fill(Color(hex: "#1A3A30").opacity(0.15))
+                                    .frame(height: 6)
+                                Capsule()
+                                    .fill(Color(hex: "#1A3A30").opacity(0.55))
                                     .frame(width: geo.size.width * goalProgress, height: 6)
                                     .animation(.spring(response: 0.4), value: goalProgress)
                             }
@@ -230,12 +229,7 @@ struct LibraryView: View {
                         .frame(height: 6)
                     }
                     .padding(16)
-                    .background(
-                        LinearGradient(
-                            colors: [Color(hex: "#7ECAC8"), Color(hex: "#D8C8E8")],
-                            startPoint: .bottomLeading, endPoint: .topTrailing
-                        )
-                    )
+                    .background(BotanicalCardBackground())
                     .cornerRadius(20)
                     .padding(.horizontal, 16)
                     .padding(.bottom, 120)
