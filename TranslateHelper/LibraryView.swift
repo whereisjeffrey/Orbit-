@@ -210,13 +210,13 @@ struct LibraryView: View {
                                 HStack(spacing: 5) {
                                     Image(systemName: "bolt.fill")
                                         .font(.system(size: 10, weight: .bold))
-                                        .foregroundColor(.tsAccent)
+                                        .foregroundColor(colorScheme == .dark ? Color(hex: "#FFD60A") : .tsAccent)
                                     Text("Set Goal")
                                         .font(.custom("HelveticaNeue-Medium", size: 13))
                                         .foregroundColor(.tsAccent)
                                 }
                                 .padding(.horizontal, 14).padding(.vertical, 6)
-                                .background(colorScheme == .dark ? Color.white.opacity(0.18) : Color.tsAccent.opacity(0.12))
+                                .background(colorScheme == .dark ? Color.white : Color.tsAccent.opacity(0.12))
                                 .clipShape(Capsule())
                             }
                             .buttonStyle(PlainButtonStyle())
