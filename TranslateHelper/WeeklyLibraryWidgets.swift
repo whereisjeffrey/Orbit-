@@ -655,7 +655,7 @@ struct BotanicalCardBackground: View {
                     .frame(width: geo.size.width, height: geo.size.height)
                     .clipped()
                 // Light veil for white text legibility
-                Color.black.opacity(0.22)
+                Color.black.opacity(0.30)
             }
         }
         .clipped()
