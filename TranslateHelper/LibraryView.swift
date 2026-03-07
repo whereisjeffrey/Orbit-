@@ -18,6 +18,8 @@ struct LibraryView: View {
     @State private var showNewDeck = false
     @AppStorage("daily_goal") private var dailyGoal: Int = 20
     @AppStorage("phrases_reviewed_today") private var reviewedToday: Int = 0
+    @AppStorage("has_swiped_to_deck") private var hasSwipedToDeck: Bool = false
+    @State private var currentPage: Int = 0
 
     var goalProgress: Double {
         guard dailyGoal > 0 else { return 0 }
@@ -36,6 +38,7 @@ struct LibraryView: View {
         ZStack(alignment: .bottom) {
             TSGradientBackground()
 
+            TabView(selection: $currentPage) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
 
@@ -98,6 +101,13 @@ struct LibraryView: View {
                     WeeklyClipboardWidget(store: store, onStudy: { showingStudyMode = true })
                         .padding(.horizontal, 16)
                         .padding(.bottom, 16)
+
+                    // ── Swipe hint (disappears after first deck swipe) ──
+                    if !hasSwipedToDeck && !deckStore.decks.isEmpty {
+                        SwipeDeckHint()
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 16)
+                    }
 
                     WeeklyStreakCard()
                         .padding(.horizontal, 16)
@@ -194,6 +204,18 @@ struct LibraryView: View {
                     .padding(.bottom, 120)
                 }
             }
+            }
+            .tag(0)
+
+            // Active deck pages (max 5)
+            ForEach(Array(deckStore.decks.prefix(5).enumerated()), id: \.element.id) { idx, deck in
+                DeckPageView(deck: deck)
+                    .tag(idx + 1)
+            }
+        }
+        .tabViewStyle(.page(indexDisplayMode: .never))
+        .onChange(of: currentPage) { newPage in
+            if newPage > 0 { hasSwipedToDeck = true }
         }
         .onAppear {
             store.load()
