@@ -325,3 +325,161 @@ struct WeeklyStreakCard: View {
         daysStr = days.map { "\($0)" }.joined(separator: ",")
     }
 }
+
+
+// MARK: - Swipe Deck Hint
+
+struct SwipeDeckHint: View {
+    var body: some View {
+        HStack(spacing: 10) {
+            Text("\u{1F4CB}")
+                .font(.system(size: 15))
+            Text("Swipe right to explore your starter decks")
+                .font(.custom("HelveticaNeue-Medium", size: 13))
+                .foregroundColor(Color(hex: "#0079C6"))
+            Spacer()
+            Image(systemName: "arrow.right")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(Color(hex: "#0079C6"))
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(Color(hex: "#E8F4FF"))
+        .cornerRadius(10)
+        .overlay(RoundedRectangle(cornerRadius: 10)
+            .stroke(Color(hex: "#0079C6").opacity(0.3), lineWidth: 1))
+    }
+}
+
+// MARK: - Deck Clipboard Widget
+
+struct DeckClipboardWidget: View {
+    let deck: Deck
+    let onStudy: () -> Void
+
+    private static let scrollThreshold = 7
+
+    private var displayCards: [DeckCard] { deck.cards }
+    private var masteredCount: Int { deck.cards.filter { $0.isConquered }.count }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+
+            // ── Header ──────────────────────────────────────
+            HStack(alignment: .center) {
+                Spacer()
+                Text(deck.name)
+                    .font(.custom("HelveticaNeue-Bold", size: 18))
+                    .foregroundColor(.tsLabel)
+                    .multilineTextAlignment(.center)
+                Spacer()
+                if !deck.cards.isEmpty {
+                    Button(action: onStudy) {
+                        HStack(spacing: 5) {
+                            Image(systemName: "graduationcap.fill").font(.system(size: 13))
+                            Text("Study").font(.custom("HelveticaNeue-Medium", size: 15))
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 16).padding(.vertical, 9)
+                        .background(Color.tsAccent)
+                        .clipShape(Capsule())
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 14)
+            .padding(.bottom, 10)
+
+            Divider().background(Color.tsBorder.opacity(0.5))
+
+            // ── Lined paper word list ──────────────────────
+            ZStack(alignment: .topLeading) {
+                Rectangle()
+                    .fill(Color(hex: "#FF6B6B").opacity(0.35))
+                    .frame(width: 1.5)
+                    .padding(.leading, 36)
+
+                if displayCards.isEmpty {
+                    HStack {
+                        Spacer()
+                        VStack(spacing: 6) {
+                            Text("\u{1F4DA}").font(.system(size: 28))
+                            Text("No cards in this deck")
+                                .font(.custom("HelveticaNeue", size: 13))
+                                .foregroundColor(.tsSecondary)
+                        }
+                        .padding(.vertical, 24)
+                        Spacer()
+                    }
+                } else if displayCards.count > Self.scrollThreshold {
+                    ScrollView(.vertical, showsIndicators: false) {
+                        cardList(displayCards)
+                    }
+                    .frame(height: CGFloat(Self.scrollThreshold) * 44)
+                } else {
+                    cardList(displayCards)
+                }
+            }
+            .background(Color.white)
+            .overlay(Rectangle().stroke(Color(UIColor.systemGray4).opacity(0.5), lineWidth: 0.5))
+
+            Divider().background(Color.tsBorder.opacity(0.5))
+
+            // ── Footer stats ──────────────────────────────
+            HStack(spacing: 16) {
+                ClipStatPill(icon: "arrow.down.circle.fill", color: .tsAccent,
+                             value: "\(deck.cards.count)", label: "downloaded")
+                ClipStatPill(icon: "checkmark.circle.fill", color: Color(hex: "#30D158"),
+                             value: "\(masteredCount)", label: "mastered")
+                Spacer()
+                HStack(spacing: 4) {
+                    Image(systemName: "exclamationmark.circle.fill").font(.system(size: 11))
+                    Text("Catching up\u{2026}").font(.custom("HelveticaNeue-Medium", size: 12))
+                }
+                .foregroundColor(Color(hex: "#FF9500"))
+            }
+            .padding(.horizontal, 16).padding(.vertical, 10)
+        }
+        .background(Color.tsCard)
+        .cornerRadius(20)
+        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
+    }
+
+    @ViewBuilder
+    private func cardList(_ cards: [DeckCard]) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            ForEach(Array(cards.enumerated()), id: \.offset) { idx, card in
+                HStack(alignment: .center, spacing: 8) {
+                    Text("\(idx + 1).")
+                        .font(.custom("HelveticaNeue", size: 12))
+                        .foregroundColor(.tsSecondary.opacity(0.45))
+                        .frame(width: 24, alignment: .trailing)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(card.spanish)
+                            .font(.custom("HelveticaNeue-Medium", size: 14))
+                            .foregroundColor(.tsLabel)
+                            .lineLimit(1)
+                        Text(card.english)
+                            .font(.custom("HelveticaNeue", size: 11))
+                            .foregroundColor(.tsSecondary)
+                            .lineLimit(1)
+                    }
+                    Spacer()
+                    if card.isConquered {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(Color(hex: "#30D158"))
+                            .font(.system(size: 14))
+                    }
+                }
+                .frame(height: 44)
+                .padding(.horizontal, 12)
+                if idx < cards.count - 1 {
+                    Divider()
+                        .background(Color.tsBorder.opacity(0.3))
+                        .padding(.leading, 44)
+                }
+            }
+        }
+    }
+}

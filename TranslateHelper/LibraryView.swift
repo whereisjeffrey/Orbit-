@@ -18,6 +18,10 @@ struct LibraryView: View {
     @State private var showNewDeck = false
     @AppStorage("daily_goal") private var dailyGoal: Int = 20
     @AppStorage("phrases_reviewed_today") private var reviewedToday: Int = 0
+    @AppStorage("has_swiped_to_deck") private var hasSwipedToDeck: Bool = false
+    @State private var activeWidgetPage: Int = 0
+    @State private var deckStudyDeck: Deck? = nil
+    @State private var showingDeckStudy: Bool = false
 
     var goalProgress: Double {
         guard dailyGoal > 0 else { return 0 }
@@ -95,9 +99,33 @@ struct LibraryView: View {
                         .padding(.bottom, 10)
 
                     // ── Weekly Clipboard + Streak ──────────────────────
-                    WeeklyClipboardWidget(store: store, onStudy: { showingStudyMode = true })
-                        .padding(.horizontal, 16)
-                        .padding(.bottom, 16)
+                    // ── Horizontal swipe: Clipboard + Deck widgets ──
+                    TabView(selection: $activeWidgetPage) {
+                        WeeklyClipboardWidget(store: store, onStudy: { showingStudyMode = true })
+                            .padding(.horizontal, 16)
+                            .tag(0)
+                        ForEach(Array(deckStore.decks.prefix(5).enumerated()), id: \.element.id) { idx, deck in
+                            DeckClipboardWidget(deck: deck, onStudy: {
+                                deckStudyDeck = deck
+                                showingDeckStudy = true
+                            })
+                            .padding(.horizontal, 16)
+                            .tag(idx + 1)
+                        }
+                    }
+                    .tabViewStyle(.page(indexDisplayMode: .never))
+                    .frame(height: 440)
+                    .onChange(of: activeWidgetPage) { p in
+                        if p > 0 { hasSwipedToDeck = true }
+                    }
+                    .padding(.bottom, 8)
+
+                    // ── Swipe hint ──────────────────────────────────
+                    if !hasSwipedToDeck && !deckStore.decks.isEmpty {
+                        SwipeDeckHint()
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 16)
+                    }
 
                     WeeklyStreakCard()
                         .padding(.horizontal, 16)
@@ -109,6 +137,18 @@ struct LibraryView: View {
                             NavigationView {
                                 let duePhrases = store.activePhrases.filter { $0.nextReviewDate <= Date() }
                                 StudySourceWordView(phrases: duePhrases.isEmpty ? store.activePhrases : duePhrases, listName: "Clipboard List")
+                            }
+                        }
+                    // Deck study fullScreenCover
+                    Color.clear.frame(height: 0)
+                        .fullScreenCover(isPresented: $showingDeckStudy) {
+                            if let deck = deckStudyDeck {
+                                NavigationView {
+                                    StudySourceWordView(
+                                        phrases: deck.cards.map { $0.toSavedPhrase() },
+                                        listName: deck.name
+                                    )
+                                }
                             }
                         }
 
