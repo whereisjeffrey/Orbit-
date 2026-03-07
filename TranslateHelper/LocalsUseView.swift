@@ -651,7 +651,96 @@ struct LocalRecCard: View {
 
             Divider().background(Color.tsBorder).padding(.horizontal, 16)
 
-            // ── Reviews ───────────────────────────────────────────
+            // ── Section 1: Links + Tags ───────────────────────────────
+            let hasWA   = rec.whatsappNumber.map { !$0.isEmpty } ?? false
+            let hasSite = rec.website.map       { !$0.isEmpty } ?? false
+            let hasIG   = rec.instagram.map     { !$0.isEmpty } ?? false
+            let hasLinks = hasWA || hasSite || hasIG
+            let engPill: [String] = rec.englishSpeaking == true ? ["Speaks English"] : []
+            let allPills = engPill + rec.tags
+
+            if hasLinks || !allPills.isEmpty {
+                VStack(alignment: .leading, spacing: 10) {
+
+                    // Contact links
+                    if hasLinks {
+                        HStack(spacing: 8) {
+                            if hasWA, let wa = rec.whatsappNumber {
+                                Button(action: {
+                                    if let url = URL(string: "https://wa.me/\(wa)") { openURL(url) }
+                                }) {
+                                    HStack(spacing: 5) {
+                                        Image(systemName: "phone.fill").font(.system(size: 11))
+                                        Text("WhatsApp").font(.custom("HelveticaNeue-Medium", size: 12))
+                                    }
+                                    .foregroundColor(Color(hex: "#25D366"))
+                                    .padding(.horizontal, 10).padding(.vertical, 6)
+                                    .background(Color(hex: "#25D366").opacity(0.12))
+                                    .clipShape(Capsule())
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                            if hasSite, let site = rec.website {
+                                Button(action: {
+                                    if let url = URL(string: "https://\(site)") { openURL(url) }
+                                }) {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "globe").font(.system(size: 11))
+                                        Text(site).font(.custom("HelveticaNeue", size: 12))
+                                    }
+                                    .foregroundColor(.tsAccent)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                            if hasIG, let ig = rec.instagram {
+                                Button(action: {
+                                    if let url = URL(string: "https://instagram.com/\(ig)") { openURL(url) }
+                                }) {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "camera").font(.system(size: 11))
+                                        Text("@\(ig)").font(.custom("HelveticaNeue", size: 12))
+                                    }
+                                    .foregroundColor(Color(hex: "#E1306C"))
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                        }
+                    }
+
+                    // Tag pills (English-speaking badge folded in as first pill)
+                    if !allPills.isEmpty {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 6) {
+                                ForEach(allPills, id: \.self) { pill in
+                                    let isEng = pill == "Speaks English"
+                                    Text(pill)
+                                        .font(.custom("HelveticaNeue", size: 11))
+                                        .foregroundColor(isEng ? Color(hex: "#34C759") : .tsSecondary)
+                                        .padding(.horizontal, 10).padding(.vertical, 5)
+                                        .background(isEng
+                                            ? Color(hex: "#34C759").opacity(0.10)
+                                            : Color(UIColor.systemBackground))
+                                        .clipShape(Capsule())
+                                        .overlay(Capsule().stroke(
+                                            isEng ? Color(hex: "#34C759").opacity(0.3) : Color.tsBorder.opacity(0.6),
+                                            lineWidth: 0.5))
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                        }
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
+                .padding(.bottom, 12)
+            }
+
+            // ── Divider 2 ─────────────────────────────────────────────
+            if !rec.reviews.isEmpty {
+                Divider().background(Color.tsBorder).padding(.horizontal, 16)
+            }
+
+            // ── Reviews ───────────────────────────────────────────────
             if !rec.reviews.isEmpty {
                 VStack(alignment: .leading, spacing: 0) {
                     ReviewBlock(review: rec.reviews[0])
@@ -666,117 +755,39 @@ struct LocalRecCard: View {
                                     .padding(.vertical, 10)
                                 ReviewBlock(review: review)
                             }
-                            Button(action: { withAnimation(.easeInOut(duration: 0.2)) { showAllReviews = false } }) {
-                                HStack(spacing: 4) {
+                            // Centered "Show less" button
+                            Button(action: {
+                                withAnimation(.easeInOut(duration: 0.2)) { showAllReviews = false }
+                            }) {
+                                HStack(spacing: 5) {
                                     Text("Show less")
-                                        .font(.custom("HelveticaNeue", size: 12))
+                                        .font(.custom("HelveticaNeue-Medium", size: 12))
                                     Image(systemName: "chevron.up")
-                                        .font(.system(size: 10))
+                                        .font(.system(size: 10, weight: .medium))
                                 }
                                 .foregroundColor(.tsSecondary)
+                                .frame(maxWidth: .infinity)
                             }
                             .buttonStyle(PlainButtonStyle())
-                            .padding(.horizontal, 16)
-                            .padding(.top, 10)
+                            .padding(.top, 14)
                         } else {
-                            Button(action: { withAnimation(.easeInOut(duration: 0.2)) { showAllReviews = true } }) {
-                                HStack(spacing: 4) {
-                                    Image(systemName: "plus.circle")
-                                        .font(.system(size: 11))
-                                     Text("\(rec.reviews.count - 1) more review" + (rec.reviews.count - 1 == 1 ? "" : "s"))
-                                        .font(.custom("HelveticaNeue", size: 12))
+                            // Centered "More reviews" button
+                            Button(action: {
+                                withAnimation(.easeInOut(duration: 0.2)) { showAllReviews = true }
+                            }) {
+                                HStack(spacing: 5) {
+                                    Text("More reviews")
+                                        .font(.custom("HelveticaNeue-Medium", size: 12))
+                                    Image(systemName: "chevron.down")
+                                        .font(.system(size: 10, weight: .medium))
                                 }
                                 .foregroundColor(.tsAccent)
+                                .frame(maxWidth: .infinity)
                             }
                             .buttonStyle(PlainButtonStyle())
-                            .padding(.horizontal, 16)
-                            .padding(.top, 10)
+                            .padding(.top, 12)
                         }
                     }
-                }
-                .padding(.bottom, 10)
-            }
-
-            // ── WhatsApp + Website + Instagram ────────────────────────
-            let hasLinks = (rec.whatsappNumber != nil && !rec.whatsappNumber!.isEmpty)
-                        || (rec.website != nil && !rec.website!.isEmpty)
-                        || (rec.instagram != nil && !rec.instagram!.isEmpty)
-            if hasLinks {
-                HStack(spacing: 10) {
-                    if let wa = rec.whatsappNumber, !wa.isEmpty {
-                        Button(action: {
-                            if let url = URL(string: "https://wa.me/\(wa)") { openURL(url) }
-                        }) {
-                            HStack(spacing: 5) {
-                                Image(systemName: "phone.fill").font(.system(size: 11))
-                                Text("WhatsApp").font(.custom("HelveticaNeue-Medium", size: 12))
-                            }
-                            .foregroundColor(Color(hex: "#25D366"))
-                            .padding(.horizontal, 10).padding(.vertical, 6)
-                            .background(Color(hex: "#25D366").opacity(0.12))
-                            .clipShape(Capsule())
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                    }
-                    if let site = rec.website, !site.isEmpty {
-                        Button(action: { if let url = URL(string: "https://\(site)") { openURL(url) } }) {
-                            HStack(spacing: 4) {
-                                Image(systemName: "globe").font(.system(size: 11))
-                                Text(site).font(.custom("HelveticaNeue", size: 12))
-                            }
-                            .foregroundColor(.tsAccent)
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                    }
-                    if let ig = rec.instagram, !ig.isEmpty {
-                        Button(action: {
-                            if let url = URL(string: "https://instagram.com/\(ig)") { openURL(url) }
-                        }) {
-                            HStack(spacing: 4) {
-                                Image(systemName: "camera").font(.system(size: 11))
-                                Text("@\(ig)").font(.custom("HelveticaNeue", size: 12))
-                            }
-                            .foregroundColor(Color(hex: "#E1306C"))
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                    }
-                }
-                .padding(.horizontal, 16)
-                .padding(.bottom, 12)
-            }
-
-            // ── English badge ─────────────────────────────────────────
-            if rec.englishSpeaking == true {
-                HStack(spacing: 4) {
-                    Image(systemName: "text.bubble.fill")
-                        .font(.system(size: 10))
-                    Text("Speaks English")
-                        .font(.custom("HelveticaNeue-Medium", size: 11))
-                }
-                .foregroundColor(Color(hex: "#34C759"))
-                .padding(.horizontal, 10).padding(.vertical, 5)
-                .background(Color(hex: "#34C759").opacity(0.10))
-                .clipShape(Capsule())
-                .padding(.horizontal, 16)
-                .padding(.bottom, 12)
-            }
-
-            // ── Tags — white background ───────────────────────────────
-            if !rec.tags.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 6) {
-                        ForEach(rec.tags, id: \.self) { tag in
-                            Text(tag)
-                                .font(.custom("HelveticaNeue", size: 11))
-                                .foregroundColor(.tsSecondary)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 5)
-                                .background(Color(UIColor.systemBackground))
-                                .clipShape(Capsule())
-                                .overlay(Capsule().stroke(Color.tsBorder.opacity(0.6), lineWidth: 0.5))
-                        }
-                    }
-                    .padding(.horizontal, 16)
                 }
                 .padding(.bottom, 14)
             }
