@@ -4,7 +4,7 @@ import SwiftUI
 
 struct CommunityUserProfileView: View {
     let user: CommunityUser
-    @Environment(\.dismiss) var dismiss
+    @Environment(\..dismiss) var dismiss
     @State private var showMessageRequest = false
     @State private var showUpgrade = false
     @ObservedObject private var sub = SubscriptionManager.shared
@@ -15,95 +15,125 @@ struct CommunityUserProfileView: View {
                 ScrollView {
                     VStack(spacing: 0) {
 
-                        // ── Avatar + name block ────────────────────
-                        VStack(spacing: 12) {
-                            ZStack {
-                                Circle().fill(user.initialsColor).frame(width: 88, height: 88)
-                                Text(user.initials)
-                                    .font(.custom("HelveticaNeue-Bold", size: 32))
-                                    .foregroundColor(.white)
-                            }
-                            .padding(.top, 24)
-
-                            Text(user.displayName)
-                                .font(.custom("HelveticaNeue-Bold", size: 24))
-                                .foregroundColor(.tsLabel)
-
-                            TrustBadge(level: user.trustLevel)
-
-                            Text(user.neighbourhood + " · " + user.timeInCityLabel + " · From " + user.fromCity)
-                                .font(.custom("HelveticaNeue", size: 13))
-                                .foregroundColor(.tsSecondary)
-                                .multilineTextAlignment(.center)
+                        // ── Avatar ────────────────────────────────────────
+                        ZStack {
+                            Circle().fill(user.initialsColor).frame(width: 88, height: 88)
+                            Text(user.initials)
+                                .font(.custom("HelveticaNeue-Bold", size: 32))
+                                .foregroundColor(.white)
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding(.bottom, 24)
+                        .padding(.top, 28)
+                        .padding(.bottom, 14)
 
-                        // ── Bio ────────────────────────────────────
+                        // ── Name ──────────────────────────────────────────
+                        Text(user.displayName)
+                            .font(.custom("HelveticaNeue-Bold", size: 24))
+                            .foregroundColor(.tsLabel)
+                            .padding(.bottom, 10)
+
+                        // ── Badges row ────────────────────────────────────
+                        HStack(spacing: 8) {
+                            // Trust level — yellow
+                            Text(user.trustLevel.label)
+                                .font(.custom("HelveticaNeue-Bold", size: 11))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 10).padding(.vertical, 5)
+                                .background(Color(hex: "#FFD60A"))
+                                .clipShape(Capsule())
+
+                            // Answer count — teal
+                            if user.questionsAnswered > 0 {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "text.bubble.fill")
+                                        .font(.system(size: 10))
+                                    Text("\(user.questionsAnswered) answers")
+                                        .font(.custom("HelveticaNeue-Bold", size: 11))
+                                }
+                                .foregroundColor(Color(hex: "#30D158"))
+                                .padding(.horizontal, 10).padding(.vertical, 5)
+                                .background(Color(hex: "#30D158").opacity(0.12))
+                                .clipShape(Capsule())
+                            }
+                        }
+                        .padding(.bottom, 10)
+
+                        // ── Location subtitle ─────────────────────────────
+                        Text(user.neighbourhood + " · " + user.timeInCityLabel + " · From " + user.fromCity)
+                            .font(.custom("HelveticaNeue", size: 13))
+                            .foregroundColor(.tsSecondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 24)
+                            .padding(.bottom, 20)
+
+                        // ── Bio ───────────────────────────────────────────
                         Text(user.bio)
                             .font(.custom("HelveticaNeue", size: 15))
                             .foregroundColor(.tsLabel)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 32)
-                            .padding(.bottom, 24)
+                            .padding(.bottom, 28)
 
-                        // ── Stats ──────────────────────────────────
-                        if user.questionsAnswered > 0 {
-                            HStack(spacing: 0) {
-                                ProfileStat(value: "\(user.questionsAnswered)", label: "Answers")
-                                Divider().frame(height: 36).background(Color.tsBorder)
-                                ProfileStat(value: user.trustLevel.label, label: "Status")
-                            }
-                            .background(Color.tsCard)
-                            .cornerRadius(16)
-                            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
-                            .padding(.horizontal, 24)
-                            .padding(.bottom, 24)
-                        }
+                        // ── Interests ─────────────────────────────────────
+                        if !user.interests.isEmpty {
+                            VStack(spacing: 10) {
+                                Text("Into")
+                                    .font(.custom("HelveticaNeue-Medium", size: 14))
+                                    .foregroundColor(.tsSecondary)
 
-                        // ── Interests ──────────────────────────────
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Into")
-                                .font(.custom("HelveticaNeue-Medium", size: 15))
-                                .foregroundColor(.tsSecondary)
-                                .padding(.horizontal, 24)
-
-                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
-                                ForEach(user.interests, id: \.self) { id in
-                                    if let interest = allInterests.first(where: { $0.id == id }) {
-                                        HStack(spacing: 4) {
-                                            Text(interest.emoji)
-                                            Text(interest.label)
-                                                .font(.custom("HelveticaNeue-Medium", size: 12))
-                                                .foregroundColor(.tsLabel)
-                                                .lineLimit(1)
-                                                .minimumScaleFactor(0.8)
+                                LazyVGrid(
+                                    columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())],
+                                    spacing: 8
+                                ) {
+                                    ForEach(user.interests, id: \.self) { id in
+                                        if let interest = allInterests.first(where: { $0.id == id }) {
+                                            HStack(spacing: 4) {
+                                                Text(interest.emoji)
+                                                Text(interest.label)
+                                                    .font(.custom("HelveticaNeue-Medium", size: 12))
+                                                    .foregroundColor(.tsLabel)
+                                                    .lineLimit(1)
+                                                    .minimumScaleFactor(0.8)
+                                            }
+                                            .frame(maxWidth: .infinity)
+                                            .padding(.horizontal, 10).padding(.vertical, 6)
+                                            .background(Color.tsCard)
+                                            .cornerRadius(10)
+                                            .overlay(RoundedRectangle(cornerRadius: 10)
+                                                .stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                                         }
-                                        .padding(.horizontal, 10)
-                                        .padding(.vertical, 6)
-                                        .background(Color.tsCard)
-                                        .cornerRadius(10)
-                                        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                                     }
                                 }
+                                .padding(.horizontal, 24)
                             }
-                            .padding(.horizontal, 24)
+                            .padding(.bottom, 28)
                         }
-                        .padding(.bottom, 24)
 
-                        // ── Social links ───────────────────────────
+                        // ── Social links ──────────────────────────────────
                         if user.instagramHandle != nil || user.linkedinHandle != nil {
                             BlurGate(reason: .socialLinks) {
                                 VStack(spacing: 8) {
                                     if let ig = user.instagramHandle {
-                                        SocialLinkRow(icon: "camera", color: Color(hex: "#E1306C"), handle: "@\(ig)") {
+                                        SocialLinkRow(
+                                            iconView: AnyView(InstagramIcon()),
+                                            handle: "@\(ig)"
+                                        ) {
                                             if sub.isPro, let url = URL(string: "https://instagram.com/\(ig)") {
                                                 UIApplication.shared.open(url)
                                             }
                                         }
                                     }
                                     if let li = user.linkedinHandle {
-                                        SocialLinkRow(icon: "briefcase", color: Color(hex: "#0A66C2"), handle: li) {
+                                        SocialLinkRow(
+                                            iconView: AnyView(
+                                                Image(systemName: "briefcase.fill")
+                                                    .font(.system(size: 14))
+                                                    .foregroundColor(.white)
+                                                    .frame(width: 28, height: 28)
+                                                    .background(Color(hex: "#0A66C2"))
+                                                    .clipShape(RoundedRectangle(cornerRadius: 7))
+                                            ),
+                                            handle: li
+                                        ) {
                                             if sub.isPro, let url = URL(string: "https://linkedin.com/in/\(li)") {
                                                 UIApplication.shared.open(url)
                                             }
@@ -115,27 +145,21 @@ struct CommunityUserProfileView: View {
                             .padding(.bottom, 24)
                         }
 
-                        // ── CTA ────────────────────────────────────
+                        // ── Message request CTA ───────────────────────────
                         TSButton(title: sub.isPro ? "Send a message request" : "🔒  Send a message request") {
-                            if sub.isPro {
-                                showMessageRequest = true
-                            } else {
-                                showUpgrade = true
-                            }
+                            if sub.isPro { showMessageRequest = true }
+                            else         { showUpgrade = true }
                         }
                         .padding(.horizontal, 24)
                         .padding(.bottom, 48)
                         .sheet(isPresented: $showUpgrade) {
-                            UpgradeSheet(reason: .messaging)
-                                .presentationDetents([.large])
+                            UpgradeSheet(reason: .messaging).presentationDetents([.large])
                         }
                     }
+                    .frame(maxWidth: .infinity)
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .cancellationAction) {
-                Button("Done") { dismiss() }
-            }}
             .alert("Request sent", isPresented: $showMessageRequest) {
                 Button("OK", role: .cancel) {}
             } message: {
@@ -145,6 +169,29 @@ struct CommunityUserProfileView: View {
     }
 }
 
+// MARK: - Instagram gradient icon
+struct InstagramIcon: View {
+    var body: some View {
+        Image(systemName: "camera.fill")
+            .font(.system(size: 14))
+            .foregroundColor(.white)
+            .frame(width: 28, height: 28)
+            .background(
+                LinearGradient(
+                    colors: [
+                        Color(hex: "#F58529"),
+                        Color(hex: "#DD2A7B"),
+                        Color(hex: "#8134AF")
+                    ],
+                    startPoint: .bottomLeading,
+                    endPoint: .topTrailing
+                )
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 7))
+    }
+}
+
+// MARK: - Profile stat / social row
 struct ProfileStat: View {
     let value: String
     let label: String
@@ -163,19 +210,13 @@ struct ProfileStat: View {
 }
 
 struct SocialLinkRow: View {
-    let icon: String
-    let color: Color
+    let iconView: AnyView
     let handle: String
     let onTap: () -> Void
     var body: some View {
         Button(action: onTap) {
             HStack(spacing: 10) {
-                Image(systemName: icon)
-                    .font(.custom("HelveticaNeue-Medium", size: 14))
-                    .foregroundColor(.white)
-                    .frame(width: 28, height: 28)
-                    .background(color)
-                    .clipShape(RoundedRectangle(cornerRadius: 7))
+                iconView
                 Text(handle)
                     .font(.custom("HelveticaNeue", size: 15))
                     .foregroundColor(.tsAccent)
@@ -187,7 +228,8 @@ struct SocialLinkRow: View {
             .padding(12)
             .background(Color.tsCard)
             .cornerRadius(12)
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
+            .overlay(RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
         }
     }
 }

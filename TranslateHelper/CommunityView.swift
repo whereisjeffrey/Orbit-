@@ -27,6 +27,15 @@ enum PostType: String, CaseIterable {
         case .event:    return Color(hex: "#AF52DE")
         }
     }
+    var icon: String {
+        switch self {
+        case .all:      return "sparkles"
+        case .question: return "questionmark.circle.fill"
+        case .rec:      return "star.fill"
+        case .warning:  return "exclamationmark.triangle.fill"
+        case .event:    return "calendar"
+        }
+    }
 }
 
 struct CommunityPost: Identifiable {
@@ -237,6 +246,31 @@ struct FilterChip: View {
 struct CommunityPostCard: View {
     let post: CommunityPost
     @Environment(\.colorScheme) var colorScheme
+    @State private var showProfile = false
+
+    // Synthesise a CommunityUser from this post so the profile sheet has something to show
+    private var postUser: CommunityUser {
+        let parts = post.author.split(separator: " ")
+        let first = parts.first.map(String.init) ?? post.author
+        let last  = parts.dropFirst().first.map(String.init) ?? ""
+        return CommunityUser(
+            id: post.id.uuidString,
+            firstName: first,
+            lastName: last,
+            cityId: "mx_cdmx",
+            neighbourhood: post.neighbourhood,
+            fromCity: "–",
+            statusRaw: post.isVerifiedLocal ? "settling_in" : "new_arrival",
+            daysInCity: 90,
+            interests: [],
+            instagramHandle: nil,
+            linkedinHandle: nil,
+            bio: "Community member in \(post.neighbourhood).",
+            questionsAnswered: 0,
+            isAvailableForLocal: false,
+            isVisibleNewInTown: false
+        )
+    }
 
     // True if this is a standalone photo post (not a link preview)
     var hasPhoto: Bool {
@@ -260,19 +294,23 @@ struct CommunityPostCard: View {
 
     @ViewBuilder var authorRow: some View {
         HStack(alignment: .top, spacing: 10) {
-            // Avatar — real photo or initials
-            Group {
-                if let urlStr = post.avatarURL, let url = URL(string: urlStr) {
-                    AsyncImage(url: url) { phase in
-                        if let img = phase.image {
-                            img.resizable().scaledToFill()
-                                .frame(width: 40, height: 40)
-                                .clipShape(Circle())
-                        } else { avatarView }
-                    }
-                } else { avatarView }
+            // Avatar — tappable → opens profile sheet
+            Button(action: { showProfile = true }) {
+                Group {
+                    if let urlStr = post.avatarURL, let url = URL(string: urlStr) {
+                        AsyncImage(url: url) { phase in
+                            if let img = phase.image {
+                                img.resizable().scaledToFill()
+                                    .frame(width: 40, height: 40)
+                                    .clipShape(Circle())
+                            } else { avatarView }
+                        }
+                    } else { avatarView }
+                }
+                .frame(width: 40, height: 40)
             }
-            .frame(width: 40, height: 40)
+            .buttonStyle(PlainButtonStyle())
+            .sheet(isPresented: $showProfile) { CommunityUserProfileView(user: postUser) }
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 5) {
@@ -293,12 +331,16 @@ struct CommunityPostCard: View {
                     .foregroundColor(.tsSecondary)
             }
             Spacer()
-            Text(post.type.rawValue.dropLast())
-                .font(.custom("HelveticaNeue-Medium", size: 11))
-                .foregroundColor(post.type.color)
-                .padding(.horizontal, 8).padding(.vertical, 4)
-                .background(post.type.color.opacity(0.1))
-                .clipShape(Capsule())
+            HStack(spacing: 4) {
+                Image(systemName: post.type.icon)
+                    .font(.system(size: 9))
+                Text(post.type.rawValue.dropLast())
+                    .font(.custom("HelveticaNeue-Medium", size: 11))
+            }
+            .foregroundColor(post.type.color)
+            .padding(.horizontal, 8).padding(.vertical, 4)
+            .background(post.type.color.opacity(0.1))
+            .clipShape(Capsule())
         }
     }
 
