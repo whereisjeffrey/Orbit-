@@ -302,7 +302,7 @@ struct WeeklyStreakCard: View {
                             .foregroundColor(studied ? Color(hex: "#0079C6") : Color.white.opacity(0.5))
                         Text("\(day)")
                             .font(.custom("HelveticaNeue-Bold", size: 14))
-                            .foregroundColor(studied ? Color(hex: "#0079C6") : Color.white.opacity(0.5))
+                            .foregroundColor(studied ? .black : Color.white.opacity(0.5))
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 7)

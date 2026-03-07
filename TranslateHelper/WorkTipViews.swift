@@ -10,30 +10,29 @@ struct WorkTipNudgeCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 10) {
-                Image(systemName: "bubble.left.and.bubble.right.fill")
-                    .font(.custom("HelveticaNeue", size: 18))
-                    .foregroundColor(.tsAccent)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Did you make it to \(intent.placeName)?")
-                        .font(.custom("HelveticaNeue-Medium", size: 15))
-                        .foregroundColor(.tsLabel)
-                    Text("Leave a quick tip — takes 15 seconds.")
-                        .font(.custom("HelveticaNeue", size: 13))
-                        .foregroundColor(.tsSecondary)
-                }
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Did you make it to \(intent.placeName)?")
+                    .font(.custom("HelveticaNeue-Medium", size: 15))
+                    .foregroundColor(.tsLabel)
+                Text("Leave a recommendation — takes 15 seconds.")
+                    .font(.custom("HelveticaNeue", size: 13))
+                    .foregroundColor(.tsSecondary)
             }
             HStack(spacing: 10) {
                 Button(action: { showSheet = true }) {
-                    Text("Yes — add a tip")
-                        .font(.custom("HelveticaNeue-Medium", size: 14))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 16).padding(.vertical, 9)
-                        .background(Color.tsAccent)
-                        .clipShape(Capsule())
+                    HStack(spacing: 6) {
+                        Image(systemName: "bubble.left.fill")
+                            .font(.system(size: 14))
+                        Text("Add recommendation")
+                            .font(.custom("HelveticaNeue-Medium", size: 14))
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 16).padding(.vertical, 9)
+                    .background(Color.tsAccent)
+                    .clipShape(Capsule())
                 }
                 Button(action: { store.dismissNudge(placeId: intent.placeId) }) {
-                    Text("Nope")
+                    Text("Nope, that's okay")
                         .font(.custom("HelveticaNeue", size: 14))
                         .foregroundColor(.tsSecondary)
                 }
@@ -75,7 +74,7 @@ struct WorkTipSubmitSheet: View {
                             Text(intent.placeName)
                                 .font(.custom("HelveticaNeue-Bold", size: 22))
                                 .foregroundColor(.tsLabel)
-                            Text("Quick tip for the community")
+                            Text("Quick recommendation for the community")
                                 .font(.custom("HelveticaNeue", size: 14))
                                 .foregroundColor(.tsSecondary)
                         }
@@ -146,7 +145,7 @@ struct WorkTipSubmitSheet: View {
                             }
                         }
 
-                        TSButton(title: "Submit tip") {
+                        TSButton(title: "Submit recommendation") {
                             store.submitTip(
                                 placeId: intent.placeId,
                                 placeType: intent.placeType,
@@ -168,7 +167,7 @@ struct WorkTipSubmitSheet: View {
             .alert("Thanks!", isPresented: $done) {
                 Button("Done") { dismiss() }
             } message: {
-                Text("Your tip helps every remote worker who comes after you.")
+                Text("Your recommendation helps every remote worker who comes after you.")
             }
         }
     }
@@ -221,7 +220,7 @@ struct CommunityTipsSection: View {
                         .font(.custom("HelveticaNeue-Bold", size: 17))
                         .foregroundColor(.tsLabel)
                     Spacer()
-                    Text("\(tips.count) tip\(tips.count == 1 ? "" : "s")")
+                    Text("\(tips.count) recommendation\(tips.count == 1 ? "" : "s")")
                         .font(.custom("HelveticaNeue", size: 13))
                         .foregroundColor(.tsSecondary)
                 }
@@ -229,7 +228,7 @@ struct CommunityTipsSection: View {
                     CommunityTipCard(tip: tip)
                 }
                 if tips.count > 3 {
-                    Text("+ \(tips.count - 3) more tip\(tips.count - 3 == 1 ? "" : "s")")
+                    Text("+ \(tips.count - 3) more recommendation\(tips.count - 3 == 1 ? "" : "s")")
                         .font(.custom("HelveticaNeue", size: 13))
                         .foregroundColor(.tsAccent)
                 }
@@ -271,7 +270,7 @@ struct TipOptionPill: View {
             .padding(.horizontal, 14).padding(.vertical, 9)
             .background(selected ? color : Color.tsCard)
             .clipShape(Capsule())
-            .overlay(Capsule().stroke(selected ? Color.clear : Color.tsSecondary.opacity(0.2), lineWidth: 1))
+            .overlay(Capsule().strokeBorder(selected ? Color.clear : Color.tsSecondary.opacity(0.2), lineWidth: 1))
         }
         .buttonStyle(ScaleButtonStyle())
     }

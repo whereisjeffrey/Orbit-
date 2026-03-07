@@ -50,8 +50,18 @@ struct TabBarItem: View {
     var body: some View {
         Button(action: { selected = tag }) {
             VStack(spacing: 4) {
-                Image(systemName: isSelected ? icon + ".fill" : icon)
-                    .font(.system(size: 22))
+                Group {
+                    if icon == "backpack" && isSelected {
+                        Image(systemName: "backpack.fill")
+                            .symbolRenderingMode(.palette)
+                            // Primary is the main part of the backpack, Secondary is the pouches
+                            .foregroundStyle(Color.tsAccent, Color.tsInputBg)
+                    } else {
+                        Image(systemName: isSelected ? icon + ".fill" : icon)
+                    }
+                }
+                .font(.system(size: 22))
+                
                 Text(label)
                     .font(.system(size: 10, weight: isSelected ? .semibold : .regular))
             }

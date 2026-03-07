@@ -350,3 +350,38 @@ struct TSProgressRing: View {
         .frame(width: size, height: size)
     }
 }
+
+// MARK: - TSPageHeader
+struct TSPageHeader: View {
+    let title: String
+    let selectedCity: City
+    var bottomPadding: CGFloat = 16
+    let action: () -> Void
+
+    var body: some View {
+        HStack(alignment: .center) {
+            Text(title)
+                .font(.custom("HelveticaNeue-Bold", size: 28))
+                .foregroundColor(.tsLabel)
+            Spacer()
+            Button(action: action) {
+                HStack(spacing: 6) {
+                    Text(selectedCity.emoji)
+                        .font(.custom("HelveticaNeue-Medium", size: 13))
+                    Text(selectedCity.name)
+                        .font(.custom("HelveticaNeue-Medium", size: 14))
+                        .foregroundColor(.tsLabel)
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(.tsAccent)
+                }
+            }
+            .frame(height: 36)
+            .offset(y: 4) // Visually center the dropdown with the larger, 28pt Community text
+        }
+        .frame(minHeight: 36)
+        .padding(.horizontal, 16)
+        .padding(.top, 16)
+        .padding(.bottom, bottomPadding)
+    }
+}

@@ -30,11 +30,30 @@ struct LibraryView: View {
         return min(Double(reviewedToday) / Double(dailyGoal), 1.0)
     }
 
+    var allSearchablePhrases: [SavedPhrase] {
+        let clipboardPhrases = store.phrases
+        let deckPhrases = deckStore.decks.flatMap { $0.cards.map { $0.toSavedPhrase() } }
+        
+        // Combine and optionally deduplicate by ID, though IDs should be distinct
+        var seenIDs = Set<UUID>()
+        var combined: [SavedPhrase] = []
+        
+        for phrase in (clipboardPhrases + deckPhrases) {
+            if !seenIDs.contains(phrase.id) {
+                seenIDs.insert(phrase.id)
+                combined.append(phrase)
+            }
+        }
+        
+        return combined
+    }
+
     var filteredPhrases: [SavedPhrase] {
-        guard !searchText.isEmpty else { return store.phrases }
-        return store.phrases.filter {
+        guard !searchText.isEmpty else { return [] }
+        return allSearchablePhrases.filter {
             $0.sourceText.localizedCaseInsensitiveContains(searchText) ||
-            $0.translatedText.localizedCaseInsensitiveContains(searchText)
+            $0.translatedText.localizedCaseInsensitiveContains(searchText) ||
+            ($0.notes?.localizedCaseInsensitiveContains(searchText) ?? false)
         }
     }
 
@@ -49,7 +68,7 @@ struct LibraryView: View {
                     HStack {
                         Text("Library")
                             .font(.custom("HelveticaNeue-Bold", size: 30))
-                            .foregroundColor(.white)
+                            .foregroundColor(colorScheme == .dark ? .white : .black)
                         Spacer()
                         HStack(spacing: 12) {
                             Button(action: { auth.signOut() }) {
@@ -95,7 +114,7 @@ struct LibraryView: View {
                     // ── ACTIVE ─────────────────────────────────────────
                     Text("ACTIVE")
                         .font(.custom("HelveticaNeue-Medium", size: 13))
-                        .foregroundColor(.white.opacity(0.80))
+                        .foregroundColor(colorScheme == .dark ? .white.opacity(0.80) : .black.opacity(0.80))
                         .tracking(1.2)
                         .padding(.horizontal, 20)
                         .padding(.bottom, 10)
@@ -213,10 +232,10 @@ struct LibraryView: View {
                                         .foregroundColor(colorScheme == .dark ? Color(hex: "#FFD60A") : .tsAccent)
                                     Text("Set Goal")
                                         .font(.custom("HelveticaNeue-Medium", size: 13))
-                                        .foregroundColor(.tsAccent)
+                                        .foregroundColor(colorScheme == .dark ? .white : .tsAccent)
                                 }
                                 .padding(.horizontal, 14).padding(.vertical, 6)
-                                .background(colorScheme == .dark ? Color.white : Color.tsAccent.opacity(0.12))
+                                .background(colorScheme == .dark ? Color.black : Color.tsAccent.opacity(0.12))
                                 .clipShape(Capsule())
                             }
                             .buttonStyle(PlainButtonStyle())

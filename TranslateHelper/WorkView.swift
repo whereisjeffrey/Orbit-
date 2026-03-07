@@ -3,6 +3,7 @@
 
 import SwiftUI
 import CoreLocation
+import Combine
 
 enum WorkTab: String, CaseIterable {
     case coworking = "Coworking"
@@ -71,18 +72,30 @@ struct WorkView: View {
             VStack(spacing: 0) {
 
                 // ── Header ─────────────────────────────────────────
-                HStack(alignment: .center) {
+                HStack(alignment: .center, spacing: 12) {
                     Text("Work")
                         .font(.custom("HelveticaNeue-Bold", size: 28))
                         .foregroundColor(.tsLabel)
+                    
+                    if hasLocation {
+                        HStack(spacing: 5) {
+                            LiveLocationDot()
+                            Text("Nearby").font(.custom("HelveticaNeue-Medium", size: 13)).foregroundColor(Color(hex: "#34C759"))
+                        }
+                        .padding(.horizontal, 12).padding(.vertical, 7)
+                        .background(Color(hex: "#34C759").opacity(0.15))
+                        .clipShape(Capsule())
+                    }
+                    
                     Spacer()
+                    
                     Menu {
                         ForEach(["All", "Condesa", "Roma Norte", "Polanco", "Juárez", "Coyoacán", "Centro", "Narvarte", "Del Valle"], id: \.self) { hood in
-                            Button(hood) { selectedHood = hood }
+                            Button(hood == "All" ? (hasLocation ? "Other neighborhoods" : "All areas") : hood) { selectedHood = hood }
                         }
                     } label: {
                         HStack(spacing: 5) {
-                            Text(selectedHood == "All" ? "All areas" : selectedHood)
+                            Text(selectedHood == "All" ? (hasLocation ? "Other neighborhoods" : "All areas") : selectedHood)
                                 .font(.custom("HelveticaNeue-Medium", size: 13))
                                 .foregroundColor(.tsAccent)
                             Image(systemName: "chevron.down")
@@ -92,13 +105,6 @@ struct WorkView: View {
                         .padding(.horizontal, 12).padding(.vertical, 7)
                         .background(Color.tsAccent.opacity(0.1))
                         .clipShape(Capsule())
-                    }
-                    if hasLocation {
-                        HStack(spacing: 4) {
-                            Circle().fill(Color(hex: "#34C759")).frame(width: 7, height: 7)
-                            Text("Nearby").font(.custom("HelveticaNeue", size: 12)).foregroundColor(.tsSecondary)
-                        }
-                        .padding(.top, 6)
                     }
                 }
                 .padding(.horizontal, 16)
@@ -479,5 +485,22 @@ struct WorkFooterNote: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 20)
         .padding(.bottom, 32)
+    }
+}
+
+// MARK: - Live Location Dot
+struct LiveLocationDot: View {
+    @State private var isVisible = true
+    let timer = Timer.publish(every: 0.8, on: .main, in: .common).autoconnect()
+
+    var body: some View {
+        Circle()
+            .fill(Color(hex: "#34C759"))
+            .frame(width: 6, height: 6)
+            .opacity(isVisible ? 1 : 0)
+            .animation(.linear(duration: 0.1), value: isVisible)
+            .onReceive(timer) { _ in
+                isVisible.toggle()
+            }
     }
 }

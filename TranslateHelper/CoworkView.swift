@@ -100,7 +100,7 @@ struct CoworkView: View {
                         Spacer()
                         if hasLocation {
                             HStack(spacing: 4) {
-                                Circle().fill(Color(hex: "#34C759")).frame(width: 7, height: 7)
+                                LiveLocationDot()
                                 Text("Nearby")
                                     .font(.custom("HelveticaNeue", size: 12))
                                     .foregroundColor(.tsSecondary)
@@ -310,7 +310,7 @@ struct CoworkFilterChip: View {
             .padding(.horizontal, 14).padding(.vertical, 8)
             .background(active ? Color.tsAccent.opacity(0.12) : Color.tsCard)
             .clipShape(Capsule())
-            .overlay(Capsule().stroke(active ? Color.tsAccent.opacity(0.3) : Color.clear, lineWidth: 1))
+            .overlay(Capsule().strokeBorder(active ? Color.tsAccent.opacity(0.3) : Color.clear, lineWidth: 1))
         }
     }
 }

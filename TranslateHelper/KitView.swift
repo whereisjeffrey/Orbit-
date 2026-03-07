@@ -81,21 +81,21 @@ struct KitView: View {
         return daysInstalled >= 21 && hasSeen(tool.destination)
     }
 
-    let allTools: [KitTool] = [
+    static let allTools: [KitTool] = [
         KitTool(icon: "laptopcomputer",               name: "Work",           description: "Find spaces with call rooms & fast WiFi",  color: Color.tsAccent,        destination: .work),
         KitTool(icon: "figure.run",                   name: "Fitness",        description: "Gyms, studios, outdoors & class guide",    color: Color(hex: "#34C759"), destination: .fitness),
-        KitTool(icon: "person.2.fill",                name: "Locals Use",     description: "Dentists, trainers, cleaners & more",      color: Color(hex: "#17C2E1"), destination: .localsUse),
+        KitTool(icon: "person.2.fill",                name: "Locals Use",     description: "Dentists, trainers, cleaners & more",      color: Color(hex: "#FF9500"), destination: .localsUse),
         KitTool(icon: "map",                          name: "Neighbourhoods", description: "Find your area by vibe",                   color: Color(hex: "#AF52DE"), destination: .neighbourhoods, isFree: true),
         KitTool(icon: "tram.fill",                    name: "Transportation", description: "Ride-hailing, transit, cars & more",       color: Color(hex: "#FF6B00"), destination: .transportation),
         KitTool(icon: "dollarsign.arrow.circlepath",  name: "Currency",       description: "Live rates + quick converter",             color: Color(hex: "#34C759"), destination: .currency),
         KitTool(icon: "exclamationmark.shield",       name: "Scam Radar",     description: "What to watch out for locally",            color: Color(hex: "#FF3B30"), destination: .scamRadar, isFree: true),
-        KitTool(icon: "simcard",                      name: "SIM Guide",      description: "Best carriers, plans & cost",              color: Color(hex: "#FF9500"), destination: .sim),
+        KitTool(icon: "simcard",                      name: "SIM Guide",      description: "Best carriers, plans & cost",              color: Color(hex: "#17C2E1"), destination: .sim),
         KitTool(icon: "shield.checkered",             name: "Insurance",      description: "Coverage, providers & Mexico tips",        color: Color(hex: "#34C759"), destination: .insurance),
         KitTool(icon: "doc.plaintext",                name: "Bureaucracy",    description: "Banking, visa & healthcare tips",          color: Color(hex: "#5856D6"), destination: .bureaucracy),
     ]
 
-    private var primaryTools: [KitTool]   { allTools.filter { !shouldGraduate($0) } }
-    private var graduatedTools: [KitTool] { allTools.filter {  shouldGraduate($0) } }
+    private var primaryTools: [KitTool]   { KitView.allTools.filter { !shouldGraduate($0) } }
+    private var graduatedTools: [KitTool] { KitView.allTools.filter {  shouldGraduate($0) } }
 
     let columns = [GridItem(.flexible(), spacing: 16), GridItem(.flexible(), spacing: 16)]
 
@@ -105,28 +105,13 @@ struct KitView: View {
                 VStack(alignment: .leading, spacing: 0) {
 
                     // ── Header ────────────────────────────────────────────
-                    HStack(alignment: .center) {
-                        Text("Kit")
-                            .font(.custom("HelveticaNeue-Bold", size: 28))
-                            .foregroundColor(.tsLabel)
-                        Spacer()
-                        Button(action: { showCityPicker = true }) {
-                            HStack(spacing: 6) {
-                                Text(selectedCity.emoji)
-                                    .font(.custom("HelveticaNeue-Medium", size: 13))
-                                Text(selectedCity.name)
-                                    .font(.custom("HelveticaNeue-Medium", size: 14))
-                                    .foregroundColor(.tsLabel)
-                                Image(systemName: "chevron.down")
-                                    .font(.system(size: 11, weight: .medium))
-                                    .foregroundColor(.tsAccent)
-                            }
-                        }
-                        .frame(height: 36)
+                    TSPageHeader(
+                        title: "Kit",
+                        selectedCity: selectedCity,
+                        bottomPadding: 12
+                    ) {
+                        showCityPicker = true
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.top, 16)
-                    .padding(.bottom, 12)
 
                     // ── Currency widget ───────────────────────────────────
                     CurrencyWidget(rate: rate)
@@ -244,7 +229,7 @@ struct CurrencyWidget: View {
                     .padding(.horizontal, 8).padding(.vertical, 4)
                     .background(Color.tsCard)
                     .clipShape(Capsule())
-                    .overlay(Capsule().stroke(Color.tsBorder.opacity(0.5), lineWidth: 0.5))
+                    .overlay(Capsule().strokeBorder(Color.tsBorder.opacity(0.5), lineWidth: 0.5))
             }
         }
         .padding(14)
@@ -283,13 +268,14 @@ struct CompactKitTile: View {
 // MARK: - KitToolCard
 
 struct KitToolCard: View {
+    @AppStorage("is_pro") private var isPro: Bool = false
     let tool: KitTool
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: 10) {
-                HStack {
+                HStack(alignment: .top) {
                     Image(systemName: tool.icon)
                         .font(.system(size: 20))
                         .foregroundColor(tool.color)
@@ -297,24 +283,42 @@ struct KitToolCard: View {
                         .background(tool.color.opacity(0.12))
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                     Spacer()
-                    if !tool.isFree {
+                    if !isPro && !tool.isFree {
                         Text("PRO")
                             .font(.custom("HelveticaNeue-Bold", size: 9))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 6).padding(.vertical, 3)
-                            .background(Color.tsAccent)
+                            .foregroundColor(Color.tsAccent)
+                            .padding(.horizontal, 8).padding(.vertical, 4)
+                            .background(Color.tsAccent.opacity(0.12))
                             .clipShape(Capsule())
                     }
                 }
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(tool.name)
-                        .font(.custom("HelveticaNeue-Bold", size: 15))
-                        .foregroundColor(.tsLabel)
-                    Text(tool.description)
-                        .font(.custom("HelveticaNeue", size: 12))
-                        .foregroundColor(.tsSecondary)
-                        .lineLimit(2)
-                        .fixedSize(horizontal: false, vertical: true)
+                
+                ZStack(alignment: .topLeading) {
+                    // Hidden texts to force uniform max height across all cards
+                    ForEach(KitView.allTools, id: \.id) { t in
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(t.name)
+                                .font(.custom("HelveticaNeue-Bold", size: 15))
+                                .fixedSize(horizontal: false, vertical: true)
+                            Text(t.description)
+                                .font(.custom("HelveticaNeue", size: 12))
+                                .lineLimit(3)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .hidden()
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(tool.name)
+                            .font(.custom("HelveticaNeue-Bold", size: 15))
+                            .foregroundColor(.tsLabel)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Text(tool.description)
+                            .font(.custom("HelveticaNeue", size: 12))
+                            .foregroundColor(.tsSecondary)
+                            .lineLimit(3)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
             }
             .padding(14)

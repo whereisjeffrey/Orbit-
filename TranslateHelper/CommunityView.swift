@@ -100,29 +100,13 @@ struct CommunityView: View {
                 VStack(spacing: 0) {
 
                     // ── Header ─────────────────────────────────────────
-                    HStack(alignment: .center) {
-                        Text("Community")
-                            .font(.custom("HelveticaNeue-Bold", size: 28))
-                            .foregroundColor(.tsLabel)
-                        Spacer()
-                        Button(action: { showCityPicker = true }) {
-                            HStack(spacing: 6) {
-                                Text(selectedCity.emoji)
-                                    .font(.custom("HelveticaNeue-Medium", size: 13))
-                                Text(selectedCity.name)
-                                    .font(.custom("HelveticaNeue-Medium", size: 14))
-                                    .foregroundColor(.tsLabel)
-                                Image(systemName: "chevron.down")
-                                    .font(.system(size: 11, weight: .medium))
-                                    .foregroundColor(.tsAccent)
-                            }
-                        }
-                        .frame(height: 36)
+                    TSPageHeader(
+                        title: "Community",
+                        selectedCity: selectedCity,
+                        bottomPadding: 16
+                    ) {
+                        showCityPicker = true
                     }
-                    .frame(minHeight: 36)
-                    .padding(.horizontal, 16)
-                    .padding(.top, 16)
-                    .padding(.bottom, 16)
 
                     // ── Composer bar ────────────────────────────────────
                     PostComposerBar(onTap: { showCompose = true })
