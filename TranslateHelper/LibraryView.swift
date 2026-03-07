@@ -201,7 +201,7 @@ struct LibraryView: View {
                                 Text(dailyGoal == 0
                                      ? "0 / 20 phrases reviewed"
                                      : "\(reviewedToday) of \(dailyGoal) phrases reviewed")
-                                    .font(.custom("HelveticaNeue", size: 13))
+                                    .font(.custom("HelveticaNeue-Medium", size: 13))
                                     .foregroundColor(.white.opacity(0.7))
                             }
                             Spacer()
@@ -358,7 +358,7 @@ struct LibraryDeckCard: View {
                         .font(.custom("HelveticaNeue-Bold", size: 17))
                         .foregroundColor(.tsLabel)
                     Text(count == 0 ? "No phrases yet" : "\(count) phrases")
-                        .font(.custom("HelveticaNeue", size: 13))
+                        .font(.custom("HelveticaNeue-Medium", size: 13))
                         .foregroundColor(.tsSecondary)
 
                 }
@@ -397,7 +397,7 @@ struct NewDeckCard: View {
                         .font(.custom("HelveticaNeue-Bold", size: 17))
                         .foregroundColor(.tsLabel)
                     Text("Create your own")
-                        .font(.custom("HelveticaNeue", size: 13))
+                        .font(.custom("HelveticaNeue-Medium", size: 13))
                         .foregroundColor(.tsSecondary)
                 }
             }
