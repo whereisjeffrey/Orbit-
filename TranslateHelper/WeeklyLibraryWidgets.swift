@@ -647,6 +647,13 @@ struct DeckPagerContainer: UIViewControllerRepresentable {
 
 struct BotanicalCardBackground: View {
     var body: some View {
-        Color.tsAccent.opacity(0.09)
+        GeometryReader { geo in
+            Image("DailyGoalBackground")
+                .resizable()
+                .scaledToFill()
+                .frame(width: geo.size.width, height: geo.size.height)
+                .clipped()
+        }
+        .clipped()
     }
 }
