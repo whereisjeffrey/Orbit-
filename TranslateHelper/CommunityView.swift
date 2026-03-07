@@ -177,7 +177,7 @@ struct CommunityView: View {
                     .shadow(color: Color.tsAccent.opacity(0.4), radius: 12, x: 0, y: 4)
             }
             .padding(.trailing, 24)
-            .padding(.bottom, 88)
+            .padding(.bottom, 104)
         }
         .onAppear { if posts.isEmpty { posts = samplePosts } }
         .sheet(isPresented: $showGroupDirectory) { GroupDirectoryView() }
