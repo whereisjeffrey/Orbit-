@@ -645,86 +645,8 @@ struct DeckPagerContainer: UIViewControllerRepresentable {
 
 // MARK: - Botanical Card Background
 
-/// Custom dark mesh gradient — inspired by the reference card design.
-/// Dark navy base + primary blue radial glow (left-center) + orange accent (right).
-/// Pure SwiftUI, no assets, iOS 14 compatible.
 struct BotanicalCardBackground: View {
     var body: some View {
-        GeometryReader { geo in
-            let h = geo.size.height
-            ZStack {
-                // ── Deep navy base ───────────────────────────────────
-                Color(hex: "#061526")
-
-                // ── Primary blue glow — left-center, large soft bloom
-                RadialGradient(
-                    colors: [
-                        Color(hex: "#0079C6").opacity(0.80),
-                        Color(hex: "#0055A0").opacity(0.45),
-                        Color.clear
-                    ],
-                    center: UnitPoint(x: 0.18, y: 0.50),
-                    startRadius: 0,
-                    endRadius: h * 1.4
-                )
-
-                // ── Bright blue highlight — upper left (the "star" glow)
-                RadialGradient(
-                    colors: [
-                        Color(hex: "#3ABAFF").opacity(0.55),
-                        Color.clear
-                    ],
-                    center: UnitPoint(x: 0.10, y: 0.20),
-                    startRadius: 0,
-                    endRadius: h * 0.75
-                )
-
-                // ── Mid blue blend — center keeps depth
-                RadialGradient(
-                    colors: [
-                        Color(hex: "#0060B0").opacity(0.35),
-                        Color.clear
-                    ],
-                    center: UnitPoint(x: 0.50, y: 0.30),
-                    startRadius: 0,
-                    endRadius: h * 0.90
-                )
-
-                // ── Orange accent — right side, warm contrast pop
-                RadialGradient(
-                    colors: [
-                        Color(hex: "#F5820D").opacity(0.65),
-                        Color(hex: "#E04010").opacity(0.30),
-                        Color.clear
-                    ],
-                    center: UnitPoint(x: 0.88, y: 0.70),
-                    startRadius: 0,
-                    endRadius: h * 0.95
-                )
-
-                // ── Subtle orange warmth — bottom center
-                RadialGradient(
-                    colors: [
-                        Color(hex: "#F59B30").opacity(0.25),
-                        Color.clear
-                    ],
-                    center: UnitPoint(x: 0.62, y: 1.0),
-                    startRadius: 0,
-                    endRadius: h * 0.65
-                )
-
-                // ── Dark vignette — frames the edges, keeps text safe
-                RadialGradient(
-                    colors: [
-                        Color.clear,
-                        Color(hex: "#061526").opacity(0.55)
-                    ],
-                    center: UnitPoint(x: 0.40, y: 0.50),
-                    startRadius: h * 0.25,
-                    endRadius: h * 1.30
-                )
-            }
-        }
-        .clipped()
+        Color.tsAccent.opacity(0.09)
     }
 }
