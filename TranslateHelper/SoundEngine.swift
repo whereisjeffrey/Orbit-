@@ -35,7 +35,7 @@ final class SoundEngine {
     func play(_ sound: Sound) {
         guard ready else { return }
         switch sound {
-        case .flip:  playChirp(startHz: 1800, endHz: 90, duration: 0.13, volume: 0.13)
+        case .flip:  playPageTurn()
         case .again: scheduleNotes([(180,0.07,0.30),(150,0.07,0.24),(130,0.10,0.18)], gap: 0.0,  wave: .square)
         case .hard:  scheduleNotes([(330,0.10,0.22),(294,0.14,0.16)],                 gap: 0.06, wave: .square)
         case .good:  scheduleNotes([(523,0.08,0.24),(659,0.08,0.24),(784,0.14,0.26)], gap: 0.07, wave: .square)
@@ -83,7 +83,73 @@ final class SoundEngine {
         }
         node.play()
     }
-    // MARK: - Chirp (smooth frequency glide — skeuomorphic page-flip whoosh)
+    // MARK: - Page-Turn Whoosh
+    // Two noise layers — a gentle mid-band air rush and a fleeting high-freq paper crinkle.
+    // No low-frequency thump. Think: barely-audible breath of air as you turn a book page.
+    private func playPageTurn() {
+        let duration: Double = 0.20
+        let fmt = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1)!
+        let frameCount = AVAudioFrameCount(sampleRate * duration)
+        guard let buf = AVAudioPCMBuffer(pcmFormat: fmt, frameCapacity: frameCount),
+              let data = buf.floatChannelData?[0] else { return }
+        buf.frameLength = frameCount
+
+        // --- Layer 1: Mid-band "rush of air" ---
+        // Two cascaded one-pole low-pass filters (band-limited to ~2 kHz) give a
+        // soft, breathy texture — no harsh brightness, no bassy thump.
+        var lp1: Double = 0.0
+        var lp2: Double = 0.0
+        let airCoeff: Double = 0.25  // lower = darker/softer air sound
+
+        // --- Layer 2: High-freq "paper crinkle" ---
+        // A separate high-pass path (subtract low-pass from white noise) gives
+        // a whisper-thin papery texture that fades out very fast.
+        var hpLP: Double = 0.0
+        let hpCoeff: Double = 0.80  // high value = retain high-freq content
+
+        for i in 0..<Int(frameCount) {
+            let p = Double(i) / Double(frameCount)  // 0 → 1 progress
+
+            // Master envelope: gentle 4% attack, very smooth exponential tail
+            // exp(-6) gives a longer, softer fade than before (-9)
+            let masterEnv: Double = p < 0.04
+                ? p / 0.04
+                : exp(-6.0 * (p - 0.04))
+
+            // Crinkle only lives in the first 35% of the sound, then disappears
+            let crinkleEnv: Double = p < 0.04
+                ? p / 0.04
+                : exp(-18.0 * (p - 0.04))
+
+            let white1 = Double.random(in: -1...1)
+            let white2 = Double.random(in: -1...1)
+
+            // Air layer: two-stage low-pass (softens the noise considerably)
+            lp1 = lp1 * (1.0 - airCoeff) + white1 * airCoeff
+            lp2 = lp2 * (1.0 - airCoeff) + lp1 * airCoeff
+            let airLayer = lp2 * 0.80
+
+            // Crinkle layer: high-pass = white - low-pass
+            hpLP = hpLP * (1.0 - hpCoeff) + white2 * hpCoeff
+            let crinkleLayer = (white2 - hpLP) * 0.30
+
+            let sample = (airLayer * masterEnv) + (crinkleLayer * crinkleEnv)
+            data[i] = Float(sample * 0.22)  // quiet overall — this is a soft sound
+        }
+
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self else { return }
+            let node = AVAudioPlayerNode()
+            self.engine.attach(node)
+            self.engine.connect(node, to: self.mixer, format: fmt)
+            node.scheduleBuffer(buf, at: nil, options: []) { [weak self] in
+                DispatchQueue.main.async { self?.engine.detach(node) }
+            }
+            node.play()
+        }
+    }
+
+    // MARK: - Chirp (smooth frequency glide — kept for potential future use)
     private func playChirp(startHz: Double, endHz: Double, duration: Double, volume: Float) {
         let fmt = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1)!
         let frameCount = AVAudioFrameCount(sampleRate * duration)

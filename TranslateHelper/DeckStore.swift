@@ -133,6 +133,7 @@ final class DeckStore: ObservableObject {
 
     static let maxAIDecks      = 2
     static let maxCardsPerDeck = 100
+    static let maxActiveDecks  = 5
 
     private let storageKey = "talkswitch_user_decks_v2"
     private let defaults   = UserDefaults(suiteName: "group.com.jeff.translatehelper")
@@ -143,6 +144,7 @@ final class DeckStore: ObservableObject {
 
     var aiDeckCount: Int      { decks.filter(\.isAI).count }
     var canCreateAIDeck: Bool { aiDeckCount < DeckStore.maxAIDecks }
+    var canAddDeck: Bool      { decks.count < DeckStore.maxActiveDecks }
 
     /// All conquered cards across every user deck, newest first.
     var allConqueredDeckCards: [DeckCard] {
@@ -154,6 +156,7 @@ final class DeckStore: ObservableObject {
     // MARK: - Deck Mutations
 
     func addDeck(_ deck: Deck) {
+        guard decks.count < DeckStore.maxActiveDecks else { return }
         decks.insert(deck, at: 0)
         persist()
     }

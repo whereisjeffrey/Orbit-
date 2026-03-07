@@ -13,8 +13,6 @@ struct LibraryView: View {
     @State private var showingGoalSheet = false
     @State private var showingStudyMode = false
     @State private var showMyDecks = false
-    @State private var showDeckStudy = false
-    @State private var activeDeckStudyName = ""
     @ObservedObject private var deckStore = DeckStore.shared
     @State private var showNewDeck = false
     @AppStorage("daily_goal") private var dailyGoal: Int = 20
@@ -65,11 +63,11 @@ struct LibraryView: View {
                 VStack(alignment: .leading, spacing: 0) {
 
                     // ── Header ─────────────────────────────────────────
-                    HStack {
+                    HStack(alignment: .center) {
                         Text("wandr")
-                            .font(.custom("Comfortaa-Medium", size: 30))
-                            .kerning(30 * 0.01)
-                            .foregroundColor(colorScheme == .dark ? .white : .black)
+                            .font(.custom("Comfortaa-Medium", size: 28))
+                            .kerning(28 * 0.01)
+                            .foregroundColor(.tsLabel)
                         Spacer()
                         HStack(spacing: 12) {
                             Button(action: { auth.signOut() }) {
@@ -84,6 +82,7 @@ struct LibraryView: View {
                             }
                         }
                     }
+                    .frame(minHeight: 36)
                     .padding(.horizontal, 16)
                     .padding(.top, 16)
                     .padding(.bottom, 12)
@@ -159,27 +158,6 @@ struct LibraryView: View {
                         .padding(.top, 16)
                         .padding(.bottom, 24)
 
-                    // Study fullScreenCover
-                    Color.clear.frame(height: 0)
-                        .fullScreenCover(isPresented: $showingStudyMode) {
-                            NavigationView {
-                                let duePhrases = store.activePhrases.filter { $0.nextReviewDate <= Date() }
-                                StudySourceWordView(phrases: duePhrases.isEmpty ? store.activePhrases : duePhrases, listName: "Clipboard List")
-                            }
-                        }
-                    // Deck study fullScreenCover
-                    Color.clear.frame(height: 0)
-                        .fullScreenCover(isPresented: $showingDeckStudy) {
-                            if let deck = deckStudyDeck {
-                                NavigationView {
-                                    StudySourceWordView(
-                                        phrases: deck.cards.map { $0.toSavedPhrase() },
-                                        listName: deck.name
-                                    )
-                                }
-                            }
-                        }
-
                     // ── MY DECKS ───────────────────────────────────────
                     HStack {
                         Text("MY DECKS")
@@ -201,8 +179,8 @@ struct LibraryView: View {
                             // User decks — newest first (DeckStore inserts at 0)
                             ForEach(deckStore.decks) { deck in
                                 LibraryDeckCard(emoji: deck.emoji, title: deck.name, count: deck.cards.count, tint: deck.tintColor) {
-                                    activeDeckStudyName = deck.name
-                                    showDeckStudy = true
+                                    deckStudyDeck = deck
+                                    showingDeckStudy = true
                                 }
                                 .frame(width: 160)
                             }
@@ -290,14 +268,20 @@ struct LibraryView: View {
         .fullScreenCover(isPresented: $showMyDecks) {
             MyDecksView()
         }
-        .fullScreenCover(isPresented: $showDeckStudy) {
+        .fullScreenCover(isPresented: $showingStudyMode) {
             NavigationView {
-                let all = store.phrases
-                let due = all.filter { $0.nextReviewDate <= Date() }
-                StudySourceWordView(
-                    phrases: due.isEmpty ? all : due,
-                    listName: activeDeckStudyName
-                )
+                let duePhrases = store.activePhrases.filter { $0.nextReviewDate <= Date() }
+                StudySourceWordView(phrases: duePhrases.isEmpty ? store.activePhrases : duePhrases, listName: "Clipboard List")
+            }
+        }
+        .fullScreenCover(isPresented: $showingDeckStudy) {
+            if let deck = deckStudyDeck {
+                NavigationView {
+                    StudySourceWordView(
+                        phrases: deck.cards.map { $0.toSavedPhrase() },
+                        listName: deck.name
+                    )
+                }
             }
         }
     }

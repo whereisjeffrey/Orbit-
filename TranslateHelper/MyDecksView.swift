@@ -238,6 +238,7 @@ struct MyDecksView: View {
                                 FeaturedDeckRow(
                                     deck: deck,
                                     isAdded: addedIds.contains(deck.id),
+                                    canAdd: deckStore.canAddDeck,
                                     onAdd: { markAdded(deck.id) }
                                 )
                             }
@@ -459,6 +460,7 @@ struct CreateDeckCell: View {
 struct FeaturedDeckRow: View {
     let deck: FeaturedDeckModel
     let isAdded: Bool
+    let canAdd: Bool
     let onAdd: () -> Void
     @Environment(\.colorScheme) var colorScheme
 
@@ -498,6 +500,18 @@ struct FeaturedDeckRow: View {
                 .padding(.horizontal, 14)
                 .padding(.vertical, 8)
                 .background(Color.green.opacity(0.1))
+                .clipShape(Capsule())
+            } else if !canAdd {
+                HStack(spacing: 4) {
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 10, weight: .bold))
+                    Text("Slots full")
+                        .font(.custom("HelveticaNeue-Medium", size: 13))
+                }
+                .foregroundColor(.tsSecondary)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(Color(UIColor.systemGray5))
                 .clipShape(Capsule())
             } else {
                 Button(action: {
@@ -880,7 +894,12 @@ struct CreateDeckSheet: View {
                                    name: deckName.trimmingCharacters(in: .whitespaces),
                                    deckDescription: deckDescription,
                                    isAI: true, tintName: selectedTint, cards: deckCards)
-                    await MainActor.run { DeckStore.shared.addDeck(deck); isGenerating = false; dismiss() }
+                    await MainActor.run {
+                if DeckStore.shared.canAddDeck {
+                    DeckStore.shared.addDeck(deck)
+                }
+                isGenerating = false; dismiss()
+            }
                 } catch {
                     await MainActor.run { isGenerating = false; errorMessage = error.localizedDescription }
                 }

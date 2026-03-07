@@ -73,7 +73,11 @@ struct StudySourceWordView: View {
                             .zIndex(isFlipped ? 1 : 0)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.tsCard)
+                    .background(Color(UIColor { trait in
+                        trait.userInterfaceStyle == .dark
+                            ? UIColor(hex: "#1E1E1E")
+                            : UIColor(hex: "#F6F5F9")
+                    }))
                     .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
                     .overlay(
                         RoundedRectangle(cornerRadius: 32, style: .continuous)
