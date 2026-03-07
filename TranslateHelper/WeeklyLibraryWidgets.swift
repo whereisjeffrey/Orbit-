@@ -229,7 +229,10 @@ struct WeeklyStreakCard: View {
     private var weekComplete: Bool { daysHit >= Self.goal }
 
     private let grad = LinearGradient(
-        colors: [Color(hex: "#0079C6"), Color(hex: "#69B6C1")],
+        stops: [
+            .init(color: Color(hex: "#69B6C1").opacity(0.25), location: 0),
+            .init(color: Color(hex: "#69B6C1"),               location: 0.77),
+        ],
         startPoint: .top, endPoint: .bottom
     )
 
@@ -239,21 +242,21 @@ struct WeeklyStreakCard: View {
                 VStack(alignment: .leading, spacing: 3) {
                     Text("This Week")
                         .font(.custom("HelveticaNeue-Bold", size: 16))
-                        .foregroundColor(.white)
+                        .foregroundColor(Color(hex: "#0079C6"))
                     Text(weekComplete
                          ? "Week complete 🏆"
                          : "\(daysHit) of \(Self.goal) days — keep going")
                         .font(.custom("HelveticaNeue", size: 12))
-                        .foregroundColor(weekComplete ? Color(hex: "#30D158") : Color.white.opacity(0.65))
+                        .foregroundColor(weekComplete ? Color(hex: "#1A7A3C") : Color(hex: "#0079C6").opacity(0.7))
                 }
                 Spacer()
                 if completed > 0 {
                     HStack(spacing: 4) {
                         Image(systemName: "flame.fill").font(.system(size: 11)).foregroundColor(Color(hex: "#FF9500"))
-                        Text("\(completed)w").font(.custom("HelveticaNeue-Bold", size: 12)).foregroundColor(.white)
+                        Text("\(completed)w").font(.custom("HelveticaNeue-Bold", size: 12)).foregroundColor(Color(hex: "#0079C6"))
                     }
                     .padding(.horizontal, 10).padding(.vertical, 5)
-                    .background(Color.white.opacity(0.12))
+                    .background(Color(hex: "#0079C6").opacity(0.1))
                     .clipShape(Capsule())
                 }
             }
@@ -265,10 +268,10 @@ struct WeeklyStreakCard: View {
                     VStack(spacing: 2) {
                         Text("Day")
                             .font(.custom("HelveticaNeue-Medium", size: 10))
-                            .foregroundColor(studied ? Color(hex: "#0079C6") : Color.white.opacity(0.4))
+                            .foregroundColor(studied ? Color(hex: "#0079C6") : Color(hex: "#69B6C1").opacity(0.55))
                         Text("\(day)")
                             .font(.custom("HelveticaNeue-Bold", size: 15))
-                            .foregroundColor(studied ? Color(hex: "#0079C6") : Color.white.opacity(0.4))
+                            .foregroundColor(studied ? Color(hex: "#0079C6") : Color(hex: "#69B6C1").opacity(0.55))
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
