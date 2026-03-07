@@ -19,7 +19,7 @@ struct LibraryView: View {
     @AppStorage("daily_goal") private var dailyGoal: Int = 20
     @AppStorage("phrases_reviewed_today") private var reviewedToday: Int = 0
     @AppStorage("has_swiped_to_deck") private var hasSwipedToDeck: Bool = false
-    @AppStorage("starter_decks_v4") private var starterDecksSeeded: Bool = false
+    @AppStorage("starter_decks_v5") private var starterDecksSeeded: Bool = false
     @State private var activeWidgetPage: Int = 0
     @State private var deckStudyDeck: Deck? = nil
     @State private var showingDeckStudy: Bool = false
@@ -259,14 +259,10 @@ struct LibraryView: View {
                 deckStore.addDeck(Deck(emoji: "📜", name: "Timeless Adages I",
                                        isAI: false, tintName: "orange",
                                        cards: FeaturedDeckContent.cards(forId: "f13")))
-                // Euphemisms
-                deckStore.addDeck(Deck(emoji: "😏", name: "Euphemisms",
-                                       isAI: false, tintName: "pink",
+                // Euphemisms I
+                deckStore.addDeck(Deck(emoji: "😏", name: "Euphemisms I",
+                                       isAI: false, tintName: "purple",
                                        cards: FeaturedDeckContent.cards(forId: "f14")))
-                // Dating & Romance
-                deckStore.addDeck(Deck(emoji: "💘", name: "Dating & Romance",
-                                       isAI: false, tintName: "red",
-                                       cards: FeaturedDeckContent.cards(forId: "f15")))
             }
         }
         .sheet(isPresented: $showingGoalSheet) {
