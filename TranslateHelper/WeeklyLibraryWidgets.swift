@@ -276,22 +276,22 @@ struct WeeklyStreakCard: View {
                 }
             }
 
-            HStack(spacing: 6) {
+            HStack(spacing: 8) {
                 ForEach(1...7, id: \.self) { day in
                     let dayNum = day + 1  // day1=Mon(2)...day7=Sun(8)
                     let studied = studiedDays.contains(dayNum)
                     VStack(spacing: 2) {
                         Text("Day")
                             .font(.custom("HelveticaNeue-Medium", size: 10))
-                            .foregroundColor(studied ? Color(hex: "#0079C6") : Color.white.opacity(0.4))
+                            .foregroundColor(studied ? Color(hex: "#0079C6") : Color.white.opacity(0.5))
                         Text("\(day)")
-                            .font(.custom("HelveticaNeue-Bold", size: 15))
-                            .foregroundColor(studied ? Color(hex: "#0079C6") : Color.white.opacity(0.4))
+                            .font(.custom("HelveticaNeue-Bold", size: 14))
+                            .foregroundColor(studied ? Color(hex: "#0079C6") : Color.white.opacity(0.5))
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-                    .background(studied ? Color.white : Color.clear)
-                    .cornerRadius(10)
+                    .padding(.vertical, 7)
+                    .background(studied ? Color.white : Color.white.opacity(0.2))
+                    .cornerRadius(12)
                 }
             }
 
