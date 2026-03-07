@@ -35,8 +35,8 @@ struct KitView: View {
     let tools: [KitTool] = [
         // ── High frequency / ongoing ──────────────────────────────
         KitTool(icon: "laptopcomputer",              name: "Work",          description: "Find spaces with call rooms & fast WiFi", color: Color.tsAccent,       destination: .work),
-        KitTool(icon: "person.2.fill",               name: "Locals Use",    description: "Dentists, trainers, cleaners & more",     color: Color(hex: "#17C2E1"), destination: .localsUse),
         KitTool(icon: "figure.run",                 name: "Fitness",        description: "Gyms, studios, outdoors & class guide",    color: Color(hex: "#34C759"), destination: .fitness),
+        KitTool(icon: "person.2.fill",               name: "Locals Use",    description: "Dentists, trainers, cleaners & more",     color: Color(hex: "#17C2E1"), destination: .localsUse),
         KitTool(icon: "map",                         name: "Neighbourhoods",description: "Find your area by vibe",                  color: Color(hex: "#AF52DE"), destination: .neighbourhoods, isFree: true),
         KitTool(icon: "tram.fill",                   name: "Transportation", description: "Ride-hailing, transit, cars & more",     color: Color(hex: "#FF6B00"), destination: .transportation),
         // ── Periodic reference ────────────────────────────────────
