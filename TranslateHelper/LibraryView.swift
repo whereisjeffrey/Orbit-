@@ -197,12 +197,12 @@ struct LibraryView: View {
                             VStack(alignment: .leading, spacing: 3) {
                                 Text("Daily Goal")
                                     .font(.custom("HelveticaNeue-Bold", size: 15))
-                                    .foregroundColor(Color(hex: "#1A3A30"))
+                                    .foregroundColor(.white)
                                 Text(dailyGoal == 0
                                      ? "0 / 20 phrases reviewed"
                                      : "\(reviewedToday) of \(dailyGoal) phrases reviewed")
                                     .font(.custom("HelveticaNeue", size: 13))
-                                    .foregroundColor(Color(hex: "#1A3A30").opacity(0.65))
+                                    .foregroundColor(.white.opacity(0.7))
                             }
                             Spacer()
                             Button(action: { showingGoalSheet = true }) {
@@ -218,10 +218,10 @@ struct LibraryView: View {
                         GeometryReader { geo in
                             ZStack(alignment: .leading) {
                                 Capsule()
-                                    .fill(Color(hex: "#1A3A30").opacity(0.15))
+                                    .fill(Color.white.opacity(0.2))
                                     .frame(height: 6)
                                 Capsule()
-                                    .fill(Color(hex: "#1A3A30").opacity(0.55))
+                                    .fill(Color.white)
                                     .frame(width: geo.size.width * goalProgress, height: 6)
                                     .animation(.spring(response: 0.4), value: goalProgress)
                             }

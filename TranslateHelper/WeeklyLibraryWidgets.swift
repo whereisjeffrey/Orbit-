@@ -292,32 +292,22 @@ struct WeeklyStreakCard: View {
                 }
             }
 
-            HStack(spacing: 6) {
+            HStack(spacing: 8) {
                 ForEach(1...7, id: \.self) { day in
                     let dayNum = day + 1  // day1=Mon(2)...day7=Sun(8)
                     let studied = studiedDays.contains(dayNum)
-                    
-                    ZStack {
-                        Circle()
-                            .fill(studied ? Color.white : Color.white.opacity(0.12))
-                            .shadow(color: studied ? Color.black.opacity(0.15) : .clear, radius: 4, x: 0, y: 3)
-                        
-                        Circle()
-                            .stroke(Color.white.opacity(studied ? 1.0 : 0.4), lineWidth: 1)
-                        
-                        VStack(spacing: 1) {
-                            Text("Day")
-                                .font(.custom("HelveticaNeue", size: 10))
-                                .minimumScaleFactor(0.6)
-                            Text("\(day)")
-                                .font(.custom("HelveticaNeue-Medium", size: 18))
-                                .minimumScaleFactor(0.7)
-                        }
-                        .foregroundColor(studied ? Color(hex: "#25246D") : Color.white.opacity(0.8))
-                        .padding(2)
+                    VStack(spacing: 2) {
+                        Text("Day")
+                            .font(.custom("HelveticaNeue-Medium", size: 10))
+                            .foregroundColor(studied ? Color(hex: "#0079C6") : Color.white.opacity(0.5))
+                        Text("\(day)")
+                            .font(.custom("HelveticaNeue-Bold", size: 14))
+                            .foregroundColor(studied ? Color(hex: "#0079C6") : Color.white.opacity(0.5))
                     }
                     .frame(maxWidth: .infinity)
-                    .aspectRatio(1, contentMode: .fit)
+                    .padding(.vertical, 7)
+                    .background(studied ? Color.white : Color.white.opacity(0.2))
+                    .cornerRadius(12)
                 }
             }
 
@@ -655,52 +645,77 @@ struct DeckPagerContainer: UIViewControllerRepresentable {
 
 // MARK: - Botanical Card Background
 
-/// Sage-green card background with flowing leaf-stripe pattern,
-/// built from layered bezier curves — no image asset, iOS 14 compatible.
+/// Dark tropical background — deep navy base, layered teal leaf shadows,
+/// Bird of Paradise orange-flame radial accent. iOS 14 compatible, no assets.
 struct BotanicalCardBackground: View {
     var body: some View {
         GeometryReader { geo in
             let w = geo.size.width
             let h = geo.size.height
             ZStack {
-                // ── Base colour ──────────────────────────────────────
-                Color(hex: "#5A9E8A")
+                // ── Deep navy-teal base ──────────────────────────────
+                LinearGradient(
+                    colors: [Color(hex: "#061420"), Color(hex: "#0A2820")],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
 
-                // ── Horizontal leaf groups ───────────────────────────
-                // 6 lines per group, alternating arc direction → creates
-                // the impression of rows of horizontally-oriented leaves.
-                Path { p in
-                    let spacing: CGFloat = 7
-                    let count = Int(h / spacing) + 6
-                    for i in 0..<count {
-                        let y   = CGFloat(i) * spacing - spacing
-                        let arc: CGFloat = ((i / 6) % 2 == 0) ? -18 : 18
-                        p.move(to: CGPoint(x: -30, y: y))
-                        p.addCurve(to:     CGPoint(x: w + 30, y: y),
-                                   control1: CGPoint(x: w * 0.30, y: y + arc),
-                                   control2: CGPoint(x: w * 0.70, y: y - arc))
-                    }
-                }
-                .stroke(Color(hex: "#A8D4C8").opacity(0.50), lineWidth: 0.9)
+                // ── Large monstera leaf — top-left dark teal ─────────
+                Ellipse()
+                    .fill(Color(hex: "#0D3530").opacity(0.75))
+                    .frame(width: w * 1.1, height: h * 1.6)
+                    .rotationEffect(.degrees(-35))
+                    .offset(x: -w * 0.3, y: -h * 0.05)
 
-                // ── Diagonal leaf groups ─────────────────────────────
-                // Same logic rotated ~45°, layered at lower opacity to
-                // add depth without overwhelming the horizontal lines.
-                Path { p in
-                    let spacing: CGFloat = 8
-                    let total  = Int((w + h) / spacing) + 4
-                    for i in 0..<total {
-                        let d   = CGFloat(i) * spacing - spacing * 2
-                        let arc: CGFloat = ((i / 6) % 2 == 0) ? 14 : -14
-                        let x0  = d - h * 0.6
-                        let x1  = d + h * 0.6
-                        p.move(to: CGPoint(x: x0, y: -20))
-                        p.addCurve(to:     CGPoint(x: x1, y: h + 20),
-                                   control1: CGPoint(x: x0 + h * 0.3 + arc, y: h * 0.35),
-                                   control2: CGPoint(x: d            + arc, y: h * 0.65))
-                    }
-                }
-                .stroke(Color(hex: "#A8D4C8").opacity(0.28), lineWidth: 0.9)
+                // ── Palm frond shadow — bottom-left ──────────────────
+                Ellipse()
+                    .fill(Color(hex: "#082520").opacity(0.65))
+                    .frame(width: w * 0.9, height: h * 0.55)
+                    .rotationEffect(.degrees(25))
+                    .offset(x: -w * 0.15, y: h * 0.38)
+
+                // ── Fern accent — top-right ──────────────────────────
+                Ellipse()
+                    .fill(Color(hex: "#0B3028").opacity(0.55))
+                    .frame(width: w * 0.6, height: h * 1.2)
+                    .rotationEffect(.degrees(15))
+                    .offset(x: w * 0.38, y: -h * 0.2)
+
+                // ── Bird of Paradise — orange flame glow ─────────────
+                RadialGradient(
+                    colors: [
+                        Color(hex: "#FF8C1A").opacity(0.90),
+                        Color(hex: "#E8302A").opacity(0.55),
+                        Color(hex: "#C0204A").opacity(0.25),
+                        Color.clear
+                    ],
+                    center: UnitPoint(x: 0.68, y: 0.42),
+                    startRadius: 0,
+                    endRadius: h * 0.72
+                )
+
+                // ── Secondary flower accent — lower ──────────────────
+                RadialGradient(
+                    colors: [
+                        Color(hex: "#FF6A10").opacity(0.65),
+                        Color(hex: "#D42A3A").opacity(0.30),
+                        Color.clear
+                    ],
+                    center: UnitPoint(x: 0.52, y: 0.80),
+                    startRadius: 0,
+                    endRadius: h * 0.55
+                )
+
+                // ── Top-right purple hint (strelitzia bract) ─────────
+                RadialGradient(
+                    colors: [
+                        Color(hex: "#7040C8").opacity(0.40),
+                        Color.clear
+                    ],
+                    center: UnitPoint(x: 0.82, y: 0.18),
+                    startRadius: 0,
+                    endRadius: h * 0.45
+                )
             }
         }
         .clipped()
