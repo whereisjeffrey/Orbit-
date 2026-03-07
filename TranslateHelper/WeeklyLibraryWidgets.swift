@@ -483,10 +483,9 @@ struct DeckClipboardWidget: View {
 import UIKit
 
 // MARK: - DeckPagerContainer
-// UIPageViewController (.scroll) handles the simultaneous slide natively.
-// Additive CAAnimations layer the diagonal throw on top without conflicting:
-//   - Outgoing card: rotates + floats up-diagonally as it exits
-//   - Incoming card: springs in from slight scale-down
+// UIPageViewController handles the horizontal slide + gesture conflict resolution.
+// KVO on its internal UIScrollView drives the throw animation in real-time,
+// so rotation fires consistently regardless of where on the card you touch.
 
 struct DeckPagerContainer: UIViewControllerRepresentable {
     let pages: [AnyView]
@@ -500,31 +499,39 @@ struct DeckPagerContainer: UIViewControllerRepresentable {
         vc.delegate   = context.coordinator
         let initial = context.coordinator.hostingVC(for: 0)
         vc.setViewControllers([initial], direction: .forward, animated: false)
+        // Hook into internal scroll view after layout
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            context.coordinator.attachScrollObserver(to: vc)
+        }
         return vc
     }
 
     func updateUIViewController(_ pageVC: UIPageViewController, context: Context) {
         context.coordinator.parent = self
         guard context.coordinator.currentIndex != currentPage else { return }
-        let forward = currentPage > context.coordinator.currentIndex
+        let goForward = currentPage > context.coordinator.currentIndex
         let dest = context.coordinator.hostingVC(for: currentPage)
         pageVC.setViewControllers([dest],
-                                  direction: forward ? .reverse : .forward,
+                                  direction: goForward ? .reverse : .forward,
                                   animated: true)
         context.coordinator.currentIndex = currentPage
     }
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
+    // ── Coordinator ──────────────────────────────────────────────────────────
     class Coordinator: NSObject,
                        UIPageViewControllerDataSource,
                        UIPageViewControllerDelegate {
+
         var parent: DeckPagerContainer
         var currentIndex: Int = 0
         private var cache: [Int: UIHostingController<AnyView>] = [:]
+        private var scrollObservation: NSKeyValueObservation?
 
         init(_ p: DeckPagerContainer) { parent = p }
 
+        // ── Page caching ─────────────────────────────────────────────────────
         func hostingVC(for index: Int) -> UIHostingController<AnyView> {
             guard index < parent.pages.count else {
                 return UIHostingController(rootView: AnyView(EmptyView()))
@@ -544,7 +551,34 @@ struct DeckPagerContainer: UIViewControllerRepresentable {
             cache.first(where: { $0.value === vc })?.key
         }
 
-        // Swipe RIGHT → next page  (viewControllerBefore = idx+1)
+        // ── KVO: track UIPageViewController's internal scroll view ───────────
+        func attachScrollObserver(to pageVC: UIPageViewController) {
+            guard let sv = pageVC.view.subviews.compactMap({ $0 as? UIScrollView }).first else { return }
+            scrollObservation = sv.observe(\.contentOffset, options: [.new]) { [weak self] scrollView, _ in
+                self?.syncThrowAnimation(scrollView)
+            }
+        }
+
+        private func syncThrowAnimation(_ sv: UIScrollView) {
+            let w = sv.bounds.width
+            guard w > 0 else { return }
+            // UIPageViewController keeps current page at offset = w (middle of 3 slots)
+            let progress = (sv.contentOffset.x - w) / w   // -1…+1  (negative = swipe right/forward)
+            guard abs(progress) > 0.005 else {
+                cache[currentIndex]?.view.layer.transform = CATransform3DIdentity
+                return
+            }
+            guard let outgoing = cache[currentIndex]?.view else { return }
+            // Forward swipe (progress < 0): rotate clockwise, float up
+            // Backward swipe (progress > 0): rotate counter-clockwise, float up
+            let angle    = CGFloat(-progress) * 0.18      // radians (~10°)
+            let floatUp  = abs(progress) * 55              // max 55pt upward
+            let rot      = CATransform3DMakeRotation(angle, 0, 0, 1)
+            let combined = CATransform3DTranslate(rot, 0, -floatUp, 0)
+            outgoing.layer.transform = combined
+        }
+
+        // ── Direction: swipe RIGHT = next (viewControllerBefore = idx+1) ─────
         func pageViewController(_ pvc: UIPageViewController,
                                 viewControllerBefore vc: UIViewController) -> UIViewController? {
             guard let idx = index(of: vc), idx < parent.pages.count - 1 else { return nil }
@@ -557,57 +591,29 @@ struct DeckPagerContainer: UIViewControllerRepresentable {
             return hostingVC(for: idx - 1)
         }
 
-        // ── Throw animation: additive layers on top of UIPageViewController slide ──
+        // ── Incoming card: spring pop-in via willTransitionTo ─────────────────
         func pageViewController(_ pvc: UIPageViewController,
                                 willTransitionTo pending: [UIViewController]) {
-            guard let outgoingView = pvc.viewControllers?.first?.view,
-                  let incomingView = pending.first?.view,
-                  let outIdx = pvc.viewControllers?.first.flatMap({ index(of: $0) }),
-                  let inIdx  = pending.first.flatMap({ index(of: $0) }) else { return }
-
-            let goingForward = inIdx > outIdx   // swipe right = forward in our scheme
-
-            // ── Outgoing: rotate + float upward (additive = stacks on horizontal slide) ──
-            let rotAngle: Double = goingForward ? 0.13 : -0.13
-
-            let rot = CABasicAnimation(keyPath: "transform.rotation.z")
-            rot.fromValue = 0
-            rot.toValue   = rotAngle
-            rot.isAdditive = true
-            rot.duration   = 0.32
-            rot.timingFunction = CAMediaTimingFunction(name: .easeIn)
-            rot.fillMode   = .forwards
-            rot.isRemovedOnCompletion = false
-            outgoingView.layer.add(rot, forKey: "ts_throw_rot")
-
-            let floatUp = CABasicAnimation(keyPath: "transform.translation.y")
-            floatUp.fromValue = 0
-            floatUp.toValue   = -48
-            floatUp.isAdditive = true
-            floatUp.duration   = 0.32
-            floatUp.timingFunction = CAMediaTimingFunction(name: .easeIn)
-            floatUp.fillMode   = .forwards
-            floatUp.isRemovedOnCompletion = false
-            outgoingView.layer.add(floatUp, forKey: "ts_throw_up")
-
-            // ── Incoming: spring scale pop-in ──────────────────────────────────
+            guard let incomingView = pending.first?.view else { return }
             let scaleIn = CASpringAnimation(keyPath: "transform.scale")
-            scaleIn.fromValue     = 0.87
-            scaleIn.toValue       = 1.0
-            scaleIn.stiffness     = 280
-            scaleIn.damping       = 22
+            scaleIn.fromValue       = 0.88
+            scaleIn.toValue         = 1.0
+            scaleIn.stiffness       = 280
+            scaleIn.damping         = 22
             scaleIn.initialVelocity = 4
-            scaleIn.duration      = scaleIn.settlingDuration
+            scaleIn.duration        = scaleIn.settlingDuration
             incomingView.layer.add(scaleIn, forKey: "ts_pop_in")
         }
 
+        // ── Cleanup ───────────────────────────────────────────────────────────
         func pageViewController(_ pvc: UIPageViewController,
                                 didFinishAnimating finished: Bool,
                                 previousViewControllers: [UIViewController],
                                 transitionCompleted completed: Bool) {
-            // Clean up throw animations on the now-offscreen card
-            previousViewControllers.forEach { $0.view.layer.removeAllAnimations() }
-
+            previousViewControllers.forEach {
+                $0.view.layer.removeAllAnimations()
+                $0.view.layer.transform = CATransform3DIdentity
+            }
             guard completed,
                   let current = pvc.viewControllers?.first,
                   let idx = index(of: current) else { return }
@@ -616,4 +622,3 @@ struct DeckPagerContainer: UIViewControllerRepresentable {
         }
     }
 }
-
