@@ -197,25 +197,25 @@ struct LibraryView: View {
                             VStack(alignment: .leading, spacing: 3) {
                                 Text("Daily Goal")
                                     .font(.custom("HelveticaNeue-Bold", size: 15))
-                                    .foregroundColor(.tsLabel)
+                                    .foregroundColor(.white)
                                 Text(dailyGoal == 0
                                      ? "0 / 20 phrases reviewed"
                                      : "\(reviewedToday) of \(dailyGoal) phrases reviewed")
                                     .font(.custom("HelveticaNeue", size: 13))
-                                    .foregroundColor(.tsSecondary)
+                                    .foregroundColor(.white.opacity(0.85))
                             }
                             Spacer()
                             Button(action: { showingGoalSheet = true }) {
                                 HStack(spacing: 5) {
                                     Image(systemName: "bolt.fill")
                                         .font(.system(size: 10, weight: .bold))
-                                        .foregroundColor(.tsAccent)
+                                        .foregroundColor(Color(hex: "#FFD60A"))
                                     Text("Set Goal")
                                         .font(.custom("HelveticaNeue-Medium", size: 13))
                                         .foregroundColor(.tsAccent)
                                 }
                                 .padding(.horizontal, 14).padding(.vertical, 6)
-                                .background(Color.tsAccent.opacity(0.12))
+                                .background(Color.white)
                                 .clipShape(Capsule())
                             }
                             .buttonStyle(PlainButtonStyle())
