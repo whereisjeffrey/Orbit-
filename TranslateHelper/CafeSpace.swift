@@ -85,7 +85,7 @@ let cdmxCafeSpaces: [CafeSpace] = [
         timeLimitHrs: nil, hoursDisplay: "7am – 11pm", hoursDays: "Mon–Sun",
         notes: "CDMX institution. Cash only, famously cheap espresso. No WiFi but the vibe makes up for it. Go early.",
         website: nil, latitude: 19.3507, longitude: -99.1618,
-        photoURLs: ["https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&q=80","https://images.unsplash.com/photo-1453614512568-c4024d13c247?w=800&q=80","https://images.unsplash.com/photo-1600093463592-8e36ae95ef56?w=800&q=80"]
+        photoURLs: ["https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&q=80", "https://images.unsplash.com/photo-1453614512568-c4024d13c247?w=800&q=80", "https://images.unsplash.com/photo-1600093463592-8e36ae95ef56?w=800&q=80"]
     ),
     CafeSpace(
         id: "cafe_avellaneda", name: "Café Avellaneda", neighbourhood: "Coyoacán",
@@ -94,7 +94,7 @@ let cdmxCafeSpaces: [CafeSpace] = [
         timeLimitHrs: nil, hoursDisplay: "8am – 10pm", hoursDays: "Mon–Sun",
         notes: "Specialty coffee, single origin, relaxed about laptops. Two outlet strips near the back wall.",
         website: nil, latitude: 19.3512, longitude: -99.1625,
-        photoURLs: ["https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&q=80","https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800&q=80","https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=800&q=80"]
+        photoURLs: ["https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&q=80", "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800&q=80", "https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=800&q=80"]
     ),
     CafeSpace(
         id: "cafe_once", name: "Once Café", neighbourhood: "Roma Norte",
@@ -103,7 +103,7 @@ let cdmxCafeSpaces: [CafeSpace] = [
         timeLimitHrs: nil, hoursDisplay: "8am – 9pm", hoursDays: "Mon–Fri",
         notes: "Nomad favourite. Plenty of outlets, reliably fast WiFi, staff don't rush you. Gets busy 10am–1pm.",
         website: "oncecafe.mx", latitude: 19.4167, longitude: -99.1612,
-        photoURLs: ["https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=800&q=80","https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=800&q=80","https://images.unsplash.com/photo-1570696516188-ade861b84a49?w=800&q=80"]
+        photoURLs: ["https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=800&q=80", "https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=800&q=80", "https://images.unsplash.com/photo-1570696516188-ade861b84a49?w=800&q=80"]
     ),
     CafeSpace(
         id: "cafe_negro", name: "Café Negro", neighbourhood: "Roma Norte",
@@ -112,7 +112,7 @@ let cdmxCafeSpaces: [CafeSpace] = [
         timeLimitHrs: nil, hoursDisplay: "8am – 10pm", hoursDays: "Mon–Sun",
         notes: "Bright, airy corner spot. Good espresso, laptop crowd is normal here. Ask for WiFi password.",
         website: nil, latitude: 19.4178, longitude: -99.1598,
-        photoURLs: ["https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=800&q=80","https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&q=80","https://images.unsplash.com/photo-1456324504439-367cee3b3c32?w=800&q=80"]
+        photoURLs: ["https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=800&q=80", "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&q=80", "https://images.unsplash.com/photo-1456324504439-367cee3b3c32?w=800&q=80"]
     ),
     CafeSpace(
         id: "cafe_quentin", name: "Café Quentin", neighbourhood: "Condesa",
@@ -121,7 +121,7 @@ let cdmxCafeSpaces: [CafeSpace] = [
         timeLimitHrs: nil, hoursDisplay: "8am – 9pm", hoursDays: "Mon–Sat",
         notes: "Tree-lined Ámsterdam street, massive windows, very quiet on weekday mornings. Nomad-friendly default.",
         website: nil, latitude: 19.4135, longitude: -99.1712,
-        photoURLs: ["https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&q=80","https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&q=80","https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=800&q=80"]
+        photoURLs: ["https://images.unsplash.com/photo-1525480122447-64809d765ec4?w=800&q=80", "https://images.unsplash.com/photo-1534040385115-33dcb3acba5b?w=800&q=80", "https://images.unsplash.com/photo-1507914997854-22df4c5c3fde?w=800&q=80"]
     ),
     CafeSpace(
         id: "cafe_buna", name: "Buna 42", neighbourhood: "Polanco",
@@ -130,7 +130,7 @@ let cdmxCafeSpaces: [CafeSpace] = [
         timeLimitHrs: nil, hoursDisplay: "7am – 8pm", hoursDays: "Mon–Fri",
         notes: "Best WiFi speeds we've tested in Polanco. Specialty roasts, business crowd. Gets louder at lunch.",
         website: "buna.coffee", latitude: 19.4322, longitude: -99.1942,
-        photoURLs: ["https://images.unsplash.com/photo-1453614512568-c4024d13c247?w=800&q=80","https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800&q=80","https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=800&q=80"]
+        photoURLs: ["https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=800&q=80", "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=800&q=80", "https://images.unsplash.com/photo-1556742502-ec7c0e9f34b6?w=800&q=80"]
     ),
     CafeSpace(
         id: "cafe_almanegra", name: "Almanegra Café", neighbourhood: "Juárez",
@@ -139,7 +139,7 @@ let cdmxCafeSpaces: [CafeSpace] = [
         timeLimitHrs: nil, hoursDisplay: "8am – 9pm", hoursDays: "Mon–Sun",
         notes: "Low-key, long tables with built-in outlets, ambient music. Regulars are mostly remote workers.",
         website: "almanegra.mx", latitude: 19.4268, longitude: -99.1632,
-        photoURLs: ["https://images.unsplash.com/photo-1600093463592-8e36ae95ef56?w=800&q=80","https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=800&q=80","https://images.unsplash.com/photo-1570696516188-ade861b84a49?w=800&q=80"]
+        photoURLs: ["https://images.unsplash.com/photo-1510972559635-7b6d9c574f0b?w=800&q=80", "https://images.unsplash.com/photo-1485182708500-e8f1f318ba72?w=800&q=80", "https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=800&q=80"]
     ),
     CafeSpace(
         id: "cafe_paramo", name: "Páramo", neighbourhood: "Roma Sur",
@@ -148,6 +148,6 @@ let cdmxCafeSpaces: [CafeSpace] = [
         timeLimitHrs: 2, hoursDisplay: "8am – 11pm", hoursDays: "Mon–Sun",
         notes: "Great coffee and cocktails, excellent vibe. Better for afternoons than deep work. Weekends get very loud.",
         website: nil, latitude: 19.4121, longitude: -99.1573,
-        photoURLs: ["https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=800&q=80","https://images.unsplash.com/photo-1453614512568-c4024d13c247?w=800&q=80","https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800&q=80"]
+        photoURLs: ["https://images.unsplash.com/photo-1549834125-82d3c89f2b88?w=800&q=80", "https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=800&q=80", "https://images.unsplash.com/photo-1562095500-fb8c4a8c6de2?w=800&q=80"]
     ),
 ]

@@ -3,6 +3,34 @@
 
 import SwiftUI
 
+// Hides on load failure — never shows broken icon
+private struct PhotoTile: View {
+    let url: URL
+    @State private var failed = false
+
+    var body: some View {
+        if !failed {
+            AsyncImage(url: url) { phase in
+                switch phase {
+                case .success(let img):
+                    img.resizable().scaledToFill()
+                        .frame(width: 260, height: 200).clipped()
+                case .failure:
+                    Color.clear
+                        .frame(width: 0, height: 0)
+                        .onAppear { failed = true }
+                default:
+                    Rectangle()
+                        .fill(Color.tsInputBg)
+                        .frame(width: 260, height: 200)
+                        .overlay(ProgressView().tint(Color.tsSecondary.opacity(0.4)))
+                }
+            }
+            .frame(width: 260, height: 200).clipped()
+        }
+    }
+}
+
 struct PlacePhotoCarousel: View {
     let placeId:    String
     let seedPhotos: [String]
@@ -17,21 +45,7 @@ struct PlacePhotoCarousel: View {
             HStack(spacing: 6) {
                 ForEach(Array(allURLs.enumerated()), id: \.offset) { _, urlStr in
                     if let url = URL(string: urlStr) {
-                        AsyncImage(url: url) { phase in
-                            switch phase {
-                            case .success(let img):
-                                img.resizable().scaledToFill()
-                                    .frame(width: 260, height: 200).clipped()
-                            default:
-                                ZStack {
-                                    Color.tsInputBg
-                                    Image(systemName: "photo")
-                                        .foregroundColor(.tsSecondary)
-                                }
-                                .frame(width: 260, height: 200)
-                            }
-                        }
-                        .frame(width: 260, height: 200).clipped()
+                        PhotoTile(url: url)
                     }
                 }
 

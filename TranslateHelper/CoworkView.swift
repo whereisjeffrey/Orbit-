@@ -362,7 +362,7 @@ struct CoworkCard: View {
                     }
                     HStack(spacing: 12) {
                         AmenityBadge(icon: "phone.fill",          label: space.hasCallRooms ? "Call rooms" : "No rooms",     active: space.hasCallRooms,  color: Color(hex: "#34C759"))
-                        AmenityBadge(icon: "cup.and.saucer.fill", label: space.hasCoffee    ? "Coffee"     : "No coffee",    active: space.hasCoffee,    color: Color(hex: "#7B4F2E"))
+                        AmenityBadge(icon: "cup.and.saucer.fill", label: space.hasCoffee    ? "Coffee"     : "No coffee",    active: space.hasCoffee,    color: Color(hex: "#FF9500"))
                         AmenityBadge(icon: "bolt.fill",           label: space.hasFastWifi  ? "Fast WiFi"  : "Standard",     active: space.hasFastWifi,  color: Color(hex: "#FFD60A"))
                         AmenityBadge(icon: "moon.fill",           label: space.hasLateHours ? "Open late"  : "Closes early", active: space.hasLateHours, color: Color(hex: "#AF52DE"))
                         Spacer()
