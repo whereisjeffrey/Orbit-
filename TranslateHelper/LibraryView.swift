@@ -66,8 +66,9 @@ struct LibraryView: View {
 
                     // ── Header ─────────────────────────────────────────
                     HStack {
-                        Text("Library")
-                            .font(.custom("HelveticaNeue-Bold", size: 30))
+                        Text("wandr")
+                            .font(.custom("Comfortaa-Medium", size: 30))
+                            .kerning(30 * 0.01)
                             .foregroundColor(colorScheme == .dark ? .white : .black)
                         Spacer()
                         HStack(spacing: 12) {

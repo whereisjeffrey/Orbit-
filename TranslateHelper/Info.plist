@@ -34,6 +34,7 @@
 	<key>UIAppFonts</key>
 	<array>
 		<string>Sono-Regular.ttf</string>
+		<string>Comfortaa-Medium.ttf</string>
 	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>

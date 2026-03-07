@@ -216,8 +216,7 @@ struct WeeklyStreakCard: View {
     }
 
     private var todayWeekday: Int {
-        var cal = Calendar.current; cal.firstWeekday = 2
-        return cal.component(.weekday, from: Date())
+        return Calendar.current.component(.weekday, from: Date())
     }
 
     private var studiedDays: Set<Int> {
@@ -227,6 +226,78 @@ struct WeeklyStreakCard: View {
 
     private var daysHit: Int       { studiedDays.count }
     private var weekComplete: Bool { daysHit >= Self.goal }
+
+    private var currentConsecutiveStreak: Int {
+        var streak = 0
+        var startDay = todayWeekday
+        if startDay > 1 && !studiedDays.contains(todayWeekday) {
+            startDay -= 1
+        }
+        
+        for d in stride(from: startDay, through: 1, by: -1) {
+            if studiedDays.contains(d) {
+                streak += 1
+            } else {
+                break
+            }
+        }
+        return streak
+    }
+
+    private var streakMessage: String {
+        let today = todayWeekday // 1...7
+        let streak = currentConsecutiveStreak
+        
+        // 1. Perfect Week
+        if daysHit == 7 { return "God tier 👑" }
+        
+        // 2. Goal Met
+        if daysHit >= Self.goal { return "Week won 🏆" }
+        
+        // 3. Hot Streak
+        if streak >= 3 { return "That's hot 🔥" }
+        
+        // 4. Momentum
+        if streak == 2 { return "Back-to-back ✌️" }
+        
+        // 5. Late Start / 6. Fresh Start
+        if daysHit == 0 {
+            return today >= 4 ? "Time to get going ⏰" : "Fresh week, let's ride 🌊"
+        }
+        
+        // 7. Slipping (missed yesterday and today)
+        if daysHit > 0 && !studiedDays.contains(today) && !studiedDays.contains(today - 1) {
+            return "Ice cold. Time to warm up 🥶"
+        }
+        
+        // 8. On the Board
+        if daysHit == 1 { return "On the board 🛹" }
+        
+        // Default fallback
+        return "\(daysHit) of \(Self.goal) days — keep going"
+    }
+
+    private var weekDatesAndStrings: [(weekday: Int, monthStr: String, dayStr: String)] {
+        let cal = Calendar.current
+        let now = Date()
+        let weekday = cal.component(.weekday, from: now)
+        let daysToSubtract = weekday - 1
+        let startOfWeek = cal.date(byAdding: .day, value: -daysToSubtract, to: now) ?? now
+        
+        let monthFmt = DateFormatter()
+        monthFmt.dateFormat = "MMM"
+        let dayFmt = DateFormatter()
+        dayFmt.dateFormat = "d"
+        
+        return (0..<7).compactMap { i in
+            guard let d = cal.date(byAdding: .day, value: i, to: startOfWeek) else { return nil }
+            return (
+                weekday: cal.component(.weekday, from: d),
+                monthStr: monthFmt.string(from: d).uppercased(),
+                dayStr: dayFmt.string(from: d)
+            )
+        }
+    }
 
     // Inspiration mesh background matching the vibrant gradient
     @ViewBuilder private var inspirationBackground: some View {
@@ -271,12 +342,10 @@ struct WeeklyStreakCard: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("This Week")
+                    Text("This Week's Streak")
                         .font(.custom("HelveticaNeue-Bold", size: 16))
                         .foregroundColor(.white)
-                    Text(weekComplete
-                         ? "Week complete 🏆"
-                         : "\(daysHit) of \(Self.goal) days — keep going")
+                    Text(streakMessage)
                         .font(.custom("HelveticaNeue", size: 12))
                         .foregroundColor(weekComplete ? Color(hex: "#30D158") : Color.white.opacity(0.65))
                 }
@@ -293,16 +362,17 @@ struct WeeklyStreakCard: View {
             }
 
             HStack(spacing: 8) {
-                ForEach(1...7, id: \.self) { day in
-                    let dayNum = day + 1  // day1=Mon(2)...day7=Sun(8)
-                    let studied = studiedDays.contains(dayNum)
+                let items = weekDatesAndStrings
+                ForEach(0..<7, id: \.self) { index in
+                    let item = items[index]
+                    let studied = studiedDays.contains(item.weekday)
                     VStack(spacing: 2) {
-                        Text("Day")
+                        Text(item.monthStr)
                             .font(.custom("HelveticaNeue-Medium", size: 10))
                             .foregroundColor(studied ? Color(hex: "#0079C6") : Color.white.opacity(0.5))
-                        Text("\(day)")
+                        Text(item.dayStr)
                             .font(.custom("HelveticaNeue-Bold", size: 14))
-                            .foregroundColor(studied ? .black : Color.white.opacity(0.5))
+                            .foregroundColor(studied ? .tsSecondary : Color.white.opacity(0.5))
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 7)

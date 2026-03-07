@@ -353,15 +353,16 @@ struct TSProgressRing: View {
 
 // MARK: - TSPageHeader
 struct TSPageHeader: View {
-    let title: String
+    let title: String // Kept for backwards compatibility if needed
     let selectedCity: City
     var bottomPadding: CGFloat = 16
     let action: () -> Void
 
     var body: some View {
         HStack(alignment: .center) {
-            Text(title)
-                .font(.custom("HelveticaNeue-Bold", size: 28))
+            Text("wandr")
+                .font(.custom("Comfortaa-Medium", size: 28))
+                .kerning(28 * 0.01)
                 .foregroundColor(.tsLabel)
             Spacer()
             Button(action: action) {
