@@ -150,12 +150,12 @@ struct LibraryView: View {
                             VStack(alignment: .leading, spacing: 3) {
                                 Text("Daily Goal")
                                     .font(.custom("HelveticaNeue-Bold", size: 15))
-                                    .foregroundColor(Color(hex: "#0079C6"))
+                                    .foregroundColor(.white)
                                 Text(dailyGoal == 0
                                      ? "0 / 20 phrases reviewed"
                                      : "\(reviewedToday) of \(dailyGoal) phrases reviewed")
                                     .font(.custom("HelveticaNeue", size: 13))
-                                    .foregroundColor(Color(hex: "#0079C6").opacity(0.75))
+                                    .foregroundColor(.white.opacity(0.7))
                             }
                             Spacer()
                             Button(action: { showingGoalSheet = true }) {
@@ -165,17 +165,17 @@ struct LibraryView: View {
                                         .foregroundColor(Color(hex: "#FFD60A"))
                                     Text("Set Goal")
                                         .font(.custom("HelveticaNeue-Medium", size: 13))
-                                        .foregroundColor(Color(hex: "#0079C6"))
+                                        .foregroundColor(.white)
                                 }
                                 .padding(.horizontal, 14).padding(.vertical, 6)
-                                .overlay(Capsule().stroke(Color(hex: "#0079C6").opacity(0.45), lineWidth: 1))
+                                .overlay(Capsule().stroke(Color.white.opacity(0.45), lineWidth: 1))
                             }
                         }
                         GeometryReader { geo in
                             ZStack(alignment: .leading) {
-                                Capsule().fill(Color(hex: "#0079C6").opacity(0.15)).frame(height: 6)
+                                Capsule().fill(Color.white.opacity(0.15)).frame(height: 6)
                                 Capsule()
-                                    .fill(Color(hex: "#0079C6"))
+                                    .fill(Color.white)
                                     .frame(width: geo.size.width * goalProgress, height: 6)
                                     .animation(.spring(response: 0.4), value: goalProgress)
                             }
@@ -185,10 +185,7 @@ struct LibraryView: View {
                     .padding(16)
                     .background(
                         LinearGradient(
-                            stops: [
-                                .init(color: Color(hex: "#69B6C1").opacity(0.25), location: 0),
-                                .init(color: Color(hex: "#69B6C1"),               location: 0.77),
-                            ],
+                            colors: [Color(hex: "#0079C6"), Color(hex: "#69B6C1")],
                             startPoint: .top, endPoint: .bottom
                         )
                     )
