@@ -485,68 +485,63 @@ struct DeckClipboardWidget: View {
 }
 
 
-// MARK: - Spring Swipe Container
-// Replaces TabView paging — gives a springy "jump off" feel with real drag physics
 
-struct SpringSwipeContainer<Content: View>: View {
-    let pageCount: Int
+// MARK: - Throw Swipe Container
+// Matches the keyboard's Tinder-style throw: card flies off with rotation,
+// content swaps instantly, new card pops in from slight scale.
+
+struct ThrowSwipeContainer: View {
+    let pages: [AnyView]
     @Binding var currentPage: Int
-    @ViewBuilder let content: (Int) -> Content
 
     @State private var dragOffset: CGFloat = 0
+    @State private var cardOpacity: Double = 1.0
+    @State private var cardScale: CGFloat  = 1.0
 
     var body: some View {
-        GeometryReader { geo in
-            let w = geo.size.width
-            HStack(spacing: 0) {
-                ForEach(0..<pageCount, id: \.self) { idx in
-                    content(idx)
-                        .frame(width: w)
-                        // Slight scale-down on cards that are off-center during drag
-                        .scaleEffect(scaleFor(idx: idx, width: w))
-                        .opacity(opacityFor(idx: idx, width: w))
-                }
-            }
-            .frame(width: w, alignment: .leading)
-            .offset(x: -CGFloat(currentPage) * w + dragOffset)
-            .clipped()
+        pages[currentPage]
+            // Tilt as you drag (matches keyboard: clamped/800 radians)
+            .rotationEffect(.degrees(Double(dragOffset) / 28.0))
+            .offset(x: dragOffset)
+            .opacity(cardOpacity)
+            .scaleEffect(cardScale)
             .gesture(
-                DragGesture(minimumDistance: 8)
+                DragGesture(minimumDistance: 8, coordinateSpace: .local)
                     .onChanged { v in
                         dragOffset = v.translation.width
                     }
                     .onEnded { v in
-                        let dx       = v.translation.width
-                        let velocity = v.predictedEndTranslation.width - v.translation.width
-                        let flick    = abs(velocity) > 80
-
-                        if (dx < -50 || flick && velocity < 0), currentPage < pageCount - 1 {
-                            withAnimation(.spring(response: 0.38, dampingFraction: 0.66)) {
-                                currentPage += 1; dragOffset = 0
-                            }
-                        } else if (dx > 50 || flick && velocity > 0), currentPage > 0 {
-                            withAnimation(.spring(response: 0.38, dampingFraction: 0.66)) {
-                                currentPage -= 1; dragOffset = 0
-                            }
+                        let dx  = v.translation.width
+                        let vel = v.predictedEndTranslation.width - v.translation.width
+                        if (dx < -70 || vel < -80), currentPage < pages.count - 1 {
+                            throwCard(direction: -1) { currentPage += 1 }
+                        } else if (dx > 70 || vel > 80), currentPage > 0 {
+                            throwCard(direction: 1)  { currentPage -= 1 }
                         } else {
-                            withAnimation(.spring(response: 0.32, dampingFraction: 0.72)) {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
                                 dragOffset = 0
                             }
                         }
                     }
             )
+    }
+
+    private func throwCard(direction: CGFloat, then swap: @escaping () -> Void) {
+        // 1. Fly current card off screen (0.19s, tilted, faded)
+        withAnimation(.easeIn(duration: 0.19)) {
+            dragOffset   = direction * 520
+            cardOpacity  = 0
         }
-    }
-
-    private func scaleFor(idx: Int, width: CGFloat) -> CGFloat {
-        let offset = dragOffset / width
-        let dist   = abs(CGFloat(idx - currentPage) - offset)
-        return 1.0 - min(dist, 1.0) * 0.04   // shrinks to 0.96 when off-screen
-    }
-
-    private func opacityFor(idx: Int, width: CGFloat) -> Double {
-        let offset = dragOffset / width
-        let dist   = abs(CGFloat(idx - currentPage) - offset)
-        return Double(1.0 - min(dist, 1.0) * 0.25)  // fades to 0.75 when off-screen
+        // 2. After it's gone: swap content, reset position, pop in
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.19) {
+            dragOffset  = 0
+            cardOpacity = 0
+            cardScale   = 0.88
+            swap()   // change page — new content loads instantly
+            withAnimation(.spring(response: 0.34, dampingFraction: 0.62)) {
+                cardOpacity = 1.0
+                cardScale   = 1.0
+            }
+        }
     }
 }

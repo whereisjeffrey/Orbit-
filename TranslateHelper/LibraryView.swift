@@ -99,24 +99,26 @@ struct LibraryView: View {
                         .padding(.bottom, 10)
 
                     // ── Weekly Clipboard + Streak ──────────────────────
-                    // ── Horizontal spring swipe: Clipboard + Deck widgets ──
-                    let allWidgets: [AnyView] = {
+                    // ── Throw-style swipe: Clipboard + Deck widgets ──
+                    let deckList = Array(deckStore.decks.prefix(5))
+                    let widgetPages: [AnyView] = {
                         var views: [AnyView] = [
                             AnyView(WeeklyClipboardWidget(store: store, onStudy: { showingStudyMode = true })
                                 .padding(.horizontal, 16))
                         ]
-                        for deck in deckStore.decks.prefix(5) {
-                            views.append(AnyView(DeckClipboardWidget(deck: deck, onStudy: {
-                                deckStudyDeck = deck
-                                showingDeckStudy = true
-                            }).padding(.horizontal, 16)))
+                        for deck in deckList {
+                            views.append(AnyView(
+                                DeckClipboardWidget(deck: deck, onStudy: {
+                                    deckStudyDeck = deck
+                                    showingDeckStudy = true
+                                })
+                                .padding(.horizontal, 16)
+                            ))
                         }
                         return views
                     }()
-                    SpringSwipeContainer(pageCount: allWidgets.count,
-                                         currentPage: $activeWidgetPage) { idx in
-                        allWidgets[idx]
-                    }
+                    ThrowSwipeContainer(pages: widgetPages,
+                                        currentPage: $activeWidgetPage)
                     .frame(height: 440)
                     .onChange(of: activeWidgetPage) { p in
                         if p > 0 { hasSwipedToDeck = true }
