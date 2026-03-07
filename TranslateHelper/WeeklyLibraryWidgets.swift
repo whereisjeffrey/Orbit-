@@ -364,11 +364,9 @@ struct DeckClipboardWidget: View {
 
             // ── Header ──────────────────────────────────────
             HStack(alignment: .center) {
-                Spacer()
                 Text(deck.name)
                     .font(.custom("HelveticaNeue-Bold", size: 18))
                     .foregroundColor(.tsLabel)
-                    .multilineTextAlignment(.center)
                 Spacer()
                 if !deck.cards.isEmpty {
                     Button(action: onStudy) {
