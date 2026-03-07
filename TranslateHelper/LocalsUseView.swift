@@ -271,6 +271,7 @@ struct LocalRec: Identifiable {
     var endorsements:  Int
     var website:       String?
     var instagram:     String?  = nil    // handle without @
+    var whatsappNumber: String?  = nil    // digits only, no + or spaces
     var englishSpeaking: Bool?   = nil    // nil = not specified
     var photoURL:       String?  = nil    // direct photo URL (overrides OG scrape)
 }
@@ -696,10 +697,27 @@ struct LocalRecCard: View {
                 .padding(.bottom, 10)
             }
 
-            // ── Website + Instagram ───────────────────────────────────
-            let hasLinks = (rec.website != nil && !rec.website!.isEmpty) || (rec.instagram != nil && !rec.instagram!.isEmpty)
+            // ── WhatsApp + Website + Instagram ────────────────────────
+            let hasLinks = (rec.whatsappNumber != nil && !rec.whatsappNumber!.isEmpty)
+                        || (rec.website != nil && !rec.website!.isEmpty)
+                        || (rec.instagram != nil && !rec.instagram!.isEmpty)
             if hasLinks {
-                HStack(spacing: 14) {
+                HStack(spacing: 10) {
+                    if let wa = rec.whatsappNumber, !wa.isEmpty {
+                        Button(action: {
+                            if let url = URL(string: "https://wa.me/\(wa)") { openURL(url) }
+                        }) {
+                            HStack(spacing: 5) {
+                                Image(systemName: "phone.fill").font(.system(size: 11))
+                                Text("WhatsApp").font(.custom("HelveticaNeue-Medium", size: 12))
+                            }
+                            .foregroundColor(Color(hex: "#25D366"))
+                            .padding(.horizontal, 10).padding(.vertical, 6)
+                            .background(Color(hex: "#25D366").opacity(0.12))
+                            .clipShape(Capsule())
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
                     if let site = rec.website, !site.isEmpty {
                         Button(action: { if let url = URL(string: "https://\(site)") { openURL(url) } }) {
                             HStack(spacing: 4) {
@@ -892,8 +910,10 @@ struct AddRecSheet: View {
     @State private var price: PriceTier? = nil
     @State private var neighbourhood = ""
     @State private var selectedTags: Set<String> = []
-    @State private var website       = ""
-    @State private var instagram     = ""
+    @State private var website          = ""
+    @State private var instagram        = ""
+    @State private var whatsappNumber   = ""
+    @State private var showContactPicker = false
     @State private var englishAnswer = ""   // "Yes" / "No" / "Not sure" / ""
 
     private var isValid: Bool {
@@ -1025,6 +1045,38 @@ struct AddRecSheet: View {
                             TextField("e.g. Roma Norte, Polanco…", text: $neighbourhood)
                                 .font(.custom("HelveticaNeue", size: 16))
                                 .foregroundColor(.tsLabel)
+                        }
+
+                        // WhatsApp
+                        RecFormField(label: "WhatsApp number") {
+                            HStack(spacing: 8) {
+                                Image(systemName: "phone.fill")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(Color(hex: "#25D366"))
+                                TextField("e.g. 5512345678", text: $whatsappNumber)
+                                    .font(.custom("HelveticaNeue", size: 16))
+                                    .foregroundColor(.tsLabel)
+                                    .keyboardType(.phonePad)
+                                Spacer()
+                                Button {
+                                    showContactPicker = true
+                                } label: {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "person.crop.circle")
+                                            .font(.system(size: 13))
+                                        Text("Contacts")
+                                            .font(.custom("HelveticaNeue-Medium", size: 12))
+                                    }
+                                    .foregroundColor(.tsAccent)
+                                    .padding(.horizontal, 10).padding(.vertical, 5)
+                                    .background(Color.tsAccent.opacity(0.08))
+                                    .clipShape(Capsule())
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                        }
+                        .sheet(isPresented: $showContactPicker) {
+                            ContactPickerView(phoneNumber: $whatsappNumber, isPresented: $showContactPicker)
                         }
 
                         // Website
@@ -1168,6 +1220,7 @@ struct AddRecSheet: View {
             endorsements:  0,
             website:       website.trimmingCharacters(in: .whitespaces).isEmpty ? nil : website.trimmingCharacters(in: .whitespaces),
             instagram:     instagram.trimmingCharacters(in: .whitespaces).isEmpty ? nil : instagram.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: "@", with: ""),
+            whatsappNumber: whatsappNumber.filter { $0.isNumber }.isEmpty ? nil : whatsappNumber.filter { $0.isNumber },
             englishSpeaking: englishAnswer == "Yes" ? true : (englishAnswer == "No" ? false : nil)
         )
         onSave(newRec)
