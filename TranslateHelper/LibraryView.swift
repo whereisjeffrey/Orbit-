@@ -197,7 +197,7 @@ struct LibraryView: View {
                             VStack(alignment: .leading, spacing: 3) {
                                 Text("Daily Goal")
                                     .font(.custom("HelveticaNeue-Bold", size: 15))
-                                    .foregroundColor(.tsLabel)
+                                    .foregroundColor(.black)
                                 Text(dailyGoal == 0
                                      ? "0 / 20 phrases reviewed"
                                      : "\(reviewedToday) of \(dailyGoal) phrases reviewed")
