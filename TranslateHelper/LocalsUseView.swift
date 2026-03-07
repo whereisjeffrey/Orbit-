@@ -282,14 +282,14 @@ private let seedRecs: [LocalRec] = [
     LocalRec(
         businessName: "Dr. Alejandro Reyes",
         category: .health, subcategory: .dentistry,
-        description: "General dentistry & implants · Condesa",
+        description: "General dentistry & implants",
         reviews: [
             RecReview(text: "Saved me $2,400 on two implants vs what I was quoted back home. English-speaking, clean, modern clinic. Gets booked up fast — message ahead.", recommender: RecRecommender(name: "Sarah M.", initials: "SM", trustLevel: .trustedLocal, monthsInCity: 18)),
             RecReview(text: "Three years of avoiding the dentist, fixed in two appointments. Clear pricing up front, no surprises. My whole household goes here now.", recommender: RecRecommender(name: "Tom W.", initials: "TW", trustLevel: .settling, monthsInCity: 7)),
         ],
         price: .mid, neighbourhood: "Condesa",
         tags: ["English-friendly", "Implants", "Walk-in OK"],
-        endorsements: 14, website: nil,
+        endorsements: 14, website: nil, whatsappNumber: "5215510234567",
         photoURL: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=800&q=80"
     ),
     LocalRec(
@@ -299,7 +299,7 @@ private let seedRecs: [LocalRec] = [
         reviews: [RecReview(text: "Best trainer I've had in any city. She speaks English, adapts to your level, and actually shows up on time — which in CDMX is saying something. ~$35/session.", recommender: RecRecommender(name: "Jake T.", initials: "JT", trustLevel: .local, monthsInCity: 9))],
         price: .mid, neighbourhood: "Roma Norte",
         tags: ["English-friendly", "Outdoor sessions", "Nutrition coaching"],
-        endorsements: 11, website: nil,
+        endorsements: 11, website: nil, whatsappNumber: "5215598765432",
         photoURL: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&q=80"
     ),
     LocalRec(
@@ -309,30 +309,30 @@ private let seedRecs: [LocalRec] = [
         reviews: [RecReview(text: "Maria and her team have been cleaning my apartment for 8 months. Super reliable, thorough, totally fair. About $25 for a 1BR deep clean.", recommender: RecRecommender(name: "Priya K.", initials: "PK", trustLevel: .trustedLocal, monthsInCity: 22))],
         price: .budget, neighbourhood: "Juárez",
         tags: ["Weekly available", "Deep clean", "Key-holder trusted"],
-        endorsements: 19, website: nil
+        endorsements: 19, website: nil, whatsappNumber: "5215512348890"
     ),
     LocalRec(
         businessName: "Diego Hernández",
         category: .legal, subcategory: .immigration,
-        description: "Residency, visas & apostilles · Polanco",
+        description: "Residency, visas & apostilles",
         reviews: [RecReview(text: "Got my temporary residency done in 6 weeks flat. Diego was transparent about costs upfront — no hidden fees. Worth every peso. Fluent in English.", recommender: RecRecommender(name: "Carlos R.", initials: "CR", trustLevel: .cityExpert, monthsInCity: 36))],
         price: .mid, neighbourhood: "Polanco",
         tags: ["English-speaking", "Residency", "Apostilles"],
-        endorsements: 23, website: "diegohernandez.mx"
+        endorsements: 23, website: "diegohernandez.mx", whatsappNumber: "5215523456789"
     ),
     LocalRec(
         businessName: "Studio Bloom",
         category: .beauty, subcategory: .hair,
-        description: "Balayage, cuts & colour · Roma Norte",
+        description: "Balayage, cuts & colour",
         reviews: [RecReview(text: "Finally found a colorist who gets fine hair. Lucia did exactly what I asked for — and charged me 60% less than I'd pay in NYC. Book online, she fills up.", recommender: RecRecommender(name: "Emma L.", initials: "EL", trustLevel: .settling, monthsInCity: 4))],
         price: .mid, neighbourhood: "Roma Norte",
         tags: ["Colour specialist", "Fine hair", "Online booking"],
-        endorsements: 8, website: "studiobloom.mx"
+        endorsements: 8, website: "studiobloom.mx", whatsappNumber: "5215534560012"
     ),
     LocalRec(
         businessName: "Clínica Derma MX",
         category: .health, subcategory: .dermatology,
-        description: "Dermatology, Botox & skincare treatments · Polanco",
+        description: "Dermatology, Botox & skincare treatments",
         reviews: [RecReview(text: "Botox was $180 USD all-in, same product I get at home for $550. Dr. Vargas is meticulous. Clinic is spotless. Bring a photo of what you want.", recommender: RecRecommender(name: "Tara S.", initials: "TS", trustLevel: .local, monthsInCity: 11))],
         price: .mid, neighbourhood: "Polanco",
         tags: ["Botox", "Fillers", "Skincare"],
@@ -345,7 +345,7 @@ private let seedRecs: [LocalRec] = [
         reviews: [RecReview(text: "Fixed a leak my landlord had been ignoring for months. Showed up in 2 hours, charged $400 MXN and was done in 45 min. Saved his number immediately.", recommender: RecRecommender(name: "Ben A.", initials: "BA", trustLevel: .settling, monthsInCity: 5))],
         price: .budget, neighbourhood: "Condesa",
         tags: ["Same-day", "Emergency", "Leak repair"],
-        endorsements: 6, website: nil
+        endorsements: 6, website: nil, whatsappNumber: "5215556781234"
     ),
     LocalRec(
         businessName: "Paz Contadores",
@@ -372,23 +372,23 @@ private let seedRecs: [LocalRec] = [
     LocalRec(
         businessName: "iRepara CDMX",
         category: .tech, subcategory: .phoneRepair,
-        description: "iPhone & Android repairs, Condesa",
+        description: "iPhone & Android repairs",
         reviews: [RecReview(text: "Cracked my screen on day two. This guy fixed it in 45 minutes for 350 pesos. Legit parts, not knock-offs. Saved me a long trip to the Apple Store.", recommender: RecRecommender(name: "Marcus T.", initials: "MT", trustLevel: .settling, monthsInCity: 8))],
         price: .budget, neighbourhood: "Condesa",
         tags: ["iPhone repair", "Screen replacement", "Fast turnaround"],
         endorsements: 9,
-        englishSpeaking: true,
+        whatsappNumber: "5215578901234", englishSpeaking: true,
         photoURL: "https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=800&q=80"
     ),
     LocalRec(
         businessName: "Dr. Wei Acupunctura",
         category: .health, subcategory: .acupuncture,
-        description: "Traditional Chinese acupuncture, Roma Norte",
+        description: "Traditional Chinese acupuncture",
         reviews: [RecReview(text: "Three sessions for lower back pain and I felt like a different person. She explains everything in English and the space is beautiful.", recommender: RecRecommender(name: "Priya N.", initials: "PN", trustLevel: .local, monthsInCity: 14))],
         price: .mid, neighbourhood: "Roma Norte",
         tags: ["Traditional Chinese", "Back pain", "English speaking"],
         endorsements: 7,
-        englishSpeaking: true,
+        whatsappNumber: "5215545670891", englishSpeaking: true,
         photoURL: "https://images.unsplash.com/photo-1512678080530-7760d81faba6?w=800&q=80"
     ),
 ]
