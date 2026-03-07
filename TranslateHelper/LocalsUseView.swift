@@ -1158,8 +1158,12 @@ struct AddRecSheet: View {
                                     .cornerRadius(12)
                             } else {
                                 LazyVGrid(
-                                    columns: [GridItem(.adaptive(minimum: 88, maximum: 180), spacing: 8)],
-                                    alignment: .leading, spacing: 8
+                                    columns: [
+                                        GridItem(.flexible(), spacing: 8),
+                                        GridItem(.flexible(), spacing: 8),
+                                        GridItem(.flexible(), spacing: 8)
+                                    ],
+                                    spacing: 8
                                 ) {
                                     ForEach(opts, id: \.self) { tag in
                                         let on = selectedTags.contains(tag)
@@ -1167,12 +1171,12 @@ struct AddRecSheet: View {
                                             if on { selectedTags.remove(tag) } else { selectedTags.insert(tag) }
                                         }) {
                                             Text(tag)
-                                                .font(.custom("HelveticaNeue", size: 12))
+                                                .font(.custom("HelveticaNeue-Medium", size: 12))
                                                 .foregroundColor(on ? .white : .tsLabel)
-                                                .lineLimit(2)
-                                                .multilineTextAlignment(.center)
-                                                .padding(.horizontal, 10)
-                                                .padding(.vertical, 7)
+                                                .lineLimit(1)
+                                                .minimumScaleFactor(0.8)
+                                                .padding(.horizontal, 6)
+                                                .padding(.vertical, 8)
                                                 .frame(maxWidth: .infinity)
                                                 .background(on ? Color.tsAccent : Color.tsCard)
                                                 .clipShape(Capsule())
