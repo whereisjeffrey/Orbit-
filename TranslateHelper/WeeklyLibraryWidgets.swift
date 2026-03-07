@@ -643,23 +643,19 @@ struct DeckPagerContainer: UIViewControllerRepresentable {
     }
 }
 
-// MARK: - Botanical Card Background
+// MARK: - Botanical Card Background (Frosted Glass)
 
 struct BotanicalCardBackground: View {
     var body: some View {
-        GeometryReader { geo in
-            ZStack {
-                // Full card fill — repeating leaf pattern, scale ~19% so many
-                // leaves visible across the width rather than one zoomed blob
-                Image("DailyGoalBackground")
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: geo.size.width, height: geo.size.height)
-                    .clipped()
-                // Light veil — enough for white text, not enough to kill the green
-                Color.black.opacity(0.0)
-            }
+        ZStack {
+            // Ice-blue base
+            Color.tsAccent.opacity(0.07)
+            // Frosted sheen — white fades from top to give depth
+            LinearGradient(
+                colors: [Color.white.opacity(0.72), Color.white.opacity(0.22)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
         }
-        .clipped()
     }
 }

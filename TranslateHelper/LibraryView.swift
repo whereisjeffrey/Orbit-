@@ -197,12 +197,12 @@ struct LibraryView: View {
                             VStack(alignment: .leading, spacing: 3) {
                                 Text("Daily Goal")
                                     .font(.custom("HelveticaNeue-Bold", size: 15))
-                                    .foregroundColor(Color(hex: "#1A3A30"))
+                                    .foregroundColor(.tsLabel)
                                 Text(dailyGoal == 0
                                      ? "0 / 20 phrases reviewed"
                                      : "\(reviewedToday) of \(dailyGoal) phrases reviewed")
                                     .font(.custom("HelveticaNeue-Medium", size: 13))
-                                    .foregroundColor(Color(hex: "#1A3A30").opacity(0.65))
+                                    .foregroundColor(.tsSecondary)
                             }
                             Spacer()
                             Button(action: { showingGoalSheet = true }) {
@@ -210,7 +210,7 @@ struct LibraryView: View {
                                     .font(.custom("HelveticaNeue-Medium", size: 13))
                                     .foregroundColor(.tsAccent)
                                     .padding(.horizontal, 14).padding(.vertical, 6)
-                                    .background(Color.white)
+                                    .background(Color.tsAccent.opacity(0.12))
                                     .clipShape(Capsule())
                             }
                             .buttonStyle(PlainButtonStyle())
@@ -218,10 +218,10 @@ struct LibraryView: View {
                         GeometryReader { geo in
                             ZStack(alignment: .leading) {
                                 Capsule()
-                                    .fill(Color(hex: "#1A3A30").opacity(0.15))
+                                    .fill(Color.tsAccent.opacity(0.12))
                                     .frame(height: 6)
                                 Capsule()
-                                    .fill(Color(hex: "#1A3A30").opacity(0.60))
+                                    .fill(Color.tsAccent)
                                     .frame(width: geo.size.width * goalProgress, height: 6)
                                     .animation(.spring(response: 0.4), value: goalProgress)
                             }
@@ -231,6 +231,8 @@ struct LibraryView: View {
                     .padding(16)
                     .background(BotanicalCardBackground())
                     .cornerRadius(20)
+                    .overlay(RoundedRectangle(cornerRadius: 20)
+                        .stroke(Color.tsAccent.opacity(0.18), lineWidth: 1))
                     .padding(.horizontal, 16)
                     .padding(.bottom, 120)
                 }
