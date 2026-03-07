@@ -223,7 +223,7 @@ struct LibraryView: View {
                         GeometryReader { geo in
                             ZStack(alignment: .leading) {
                                 Capsule()
-                                    .fill(Color.white.opacity(0.50))
+                                    .fill(Color.white.opacity(0.35))
                                     .frame(height: 6)
                                 Capsule()
                                     .fill(Color.tsAccent)

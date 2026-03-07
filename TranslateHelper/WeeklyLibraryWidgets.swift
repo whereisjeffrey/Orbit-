@@ -647,11 +647,13 @@ struct DeckPagerContainer: UIViewControllerRepresentable {
 
 struct BotanicalCardBackground: View {
     var body: some View {
-        // Light sky blue — clean, no watermarked assets
-        LinearGradient(
-            colors: [Color(hex: "#D4EEFF"), Color(hex: "#C2E4FF")],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
+        GeometryReader { geo in
+            Image("DailyGoalBackground")
+                .resizable()
+                .scaledToFill()
+                .frame(width: geo.size.width, height: geo.size.height)
+                .clipped()
+        }
+        .clipped()
     }
 }
