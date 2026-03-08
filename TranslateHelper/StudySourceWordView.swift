@@ -468,6 +468,9 @@ struct BackCardView: View {
                     .foregroundColor(Color.primary.opacity(0.82))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 24)
+
+                // Extra space — ~50% more gap between translation and speaker (20 → 30)
+                Spacer().frame(height: 10)
                 
                 // Audio Button — speaks the TRANSLATION (answer side) in its correct language
                 Button(action: {
@@ -484,6 +487,7 @@ struct BackCardView: View {
                         .frame(width: 56, height: 56)
                         .background(Color.tsAccent.opacity(0.15))
                         .clipShape(Circle())
+                        .overlay(Circle().stroke(Color.tsAccent, lineWidth: 1.5))
                 }
             }
             Spacer()

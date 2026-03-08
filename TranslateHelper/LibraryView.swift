@@ -208,7 +208,7 @@ struct LibraryView: View {
                                 HStack(spacing: 5) {
                                     Image(systemName: "bolt.fill")
                                         .font(.system(size: 10, weight: .bold))
-                                        .foregroundColor(colorScheme == .dark ? Color(hex: "#FFD60A") : .tsAccent)
+                                        .foregroundColor(colorScheme == .dark ? Color(hex: "#FFD60A") : Color(hex: "#FF8C00"))
                                     Text("Set Goal")
                                         .font(.custom("HelveticaNeue-Medium", size: 13))
                                         .foregroundColor(colorScheme == .dark ? .white : .tsAccent)
