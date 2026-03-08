@@ -1,5 +1,6 @@
 import SwiftUI
 import AVFoundation
+import AudioToolbox
 
 struct StudySourceWordView: View {
     @Environment(\.dismiss) var dismiss
@@ -268,6 +269,7 @@ struct StudySourceWordView: View {
             }
         }
         
+        AudioServicesPlaySystemSound(1306)   // swoosh at card switch
         withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
             // Flip back to front
             isFlipped = false
