@@ -394,24 +394,12 @@ struct FrontCardView: View {
             
             Spacer()
             
-            // Source Word
-            VStack(spacing: 6) {
-                Text("SOURCE WORD")
-                    .font(.custom("HelveticaNeue-Bold", size: 10))
-                    .foregroundColor(.tsSecondary)
-                    .tracking(1.5)
-
-                // Explicit language label so there's never any ambiguity
-                Text(displaySourceLang == "en" ? "English" : "Spanish")
-                    .font(.custom("HelveticaNeue-Medium", size: 11))
-                    .foregroundColor(.tsAccent.opacity(0.75))
-
-                Text(displaySourceText)
-                    .font(.custom("HelveticaNeue-Bold", size: 36))
-                    .foregroundColor(.tsLabel)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-            }
+            // Source Word — clean, no labels
+            Text(displaySourceText)
+                .font(.custom("HelveticaNeue-Bold", size: 36))
+                .foregroundColor(.tsLabel)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 24)
             
             Spacer()
             
@@ -459,42 +447,26 @@ struct BackCardView: View {
             
             Spacer()
             
-            VStack(spacing: 40) {
-                // Source Word
-                VStack(spacing: 6) {
-                    Text("SOURCE WORD")
-                        .font(.custom("HelveticaNeue-Bold", size: 10))
-                        .foregroundColor(.tsSecondary)
-                        .tracking(1.5)
+            VStack(spacing: 20) {
+                // Source word — no label
+                Text(displaySourceText)
+                    .font(.custom("HelveticaNeue-Bold", size: 26))
+                    .foregroundColor(.tsLabel)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 24)
 
-                    Text(displaySourceLang == "en" ? "English" : "Spanish")
-                        .font(.custom("HelveticaNeue-Medium", size: 11))
-                        .foregroundColor(.tsAccent.opacity(0.75))
-                    
-                    Text(displaySourceText)
-                        .font(.custom("HelveticaNeue-Bold", size: 24))
-                        .foregroundColor(.tsLabel)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                }
-                
-                // Translation
-                VStack(spacing: 6) {
-                    Text("TRANSLATION")
-                        .font(.custom("HelveticaNeue-Bold", size: 10))
-                        .foregroundColor(.tsSecondary)
-                        .tracking(1.5)
+                // Divider — same width as context box, not full-bleed
+                Rectangle()
+                    .fill(Color.tsSecondary.opacity(0.35))
+                    .frame(height: 1.5)
+                    .padding(.horizontal, 12)
 
-                    Text(displayTranslationLang == "en" ? "English" : "Spanish")
-                        .font(.custom("HelveticaNeue-Medium", size: 11))
-                        .foregroundColor(.tsAccent.opacity(0.75))
-                    
-                    Text(displayTranslationText)
-                        .font(.custom("HelveticaNeue-Medium", size: 24))
-                        .foregroundColor(.tsLabel)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                }
+                // Translation — no label
+                Text(displayTranslationText)
+                    .font(.custom("HelveticaNeue-Medium", size: 26))
+                    .foregroundColor(.tsLabel)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 24)
                 
                 // Audio Button — speaks the TRANSLATION (answer side) in its correct language
                 Button(action: {
@@ -545,7 +517,7 @@ struct BackCardView: View {
                 RoundedRectangle(cornerRadius: 16)
                     .stroke(Color(hex: "F5A623").opacity(0.2), lineWidth: 1)
             )
-            .padding(.horizontal, 20)
+            .padding(.horizontal, 12)
             .padding(.bottom, 24)
         }
     }
