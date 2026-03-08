@@ -87,7 +87,7 @@ final class SoundEngine {
     // Two noise layers — a gentle mid-band air rush and a fleeting high-freq paper crinkle.
     // No low-frequency thump. Think: barely-audible breath of air as you turn a book page.
     private func playPageTurn() {
-        let duration: Double = 0.20
+        let duration: Double = 0.06
         let fmt = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1)!
         let frameCount = AVAudioFrameCount(sampleRate * duration)
         guard let buf = AVAudioPCMBuffer(pcmFormat: fmt, frameCapacity: frameCount),
@@ -134,7 +134,7 @@ final class SoundEngine {
             let crinkleLayer = (white2 - hpLP) * 0.30
 
             let sample = (airLayer * masterEnv) + (crinkleLayer * crinkleEnv)
-            data[i] = Float(sample * 0.22)  // quiet overall — this is a soft sound
+            data[i] = Float(sample * 0.40)  // punchier for the short burst
         }
 
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
