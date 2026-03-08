@@ -299,3 +299,13 @@ TranslateHelper/Localizable.xcstrings
  M TranslateHelper/WorkView.swift
 ### Files
 TranslateHelper/AuthManager.swift TranslateHelper/BadgeSystem.swift TranslateHelper/CommunityUserProfileView.swift TranslateHelper/CommunityView.swift TranslateHelper/CoworkSubmitView.swift TranslateHelper/CoworkView.swift TranslateHelper/KitView.swift TranslateHelper/LibraryView.swift TranslateHelper/OnboardingLocationView.swift TranslateHelper/OnboardingPlanView.swift TranslateHelper/PlacePhotoCarousel.swift TranslateHelper/SettingsView.swift TranslateHelper/StudyRevealedCardView.swift TranslateHelper/StudySourceWordView.swift TranslateHelper/UpgradeSheet.swift TranslateHelper/WeeklyLibraryWidgets.swift TranslateHelper/WorkTipViews.swift TranslateHelper/WorkView.swift 
+
+## 2026-03-07 22:59 — Auto-handoff (auto-heartbeat)
+### Changed (uncommitted)
+ M ROADMAP.md
+ M TranslateHelper/CommunityView.swift
+ M TranslateHelper/ComposePostSheet.swift
+ M TranslateHelper/Localizable.xcstrings
+?? TranslateHelper/CommunityCoachMark.swift
+### Files
+ROADMAP.md TranslateHelper/CommunityView.swift TranslateHelper/ComposePostSheet.swift TranslateHelper/Localizable.xcstrings TranslateHelper/CommunityCoachMark.swift 

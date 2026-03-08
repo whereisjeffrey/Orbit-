@@ -3,16 +3,19 @@
 import SwiftUI
 
 enum PostType: String, CaseIterable {
+    // Order here controls filter strip order
     case all       = "All"
     case question  = "Questions"
+    case outing    = "Outings"
+    case event     = "Events"
     case rec       = "Recs"
     case warning   = "Warnings"
-    case event     = "Events"
 
     var emoji: String {
         switch self {
         case .all:      return "✨"
         case .question: return "💬"
+        case .outing:   return "🏙️"
         case .rec:      return "👍"
         case .warning:  return "⚠️"
         case .event:    return "📅"
@@ -22,6 +25,7 @@ enum PostType: String, CaseIterable {
         switch self {
         case .all:      return .tsAccent
         case .question: return .tsAccent
+        case .outing:   return Color(hex: "#FF6B35")   // warm coral — spontaneous, energetic
         case .rec:      return Color(hex: "#34C759")
         case .warning:  return Color(hex: "#FF9500")
         case .event:    return Color(hex: "#AF52DE")
@@ -31,6 +35,7 @@ enum PostType: String, CaseIterable {
         switch self {
         case .all:      return "sparkles"
         case .question: return "questionmark.circle.fill"
+        case .outing:   return "figure.walk.circle.fill"
         case .rec:      return "star.fill"
         case .warning:  return "exclamationmark.triangle.fill"
         case .event:    return "calendar"
@@ -61,34 +66,63 @@ struct CommunityPost: Identifiable {
 
 struct CommunityView: View {
     @EnvironmentObject var auth: AuthManager
-    @AppStorage("selected_city_id") private var selectedCityId: String = "mx_cdmx"
+    @AppStorage("selected_city_id")      private var selectedCityId: String = "mx_cdmx"
+    @AppStorage("outings_enabled")       private var outingsEnabled: Bool   = true  // flip false to hide until city threshold
+    @AppStorage("community_onboarding_seen") private var communityOnboardingSeen: Bool = false
     @State private var selectedFilter: PostType = .all
     @State private var showGroupDirectory = false
     @State private var showAskALocal = false
     @State private var showCityPicker = false
     @State private var showCompose = false
     @State private var posts: [CommunityPost] = []
+    @State private var showCoachMark = false
 
     var selectedCity: City { CityStore.city(id: selectedCityId) ?? CityStore.defaultCity }
 
-    // Sample posts for skeleton
+    // ── Filter types shown based on feature flags ──────────────────────
+    var visibleFilters: [PostType] {
+        PostType.allCases.filter { type in
+            if type == .outing { return outingsEnabled }
+            return true
+        }
+    }
+
+    // ── Sample posts ──────────────────────────────────────────────────
     let samplePosts: [CommunityPost] = [
+        // Questions
         CommunityPost(author: "Marco R.", neighbourhood: "Condesa", type: .question,
                       body: "Anyone know a good English-speaking dentist in Roma Norte?",
                       likes: 7, comments: 3, timeAgo: "2h", isVerifiedLocal: false,
-                      avatarInitials: "MR", avatarColor: Color(hex: "#FF9500"), avatarURL: "https://i.pravatar.cc/150?img=68", isPreset: true),
+                      avatarInitials: "MR", avatarColor: Color(hex: "#FF9500"),
+                      avatarURL: "https://i.pravatar.cc/150?img=68", isPreset: true),
+        // Outings
+        CommunityPost(author: "Alex P.", neighbourhood: "Polanco", type: .outing,
+                      body: "Heading to the Anthropology Museum Sunday around 1pm — DM me if you want to join! Great spot, I'll be there a few hours.",
+                      likes: 14, comments: 5, timeAgo: "1h", isVerifiedLocal: false,
+                      avatarInitials: "AP", avatarColor: Color(hex: "#FF6B35"),
+                      avatarURL: "https://i.pravatar.cc/150?img=52", isPreset: true),
+        CommunityPost(author: "Camille F.", neighbourhood: "Condesa", type: .outing,
+                      body: "Putting together a small pub crawl this Friday: Condesa → Roma → Centro. Meeting at Bar Oriente at 9pm. Message me if you're in 🍻",
+                      likes: 38, comments: 11, timeAgo: "3h", isVerifiedLocal: false,
+                      avatarInitials: "CF", avatarColor: Color(hex: "#007AFF"),
+                      avatarURL: "https://i.pravatar.cc/150?img=16", isPreset: true),
+        // Rec
         CommunityPost(author: "Sarah K.", neighbourhood: "Polanco", type: .rec,
                       body: "Highly recommend Café Toscano for remote work — fast wifi, great coffee, never too crowded before noon.",
                       likes: 24, comments: 6, timeAgo: "5h", isVerifiedLocal: true,
-                      avatarInitials: "SK", avatarColor: Color(hex: "#AF52DE"), avatarURL: "https://i.pravatar.cc/150?img=44",
+                      avatarInitials: "SK", avatarColor: Color(hex: "#AF52DE"),
+                      avatarURL: "https://i.pravatar.cc/150?img=44",
                       imageURL: "https://picsum.photos/id/431/700/520", isPreset: true),
+        // Warning
         CommunityPost(author: "Diego M.", neighbourhood: "Roma Norte", type: .warning,
                       body: "Watch out for fake taxi overcharges outside Benito Juárez airport. Always use DIDI or Uber from inside.",
                       likes: 89, comments: 12, timeAgo: "1d", isVerifiedLocal: true,
-                      avatarInitials: "DM", avatarColor: Color(hex: "#34C759"), avatarURL: "https://i.pravatar.cc/150?img=12",
+                      avatarInitials: "DM", avatarColor: Color(hex: "#34C759"),
+                      avatarURL: "https://i.pravatar.cc/150?img=12",
                       instagramHandle: "diego.nomad", isPreset: true),
+        // Event
         CommunityPost(author: "Lena W.", neighbourhood: "Coyoacán", type: .event,
-                      body: "Expat meetup Friday night at Jardín Pushkin — 7pm. DM me if you\'re coming!",
+                      body: "Expat meetup Friday night at Jardín Pushkin — 7pm. DM me if you're coming!",
                       likes: 31, comments: 8, timeAgo: "3h", isVerifiedLocal: false,
                       avatarInitials: "LW", avatarColor: Color(hex: "#FF2D55"),
                       imageURL: "https://picsum.photos/id/718/700/520", isPreset: true),
@@ -135,7 +169,7 @@ struct CommunityView: View {
                     // ── Post type filter ───────────────────────────────
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
-                            ForEach(PostType.allCases, id: \.self) { type in
+                            ForEach(visibleFilters, id: \.self) { type in
                                 FilterChip(
                                     label: type.rawValue,
                                     emoji: type.emoji,
@@ -174,13 +208,29 @@ struct CommunityView: View {
             .padding(.trailing, 24)
             .padding(.bottom, 104)
         }
-        .onAppear { if posts.isEmpty { posts = samplePosts } }
+        .onAppear {
+            if posts.isEmpty { posts = samplePosts }
+            if !communityOnboardingSeen {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                    showCoachMark = true
+                }
+            }
+        }
         .sheet(isPresented: $showGroupDirectory) { GroupDirectoryView() }
         .sheet(isPresented: $showAskALocal)     { AskALocalView() }
         .sheet(isPresented: $showCityPicker)    { CityPickerView(selectedId: $selectedCityId) }
         .sheet(isPresented: $showCompose) {
             ComposePostSheet { newPost in posts.insert(newPost, at: 0) }
                 .environmentObject(auth)
+        }
+        .overlay {
+            if showCoachMark {
+                CommunityCoachMarkOverlay {
+                    showCoachMark = false
+                    communityOnboardingSeen = true
+                }
+                .transition(.opacity.animation(.easeInOut(duration: 0.3)))
+            }
         }
     }
 }

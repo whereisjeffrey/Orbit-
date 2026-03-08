@@ -39,7 +39,7 @@ struct ComposePostSheet: View {
                                 // Post type picker
                                 ScrollView(.horizontal, showsIndicators: false) {
                                     HStack(spacing: 6) {
-                                        ForEach([PostType.rec, .question, .event, .warning], id: \.self) { t in
+                                        ForEach([PostType.rec, .question, .outing, .event, .warning], id: \.self) { t in
                                             Button(action: { postType = t }) {
                                                 HStack(spacing: 4) {
                                                     Text(t.emoji).font(.system(size: 11))
@@ -64,7 +64,9 @@ struct ComposePostSheet: View {
                         // ── Body text ────────────────────────────────
                         ZStack(alignment: .topLeading) {
                             if bodyText.isEmpty {
-                                Text("What's happening in \(auth.displayName.isEmpty ? "your city" : "the city")?")
+                                Text(postType == .outing
+                                     ? "Who's up for it? Where and when?"
+                                     : "What's happening in \(auth.displayName.isEmpty ? "your city" : "the city")?")
                                     .font(.custom("HelveticaNeue", size: 16))
                                     .foregroundColor(.tsSecondary.opacity(0.6))
                                     .padding(.horizontal, 20)
