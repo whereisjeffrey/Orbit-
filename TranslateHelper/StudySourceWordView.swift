@@ -450,21 +450,22 @@ struct BackCardView: View {
             VStack(spacing: 20) {
                 // Source word — no label
                 Text(displaySourceText)
-                    .font(.custom("HelveticaNeue-Bold", size: 26))
-                    .foregroundColor(.tsLabel)
+                    .font(.custom("HelveticaNeue-Medium", size: 24))
+                    .foregroundColor(Color.primary.opacity(0.82))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 24)
 
-                // Divider — same width as context box, not full-bleed
+                // Divider — same visual width as context box
                 Rectangle()
-                    .fill(Color.tsSecondary.opacity(0.35))
-                    .frame(height: 1.5)
+                    .fill(Color.tsSecondary.opacity(0.18))
+                    .frame(height: 1)
                     .padding(.horizontal, 12)
+                    .padding(.vertical, 5)
 
                 // Translation — no label
                 Text(displayTranslationText)
-                    .font(.custom("HelveticaNeue-Medium", size: 26))
-                    .foregroundColor(.tsLabel)
+                    .font(.custom("HelveticaNeue-Medium", size: 24))
+                    .foregroundColor(Color.primary.opacity(0.82))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 24)
                 
