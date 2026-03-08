@@ -165,7 +165,11 @@ struct WorkView: View {
         .sheet(item: $selectedSpace) { CoworkDetailView(space: $0, userLocation: locationMgr.userLocation) }
         .sheet(item: $selectedCafe)  { CafeDetailView(cafe: $0, userLocation: locationMgr.userLocation) }
         .sheet(isPresented: $showSubmit) {
-            CoworkSubmitView(type: .newSpace)
+            if activeTab == .coworking {
+                CoworkSubmitView(type: .newSpace)
+            } else {
+                CafeSubmitView(type: .newCafe)
+            }
         }
     }
 }
@@ -330,7 +334,6 @@ struct CafeCard: View {
 struct CafeDetailView: View {
     let cafe: CafeSpace
     let userLocation: CLLocation?
-    @Environment(\.dismiss) var dismiss
     @State private var showEdit = false
 
     var body: some View {
@@ -450,8 +453,7 @@ struct CafeDetailView: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Done") { dismiss() } } }
-            .sheet(isPresented: $showEdit) { CoworkSubmitView(type: .newSpace) }
+            .sheet(isPresented: $showEdit) { CafeSubmitView(type: .editExisting(cafe)) }
         }
     }
 
@@ -491,7 +493,6 @@ struct WorkFooterNote: View {
 // MARK: - Live Location Dot
 struct LiveLocationDot: View {
     @State private var isVisible = true
-    let timer = Timer.publish(every: 0.8, on: .main, in: .common).autoconnect()
 
     var body: some View {
         Circle()
@@ -499,8 +500,150 @@ struct LiveLocationDot: View {
             .frame(width: 6, height: 6)
             .opacity(isVisible ? 1 : 0)
             .animation(.linear(duration: 0.1), value: isVisible)
-            .onReceive(timer) { _ in
-                isVisible.toggle()
+            .onAppear { pulse() }
+    }
+
+    /// Asymmetric blink: dot is ON for 1.6 s, OFF for 0.35 s.
+    /// Short absence draws the eye without feeling jittery.
+    private func pulse() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
+            isVisible = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                isVisible = true
+                pulse()
             }
+        }
+    }
+}
+
+// MARK: - Café edit / submission
+enum CafeSubmitType {
+    case newCafe
+    case editExisting(CafeSpace)
+}
+
+struct CafeSubmitView: View {
+    let type: CafeSubmitType
+    @Environment(\.dismiss) var dismiss
+
+    @State private var name          = ""
+    @State private var neighbourhood = ""
+    @State private var address       = ""
+    @State private var hoursDisplay  = ""
+    @State private var website       = ""
+    @State private var wifiSpeed     = ""
+    @State private var hasFastWifi   = false
+    @State private var quietMode     = false   // noise = quiet
+    @State private var hasOutlets    = false
+    @State private var noTimeLimit   = true
+    @State private var notes         = ""
+    @State private var submitted     = false
+
+    var isEdit: Bool {
+        if case .editExisting = type { return true }
+        return false
+    }
+
+    var title: String { isEdit ? "Suggest an edit" : "Add a café" }
+    var isValid: Bool { !name.isEmpty && !neighbourhood.isEmpty }
+
+    var body: some View {
+        NavigationStack {
+            ZStack { TSGradientBackground()
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 24) {
+
+                        // ── Context note ───────────────────────────
+                        HStack(spacing: 10) {
+                            Image(systemName: isEdit ? "pencil.circle.fill" : "plus.circle.fill")
+                                .font(.custom("HelveticaNeue", size: 18))
+                                .foregroundColor(.tsAccent)
+                            Text(isEdit
+                                 ? "Know something that's out of date? Fix it for everyone."
+                                 : "Know a great work-friendly café not yet listed? Add it.")
+                                .font(.custom("HelveticaNeue", size: 14))
+                                .foregroundColor(.tsSecondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .padding(14)
+                        .background(Color.tsAccent.opacity(0.08))
+                        .cornerRadius(12)
+
+                        // ── Basic info ─────────────────────────────
+                        SubmitSection(title: "The basics") {
+                            SubmitField(label: "Café name *", placeholder: "e.g. Once Café", text: $name)
+                            SubmitField(label: "Neighbourhood *", placeholder: "e.g. Roma Norte", text: $neighbourhood)
+                            SubmitField(label: "Address", placeholder: "e.g. Orizaba 101", text: $address)
+                            SubmitField(label: "Website", placeholder: "e.g. oncecafe.mx", text: $website)
+                            SubmitField(label: "Hours", placeholder: "e.g. 8am – 9pm, Mon–Fri", text: $hoursDisplay)
+                        }
+
+                        // ── Vibes ──────────────────────────────────
+                        SubmitSection(title: "Vibe — tick what you know") {
+                            AmenityToggleRow(icon: "speaker.slash.fill",  label: "Quiet atmosphere",     color: Color(hex: "#34C759"), isOn: $quietMode)
+                            AmenityToggleRow(icon: "bolt.fill",           label: "Power outlets",         color: Color(hex: "#FF9500"), isOn: $hasOutlets)
+                            AmenityToggleRow(icon: "wifi",                label: "Fast WiFi (50+ Mbps)",  color: Color.tsAccent, isOn: $hasFastWifi)
+                            AmenityToggleRow(icon: "timer",               label: "No time limit",         color: Color(hex: "#AF52DE"), isOn: $noTimeLimit)
+                            SubmitField(label: "WiFi speed (if known)", placeholder: "e.g. ~60 Mbps", text: $wifiSpeed)
+                        }
+
+                        // ── Notes ──────────────────────────────────
+                        SubmitSection(title: "The lowdown (optional)") {
+                            ZStack(alignment: .topLeading) {
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Color.tsCard)
+                                    .frame(minHeight: 80)
+                                TextEditor(text: $notes)
+                                    .scrollContentBackground(.hidden)
+                                    .background(Color.clear)
+                                    .font(.custom("HelveticaNeue", size: 15))
+                                    .foregroundColor(.tsLabel)
+                                    .frame(minHeight: 80)
+                                    .padding(8)
+                                if notes.isEmpty {
+                                    Text("Vibe, crowd, peak hours, parking, noise…")
+                                        .font(.custom("HelveticaNeue", size: 15))
+                                        .foregroundColor(.tsSecondary)
+                                        .padding(16)
+                                        .allowsHitTesting(false)
+                                }
+                            }
+                        }
+
+                        // ── Submit ─────────────────────────────────
+                        TSButton(title: isValid ? "Submit" : "Fill in name + neighbourhood to continue") {
+                            submitted = true
+                        }
+                        .disabled(!isValid)
+                        .padding(.bottom, 48)
+                    }
+                    .padding(20)
+                }
+            }
+            .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+            .onAppear { seedFieldsIfEditing() }
+            .alert("Thanks!", isPresented: $submitted) {
+                Button("Done", role: .cancel) { dismiss() }
+            } message: {
+                Text("We'll review your submission and add it to the list. You're helping every nomad who comes after you.")
+            }
+        }
+    }
+
+    // MARK: - Seed existing data
+    private func seedFieldsIfEditing() {
+        guard case .editExisting(let cafe) = type else { return }
+        name          = cafe.name
+        neighbourhood = cafe.neighbourhood
+        address       = cafe.address
+        hoursDisplay  = "\(cafe.hoursDisplay) · \(cafe.hoursDays)"
+        website       = cafe.website ?? ""
+        wifiSpeed     = cafe.wifiSpeed ?? ""
+        hasFastWifi   = cafe.hasFastWifi
+        quietMode     = cafe.noiseLevel == .quiet
+        hasOutlets    = cafe.outlets != .none
+        noTimeLimit   = cafe.hasNoTimeLimit
+        notes         = cafe.notes ?? ""
     }
 }

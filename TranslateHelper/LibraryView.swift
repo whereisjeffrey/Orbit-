@@ -18,10 +18,12 @@ struct LibraryView: View {
     @AppStorage("daily_goal") private var dailyGoal: Int = 20
     @AppStorage("phrases_reviewed_today") private var reviewedToday: Int = 0
     @AppStorage("has_swiped_to_deck_v2") private var hasSwipedToDeck: Bool = false
-    @AppStorage("starter_decks_v6") private var starterDecksSeeded: Bool = false
+    @AppStorage("starter_decks_v7") private var starterDecksSeeded: Bool = false
     @State private var activeWidgetPage: Int = 0
+    // nil = no deck open; set to a Deck to present study mode.
+    // Using item: binding avoids the Bool + optional race that caused a
+    // blank white screen when SwiftUI re-evaluated the cover body.
     @State private var deckStudyDeck: Deck? = nil
-    @State private var showingDeckStudy: Bool = false
 
     var goalProgress: Double {
         guard dailyGoal > 0 else { return 0 }
@@ -131,7 +133,6 @@ struct LibraryView: View {
                             views.append(AnyView(
                                 DeckClipboardWidget(deck: deck, onStudy: {
                                     deckStudyDeck = deck
-                                    showingDeckStudy = true
                                 })
                                 .padding(.horizontal, 16)
                             ))
@@ -180,7 +181,6 @@ struct LibraryView: View {
                             ForEach(deckStore.decks) { deck in
                                 LibraryDeckCard(emoji: deck.emoji, title: deck.name, count: deck.cards.count, tint: deck.tintColor) {
                                     deckStudyDeck = deck
-                                    showingDeckStudy = true
                                 }
                                 .frame(width: 160)
                             }
@@ -208,7 +208,7 @@ struct LibraryView: View {
                                 HStack(spacing: 5) {
                                     Image(systemName: "bolt.fill")
                                         .font(.system(size: 10, weight: .bold))
-                                        .foregroundColor(colorScheme == .dark ? Color(hex: "#FFD60A") : Color(hex: "#FF8C00"))
+                                        .foregroundColor(.tsAccent)
                                     Text("Set Goal")
                                         .font(.custom("HelveticaNeue-Medium", size: 13))
                                         .foregroundColor(colorScheme == .dark ? .white : .tsAccent)
@@ -243,13 +243,12 @@ struct LibraryView: View {
         .onAppear {
             store.load()
             store.seedDemoPhrasesIfNeeded()
-            // Seed starter decks v6 — wipe ALL existing, add in reverse so insert-at-0 gives correct order
+            // Seed starter decks v7 — wipe ALL existing, add in reverse so insert-at-0 gives correct order
             if !starterDecksSeeded {
                 starterDecksSeeded = true
                 // Clear every existing deck regardless of content
                 for deck in Array(deckStore.decks) { deckStore.deleteDeck(deck) }
-                // Add in reverse order: Euphemisms I → Timeless Adages I → Mexico City Slang I
-                // Because addDeck inserts at index 0, last added = first shown
+                // Add in reverse order so insert-at-0 gives: Mexico City → Timeless Adages → Euphemisms
                 deckStore.addDeck(Deck(emoji: "😏", name: "Euphemisms I",
                                        isAI: false, tintName: "purple",
                                        cards: FeaturedDeckContent.cards(forId: "f14")))
@@ -274,14 +273,16 @@ struct LibraryView: View {
                 StudySourceWordView(phrases: duePhrases.isEmpty ? store.activePhrases : duePhrases, listName: "Clipboard List")
             }
         }
-        .fullScreenCover(isPresented: $showingDeckStudy) {
-            if let deck = deckStudyDeck {
-                NavigationView {
-                    StudySourceWordView(
-                        phrases: deck.cards.map { $0.toSavedPhrase() },
-                        listName: deck.name
-                    )
-                }
+        // item: binding — SwiftUI only shows this cover when deckStudyDeck
+        // is non-nil, and always passes the unwrapped value to the body.
+        // This prevents the blank white screen that occurred when the Bool
+        // flag was true but the optional deck was nil on re-evaluation.
+        .fullScreenCover(item: $deckStudyDeck) { deck in
+            NavigationView {
+                StudySourceWordView(
+                    phrases: deck.cards.map { $0.toSavedPhrase() },
+                    listName: deck.name
+                )
             }
         }
     }

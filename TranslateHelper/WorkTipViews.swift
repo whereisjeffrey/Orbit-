@@ -40,7 +40,7 @@ struct WorkTipNudgeCard: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
-        .background(Color.tsCard)
+        .background(Color.white)
         .cornerRadius(16)
         .overlay(RoundedRectangle(cornerRadius: 16)
             .stroke(Color.tsAccent.opacity(0.2), lineWidth: 1))

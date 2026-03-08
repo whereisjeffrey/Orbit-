@@ -86,7 +86,7 @@ struct KitView: View {
         KitTool(icon: "figure.run",                   name: "Fitness",        description: "Gyms, studios, outdoors & class guide",    color: Color(hex: "#34C759"), destination: .fitness),
         KitTool(icon: "person.2.fill",                name: "Locals Use",     description: "Dentists, trainers, cleaners & more",      color: Color(hex: "#FF9500"), destination: .localsUse),
         KitTool(icon: "map",                          name: "Neighbourhoods", description: "Find your area by vibe",                   color: Color(hex: "#AF52DE"), destination: .neighbourhoods, isFree: true),
-        KitTool(icon: "tram.fill",                    name: "Transportation", description: "Ride-hailing, transit, cars & more",       color: Color(hex: "#FF6B00"), destination: .transportation),
+        KitTool(icon: "tram.fill",                    name: "Transportation", description: "Ride-hailing, transit, cars & more",       color: Color(hex: "#1B3A6B"), destination: .transportation),
         KitTool(icon: "dollarsign.arrow.circlepath",  name: "Currency",       description: "Live rates + quick converter",             color: Color(hex: "#34C759"), destination: .currency),
         KitTool(icon: "exclamationmark.shield",       name: "Scam Radar",     description: "What to watch out for locally",            color: Color(hex: "#FF3B30"), destination: .scamRadar, isFree: true),
         KitTool(icon: "simcard",                      name: "SIM Guide",      description: "Best carriers, plans & cost",              color: Color(hex: "#17C2E1"), destination: .sim),

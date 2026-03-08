@@ -55,6 +55,7 @@ struct CommunityPost: Identifiable {
     var linkPreviewTitle: String? = nil
     var linkPreviewSite: String? = nil
     var linkURL: String? = nil
+    var instagramHandle: String? = nil
     var isPreset: Bool = false
 }
 
@@ -84,7 +85,8 @@ struct CommunityView: View {
         CommunityPost(author: "Diego M.", neighbourhood: "Roma Norte", type: .warning,
                       body: "Watch out for fake taxi overcharges outside Benito Juárez airport. Always use DIDI or Uber from inside.",
                       likes: 89, comments: 12, timeAgo: "1d", isVerifiedLocal: true,
-                      avatarInitials: "DM", avatarColor: Color(hex: "#34C759"), avatarURL: "https://i.pravatar.cc/150?img=12", isPreset: true),
+                      avatarInitials: "DM", avatarColor: Color(hex: "#34C759"), avatarURL: "https://i.pravatar.cc/150?img=12",
+                      instagramHandle: "diego.nomad", isPreset: true),
         CommunityPost(author: "Lena W.", neighbourhood: "Coyoacán", type: .event,
                       body: "Expat meetup Friday night at Jardín Pushkin — 7pm. DM me if you\'re coming!",
                       likes: 31, comments: 8, timeAgo: "3h", isVerifiedLocal: false,
@@ -231,6 +233,14 @@ struct CommunityPostCard: View {
     let post: CommunityPost
     @Environment(\.colorScheme) var colorScheme
     @State private var showProfile = false
+    @State private var isLiked = false
+    @State private var likeCount: Int
+    @State private var showComments = false
+
+    init(post: CommunityPost) {
+        self.post = post
+        _likeCount = State(initialValue: post.likes)
+    }
 
     // Synthesise a CommunityUser from this post so the profile sheet has something to show
     private var postUser: CommunityUser {
@@ -247,12 +257,13 @@ struct CommunityPostCard: View {
             statusRaw: post.isVerifiedLocal ? "settling_in" : "new_arrival",
             daysInCity: 90,
             interests: [],
-            instagramHandle: nil,
+            instagramHandle: post.instagramHandle,
             linkedinHandle: nil,
             bio: "Community member in \(post.neighbourhood).",
             questionsAnswered: 0,
             isAvailableForLocal: false,
-            isVisibleNewInTown: false
+            isVisibleNewInTown: false,
+            avatarURL: post.avatarURL
         )
     }
 
@@ -294,22 +305,26 @@ struct CommunityPostCard: View {
                 .frame(width: 40, height: 40)
             }
             .buttonStyle(PlainButtonStyle())
-            .sheet(isPresented: $showProfile) { CommunityUserProfileView(user: postUser) }
 
             VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 5) {
-                    Text(post.author)
-                        .font(.custom("HelveticaNeue-Bold", size: 14))
-                        .foregroundColor(.tsLabel)
-                    if post.isVerifiedLocal {
-                        Text("Local")
-                            .font(.custom("HelveticaNeue-Bold", size: 10))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 6).padding(.vertical, 2)
-                            .background(Color(hex: "#34C759"))
-                            .clipShape(Capsule())
+                // Author name — also tappable → opens profile
+                Button(action: { showProfile = true }) {
+                    HStack(spacing: 5) {
+                        Text(post.author)
+                            .font(.custom("HelveticaNeue-Bold", size: 14))
+                            .foregroundColor(.tsLabel)
+                        if post.isVerifiedLocal {
+                            Text("Local")
+                                .font(.custom("HelveticaNeue-Bold", size: 10))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 6).padding(.vertical, 2)
+                                .background(Color(hex: "#34C759"))
+                                .clipShape(Capsule())
+                        }
                     }
                 }
+                .buttonStyle(PlainButtonStyle())
+
                 Text("\(post.neighbourhood) · \(post.timeAgo)")
                     .font(.custom("HelveticaNeue", size: 12))
                     .foregroundColor(.tsSecondary)
@@ -326,25 +341,60 @@ struct CommunityPostCard: View {
             .background(post.type.color.opacity(0.1))
             .clipShape(Capsule())
         }
+        // Single sheet bound to showProfile — placed on the outermost container
+        .sheet(isPresented: $showProfile) { CommunityUserProfileView(user: postUser) }
     }
 
     @ViewBuilder var engagementRow: some View {
         HStack(spacing: 20) {
-            Button(action: {}) {
-                Label("\(post.likes)", systemImage: "heart")
-                    .font(.custom("HelveticaNeue", size: 13))
-                    .foregroundColor(.tsSecondary)
+            // ── Like ────────────────────────────────────────────────────
+            Button {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
+                    isLiked.toggle()
+                    likeCount += isLiked ? 1 : -1
+                }
+                let generator = UIImpactFeedbackGenerator(style: .light)
+                generator.impactOccurred()
+            } label: {
+                HStack(spacing: 5) {
+                    Image(systemName: isLiked ? "heart.fill" : "heart")
+                        .font(.system(size: 15))
+                        .foregroundColor(isLiked ? Color(hex: "#FF3B30") : .tsSecondary)
+                        .scaleEffect(isLiked ? 1.2 : 1.0)
+                    Text("\(likeCount)")
+                        .font(.custom("HelveticaNeue", size: 13))
+                        .foregroundColor(isLiked ? Color(hex: "#FF3B30") : .tsSecondary)
+                }
             }
-            Button(action: {}) {
-                Label("\(post.comments)", systemImage: "bubble.left")
-                    .font(.custom("HelveticaNeue", size: 13))
-                    .foregroundColor(.tsSecondary)
+            .animation(.spring(response: 0.3, dampingFraction: 0.5), value: isLiked)
+
+            // ── Comment ─────────────────────────────────────────────────
+            Button { showComments = true } label: {
+                HStack(spacing: 5) {
+                    Image(systemName: "bubble.left")
+                        .font(.system(size: 15))
+                        .foregroundColor(.tsSecondary)
+                    Text("\(post.comments)")
+                        .font(.custom("HelveticaNeue", size: 13))
+                        .foregroundColor(.tsSecondary)
+                }
             }
+            .sheet(isPresented: $showComments) {
+                CommentsSheet(post: post)
+                    .presentationDetents([.medium, .large])
+                    .presentationDragIndicator(.visible)
+            }
+
             Spacer()
-            Button(action: {}) {
-                Image(systemName: "paperplane")
-                    .font(.system(size: 13))
-                    .foregroundColor(.tsSecondary)
+
+            // ── Message / DM ────────────────────────────────────────────
+            Button { showProfile = true } label: {
+                Image(systemName: "paperplane.fill")
+                    .font(.system(size: 14))
+                    .foregroundColor(.tsAccent)
+                    .padding(8)
+                    .background(Color.tsAccent.opacity(0.1))
+                    .clipShape(Circle())
             }
         }
     }
@@ -429,6 +479,216 @@ struct CommunityPostCard: View {
             }
         )
         .shadow(color: Color.black.opacity(post.isPreset ? 0 : 0.04), radius: 8, x: 0, y: 2)
+    }
+}
+
+// MARK: - Comments Sheet
+
+private struct SeedComment: Identifiable {
+    let id = UUID()
+    let author: String
+    let avatarURL: String?
+    let avatarColor: Color
+    let timeAgo: String
+    let body: String
+    var isLiked: Bool = false
+}
+
+struct CommentsSheet: View {
+    let post: CommunityPost
+    @Environment(\.dismiss) var dismiss
+    @State private var replyText: String = ""
+    @State private var comments: [SeedComment]
+    @FocusState private var inputFocused: Bool
+
+    init(post: CommunityPost) {
+        self.post = post
+        // Seed a couple of plausible comments per post
+        _comments = State(initialValue: [
+            SeedComment(author: "Elena V.", avatarURL: "https://i.pravatar.cc/150?img=33",
+                        avatarColor: Color(hex: "#AF52DE"), timeAgo: "45m",
+                        body: "Thanks for the heads-up! Almost got caught doing exactly this last month 😩"),
+            SeedComment(author: "Tom W.", avatarURL: "https://i.pravatar.cc/150?img=59",
+                        avatarColor: Color(hex: "#007AFF"), timeAgo: "2h",
+                        body: "DIDI is way better anyway — the Siempre Plus category is basically a taxi but cheaper."),
+            SeedComment(author: "Priya S.", avatarURL: "https://i.pravatar.cc/150?img=47",
+                        avatarColor: Color(hex: "#FF9500"), timeAgo: "3h",
+                        body: "Can confirm — the official booth inside the terminal is the only safe option."),
+        ])
+    }
+
+    var body: some View {
+        NavigationStack {
+            ZStack(alignment: .bottom) {
+                TSGradientBackground()
+
+                VStack(spacing: 0) {
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 0) {
+
+                            // ── Original post excerpt ──────────────────────
+                            HStack(alignment: .top, spacing: 10) {
+                                Group {
+                                    if let urlStr = post.avatarURL, let url = URL(string: urlStr) {
+                                        AsyncImage(url: url) { phase in
+                                            if let img = phase.image {
+                                                img.resizable().scaledToFill()
+                                                    .frame(width: 36, height: 36).clipShape(Circle())
+                                            } else { fallbackAvatar }
+                                        }
+                                    } else { fallbackAvatar }
+                                }
+
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text(post.author)
+                                        .font(.custom("HelveticaNeue-Bold", size: 14))
+                                        .foregroundColor(.tsLabel)
+                                    Text(post.body)
+                                        .font(.custom("HelveticaNeue", size: 14))
+                                        .foregroundColor(.tsLabel)
+                                        .lineLimit(3)
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 14)
+
+                            Divider().opacity(0.4)
+
+                            // ── Comments list ──────────────────────────────
+                            ForEach($comments) { $comment in
+                                CommentRow(comment: $comment)
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 10)
+                                Divider().opacity(0.3).padding(.leading, 62)
+                            }
+
+                            // Bottom padding so content clears the input bar
+                            Color.clear.frame(height: 80)
+                        }
+                    }
+
+                    // ── Reply input ────────────────────────────────────────
+                    HStack(spacing: 10) {
+                        TextField("Add a comment…", text: $replyText)
+                            .font(.custom("HelveticaNeue", size: 15))
+                            .foregroundColor(.tsLabel)
+                            .focused($inputFocused)
+                            .submitLabel(.send)
+                            .onSubmit { sendComment() }
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 10)
+                            .background(Color.tsCard)
+                            .cornerRadius(22)
+                            .overlay(RoundedRectangle(cornerRadius: 22)
+                                .stroke(Color.tsSecondary.opacity(0.15), lineWidth: 0.5))
+
+                        if !replyText.isEmpty {
+                            Button(action: sendComment) {
+                                Image(systemName: "paperplane.fill")
+                                    .font(.system(size: 16))
+                                    .foregroundColor(.white)
+                                    .frame(width: 38, height: 38)
+                                    .background(Color.tsAccent)
+                                    .clipShape(Circle())
+                            }
+                            .transition(.scale.combined(with: .opacity))
+                        }
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .background(.ultraThinMaterial)
+                    .animation(.spring(response: 0.3), value: replyText.isEmpty)
+                }
+            }
+            .navigationTitle("Comments")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Done") { dismiss() }.foregroundColor(.tsAccent)
+                }
+            }
+        }
+    }
+
+    private var fallbackAvatar: some View {
+        ZStack {
+            Circle().fill(post.avatarColor).frame(width: 36, height: 36)
+            Text(post.avatarInitials.prefix(2))
+                .font(.custom("HelveticaNeue-Bold", size: 13))
+                .foregroundColor(.white)
+        }
+    }
+
+    private func sendComment() {
+        guard !replyText.trimmingCharacters(in: .whitespaces).isEmpty else { return }
+        let new = SeedComment(author: "You", avatarURL: nil,
+                              avatarColor: .tsAccent, timeAgo: "just now",
+                              body: replyText)
+        withAnimation { comments.insert(new, at: 0) }
+        replyText = ""
+        let g = UIImpactFeedbackGenerator(style: .light)
+        g.impactOccurred()
+    }
+}
+
+private struct CommentRow: View {
+    @Binding var comment: SeedComment
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Group {
+                if let urlStr = comment.avatarURL, let url = URL(string: urlStr) {
+                    AsyncImage(url: url) { phase in
+                        if let img = phase.image {
+                            img.resizable().scaledToFill()
+                                .frame(width: 36, height: 36).clipShape(Circle())
+                        } else { fallback }
+                    }
+                } else { fallback }
+            }
+            .frame(width: 36, height: 36)
+
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 6) {
+                    Text(comment.author)
+                        .font(.custom("HelveticaNeue-Bold", size: 13))
+                        .foregroundColor(.tsLabel)
+                    Text("·")
+                        .foregroundColor(.tsSecondary)
+                    Text(comment.timeAgo)
+                        .font(.custom("HelveticaNeue", size: 12))
+                        .foregroundColor(.tsSecondary)
+                }
+                Text(comment.body)
+                    .font(.custom("HelveticaNeue", size: 14))
+                    .foregroundColor(.tsLabel)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer()
+
+            Button {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
+                    comment.isLiked.toggle()
+                }
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            } label: {
+                Image(systemName: comment.isLiked ? "heart.fill" : "heart")
+                    .font(.system(size: 14))
+                    .foregroundColor(comment.isLiked ? Color(hex: "#FF3B30") : .tsSecondary)
+                    .scaleEffect(comment.isLiked ? 1.2 : 1.0)
+            }
+            .animation(.spring(response: 0.3, dampingFraction: 0.5), value: comment.isLiked)
+        }
+    }
+
+    private var fallback: some View {
+        ZStack {
+            Circle().fill(comment.avatarColor).frame(width: 36, height: 36)
+            Text(String(comment.author.prefix(1)))
+                .font(.custom("HelveticaNeue-Bold", size: 14))
+                .foregroundColor(.white)
+        }
     }
 }
 

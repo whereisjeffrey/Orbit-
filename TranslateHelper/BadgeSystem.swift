@@ -95,6 +95,7 @@ struct CommunityUser: Identifiable {
     let questionsAnswered: Int
     var isAvailableForLocal: Bool  // opted in to Ask a Local
     var isVisibleNewInTown: Bool   // opted in to New in Town
+    var avatarURL: String? = nil   // remote photo URL (pravatar, etc.)
 
     var trustLevel: TrustLevel { TrustLevel.from(status: statusRaw, questionsAnswered: questionsAnswered) }
 
@@ -132,7 +133,8 @@ let seedCommunityUsers: [CommunityUser] = [
         interests: ["remote_work", "food", "arts"],
         instagramHandle: "priya.somewhere", linkedinHandle: nil,
         bio: "UX designer. Arrived last week. Looking for good coffee and coworking spots.",
-        questionsAnswered: 0, isAvailableForLocal: false, isVisibleNewInTown: true
+        questionsAnswered: 0, isAvailableForLocal: false, isVisibleNewInTown: true,
+        avatarURL: "https://i.pravatar.cc/150?img=47"
     ),
     CommunityUser(
         id: "u2", firstName: "Marco", lastName: "Ruiz",
@@ -141,7 +143,8 @@ let seedCommunityUsers: [CommunityUser] = [
         interests: ["nightlife", "food", "music"],
         instagramHandle: "marco.cdmx", linkedinHandle: nil,
         bio: "Remote developer. Here indefinitely. Always down for tacos.",
-        questionsAnswered: 0, isAvailableForLocal: false, isVisibleNewInTown: true
+        questionsAnswered: 0, isAvailableForLocal: false, isVisibleNewInTown: true,
+        avatarURL: "https://i.pravatar.cc/150?img=68"
     ),
     CommunityUser(
         id: "u3", firstName: "Sofia", lastName: "Chen",
@@ -150,7 +153,8 @@ let seedCommunityUsers: [CommunityUser] = [
         interests: ["wellness", "food", "arts"],
         instagramHandle: "sofiainmexico", linkedinHandle: "sofia-chen",
         bio: "Startup founder. 3 months in, figuring it all out. Ask me about visas.",
-        questionsAnswered: 4, isAvailableForLocal: false, isVisibleNewInTown: false
+        questionsAnswered: 4, isAvailableForLocal: false, isVisibleNewInTown: false,
+        avatarURL: "https://i.pravatar.cc/150?img=44"
     ),
     CommunityUser(
         id: "u4", firstName: "James", lastName: "Okafor",
@@ -159,7 +163,8 @@ let seedCommunityUsers: [CommunityUser] = [
         interests: ["remote_work", "food", "outdoors"],
         instagramHandle: nil, linkedinHandle: "james-okafor",
         bio: "Been here over a year. Know Roma Norte like the back of my hand. Happy to help newcomers.",
-        questionsAnswered: 34, isAvailableForLocal: true, isVisibleNewInTown: false
+        questionsAnswered: 34, isAvailableForLocal: true, isVisibleNewInTown: false,
+        avatarURL: "https://i.pravatar.cc/150?img=15"
     ),
     CommunityUser(
         id: "u5", firstName: "Elena", lastName: "Vasquez",
@@ -168,7 +173,8 @@ let seedCommunityUsers: [CommunityUser] = [
         interests: ["arts", "music", "nightlife", "food"],
         instagramHandle: "elena.cdmx", linkedinHandle: nil,
         bio: "Artist and photographer. Two years in. Best person to ask about galleries, events and hidden bars.",
-        questionsAnswered: 51, isAvailableForLocal: true, isVisibleNewInTown: false
+        questionsAnswered: 51, isAvailableForLocal: true, isVisibleNewInTown: false,
+        avatarURL: "https://i.pravatar.cc/150?img=33"
     ),
     CommunityUser(
         id: "u6", firstName: "Tom", lastName: "Walsh",
@@ -177,6 +183,7 @@ let seedCommunityUsers: [CommunityUser] = [
         interests: ["remote_work", "nightlife", "food"],
         instagramHandle: "tomwalshcdmx", linkedinHandle: "tom-walsh-mx",
         bio: "Product manager. 9 months in. Solid on the bar scene and coworking options in the city centre.",
-        questionsAnswered: 18, isAvailableForLocal: true, isVisibleNewInTown: false
+        questionsAnswered: 18, isAvailableForLocal: true, isVisibleNewInTown: false,
+        avatarURL: "https://i.pravatar.cc/150?img=59"
     ),
 ]

@@ -361,10 +361,12 @@ struct CoworkCard: View {
                             .font(.custom("HelveticaNeue", size: 12)).foregroundColor(.tsSecondary)
                     }
                     HStack(spacing: 12) {
-                        AmenityBadge(icon: "phone.fill",          label: space.hasCallRooms ? "Call rooms" : "No rooms",     active: space.hasCallRooms,  color: Color(hex: "#34C759"))
-                        AmenityBadge(icon: "cup.and.saucer.fill", label: space.hasCoffee    ? "Coffee"     : "No coffee",    active: space.hasCoffee,    color: Color(hex: "#FF9500"))
-                        AmenityBadge(icon: "bolt.fill",           label: space.hasFastWifi  ? "Fast WiFi"  : "Standard",     active: space.hasFastWifi,  color: Color(hex: "#FFD60A"))
-                        AmenityBadge(icon: "moon.fill",           label: space.hasLateHours ? "Open late"  : "Closes early", active: space.hasLateHours, color: Color(hex: "#AF52DE"))
+                        AmenityBadge(icon: "phone.fill",          label: space.hasCallRooms ? "Call rooms" : "No rooms",  active: space.hasCallRooms,  color: Color(hex: "#34C759"))
+                        AmenityBadge(icon: "cup.and.saucer.fill", label: space.hasCoffee    ? "Coffee"     : "No coffee", active: space.hasCoffee,    color: Color(hex: "#FF9500"))
+                        AmenityBadge(icon: "bolt.fill",           label: space.hasFastWifi  ? "Fast WiFi"  : "Standard",  active: space.hasFastWifi,  color: Color(hex: "#FFD60A"))
+                        if space.hasLateHours {
+                            AmenityBadge(icon: "moon.fill", label: "Open late", active: true, color: Color(hex: "#AF52DE"))
+                        }
                         Spacer()
                         Image(systemName: "chevron.right")
                             .font(.custom("HelveticaNeue", size: 12)).foregroundColor(.tsSecondary)
@@ -398,7 +400,6 @@ struct AmenityBadge: View {
 struct CoworkDetailView: View {
     let space: CoworkSpace
     let userLocation: CLLocation?
-    @Environment(\.dismiss) var dismiss
     @State private var showEdit = false
 
     var body: some View {
@@ -422,10 +423,10 @@ struct CoworkDetailView: View {
                         .padding(20)
 
                         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                            DetailAmenityCard(icon: "phone.fill",          label: "Call Rooms",  value: space.hasCallRooms ? "Available"    : "None",         active: space.hasCallRooms,  color: Color(hex: "#34C759"))
-                            DetailAmenityCard(icon: "cup.and.saucer.fill", label: "Coffee",      value: space.hasCoffee   ? "Included"     : "Not included", active: space.hasCoffee,    color: Color(hex: "#FF9500"))
+                        DetailAmenityCard(icon: "phone.fill",          label: "Call Rooms",  value: space.hasCallRooms ? "Available"    : "None",          active: space.hasCallRooms,  color: Color(hex: "#34C759"))
+                            DetailAmenityCard(icon: "cup.and.saucer.fill", label: "Coffee",      value: space.hasCoffee   ? "Included"     : "Not included",  active: space.hasCoffee,    color: Color(hex: "#FF9500"))
                             DetailAmenityCard(icon: "bolt.fill",           label: "WiFi Speed",  value: space.wifiSpeed ?? (space.hasFastWifi ? "Fast" : "Standard"), active: space.hasFastWifi, color: Color.tsAccent)
-                            DetailAmenityCard(icon: "moon.fill",           label: "Late Hours",  value: space.hasLateHours ? "Open past 9pm" : "Closes early", active: space.hasLateHours, color: Color(hex: "#AF52DE"))
+                            DetailAmenityCard(icon: "moon.fill",           label: "Late Hours",  value: space.hasLateHours ? "Open past 9pm" : "Standard hours", active: space.hasLateHours, color: Color(hex: "#AF52DE"))
                         }
                         .padding(.horizontal, 16).padding(.bottom, 20)
 
@@ -504,7 +505,6 @@ struct CoworkDetailView: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Done") { dismiss() } } }
             .sheet(isPresented: $showEdit) { CoworkSubmitView(type: .editExisting(space)) }
         }
     }

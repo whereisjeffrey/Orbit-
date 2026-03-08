@@ -276,3 +276,26 @@ TranslateHelper/DesignSystem.swift TranslateHelper/Info.plist TranslateHelper/Li
  M TranslateHelper/Localizable.xcstrings
 ### Files
 TranslateHelper/Localizable.xcstrings 
+
+## 2026-03-07 22:29 — Auto-handoff (auto-heartbeat)
+### Changed (uncommitted)
+ M TranslateHelper/AuthManager.swift
+ M TranslateHelper/BadgeSystem.swift
+ M TranslateHelper/CommunityUserProfileView.swift
+ M TranslateHelper/CommunityView.swift
+ M TranslateHelper/CoworkSubmitView.swift
+ M TranslateHelper/CoworkView.swift
+ M TranslateHelper/KitView.swift
+ M TranslateHelper/LibraryView.swift
+ M TranslateHelper/OnboardingLocationView.swift
+ M TranslateHelper/OnboardingPlanView.swift
+ M TranslateHelper/PlacePhotoCarousel.swift
+ M TranslateHelper/SettingsView.swift
+ M TranslateHelper/StudyRevealedCardView.swift
+ M TranslateHelper/StudySourceWordView.swift
+ M TranslateHelper/UpgradeSheet.swift
+ M TranslateHelper/WeeklyLibraryWidgets.swift
+ M TranslateHelper/WorkTipViews.swift
+ M TranslateHelper/WorkView.swift
+### Files
+TranslateHelper/AuthManager.swift TranslateHelper/BadgeSystem.swift TranslateHelper/CommunityUserProfileView.swift TranslateHelper/CommunityView.swift TranslateHelper/CoworkSubmitView.swift TranslateHelper/CoworkView.swift TranslateHelper/KitView.swift TranslateHelper/LibraryView.swift TranslateHelper/OnboardingLocationView.swift TranslateHelper/OnboardingPlanView.swift TranslateHelper/PlacePhotoCarousel.swift TranslateHelper/SettingsView.swift TranslateHelper/StudyRevealedCardView.swift TranslateHelper/StudySourceWordView.swift TranslateHelper/UpgradeSheet.swift TranslateHelper/WeeklyLibraryWidgets.swift TranslateHelper/WorkTipViews.swift TranslateHelper/WorkView.swift 

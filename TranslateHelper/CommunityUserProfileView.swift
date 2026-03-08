@@ -17,11 +17,23 @@ struct CommunityUserProfileView: View {
 
                         // ── Avatar ────────────────────────────────────────
                         ZStack {
-                            Circle().fill(user.initialsColor).frame(width: 88, height: 88)
-                            Text(user.initials)
-                                .font(.custom("HelveticaNeue-Bold", size: 32))
-                                .foregroundColor(.white)
+                            if let urlStr = user.avatarURL, let url = URL(string: urlStr) {
+                                AsyncImage(url: url) { phase in
+                                    if let img = phase.image {
+                                        img.resizable().scaledToFill()
+                                            .frame(width: 88, height: 88)
+                                            .clipShape(Circle())
+                                            .overlay(Circle().stroke(Color.tsCard, lineWidth: 3))
+                                    } else {
+                                        initialsCircle
+                                    }
+                                }
+                            } else {
+                                initialsCircle
+                            }
                         }
+                        .frame(width: 88, height: 88)
+                        .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 4)
                         .padding(.top, 28)
                         .padding(.bottom, 14)
 
@@ -146,9 +158,36 @@ struct CommunityUserProfileView: View {
                         }
 
                         // ── Message request CTA ───────────────────────────
-                        TSButton(title: sub.isPro ? "Send a message request" : "🔒  Send a message request") {
+                        Button {
                             if sub.isPro { showMessageRequest = true }
                             else         { showUpgrade = true }
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: sub.isPro ? "paperplane.fill" : "lock.fill")
+                                    .font(.system(size: 14))
+                                Text(sub.isPro ? "Send a message request" : "Send a message request")
+                                    .font(.custom("HelveticaNeue-Bold", size: 16))
+                            }
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 52)
+                            .background(
+                                sub.isPro
+                                ? AnyShapeStyle(LinearGradient(
+                                    colors: [Color(hex: "#3B99FC"), Color(hex: "#007AFF")],
+                                    startPoint: .topLeading, endPoint: .bottomTrailing
+                                  ))
+                                : AnyShapeStyle(Color.tsSecondary.opacity(0.35))
+                            )
+                            .cornerRadius(16)
+                            .overlay(
+                                Group {
+                                    if !sub.isPro {
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .stroke(Color.tsSecondary.opacity(0.2), lineWidth: 1)
+                                    }
+                                }
+                            )
                         }
                         .padding(.horizontal, 24)
                         .padding(.bottom, 48)
@@ -165,6 +204,15 @@ struct CommunityUserProfileView: View {
             } message: {
                 Text("\(user.firstName) will be notified. They can accept or ignore your request.")
             }
+        }
+    }
+
+    @ViewBuilder private var initialsCircle: some View {
+        ZStack {
+            Circle().fill(user.initialsColor).frame(width: 88, height: 88)
+            Text(user.initials)
+                .font(.custom("HelveticaNeue-Bold", size: 32))
+                .foregroundColor(.white)
         }
     }
 }

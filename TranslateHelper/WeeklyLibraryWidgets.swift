@@ -124,8 +124,9 @@ struct WeeklyClipboardWidget: View {
                     // Scrollable when > 7 words
                     ScrollView(.vertical, showsIndicators: false) {
                         phraseList(displayPhrases)
+                            .padding(.bottom, 16)
                     }
-                    .frame(height: CGFloat(Self.scrollThreshold) * 44)
+                    .frame(maxHeight: CGFloat(Self.scrollThreshold) * 44)
                 } else {
                     phraseList(displayPhrases)
                 }
@@ -194,8 +195,50 @@ private struct ClipStatPill: View {
         HStack(spacing: 5) {
             Image(systemName: icon).font(.system(size: 13)).foregroundColor(color)
             Text(value).font(.custom("HelveticaNeue-Bold", size: 14)).foregroundColor(.tsLabel)
-            Text(label).font(.custom("HelveticaNeue", size: 13)).foregroundColor(.tsSecondary)
+            if !label.isEmpty {
+                Text(label).font(.custom("HelveticaNeue", size: 13)).foregroundColor(.tsSecondary)
+            }
         }
+    }
+}
+
+// MARK: - Deck Progress Badge
+
+private struct DeckProgressBadge: View {
+    let total: Int
+    let mastered: Int
+
+    private var progressPercent: Double {
+        guard total > 0 else { return 0 }
+        return Double(mastered) / Double(total) * 100
+    }
+
+    private var state: (emoji: String, label: String, color: Color) {
+        switch progressPercent {
+        case 0:
+            return ("\u{1F680}", "Ready for liftoff", Color(hex: "#007AFF"))
+        case 1..<21:
+            return ("\u{1F331}", "Just getting started", Color(hex: "#34C759"))
+        case 21..<51:
+            return ("\u{26A1}", "Building momentum", Color(hex: "#FF9500"))
+        case 51..<76:
+            return ("\u{1F525}", "Halfway hero", Color(hex: "#FF6B35"))
+        case 76..<86:
+            return ("\u{1F4AA}", "Almost there", Color(hex: "#AF52DE"))
+        case 86..<96:
+            return ("\u{1F3C1}", "Final stretch", Color(hex: "#EE2A69"))
+        default:
+            return ("\u{2728}", "So close!", Color(hex: "#30D158"))
+        }
+    }
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Text(state.emoji).font(.system(size: 11))
+            Text(state.label)
+                .font(.custom("HelveticaNeue-Medium", size: 12))
+        }
+        .foregroundColor(state.color)
     }
 }
 
@@ -500,8 +543,9 @@ struct DeckClipboardWidget: View {
                 } else if displayCards.count > Self.scrollThreshold {
                     ScrollView(.vertical, showsIndicators: false) {
                         cardList(displayCards)
+                            .padding(.bottom, 16)
                     }
-                    .frame(height: CGFloat(Self.scrollThreshold) * 44)
+                    .frame(maxHeight: CGFloat(Self.scrollThreshold) * 44)
                 } else {
                     cardList(displayCards)
                 }
@@ -511,15 +555,10 @@ struct DeckClipboardWidget: View {
             // ── Footer stats ──────────────────────────────
             HStack(spacing: 16) {
                 ClipStatPill(icon: "arrow.down.circle.fill", color: .tsAccent,
-                             value: "\(deck.cards.count)", label: "downloaded")
+                             value: "\(deck.cards.count)", label: "")
                 ClipStatPill(icon: "checkmark.circle.fill", color: Color(hex: "#30D158"),
-                             value: "\(masteredCount)", label: "mastered")
+                             value: "\(masteredCount)", label: "")
                 Spacer()
-                HStack(spacing: 4) {
-                    Image(systemName: "exclamationmark.circle.fill").font(.system(size: 11))
-                    Text("Catching up\u{2026}").font(.custom("HelveticaNeue-Medium", size: 12))
-                }
-                .foregroundColor(Color(hex: "#FF9500"))
             }
             .padding(.horizontal, 16).padding(.vertical, 10)
             .background(colorScheme == .dark ? Color.tsInputBg : Color(hex: "#F2F8FA"))

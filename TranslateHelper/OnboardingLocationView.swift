@@ -102,7 +102,7 @@ struct OnboardingLocationView: View {
                                 HStack(spacing: 12) {
                                     Image(systemName: "location.fill")
                                         .font(.custom("HelveticaNeue", size: 16))
-                                        .foregroundColor(.tsSecondary)
+                                        .foregroundColor(.tsAccent)
 
                                     TextField(
                                         locStore.locations.isEmpty ? "Search a city or region…" : "+ Add another location",
@@ -259,7 +259,7 @@ private struct LocationPill: View {
             // Drag handle
             Image(systemName: "line.3.horizontal")
                 .font(.custom("HelveticaNeue-Medium", size: 14))
-                .foregroundColor(.tsSecondary)
+                .foregroundColor(.tsAccent)
                 .frame(width: 24)
 
             VStack(alignment: .leading, spacing: 2) {
@@ -276,20 +276,23 @@ private struct LocationPill: View {
             Spacer()
 
             Button(action: onRemove) {
-                Image(systemName: "xmark.circle.fill")
-                    .font(.custom("HelveticaNeue", size: 20))
-                    .foregroundColor(Color.tsSecondary.opacity(0.6))
+                Image(systemName: "xmark")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundColor(.tsAccent)
+                    .padding(6)
+                    .background(Color.tsAccent.opacity(0.12))
+                    .clipShape(Circle())
             }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(isPrimary ? Color.tsAccent.opacity(0.08) : Color.tsInputBg)
+                .fill(Color.tsAccent.opacity(0.08))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(isPrimary ? Color.tsAccent.opacity(0.3) : Color.tsBorder, lineWidth: isPrimary ? 1 : 0.5)
+                .stroke(Color.tsAccent.opacity(0.25), lineWidth: 1)
         )
     }
 }

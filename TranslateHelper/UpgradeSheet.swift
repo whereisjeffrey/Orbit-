@@ -180,20 +180,28 @@ struct BlurGate<Content: View>: View {
         } else {
             ZStack {
                 content
-                    .blur(radius: 6)
+                    .blur(radius: 8)
                     .allowsHitTesting(false)
-                HStack(spacing: 6) {
-                    Image(systemName: "lock.fill")
-                        .font(.system(size: 11))
-                        .foregroundColor(.tsAccent)
-                    Text("Upgrade to see")
-                        .font(.custom("HelveticaNeue-Medium", size: 12))
-                        .foregroundColor(.tsAccent)
+                VStack(spacing: 6) {
+                    HStack(spacing: 5) {
+                        Image(systemName: "star.fill")
+                            .font(.system(size: 11))
+                            .foregroundColor(.white)
+                        Text("Pro · Tap to unlock")
+                            .font(.custom("HelveticaNeue-Bold", size: 12))
+                            .foregroundColor(.white)
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 7)
+                    .background(
+                        LinearGradient(
+                            colors: [Color(hex: "#3B99FC"), Color(hex: "#007AFF")],
+                            startPoint: .topLeading, endPoint: .bottomTrailing
+                        )
+                    )
+                    .clipShape(Capsule())
+                    .shadow(color: Color.tsAccent.opacity(0.3), radius: 6, x: 0, y: 3)
                 }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 5)
-                .background(Color.tsCard.opacity(0.9))
-                .cornerRadius(20)
             }
             .onTapGesture { showUpgrade = true }
             .sheet(isPresented: $showUpgrade) {

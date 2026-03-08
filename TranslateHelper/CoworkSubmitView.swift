@@ -115,15 +115,30 @@ struct CoworkSubmitView: View {
             }
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .cancellationAction) {
-                Button("Cancel") { dismiss() }
-            }}
+            .onAppear { seedFieldsIfEditing() }
             .alert("Thanks!", isPresented: $submitted) {
                 Button("Done", role: .cancel) { dismiss() }
             } message: {
                 Text("We\'ll review your submission and add it to the list. You\'re helping every expat who comes after you.")
             }
         }
+    }
+
+    // MARK: - Seed existing data
+    private func seedFieldsIfEditing() {
+        guard case .editExisting(let space) = type else { return }
+        name          = space.name
+        neighbourhood = space.neighbourhood
+        address       = space.address
+        dayRate       = space.dayRate.map { String($0) } ?? ""
+        hoursDisplay  = "\(space.hoursDisplay) · \(space.hoursDays)"
+        hasCallRooms  = space.hasCallRooms
+        hasCoffee     = space.hasCoffee
+        hasFastWifi   = space.hasFastWifi
+        hasLateHours  = space.hasLateHours
+        wifiSpeed     = space.wifiSpeed ?? ""
+        website       = space.website ?? ""
+        notes         = space.notes ?? ""
     }
 }
 

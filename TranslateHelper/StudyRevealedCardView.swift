@@ -89,9 +89,9 @@ struct StudyRevealedCardView: View {
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
-                        .background(Color(.systemGray6).opacity(0.1))
+                        .background(Color.white)
                         .clipShape(Capsule())
-                        .overlay(Capsule().stroke(Color.tsBorder, lineWidth: 1))
+                        .overlay(Capsule().stroke(Color(.systemGray4), lineWidth: 0.5))
                         .padding(.top, 24)
                         
                         Spacer()
@@ -168,7 +168,7 @@ struct StudyRevealedCardView: View {
                                 Color(UIColor { trait in
                                     trait.userInterfaceStyle == .dark
                                         ? UIColor(red: 0.96, green: 0.65, blue: 0.14, alpha: 0.10)
-                                        : .systemBackground
+                                        : UIColor(red: 1.0, green: 0.97, blue: 0.88, alpha: 1.0)
                                 })
                             )
                             .clipShape(RoundedRectangle(cornerRadius: 16))
@@ -187,8 +187,10 @@ struct StudyRevealedCardView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
                     .overlay(
                         RoundedRectangle(cornerRadius: 32, style: .continuous)
-                            .stroke(Color.tsBorder, lineWidth: 1)
+                            .stroke(Color(hex: "0A84FF").opacity(0.55), lineWidth: 1)
                     )
+                    .shadow(color: Color(hex: "0A84FF").opacity(0.45), radius: 14, x: 0, y: 0)
+                    .shadow(color: Color(hex: "0A84FF").opacity(0.22), radius: 30, x: 0, y: 0)
                     .padding(.horizontal, 16)
                     .padding(.top, 16)
                     

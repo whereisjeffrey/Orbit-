@@ -92,9 +92,7 @@ struct OnboardingPlanView: View {
                                 .clipShape(RoundedRectangle(cornerRadius: 24))
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 24)
-                                        .stroke(LinearGradient(
-                                            colors: [Color.tsAccent, Color.clear, Color(hex: "#00F0FF")],
-                                            startPoint: .top, endPoint: .bottom), lineWidth: 1.5)
+                                        .stroke(Color.tsAccent, lineWidth: 1.5)
                                 )
 
                                 Text("MOST POPULAR")

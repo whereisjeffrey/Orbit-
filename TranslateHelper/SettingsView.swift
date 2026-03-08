@@ -347,7 +347,13 @@ struct SettingsView: View {
                     // Debug
                     VStack(spacing: 0) {
                         Button(action: {
+                            // Reset onboarding flow
                             UserDefaults.standard.removeObject(forKey: "onboarding_complete")
+                            // Also clear the deck seed flag so next launch re-seeds the 3 starter decks
+                            UserDefaults.standard.removeObject(forKey: "starter_decks_v7")
+                            // Wipe all existing decks for a clean new-user experience
+                            let deckStore = DeckStore.shared
+                            for deck in deckStore.decks { deckStore.deleteDeck(deck) }
                         }) {
                             HStack {
                                 Image(systemName: "arrow.counterclockwise")

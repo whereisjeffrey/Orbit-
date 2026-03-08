@@ -79,10 +79,6 @@ struct StudySourceWordView: View {
                             : UIColor(hex: "#F6F5F9")
                     }))
                     .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 32, style: .continuous)
-                            .stroke(Color.tsBorder, lineWidth: 1)
-                    )
                     .padding(.horizontal, 16)
                     .padding(.top, 16)
                     .onTapGesture {
@@ -396,7 +392,7 @@ struct FrontCardView: View {
             
             // Source Word — clean, no labels
             Text(displaySourceText)
-                .font(.custom("HelveticaNeue-Bold", size: 36))
+                .font(.custom("HelveticaNeue-Bold", size: 28))
                 .foregroundColor(.tsLabel)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 24)
@@ -450,21 +446,21 @@ struct BackCardView: View {
             VStack(spacing: 20) {
                 // Source word — no label
                 Text(displaySourceText)
-                    .font(.custom("HelveticaNeue-Medium", size: 24))
+                    .font(.custom("HelveticaNeue-Medium", size: 20))
                     .foregroundColor(Color.primary.opacity(0.82))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 24)
 
                 // Divider — same visual width as context box
                 Rectangle()
-                    .fill(Color.tsSecondary.opacity(0.18))
+                    .fill(Color.tsSecondary.opacity(0.13))
                     .frame(height: 1)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 5)
 
                 // Translation — no label
                 Text(displayTranslationText)
-                    .font(.custom("HelveticaNeue-Medium", size: 24))
+                    .font(.custom("HelveticaNeue-Medium", size: 20))
                     .foregroundColor(Color.primary.opacity(0.82))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 24)
@@ -492,38 +488,42 @@ struct BackCardView: View {
             }
             Spacer()
             
-            // Context Box
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(spacing: 6) {
-                    Image(systemName: "lightbulb.fill")
-                        .foregroundColor(Color(hex: "F5A623"))
-                        .font(.custom("HelveticaNeue", size: 14))
-                    Text("CULTURAL CONTEXT")
-                        .font(.custom("HelveticaNeue-Bold", size: 11))
-                        .foregroundColor(Color(hex: "F5A623"))
-                        .tracking(1.5)
+            // Context Box — only shown when the card has cultural notes
+            if let notes = phrase.notes, !notes.isEmpty {
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "lightbulb.fill")
+                            .foregroundColor(Color(hex: "F5A623"))
+                            .font(.custom("HelveticaNeue", size: 14))
+                        Text("CULTURAL CONTEXT")
+                            .font(.custom("HelveticaNeue-Bold", size: 11))
+                            .foregroundColor(Color(hex: "F5A623"))
+                            .tracking(1.5)
+                    }
+
+                    Text(notes)
+                        .font(.custom("HelveticaNeue-Medium", size: 14))
+                        .foregroundColor(.tsLabel.opacity(0.9))
+                        .lineSpacing(4)
                 }
-                
-                Text(phrase.notes ?? "Cultural and slang context for this Spanish phrase will appear here.")
-                    .font(.custom("HelveticaNeue-Medium", size: 14))
-                    .foregroundColor(.tsLabel.opacity(0.9))
-                    .lineSpacing(4)
+                .padding(20)
+                .background(
+                    Color(UIColor { trait in
+                        trait.userInterfaceStyle == .dark
+                            ? UIColor(red: 0.96, green: 0.65, blue: 0.14, alpha: 0.10)
+                            : UIColor(red: 1.0, green: 0.97, blue: 0.88, alpha: 1.0)
+                    })
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color(hex: "F5A623").opacity(0.2), lineWidth: 1)
+                )
+                .padding(.horizontal, 12)
+                .padding(.bottom, 24)
+            } else {
+                Spacer().frame(height: 24)
             }
-            .padding(20)
-            .background(
-                Color(UIColor { trait in
-                    trait.userInterfaceStyle == .dark
-                        ? UIColor(red: 0.96, green: 0.65, blue: 0.14, alpha: 0.10)
-                        : .systemBackground
-                })
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(Color(hex: "F5A623").opacity(0.2), lineWidth: 1)
-            )
-            .padding(.horizontal, 12)
-            .padding(.bottom, 24)
         }
     }
 }
@@ -567,9 +567,13 @@ struct LanguageSwitchPill: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
-        .background(Color(.systemGray6).opacity(0.1))
+        .background(Color(UIColor { trait in
+            trait.userInterfaceStyle == .dark
+                ? UIColor(hex: "111111")
+                : .white
+        }))
         .clipShape(Capsule())
-        .overlay(Capsule().stroke(Color.tsBorder, lineWidth: 1))
+        .shadow(color: Color.black.opacity(0.06), radius: 6, x: 0, y: 2)
     }
 }
 
