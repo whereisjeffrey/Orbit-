@@ -75,8 +75,20 @@ class KeyboardViewController: UIInputViewController {
     private let notesCard = UIView()
     private let notesIcon = UILabel()
     private let notesTextLabel = UILabel()
+    
+    private let correctionCard = UIView()
+    private let correctionIcon = UILabel()
+    private let correctionHeader = UILabel()
+    private let correctionTextLabel = UILabel()
     private let toneStack = UIStackView()
     private let actionStack = UIStackView()
+    private let loadingSpinner: UIActivityIndicatorView = {
+        let s = UIActivityIndicatorView(style: .medium)
+        s.translatesAutoresizingMaskIntoConstraints = false
+        s.hidesWhenStopped = true
+        s.color = UIColor.systemBlue.withAlphaComponent(0.6)
+        return s
+    }()
 
     private let tones: [(id: String, label: String, icon: String)] = [
         ("casual",  "Casual",  "😊"),
@@ -115,15 +127,18 @@ class KeyboardViewController: UIInputViewController {
               let dictated = defaults?.string(forKey: "dictate_result"),
               !dictated.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
 
-        // Read auto-detected language written by DictateViewController
+        // Read language + mode written by DictateViewController
         let detectedLang = defaults?.string(forKey: "dictate_result_language") ?? selectedLanguage
+        let dictateMode  = defaults?.string(forKey: "dictate_mode") ?? ""
 
         defaults?.removeObject(forKey: "dictate_result")
         defaults?.removeObject(forKey: "dictate_result_language")
         defaults?.removeObject(forKey: "dictate_result_timestamp")
+        defaults?.removeObject(forKey: "dictate_mode")
         defaults?.synchronize()
 
         stopDictationPolling()
+
         // Append dictated text to whatever is already in the field (cumulative)
         let existingBefore = textDocumentProxy.documentContextBeforeInput ?? ""
         let existingAfter  = textDocumentProxy.documentContextAfterInput  ?? ""
@@ -131,7 +146,7 @@ class KeyboardViewController: UIInputViewController {
         let separator      = existingText.isEmpty ? "" : " "
         textDocumentProxy.insertText(separator + dictated)
 
-        // Brief delay so the proxy updates, then read full combined text and translate
+        // Brief delay so the proxy updates, then read full combined text
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
             guard let self = self else { return }
             let before = self.textDocumentProxy.documentContextBeforeInput ?? ""
@@ -140,7 +155,16 @@ class KeyboardViewController: UIInputViewController {
             let textToTranslate = fullText.isEmpty ? dictated : fullText
 
             self.lastSourceWasSpeech = true
-            self.performTranslation(text: textToTranslate, source: "speech")
+
+            // Accent-coach mode: speech was recorded in Spanish for pronunciation critique.
+            // Force the source label to Spanish ("es") so performTranslation routes into the
+            // gentle-correction / native-speaker feedback path regardless of what detectLanguage
+            // returns for the transcribed text (numbers, proper nouns, etc. can confuse it).
+            if dictateMode == "accent_coach" || detectedLang == "es" {
+                self.performTranslation(text: textToTranslate, source: "accent_coach")
+            } else {
+                self.performTranslation(text: textToTranslate, source: "speech")
+            }
         }
     }
 
@@ -229,8 +253,12 @@ class KeyboardViewController: UIInputViewController {
         let appGroup = "group.com.jeff.translatehelper"
         let defaults = UserDefaults(suiteName: appGroup)
         let targetCode = defaults?.string(forKey: "talkswitch_target_lang") ?? "es"
-        
-        let isSourceTarget = (detected.code == targetCode)
+
+        // Accent-coach mode: user spoke Spanish for pronunciation practice.
+        // Force the isSourceTarget flag so we always enter the gentle-correction path
+        // regardless of what detectLanguage() returns (numbers, proper nouns etc. can
+        // look like English to the heuristic even when the words are Spanish).
+        let isSourceTarget = source == "accent_coach" ? true : (detected.code == targetCode)
         let inProf = isSourceTarget ? (TSProfiles[targetCode] ?? TSProfiles["es"]!) : TSProfiles["en"]!
         let outProf = isSourceTarget ? TSProfiles["en"]! : (TSProfiles[targetCode] ?? TSProfiles["es"]!)
 
@@ -240,10 +268,10 @@ class KeyboardViewController: UIInputViewController {
         } else {
             directionLabel.text = "\(inProf.flag) → \(outProf.flag)"
         }
-        
+
         inputLangLabel.text = "\(inProf.flag) \(inProf.name)"
         outputLangLabel.text = "\(outProf.flag) \(outProf.name)"
-        
+
         let sourceLang = inProf.deepL
         let targetLang = outProf.deepL
 
@@ -253,6 +281,7 @@ class KeyboardViewController: UIInputViewController {
         // Show loading state
         outputTextLabel.text = "Translating..."
         showPanel()
+        loadingSpinner.startAnimating()
 
         // Map tone to DeepL style
         let style: TranslationService.TranslationStyle
@@ -260,6 +289,75 @@ class KeyboardViewController: UIInputViewController {
         case "casual", "slang", "flirty": style = .casual
         case "work": style = .formal
         default: style = .natural
+        }
+
+        // Gentle Correction (only if typing/speaking in target language, e.g. Spanish)
+        if isSourceTarget {
+            self.outputCard.isHidden = true
+
+            // Populate output text just in case user hits "Replace" before api finishes
+            self.outputTextLabel.text = text
+            self.translationHistory = [text]
+            self.currentHistoryIndex = 0
+
+            self.correctionCard.isHidden = false
+            self.correctionCard.backgroundColor = UIColor.systemGreen.withAlphaComponent(0.05)
+            self.correctionIcon.text = source == "accent_coach" ? "🎤" : "💬"
+            self.correctionHeader.text = source == "accent_coach" ? "ACCENT COACH" : "NATIVE"
+            self.correctionTextLabel.text = source == "accent_coach"
+                ? "Analyzing your spoken Spanish…"
+                : "Analyzing your Spanish..."
+
+            // Show notes for the Spanish text (with pronunciation tips for speech mode)
+            if source == "accent_coach" {
+                // Prime the pronunciation context so smart notes focus on how the spoken words sound
+                lowConfidenceWords = ["[spoken aloud — focus on accent, rhythm, and pronunciation tips]"]
+            }
+            self.updateNotes(original: text, translated: text)
+
+
+            if text.split(separator: " ").count >= 1 {
+                TalkSwitchAPI.shared.getGentleCorrection(text: text) { [weak self] result in
+                    DispatchQueue.main.async {
+                        let isSpeech = source == "accent_coach"
+                        switch result {
+                        case .success(let correction):
+                            if correction.severity != "natural" {
+                                if !correction.userSaid.isEmpty && !correction.nativeSay.isEmpty {
+                                    // Intelligently replace ONLY the isolated mistake in the original text!
+                                    let newText = text.replacingOccurrences(of: correction.userSaid, with: correction.nativeSay)
+                                    self?.outputTextLabel.text = newText
+                                    self?.translationHistory = [newText]
+                                }
+
+                                self?.correctionCard.backgroundColor = UIColor.systemGreen.withAlphaComponent(0.10)
+                                self?.correctionIcon.text = isSpeech ? "🎤" : "💬"
+                                self?.correctionHeader.text = isSpeech ? "ACCENT COACH" : "NATIVE"
+                                let coachPrefix = isSpeech
+                                    ? "A native speaker would say"
+                                    : "Instead of"
+                                self?.correctionTextLabel.text = "\(coachPrefix) \"\(correction.userSaid)\", try \"\(correction.nativeSay)\".\n\n💡 \(correction.explanation)"
+                            } else {
+                                self?.correctionCard.backgroundColor = UIColor.systemGreen.withAlphaComponent(0.08)
+                                self?.correctionIcon.text = "👌"
+                                self?.correctionHeader.text = isSpeech ? "SOUNDS AUTHENTIC" : "SOUNDS NATIVE"
+                                self?.correctionTextLabel.text = isSpeech
+                                    ? "Your spoken Spanish sounds natural and authentic!\n\"\(correction.nativeSay)\""
+                                    : "Your Spanish sounds natural here.\n\"\(correction.nativeSay)\""
+                            }
+                        case .failure(let error):
+                            self?.correctionHeader.text = "CORRECTION OFFLINE"
+                            self?.correctionIcon.text = "⚠️"
+                            self?.correctionTextLabel.text = "Error: \(error.localizedDescription)"
+                        }
+                    }
+                }
+            }
+            return // Skip DeepL translation completely!
+
+        } else {
+            self.correctionCard.isHidden = true
+            self.outputCard.isHidden = false
         }
 
         // Call DeepL API first (always)
@@ -276,11 +374,13 @@ class KeyboardViewController: UIInputViewController {
                     self.translationVersion = 0
                     self.translationHistory = []
                     self.currentHistoryIndex = -1
-                    // Slang/Flirty/Casual all get OpenAI refinement so location-aware
-                    // slang distribution is active for every conversational tone.
+                    self.loadingSpinner.stopAnimating()
+                    // All tones get OpenAI refinement — Work needs it most for
+                    // business idiom swapping (circle back, loop you in, etc.)
                     let needsRefinement = self.currentTone == "slang"
                         || self.currentTone == "flirty"
                         || self.currentTone == "casual"
+                        || self.currentTone == "work"
                     
                     if needsRefinement {
                         self.outputTextLabel.text = "✨ Refining..."
@@ -338,6 +438,7 @@ class KeyboardViewController: UIInputViewController {
                     }
                     
                 case .failure(let error):
+                    self.loadingSpinner.stopAnimating()
                     self.outputTextLabel.text = "⚠️ Translation failed"
                     self.notesCard.isHidden = false
                     self.notesTextLabel.text = "Error: \(error.localizedDescription)"
@@ -379,9 +480,9 @@ class KeyboardViewController: UIInputViewController {
                 switch result {
                 case .success(let notes):
                     self.notesTextLabel.text = notes
-                case .failure:
-                    // Fallback to basic notes
-                    self.showBasicNotes(original: original)
+                case .failure(let error):
+                    // Fallback to basic notes + show error
+                    self.notesTextLabel.text = "⚠️ Error loading phrase tips: \(error.localizedDescription)"
                 }
             }
         }
@@ -398,7 +499,13 @@ class KeyboardViewController: UIInputViewController {
         if let idiom = foundIdiom {
             notesTextLabel.text = "💡 \"\(idiom)\" is an idiom — translated for meaning, not literally."
         } else {
-            notesCard.isHidden = true
+            let targetCode = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
+            let detected = detectLanguage(original).code
+            if detected == targetCode {
+                notesTextLabel.text = "💡 Keep practicing! Your local slang notes will appear here."
+            } else {
+                notesCard.isHidden = true
+            }
         }
     }
 
@@ -439,7 +546,7 @@ class KeyboardViewController: UIInputViewController {
         emptyBar.addSubview(iconView)
 
         emptyLabel.translatesAutoresizingMaskIntoConstraints = false
-        emptyLabel.text = "Tap the microphone below to translate"
+        emptyLabel.text = "Start typing to translate"
         emptyLabel.font = UIFont.systemFont(ofSize: 14, weight: .medium)
         emptyLabel.textColor = textSecondary
         emptyBar.addSubview(emptyLabel)
@@ -646,6 +753,10 @@ class KeyboardViewController: UIInputViewController {
         setupOutputCard()
         contentStack.addArrangedSubview(outputCard)
 
+        // === Correction card ===
+        setupCorrectionCard()
+        contentStack.addArrangedSubview(correctionCard)
+
         // === Notes card ===
         setupNotesCard()
         contentStack.addArrangedSubview(notesCard)
@@ -701,6 +812,7 @@ class KeyboardViewController: UIInputViewController {
         outputCard.layer.borderWidth = 1
         outputCard.layer.borderColor = UIColor.systemBlue.withAlphaComponent(0.3).cgColor
         outputCard.translatesAutoresizingMaskIntoConstraints = false
+        outputCard.clipsToBounds = true
 
         outputLangLabel.font = UIFont.systemFont(ofSize: 10, weight: .bold)
         outputLangLabel.textColor = UIColor.systemBlue
@@ -746,6 +858,9 @@ class KeyboardViewController: UIInputViewController {
         swipeHintLabel.isHidden = true
         outputCard.addSubview(swipeHintLabel)
 
+        // Spinner — centred overlay inside the output card
+        outputCard.addSubview(loadingSpinner)
+
         NSLayoutConstraint.activate([
             outputCard.heightAnchor.constraint(greaterThanOrEqualToConstant: 50),
             outputLangLabel.topAnchor.constraint(equalTo: outputCard.topAnchor, constant: 8),
@@ -760,6 +875,8 @@ class KeyboardViewController: UIInputViewController {
             outputTextLabel.bottomAnchor.constraint(equalTo: outputCard.bottomAnchor, constant: -10),
             swipeHintLabel.bottomAnchor.constraint(equalTo: outputCard.bottomAnchor, constant: -4),
             swipeHintLabel.trailingAnchor.constraint(equalTo: speakerBtn.leadingAnchor, constant: -6),
+            loadingSpinner.trailingAnchor.constraint(equalTo: speakerBtn.leadingAnchor, constant: -8),
+            loadingSpinner.centerYAnchor.constraint(equalTo: outputCard.centerYAnchor),
         ])
     }
 
@@ -943,6 +1060,41 @@ class KeyboardViewController: UIInputViewController {
         ])
     }
 
+    private func setupCorrectionCard() {
+        correctionCard.backgroundColor = UIColor.systemGreen.withAlphaComponent(0.10)
+        correctionCard.layer.cornerRadius = 10
+        correctionCard.translatesAutoresizingMaskIntoConstraints = false
+
+        correctionIcon.text = "💬"
+        correctionIcon.font = UIFont.systemFont(ofSize: 14)
+        correctionIcon.translatesAutoresizingMaskIntoConstraints = false
+        correctionCard.addSubview(correctionIcon)
+
+        correctionHeader.text = "NATIVE"
+        correctionHeader.font = UIFont.systemFont(ofSize: 10, weight: .bold)
+        correctionHeader.textColor = UIColor.systemGreen
+        correctionHeader.translatesAutoresizingMaskIntoConstraints = false
+        correctionCard.addSubview(correctionHeader)
+
+        correctionTextLabel.font = UIFont.systemFont(ofSize: 13)
+        correctionTextLabel.textColor = textPrimary
+        correctionTextLabel.numberOfLines = 0
+        correctionTextLabel.translatesAutoresizingMaskIntoConstraints = false
+        correctionCard.addSubview(correctionTextLabel)
+
+        NSLayoutConstraint.activate([
+            correctionCard.heightAnchor.constraint(greaterThanOrEqualToConstant: 40),
+            correctionIcon.topAnchor.constraint(equalTo: correctionCard.topAnchor, constant: 8),
+            correctionIcon.leadingAnchor.constraint(equalTo: correctionCard.leadingAnchor, constant: 10),
+            correctionHeader.centerYAnchor.constraint(equalTo: correctionIcon.centerYAnchor),
+            correctionHeader.leadingAnchor.constraint(equalTo: correctionIcon.trailingAnchor, constant: 4),
+            correctionTextLabel.topAnchor.constraint(equalTo: correctionIcon.bottomAnchor, constant: 4),
+            correctionTextLabel.leadingAnchor.constraint(equalTo: correctionCard.leadingAnchor, constant: 12),
+            correctionTextLabel.trailingAnchor.constraint(equalTo: correctionCard.trailingAnchor, constant: -12),
+            correctionTextLabel.bottomAnchor.constraint(equalTo: correctionCard.bottomAnchor, constant: -8),
+        ])
+    }
+
     private func setupToneStack() {
         toneStack.axis = .horizontal
         toneStack.distribution = .fillEqually
@@ -1032,6 +1184,8 @@ class KeyboardViewController: UIInputViewController {
     private func showEmpty() {
         emptyBar.isHidden = false
         panel.isHidden = true
+        correctionCard.isHidden = true
+        notesCard.isHidden = true
         heightConstraint.constant = emptyHeight
     }
 
@@ -1049,6 +1203,7 @@ class KeyboardViewController: UIInputViewController {
         inputLangLabel.textColor = textSecondary
         outputTextLabel.textColor = textPrimary
         notesTextLabel.textColor = textPrimary
+        correctionTextLabel.textColor = textPrimary
         emptyLabel.textColor = textSecondary
         updateToneSelection()
     }
@@ -1294,16 +1449,19 @@ class KeyboardViewController: UIInputViewController {
         guard let translated = outputTextLabel.text,
               !translated.isEmpty,
               translated != "Translating...",
+              translated != "✨ Refining...",
               translated != "⚠️ Translation failed" else { return }
 
         if let before = textDocumentProxy.documentContextBeforeInput {
             for _ in 0..<before.count { textDocumentProxy.deleteBackward() }
         }
         textDocumentProxy.insertText(translated)
-        flashActionButton(index: 0, tempTitle: "Replaced! ✅", originalTitle: "Replace ↩️")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [weak self] in
-            self?.showEmpty()
-        }
+
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
+
+        // Immediately hand control back to the native keyboard (e.g. WhatsApp)
+        advanceToNextInputMode()
     }
 
     @objc private func copyTapped() {

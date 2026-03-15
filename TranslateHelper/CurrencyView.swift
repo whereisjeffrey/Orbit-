@@ -715,7 +715,7 @@ struct CurrencyView: View {
     var mxnRate: Double { store.rates["MXN"] ?? 0 }
 
     var body: some View {
-        ZStack { TSGradientBackground()
+        ZStack { Color.tsBackground.ignoresSafeArea()
             ScrollView {
                 VStack(spacing: 16) {
 

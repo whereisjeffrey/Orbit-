@@ -2,6 +2,7 @@ import Foundation
 
 class TranslationService {
     static let shared = TranslationService()
+    private let urlSession = URLSession(configuration: .default)
     private init() {}
     
     enum Language: String {
@@ -68,7 +69,7 @@ class TranslationService {
         let bodyString = parameters.map { "\($0.key)=\($0.value.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? $0.value)" }.joined(separator: "&")
         request.httpBody = bodyString.data(using: .utf8)
         
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        let task = self.urlSession.dataTask(with: request) { data, response, error in
             NSLog("%@", "TSKBD_API: URL: \(url.absoluteString)")
             NSLog("%@", "TSKBD_API: Body: \(bodyString)")
             NSLog("%@", "TSKBD_API: Response status: \((response as? HTTPURLResponse)?.statusCode ?? -1)")

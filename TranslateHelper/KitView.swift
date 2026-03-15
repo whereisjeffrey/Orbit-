@@ -100,7 +100,7 @@ struct KitView: View {
     let columns = [GridItem(.flexible(), spacing: 16), GridItem(.flexible(), spacing: 16)]
 
     var body: some View {
-        ZStack { TSGradientBackground()
+        ZStack { Color.tsBackground.ignoresSafeArea()
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
 

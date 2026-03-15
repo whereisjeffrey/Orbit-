@@ -251,7 +251,7 @@ struct ScamRadarView: View {
     var body: some View {
         NavigationStack {
             ZStack(alignment: .top) {
-                TSGradientBackground()
+                Color.tsBackground.ignoresSafeArea()
                 ScrollView {
                     VStack(spacing: 0) {
                         VStack(spacing: 16) {

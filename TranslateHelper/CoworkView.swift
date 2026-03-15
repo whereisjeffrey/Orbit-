@@ -83,7 +83,7 @@ struct CoworkView: View {
     }
 
     var body: some View {
-        ZStack { TSGradientBackground()
+        ZStack { Color.tsBackground.ignoresSafeArea()
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
 
@@ -404,7 +404,7 @@ struct CoworkDetailView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack { TSGradientBackground()
+            ZStack { Color.tsBackground.ignoresSafeArea()
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
                         VStack(alignment: .leading, spacing: 8) {

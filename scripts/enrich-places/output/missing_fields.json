@@ -1,0 +1,175 @@
+{
+  "summary": "16 places have fields needing community input",
+  "places": [
+    {
+      "id": "wework_reforma",
+      "name": "WeWork Espacio de Oficinas & Coworking",
+      "fields": [
+        "wifiSpeed",
+        "outletCount",
+        "callRooms",
+        "exactPricing"
+      ]
+    },
+    {
+      "id": "selina_roma",
+      "name": "Selina Mexico City Downtown & Cowork",
+      "fields": [
+        "wifiSpeed",
+        "outletCount",
+        "callRooms",
+        "exactPricing"
+      ]
+    },
+    {
+      "id": "impact_hub",
+      "name": "Impact HUB Ciudad de México",
+      "fields": [
+        "wifiSpeed",
+        "outletCount",
+        "callRooms",
+        "exactPricing"
+      ]
+    },
+    {
+      "id": "zentro_condesa",
+      "name": "Central W Roma Sur",
+      "fields": [
+        "wifiSpeed",
+        "outletCount",
+        "callRooms",
+        "exactPricing"
+      ]
+    },
+    {
+      "id": "maquinaria_roma",
+      "name": "Maquinaria Creativa",
+      "fields": [
+        "wifiSpeed",
+        "outletCount",
+        "callRooms",
+        "exactPricing"
+      ]
+    },
+    {
+      "id": "bordo_juarez",
+      "name": "Co-Madre Roma",
+      "fields": [
+        "outletCount",
+        "callRooms",
+        "exactPricing"
+      ]
+    },
+    {
+      "id": "crew_polanco",
+      "name": "The Crew",
+      "fields": [
+        "wifiSpeed",
+        "callRooms",
+        "exactPricing"
+      ]
+    },
+    {
+      "id": "latitud_condesa",
+      "name": "LATITUD",
+      "fields": [
+        "wifiSpeed",
+        "outletCount",
+        "callRooms",
+        "exactPricing"
+      ]
+    },
+    {
+      "id": "cafe_jarocho",
+      "name": "Cafe El Jarocho",
+      "fields": [
+        "wifiSpeed",
+        "outletCount",
+        "noiseLevel",
+        "timeLimit"
+      ]
+    },
+    {
+      "id": "cafe_avellaneda",
+      "name": "Café Avellaneda",
+      "fields": [
+        "wifiSpeed",
+        "outletCount",
+        "noiseLevel",
+        "timeLimit"
+      ]
+    },
+    {
+      "id": "cafe_once",
+      "name": "Once Once Café",
+      "fields": [
+        "wifiSpeed",
+        "outletCount",
+        "noiseLevel",
+        "timeLimit"
+      ]
+    },
+    {
+      "id": "cafe_negro",
+      "name": "Café Néctar Negro",
+      "fields": [
+        "wifiSpeed",
+        "outletCount",
+        "noiseLevel",
+        "timeLimit"
+      ]
+    },
+    {
+      "id": "cafe_quentin",
+      "name": "Qūentin Café",
+      "fields": [
+        "wifiSpeed",
+        "outletCount",
+        "noiseLevel",
+        "timeLimit"
+      ]
+    },
+    {
+      "id": "cafe_buna",
+      "name": "Buna - Café Rico",
+      "fields": [
+        "wifiSpeed",
+        "outletCount",
+        "noiseLevel",
+        "timeLimit"
+      ]
+    },
+    {
+      "id": "cafe_almanegra",
+      "name": "Almanegra Café",
+      "fields": [
+        "wifiSpeed",
+        "outletCount",
+        "noiseLevel",
+        "timeLimit"
+      ]
+    },
+    {
+      "id": "cafe_paramo",
+      "name": "Páramo",
+      "fields": [
+        "wifiSpeed",
+        "outletCount",
+        "noiseLevel",
+        "timeLimit"
+      ]
+    }
+  ],
+  "notFound": [
+    {
+      "id": "homework_condesa",
+      "name": "Homework Condesa",
+      "reason": "not_found"
+    },
+    {
+      "id": "homework_polanco",
+      "name": "Homework Polanco",
+      "reason": "not_found"
+    }
+  ]
+}

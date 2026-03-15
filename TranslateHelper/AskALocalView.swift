@@ -27,7 +27,7 @@ struct AskALocalView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack { TSGradientBackground()
+            ZStack { Color.tsBackground.ignoresSafeArea()
                 VStack(spacing: 0) {
                     // ── Filter chips ───────────────────────────────
                     ScrollView(.horizontal, showsIndicators: false) {

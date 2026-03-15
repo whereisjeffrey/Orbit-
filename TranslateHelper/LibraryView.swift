@@ -426,3 +426,5 @@ struct NewDeckCard: View {
         .buttonStyle(DeckTapStyle())
     }
 }
+
+// (LearnBackground removed as it has been moved to DesignSystem.swift as TSGradientBackground)

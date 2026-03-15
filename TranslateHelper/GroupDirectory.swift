@@ -144,7 +144,7 @@ struct GroupDirectoryView: View {
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottomTrailing) {
-                TSGradientBackground()
+                Color.tsBackground.ignoresSafeArea()
 
                 ScrollView {
                     VStack(spacing: 16) {
@@ -389,7 +389,7 @@ struct AddGroupSheet: View {
 
     var body: some View {
         NavigationStack {
-            ZStack { TSGradientBackground()
+            ZStack { Color.tsBackground.ignoresSafeArea()
                 ScrollView {
                     VStack(spacing: 20) {
 

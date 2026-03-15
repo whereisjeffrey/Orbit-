@@ -20,6 +20,7 @@ private struct UserLearningLocation: Codable {
 class TalkSwitchAPI {
     
     static let shared = TalkSwitchAPI()
+    private let urlSession = URLSession(configuration: .default)
     private init() {}
     
     struct RefinedTranslation {
@@ -38,6 +39,14 @@ class TalkSwitchAPI {
         let mistakes: [String]
         let tips: [String]
         let rawNotes: String
+    }
+    
+    struct GentleCorrectionResult {
+        let userSaid: String
+        let nativeSay: String
+        let explanation: String
+        let category: String?
+        let severity: String
     }
     
     /// Refines a DeepL translation using OpenAI for tone/cultural adaptation
@@ -83,7 +92,7 @@ class TalkSwitchAPI {
         
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
         
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        let task = self.urlSession.dataTask(with: request) { data, response, error in
             if let error = error {
                 completion(.failure(error))
                 return
@@ -198,7 +207,7 @@ class TalkSwitchAPI {
         
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
         
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        let task = self.urlSession.dataTask(with: request) { data, response, error in
             if let error = error {
                 completion(.failure(error))
                 return
@@ -236,6 +245,116 @@ class TalkSwitchAPI {
                 let result = self.parseCoachingResponse(content, original: spokenText)
                 completion(.success(result))
                 
+            } catch {
+                completion(.failure(error))
+            }
+        }
+        task.resume()
+    }
+    
+    func getGentleCorrection(text: String, completion: @escaping (Result<GentleCorrectionResult, Error>) -> Void) {
+        let apiKey = APIConfig.openAIAPIKey
+        guard apiKey != "YOUR_OPENAI_KEY_HERE" else {
+            completion(.failure(NSError(domain: "TalkSwitchAPI", code: -1, userInfo: [NSLocalizedDescriptionKey: "OpenAI not configured"])))
+            return
+        }
+        
+        guard let url = URL(string: "\(APIConfig.openAIBaseURL)/chat/completions") else {
+            completion(.failure(NSError(domain: "TalkSwitchAPI", code: -2, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
+            return
+        }
+        
+        let systemPrompt = """
+        You are a warm, advanced language coach for Mexican Spanish.
+        A student typed a passage in Spanish. Your ONLY job is to isolate a specific phrase 
+        where they made a mistake or sounded unnatural, and show them how a Mexican would naturally express *just that part*.
+
+        RULES:
+        - NEVER rewrite their entire passage. Only pick out the specific phrase or sentence chunk that needs fixing.
+        - Focus on these common advanced-learner patterns:
+          1. Preposition misuse (para/por, en/a, de/con)
+          2. Register mismatch (overly formal when casual is natural)
+          3. Literal translation from English (word order, false friends)
+          4. Idiomatic phrasing
+        - Keep explanations ultra-brief (1 sentence).
+
+        Respond ONLY with valid JSON:
+        {
+          "userSaid": "the specific short phrase they wrote that needs fixing",
+          "nativeSay": "how a Mexican would say that exact short phrase",
+          "explanation": "brief, warm explanation of the difference",
+          "severity": "improvement" | "natural"
+        }
+        If severity is "natural", it means their entirely Spanish was already native-sounding, and you should leave userSaid/nativeSay blank.
+        """
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let body: [String: Any] = [
+            "model": "gpt-4o-mini",
+            "messages": [
+                ["role": "system", "content": systemPrompt],
+                ["role": "user", "content": text]
+            ],
+            "response_format": ["type": "json_object"],
+            "temperature": 0.2, // Low temp for more consistent formatting
+            "max_tokens": 150
+        ]
+        
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        
+        let task = self.urlSession.dataTask(with: request) { data, response, error in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+            guard let data = data else {
+                completion(.failure(NSError(domain: "TalkSwitchAPI", code: -3, userInfo: [NSLocalizedDescriptionKey: "No data"])))
+                return
+            }
+            
+            do {
+                guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                    let strData = String(data: data, encoding: .utf8) ?? "unknown"
+                    completion(.failure(NSError(domain: "TalkSwitchAPI", code: -4, userInfo: [NSLocalizedDescriptionKey: "JSON Parse failed. Output: \(strData)"])))
+                    return
+                }
+                
+                if let apiError = json["error"] as? [String: Any],
+                   let message = apiError["message"] as? String {
+                    completion(.failure(NSError(domain: "TalkSwitchAPI", code: -5, userInfo: [NSLocalizedDescriptionKey: "OpenAI: \(message)"])))
+                    return
+                }
+                
+                if let choices = json["choices"] as? [[String: Any]],
+                   let first = choices.first,
+                   let message = first["message"] as? [String: Any],
+                   let content = message["content"] as? String {
+                    
+                    // clean markdown markers if any
+                    let cleanContent = content.trimmingCharacters(in: .whitespacesAndNewlines)
+                        .replacingOccurrences(of: "```json", with: "")
+                        .replacingOccurrences(of: "```", with: "")
+                    
+                    if let contentData = cleanContent.data(using: .utf8),
+                       let resultJSON = try JSONSerialization.jsonObject(with: contentData) as? [String: Any] {
+                        
+                        let userSaid = resultJSON["userSaid"] as? String ?? ""
+                        let nativeSay = resultJSON["nativeSay"] as? String ?? ""
+                        let explanation = resultJSON["explanation"] as? String ?? ""
+                        let category = resultJSON["category"] as? String
+                        let severity = resultJSON["severity"] as? String ?? "suggestion"
+                        
+                        let result = GentleCorrectionResult(userSaid: userSaid, nativeSay: nativeSay, explanation: explanation, category: category, severity: severity)
+                        completion(.success(result))
+                        return
+                    }
+                }
+                let strData = String(data: data, encoding: .utf8) ?? "unknown"
+                completion(.failure(NSError(domain: "TalkSwitchAPI", code: -4, userInfo: [NSLocalizedDescriptionKey: "JSON Parse failed. Output: \(strData)"])))
             } catch {
                 completion(.failure(error))
             }
@@ -326,7 +445,31 @@ class TalkSwitchAPI {
 
         // Notes are ALWAYS about the Spanish phrase — regardless of which direction the card is studied.
         // The English side is never the subject. Teach the learner about Spanish usage, culture, slang.
-        let systemPrompt = """
+        
+        var systemPrompt = ""
+        var userPrompt = ""
+        
+        if original == translated && sourceLang == "es" {
+            // User typed raw Spanish
+            systemPrompt = """
+            You are a bilingual cultural coach specialising in Mexican Spanish. \
+            A learner has typed a phrase in Spanish. \
+            Write a short cultural note EXCLUSIVELY about their Spanish phrase. \
+            \
+            Always cover: \
+            1. How the Spanish phrase is actually used — regional flavour, tone, register \
+            2. One Mexican or Latin American slang, idiom, or cultural tip about the phrasing \
+            \
+            CRITICAL RULES: \
+            • Write notes in English so the learner understands — but every example must be in Spanish \
+            • Never discuss English slang, idioms, or cultural context — Spanish only \
+            • Don't correct their grammar (another system does that) \
+            • Max 3-4 lines. No JSON. Plain text only.\(locationBlock)
+            """
+            userPrompt = "Spanish phrase: \"\(original)\"\nTone context: \(toneDesc)\nWrite a short cultural note or local slang connection ONLY about this phrase."
+        } else {
+            // Usual translation pair
+            systemPrompt = """
             You are a bilingual cultural coach specialising in Mexican Spanish. \
             A user has a translation between English and Spanish. \
             Write a short cultural note EXCLUSIVELY about the SPANISH phrase. \
@@ -342,9 +485,11 @@ class TalkSwitchAPI {
             • Never discuss English slang, idioms, or cultural context — Spanish only \
             • Max 3-4 lines. No JSON. Plain text only.\(locationBlock)
             """
-        let enText = sourceLang == "en" ? original : translated
-        let esText = sourceLang == "es" ? original : translated
-        var userPrompt = "English: \"\(enText)\"\nSpanish: \"\(esText)\"\nTone: \(toneDesc)\nWrite notes ONLY about the Spanish phrase."
+            let enText = sourceLang == "en" ? original : translated
+            let esText = sourceLang == "es" ? original : translated
+            userPrompt = "English: \"\(enText)\"\nSpanish: \"\(esText)\"\nTone: \(toneDesc)\nWrite notes ONLY about the Spanish phrase."
+        }
+        
         if let pronContext = pronunciationContext {
             userPrompt += "\n\n⚠️ \(pronContext)"
         }
@@ -366,7 +511,7 @@ class TalkSwitchAPI {
         
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
         
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        let task = self.urlSession.dataTask(with: request) { data, response, error in
             if let error = error {
                 completion(.failure(error))
                 return
@@ -380,8 +525,9 @@ class TalkSwitchAPI {
             
             do {
                 guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                    let strData = String(data: data, encoding: .utf8) ?? "unknown"
                     completion(.failure(NSError(domain: "TalkSwitchAPI", code: -4,
-                        userInfo: [NSLocalizedDescriptionKey: "Invalid response"])))
+                        userInfo: [NSLocalizedDescriptionKey: "Invalid response: \(strData)"])))
                     return
                 }
                 
@@ -477,7 +623,7 @@ class TalkSwitchAPI {
         
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
         
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        let task = self.urlSession.dataTask(with: request) { data, response, error in
             if let error = error {
                 completion(.failure(error))
                 return
@@ -781,7 +927,7 @@ class TalkSwitchAPI {
         ]
         req.httpBody = try? JSONSerialization.data(withJSONObject: body)
 
-        URLSession.shared.dataTask(with: req) { data, _, error in
+        self.urlSession.dataTask(with: req) { data, _, error in
             if let error = error { completion(.failure(error)); return }
             guard let data = data,
                   let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -866,7 +1012,7 @@ class TalkSwitchAPI {
         
         req.httpBody = try? JSONSerialization.data(withJSONObject: body)
 
-        URLSession.shared.dataTask(with: req) { data, _, _ in
+        self.urlSession.dataTask(with: req) { data, _, _ in
             guard let data = data,
                   let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                   let choices = json["choices"] as? [[String: Any]],

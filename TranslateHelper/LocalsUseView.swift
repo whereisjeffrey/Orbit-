@@ -419,7 +419,7 @@ struct LocalsUseView: View {
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottomTrailing) {
-                TSGradientBackground()
+                Color.tsBackground.ignoresSafeArea()
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
@@ -935,7 +935,7 @@ struct AddRecSheet: View {
 
     var body: some View {
         NavigationStack {
-            ZStack { TSGradientBackground()
+            ZStack { Color.tsBackground.ignoresSafeArea()
                 ScrollView {
                     VStack(alignment: .leading, spacing: 24) {
 

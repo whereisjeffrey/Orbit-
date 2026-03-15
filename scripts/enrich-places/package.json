@@ -1,0 +1,15 @@
+{
+    "name": "wander-place-enricher",
+    "version": "1.0.0",
+    "description": "Enriches coworking + café seed data with real Google Places data (photos, hours, website, pricing)",
+    "type": "module",
+    "scripts": {
+        "enrich": "node index.js",
+        "dry-run": "node index.js --dry-run"
+    },
+    "dependencies": {
+        "node-fetch": "^3.3.2",
+        "fs-extra": "^11.2.0",
+        "chalk": "^5.3.0"
+    }
+}

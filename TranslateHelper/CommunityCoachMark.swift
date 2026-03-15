@@ -26,7 +26,7 @@ struct CommunityCoachMarkOverlay: View {
             icon: "plus.circle.fill",
             title: "Share something",
             body: "Ask a question, drop a rec, or start an outing. Other expats are here for it.",
-            color: Color(hex: "#FF6B35")
+            color: Color(hex: "#17C2E1")
         ),
     ]
 

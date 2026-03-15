@@ -20,7 +20,7 @@ struct FitnessView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack { TSGradientBackground()
+            ZStack { Color.tsBackground.ignoresSafeArea()
                 ScrollView {
                     VStack(spacing: 0) {
 

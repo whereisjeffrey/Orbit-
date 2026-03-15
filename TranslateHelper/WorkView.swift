@@ -68,7 +68,7 @@ struct WorkView: View {
     }
 
     var body: some View {
-        ZStack { TSGradientBackground()
+        ZStack { Color.tsBackground.ignoresSafeArea()
             VStack(spacing: 0) {
 
                 // ── Header ─────────────────────────────────────────
@@ -338,7 +338,7 @@ struct CafeDetailView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack { TSGradientBackground()
+            ZStack { Color.tsBackground.ignoresSafeArea()
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
                         VStack(alignment: .leading, spacing: 8) {
@@ -549,7 +549,7 @@ struct CafeSubmitView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack { TSGradientBackground()
+            ZStack { Color.tsBackground.ignoresSafeArea()
                 ScrollView {
                     VStack(alignment: .leading, spacing: 24) {
 

@@ -1,0 +1,106 @@
+// ─── LOCAL PHOTO PATHS ───
+// Use these when serving from your own storage
+
+// WeWork Espacio de Oficinas & Coworking (wework_reforma)
+// Photos: 5
+//   photos/wework_reforma/photo_1.jpg
+//   photos/wework_reforma/photo_2.jpg
+//   photos/wework_reforma/photo_3.jpg
+//   photos/wework_reforma/photo_4.jpg
+//   photos/wework_reforma/photo_5.jpg
+
+// Selina Mexico City Downtown & Cowork (selina_roma)
+// Photos: 5
+//   photos/selina_roma/photo_1.jpg
+//   photos/selina_roma/photo_2.jpg
+//   photos/selina_roma/photo_3.jpg
+//   photos/selina_roma/photo_4.jpg
+//   photos/selina_roma/photo_5.jpg
+
+// Impact HUB Ciudad de México (impact_hub)
+// Photos: 5
+//   photos/impact_hub/photo_1.jpg
+//   photos/impact_hub/photo_2.jpg
+//   photos/impact_hub/photo_3.jpg
+//   photos/impact_hub/photo_4.jpg
+//   photos/impact_hub/photo_5.jpg
+
+// Central W Roma Sur (zentro_condesa)
+// Photos: 5
+//   photos/zentro_condesa/photo_1.jpg
+//   photos/zentro_condesa/photo_2.jpg
+//   photos/zentro_condesa/photo_3.jpg
+//   photos/zentro_condesa/photo_4.jpg
+//   photos/zentro_condesa/photo_5.jpg
+
+// Co-Madre Roma (bordo_juarez)
+// Photos: 5
+//   photos/bordo_juarez/photo_1.jpg
+//   photos/bordo_juarez/photo_2.jpg
+//   photos/bordo_juarez/photo_3.jpg
+//   photos/bordo_juarez/photo_4.jpg
+//   photos/bordo_juarez/photo_5.jpg
+
+// Cafe El Jarocho (cafe_jarocho)
+// Photos: 5
+//   photos/cafe_jarocho/photo_1.jpg
+//   photos/cafe_jarocho/photo_2.jpg
+//   photos/cafe_jarocho/photo_3.jpg
+//   photos/cafe_jarocho/photo_4.jpg
+//   photos/cafe_jarocho/photo_5.jpg
+
+// Café Avellaneda (cafe_avellaneda)
+// Photos: 5
+//   photos/cafe_avellaneda/photo_1.jpg
+//   photos/cafe_avellaneda/photo_2.jpg
+//   photos/cafe_avellaneda/photo_3.jpg
+//   photos/cafe_avellaneda/photo_4.jpg
+//   photos/cafe_avellaneda/photo_5.jpg
+
+// Once Once Café (cafe_once)
+// Photos: 5
+//   photos/cafe_once/photo_1.jpg
+//   photos/cafe_once/photo_2.jpg
+//   photos/cafe_once/photo_3.jpg
+//   photos/cafe_once/photo_4.jpg
+//   photos/cafe_once/photo_5.jpg
+
+// Café Néctar Negro (cafe_negro)
+// Photos: 5
+//   photos/cafe_negro/photo_1.jpg
+//   photos/cafe_negro/photo_2.jpg
+//   photos/cafe_negro/photo_3.jpg
+//   photos/cafe_negro/photo_4.jpg
+//   photos/cafe_negro/photo_5.jpg
+
+// Qūentin Café (cafe_quentin)
+// Photos: 5
+//   photos/cafe_quentin/photo_1.jpg
+//   photos/cafe_quentin/photo_2.jpg
+//   photos/cafe_quentin/photo_3.jpg
+//   photos/cafe_quentin/photo_4.jpg
+//   photos/cafe_quentin/photo_5.jpg
+
+// Buna - Café Rico (cafe_buna)
+// Photos: 5
+//   photos/cafe_buna/photo_1.jpg
+//   photos/cafe_buna/photo_2.jpg
+//   photos/cafe_buna/photo_3.jpg
+//   photos/cafe_buna/photo_4.jpg
+//   photos/cafe_buna/photo_5.jpg
+
+// Almanegra Café (cafe_almanegra)
+// Photos: 5
+//   photos/cafe_almanegra/photo_1.jpg
+//   photos/cafe_almanegra/photo_2.jpg
+//   photos/cafe_almanegra/photo_3.jpg
+//   photos/cafe_almanegra/photo_4.jpg
+//   photos/cafe_almanegra/photo_5.jpg
+
+// Páramo (cafe_paramo)
+// Photos: 5
+//   photos/cafe_paramo/photo_1.jpg
+//   photos/cafe_paramo/photo_2.jpg
+//   photos/cafe_paramo/photo_3.jpg
+//   photos/cafe_paramo/photo_4.jpg
+//   photos/cafe_paramo/photo_5.jpg

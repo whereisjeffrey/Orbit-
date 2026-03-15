@@ -36,7 +36,7 @@ struct CoworkSubmitView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack { TSGradientBackground()
+            ZStack { Color.tsBackground.ignoresSafeArea()
                 ScrollView {
                     VStack(alignment: .leading, spacing: 24) {
 

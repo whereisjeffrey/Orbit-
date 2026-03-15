@@ -88,7 +88,7 @@ struct AddPlacePhotoSheet: View {
 
     var body: some View {
         NavigationStack {
-            ZStack { TSGradientBackground()
+            ZStack { Color.tsBackground.ignoresSafeArea()
                 VStack(spacing: 24) {
                     Spacer()
 

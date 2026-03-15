@@ -1,0 +1,132 @@
+{
+  "wework_reforma": {
+    "name": "WeWork Espacio de Oficinas & Coworking",
+    "photos": [
+      "photos/wework_reforma/photo_1.jpg",
+      "photos/wework_reforma/photo_2.jpg",
+      "photos/wework_reforma/photo_3.jpg",
+      "photos/wework_reforma/photo_4.jpg",
+      "photos/wework_reforma/photo_5.jpg"
+    ]
+  },
+  "selina_roma": {
+    "name": "Selina Mexico City Downtown & Cowork",
+    "photos": [
+      "photos/selina_roma/photo_1.jpg",
+      "photos/selina_roma/photo_2.jpg",
+      "photos/selina_roma/photo_3.jpg",
+      "photos/selina_roma/photo_4.jpg",
+      "photos/selina_roma/photo_5.jpg"
+    ]
+  },
+  "impact_hub": {
+    "name": "Impact HUB Ciudad de México",
+    "photos": [
+      "photos/impact_hub/photo_1.jpg",
+      "photos/impact_hub/photo_2.jpg",
+      "photos/impact_hub/photo_3.jpg",
+      "photos/impact_hub/photo_4.jpg",
+      "photos/impact_hub/photo_5.jpg"
+    ]
+  },
+  "zentro_condesa": {
+    "name": "Central W Roma Sur",
+    "photos": [
+      "photos/zentro_condesa/photo_1.jpg",
+      "photos/zentro_condesa/photo_2.jpg",
+      "photos/zentro_condesa/photo_3.jpg",
+      "photos/zentro_condesa/photo_4.jpg",
+      "photos/zentro_condesa/photo_5.jpg"
+    ]
+  },
+  "bordo_juarez": {
+    "name": "Co-Madre Roma",
+    "photos": [
+      "photos/bordo_juarez/photo_1.jpg",
+      "photos/bordo_juarez/photo_2.jpg",
+      "photos/bordo_juarez/photo_3.jpg",
+      "photos/bordo_juarez/photo_4.jpg",
+      "photos/bordo_juarez/photo_5.jpg"
+    ]
+  },
+  "cafe_jarocho": {
+    "name": "Cafe El Jarocho",
+    "photos": [
+      "photos/cafe_jarocho/photo_1.jpg",
+      "photos/cafe_jarocho/photo_2.jpg",
+      "photos/cafe_jarocho/photo_3.jpg",
+      "photos/cafe_jarocho/photo_4.jpg",
+      "photos/cafe_jarocho/photo_5.jpg"
+    ]
+  },
+  "cafe_avellaneda": {
+    "name": "Café Avellaneda",
+    "photos": [
+      "photos/cafe_avellaneda/photo_1.jpg",
+      "photos/cafe_avellaneda/photo_2.jpg",
+      "photos/cafe_avellaneda/photo_3.jpg",
+      "photos/cafe_avellaneda/photo_4.jpg",
+      "photos/cafe_avellaneda/photo_5.jpg"
+    ]
+  },
+  "cafe_once": {
+    "name": "Once Once Café",
+    "photos": [
+      "photos/cafe_once/photo_1.jpg",
+      "photos/cafe_once/photo_2.jpg",
+      "photos/cafe_once/photo_3.jpg",
+      "photos/cafe_once/photo_4.jpg",
+      "photos/cafe_once/photo_5.jpg"
+    ]
+  },
+  "cafe_negro": {
+    "name": "Café Néctar Negro",
+    "photos": [
+      "photos/cafe_negro/photo_1.jpg",
+      "photos/cafe_negro/photo_2.jpg",
+      "photos/cafe_negro/photo_3.jpg",
+      "photos/cafe_negro/photo_4.jpg",
+      "photos/cafe_negro/photo_5.jpg"
+    ]
+  },
+  "cafe_quentin": {
+    "name": "Qūentin Café",
+    "photos": [
+      "photos/cafe_quentin/photo_1.jpg",
+      "photos/cafe_quentin/photo_2.jpg",
+      "photos/cafe_quentin/photo_3.jpg",
+      "photos/cafe_quentin/photo_4.jpg",
+      "photos/cafe_quentin/photo_5.jpg"
+    ]
+  },
+  "cafe_buna": {
+    "name": "Buna - Café Rico",
+    "photos": [
+      "photos/cafe_buna/photo_1.jpg",
+      "photos/cafe_buna/photo_2.jpg",
+      "photos/cafe_buna/photo_3.jpg",
+      "photos/cafe_buna/photo_4.jpg",
+      "photos/cafe_buna/photo_5.jpg"
+    ]
+  },
+  "cafe_almanegra": {
+    "name": "Almanegra Café",
+    "photos": [
+      "photos/cafe_almanegra/photo_1.jpg",
+      "photos/cafe_almanegra/photo_2.jpg",
+      "photos/cafe_almanegra/photo_3.jpg",
+      "photos/cafe_almanegra/photo_4.jpg",
+      "photos/cafe_almanegra/photo_5.jpg"
+    ]
+  },
+  "cafe_paramo": {
+    "name": "Páramo",
+    "photos": [
+      "photos/cafe_paramo/photo_1.jpg",
+      "photos/cafe_paramo/photo_2.jpg",
+      "photos/cafe_paramo/photo_3.jpg",
+      "photos/cafe_paramo/photo_4.jpg",
+      "photos/cafe_paramo/photo_5.jpg"
+    ]
+  }
+}

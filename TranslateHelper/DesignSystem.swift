@@ -42,8 +42,36 @@ extension UIColor {
 
 // MARK: - Background
 struct TSGradientBackground: View {
+    @Environment(\.colorScheme) var colorScheme
+    var intensity: Double = 1.0
+
     var body: some View {
-        Color.tsBackground.ignoresSafeArea()
+        if colorScheme == .dark {
+            Color.tsBackground.ignoresSafeArea()
+        } else {
+            ZStack {
+                Color.white.ignoresSafeArea()
+                
+                GeometryReader { geo in
+                    // Top-right blue (#DBEAFE)
+                    RadialGradient(
+                        gradient: Gradient(colors: [Color(hex: "#DBEAFE").opacity(0.8 * intensity), Color.white.opacity(0)]),
+                        center: .topTrailing,
+                        startRadius: 0,
+                        endRadius: geo.size.width * 1.2
+                    )
+                    
+                    // Middle-left peach/pink (#FEF2F2)
+                    RadialGradient(
+                        gradient: Gradient(colors: [Color(hex: "#FEF2F2").opacity(0.8 * intensity), Color.white.opacity(0)]),
+                        center: UnitPoint(x: 0, y: 0.5),
+                        startRadius: 0,
+                        endRadius: geo.size.width
+                    )
+                }
+                .ignoresSafeArea()
+            }
+        }
     }
 }
 

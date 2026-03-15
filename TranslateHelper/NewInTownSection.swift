@@ -145,7 +145,7 @@ struct NewInTownOptInSheet: View {
 
     var body: some View {
         NavigationStack {
-            ZStack { TSGradientBackground()
+            ZStack { Color.tsBackground.ignoresSafeArea()
                 VStack(spacing: 24) {
                     Spacer()
                     Image(systemName: "person.2.fill")

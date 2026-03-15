@@ -25,8 +25,8 @@ enum PostType: String, CaseIterable {
         switch self {
         case .all:      return .tsAccent
         case .question: return .tsAccent
-        case .outing:   return Color(hex: "#FF6B35")   // warm coral — spontaneous, energetic
-        case .rec:      return Color(hex: "#34C759")
+        case .outing:   return Color(hex: "#34C759")   // green — active, let's go
+        case .rec:      return Color(hex: "#17C2E1")   // teal (SIM guide color)
         case .warning:  return Color(hex: "#FF9500")
         case .event:    return Color(hex: "#AF52DE")
         }
@@ -99,7 +99,7 @@ struct CommunityView: View {
         CommunityPost(author: "Alex P.", neighbourhood: "Polanco", type: .outing,
                       body: "Heading to the Anthropology Museum Sunday around 1pm — DM me if you want to join! Great spot, I'll be there a few hours.",
                       likes: 14, comments: 5, timeAgo: "1h", isVerifiedLocal: false,
-                      avatarInitials: "AP", avatarColor: Color(hex: "#FF6B35"),
+                      avatarInitials: "AP", avatarColor: Color(hex: "#34C759"),
                       avatarURL: "https://i.pravatar.cc/150?img=52", isPreset: true),
         CommunityPost(author: "Camille F.", neighbourhood: "Condesa", type: .outing,
                       body: "Putting together a small pub crawl this Friday: Condesa → Roma → Centro. Meeting at Bar Oriente at 9pm. Message me if you're in 🍻",
@@ -130,7 +130,7 @@ struct CommunityView: View {
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
-            TSGradientBackground()
+            Color.tsBackground.ignoresSafeArea()
 
             ScrollView {
                 VStack(spacing: 0) {
@@ -570,7 +570,7 @@ struct CommentsSheet: View {
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottom) {
-                TSGradientBackground()
+                Color.tsBackground.ignoresSafeArea()
 
                 VStack(spacing: 0) {
                     ScrollView {
@@ -782,7 +782,7 @@ struct NewPostView: View {
     @Environment(\.dismiss) var dismiss
     var body: some View {
         NavigationStack {
-            ZStack { TSGradientBackground()
+            ZStack { Color.tsBackground.ignoresSafeArea()
                 Text("New post coming soon").foregroundColor(.tsSecondary)
             }
             .navigationTitle("New Post").navigationBarTitleDisplayMode(.inline)
