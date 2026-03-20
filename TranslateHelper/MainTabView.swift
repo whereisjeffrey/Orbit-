@@ -10,9 +10,8 @@ struct MainTabView: View {
             Group {
                 switch selectedTab {
                 case 0: LibraryView()
-                case 1: CommunityView()
-                case 2: KitView()
-                case 3: SettingsView()
+                case 1: CoachView()
+                case 2: SettingsView()
                 default: LibraryView()
                 }
             }
@@ -24,10 +23,9 @@ struct MainTabView: View {
                     .fill(Color.tsSecondary.opacity(0.25))
                     .frame(height: 0.5)
                 HStack(spacing: 0) {
-                    TabBarItem(icon: "bubble.left.and.bubble.right", label: "Learn",     tag: 0, selected: $selectedTab)
-                    TabBarItem(icon: "person.2",                     label: "Community", tag: 1, selected: $selectedTab)
-                    TabBarItem(icon: "backpack",                     label: "Kit",       tag: 2, selected: $selectedTab)
-                    TabBarItem(icon: "gearshape",                    label: "Settings",  tag: 3, selected: $selectedTab)
+                    TabBarItem(icon: "bubble.left.and.bubble.right", label: "Learn",    tag: 0, selected: $selectedTab)
+                    TabBarItem(icon: "waveform.and.person.filled",   label: "Coach",    tag: 1, selected: $selectedTab)
+                    TabBarItem(icon: "gearshape",                    label: "Settings", tag: 2, selected: $selectedTab)
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 12)
@@ -50,17 +48,8 @@ struct TabBarItem: View {
     var body: some View {
         Button(action: { selected = tag }) {
             VStack(spacing: 4) {
-                Group {
-                    if icon == "backpack" && isSelected {
-                        Image(systemName: "backpack.fill")
-                            .symbolRenderingMode(.palette)
-                            // Primary is the main part of the backpack, Secondary is the pouches
-                            .foregroundStyle(Color.tsAccent, Color.tsInputBg)
-                    } else {
-                        Image(systemName: isSelected ? icon + ".fill" : icon)
-                    }
-                }
-                .font(.system(size: 22))
+                Image(systemName: isSelected ? icon + ".fill" : icon)
+                    .font(.system(size: 22))
                 
                 Text(label)
                     .font(.system(size: 10, weight: isSelected ? .semibold : .regular))
