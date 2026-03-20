@@ -80,6 +80,11 @@ class KeyboardViewController: UIInputViewController {
     private let correctionIcon = UILabel()
     private let correctionHeader = UILabel()
     private let correctionTextLabel = UILabel()
+
+    private let coachCard = UIView()
+    private let coachIcon = UILabel()
+    private let coachHeader = UILabel()
+    private let coachTextLabel = UILabel()
     private let toneStack = UIStackView()
     private let actionStack = UIStackView()
     private let loadingSpinner: UIActivityIndicatorView = {
@@ -156,11 +161,10 @@ class KeyboardViewController: UIInputViewController {
 
             self.lastSourceWasSpeech = true
 
-            // Accent-coach mode: speech was recorded in Spanish for pronunciation critique.
-            // Force the source label to Spanish ("es") so performTranslation routes into the
-            // gentle-correction / native-speaker feedback path regardless of what detectLanguage
-            // returns for the transcribed text (numbers, proper nouns, etc. can confuse it).
-            if dictateMode == "accent_coach" || detectedLang == "es" {
+            // Accent-coach mode: speech was recorded in the target language for pronunciation critique.
+            // Force into the gentle-correction / native-speaker feedback path.
+            let targetCode = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
+            if dictateMode == "accent_coach" || detectedLang == targetCode {
                 self.performTranslation(text: textToTranslate, source: "accent_coach")
             } else {
                 self.performTranslation(text: textToTranslate, source: "speech")
@@ -389,6 +393,13 @@ class KeyboardViewController: UIInputViewController {
                     // ── Fire notes in background (non-blocking) ──
                     self.updateNotes(original: text, translated: translation)
 
+                    // ── Fire speech coaching tips (only when speaking in target language) ──
+                    if self.lastSourceWasSpeech && detected.code != "en" {
+                        self.fetchCoachingTips(spokenText: text, spokenLanguage: detected.code)
+                    } else {
+                        self.coachCard.isHidden = true
+                    }
+
                     // ── Fire refinement in parallel (updates translation in-place) ──
                     let needsRefinement = self.currentTone == "slang"
                         || self.currentTone == "flirty"
@@ -491,6 +502,49 @@ class KeyboardViewController: UIInputViewController {
         }
     }
     
+    // MARK: - Speech Coaching Tips (per-audio)
+
+    private func fetchCoachingTips(spokenText: String, spokenLanguage: String) {
+        coachCard.isHidden = false
+        coachTextLabel.text = "🎯 Analyzing your speech..."
+
+        let appGroup = "group.com.jeff.translatehelper"
+        let targetCode = UserDefaults(suiteName: appGroup)?.string(forKey: "talkswitch_target_lang") ?? "es"
+
+        // TODO: load mistake profile from UserDefaults once profile system is built
+        let mistakeProfile = ""
+
+        TalkSwitchAPI.shared.getSpeechCoachingTips(
+            spokenText: spokenText,
+            spokenLanguage: spokenLanguage,
+            nativeLanguage: "en",
+            mistakeProfile: mistakeProfile
+        ) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                switch result {
+                case .success(let tips):
+                    var lines: [String] = []
+                    if let pron = tips.pronunciationTip {
+                        lines.append("🗣 \(pron)")
+                    }
+                    if let gram = tips.grammarTip {
+                        lines.append("📝 \(gram)")
+                    }
+                    if lines.isEmpty {
+                        self.coachCard.isHidden = true
+                    } else {
+                        self.coachTextLabel.text = lines.joined(separator: "\n\n")
+                    }
+                    NSLog("TSKBD_COACH: pron=\(tips.pronunciationTip ?? "none") gram=\(tips.grammarTip ?? "none")")
+                case .failure(let error):
+                    self.coachCard.isHidden = true
+                    NSLog("TSKBD_COACH_ERROR: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+
     private func showBasicNotes(original: String) {
         let lower = original.lowercased()
         let idioms = ["let it slide", "off the hook", "break a leg", "piece of cake",
@@ -723,6 +777,10 @@ class KeyboardViewController: UIInputViewController {
         // === Correction card ===
         setupCorrectionCard()
         contentStack.addArrangedSubview(correctionCard)
+
+        // === Coach card (pronunciation + grammar tips for voice messages) ===
+        setupCoachCard()
+        contentStack.addArrangedSubview(coachCard)
 
         // === Notes card ===
         setupNotesCard()
@@ -1061,6 +1119,42 @@ class KeyboardViewController: UIInputViewController {
             correctionTextLabel.leadingAnchor.constraint(equalTo: correctionCard.leadingAnchor, constant: 12),
             correctionTextLabel.trailingAnchor.constraint(equalTo: correctionCard.trailingAnchor, constant: -12),
             correctionTextLabel.bottomAnchor.constraint(equalTo: correctionCard.bottomAnchor, constant: -8),
+        ])
+    }
+
+    private func setupCoachCard() {
+        coachCard.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.08)
+        coachCard.layer.cornerRadius = 10
+        coachCard.translatesAutoresizingMaskIntoConstraints = false
+        coachCard.isHidden = true  // Only shown for voice messages
+
+        coachIcon.text = "🎯"
+        coachIcon.font = UIFont.systemFont(ofSize: 14)
+        coachIcon.translatesAutoresizingMaskIntoConstraints = false
+        coachCard.addSubview(coachIcon)
+
+        coachHeader.text = "COACH"
+        coachHeader.font = UIFont.systemFont(ofSize: 10, weight: .bold)
+        coachHeader.textColor = UIColor.systemBlue
+        coachHeader.translatesAutoresizingMaskIntoConstraints = false
+        coachCard.addSubview(coachHeader)
+
+        coachTextLabel.font = UIFont.systemFont(ofSize: 13)
+        coachTextLabel.textColor = textPrimary
+        coachTextLabel.numberOfLines = 0
+        coachTextLabel.translatesAutoresizingMaskIntoConstraints = false
+        coachCard.addSubview(coachTextLabel)
+
+        NSLayoutConstraint.activate([
+            coachCard.heightAnchor.constraint(greaterThanOrEqualToConstant: 40),
+            coachIcon.topAnchor.constraint(equalTo: coachCard.topAnchor, constant: 8),
+            coachIcon.leadingAnchor.constraint(equalTo: coachCard.leadingAnchor, constant: 10),
+            coachHeader.centerYAnchor.constraint(equalTo: coachIcon.centerYAnchor),
+            coachHeader.leadingAnchor.constraint(equalTo: coachIcon.trailingAnchor, constant: 4),
+            coachTextLabel.topAnchor.constraint(equalTo: coachIcon.bottomAnchor, constant: 4),
+            coachTextLabel.leadingAnchor.constraint(equalTo: coachCard.leadingAnchor, constant: 12),
+            coachTextLabel.trailingAnchor.constraint(equalTo: coachCard.trailingAnchor, constant: -12),
+            coachTextLabel.bottomAnchor.constraint(equalTo: coachCard.bottomAnchor, constant: -8),
         ])
     }
 

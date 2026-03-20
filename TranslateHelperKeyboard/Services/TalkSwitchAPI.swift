@@ -462,8 +462,138 @@ class TalkSwitchAPI {
         )
     }
     
+    // MARK: - Per-Audio Speech Coaching (1 pronunciation tip + 1 grammar tip)
+
+    struct SpeechCoachingTip {
+        let pronunciationTip: String?   // nil if pronunciation was fine
+        let grammarTip: String?         // nil if grammar was fine
+    }
+
+    /// Analyzes a voice message transcription and returns max 1 pronunciation tip + 1 grammar tip.
+    /// Designed to be lightweight, fast, and non-overwhelming.
+    func getSpeechCoachingTips(
+        spokenText: String,
+        spokenLanguage: String,
+        nativeLanguage: String = "en",
+        mistakeProfile: String = "",
+        completion: @escaping (Result<SpeechCoachingTip, Error>) -> Void
+    ) {
+        let apiKey = APIConfig.openAIAPIKey
+        guard apiKey != "YOUR_OPENAI_KEY_HERE" else {
+            completion(.failure(NSError(domain: "TalkSwitchAPI", code: -1,
+                userInfo: [NSLocalizedDescriptionKey: "OpenAI not configured"])))
+            return
+        }
+
+        guard let url = URL(string: "\(APIConfig.openAIBaseURL)/chat/completions") else {
+            completion(.failure(NSError(domain: "TalkSwitchAPI", code: -2,
+                userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
+            return
+        }
+
+        let spokenLangName = languageName(for: spokenLanguage)
+        let nativeLangName = languageName(for: nativeLanguage)
+
+        let profileBlock = mistakeProfile.isEmpty ? "" : """
+        \
+        \
+        ════════════ USER'S KNOWN WEAK SPOTS ════════════ \
+        \(mistakeProfile) \
+        If the user makes a mistake in one of their known weak areas, acknowledge the pattern \
+        warmly — e.g. "That sneaky preposition again — you'll get this one!" \
+        If they got a previously weak area RIGHT, celebrate it — e.g. "You nailed the gender on that one!" \
+        ══════════════════════════════════════════════════
+        """
+
+        let systemPrompt = """
+        You are a warm, encouraging language coach. A user just sent a voice message in \(spokenLangName). \
+        Their native language is \(nativeLangName). \
+        \
+        Analyze their spoken text and provide AT MOST: \
+        - 1 pronunciation tip (if applicable) \
+        - 1 grammar tip (if applicable) \
+        \
+        If their speech was perfect, say so — don't invent problems. \
+        \
+        PRONUNCIATION TIPS: Focus on sounds that \(nativeLangName) speakers commonly struggle with \
+        in \(spokenLangName). If a word or phrase would likely be mispronounced based on the text, \
+        give a specific tip. Don't guess wildly — only flag things that are genuinely tricky. \
+        \
+        GRAMMAR TIPS: Look for word order issues, gender agreement, verb conjugation, preposition \
+        misuse, or native language transfer patterns (structures that work in \(nativeLangName) but \
+        not in \(spokenLangName)). When you spot a native language transfer, explicitly acknowledge it: \
+        "I know in \(nativeLangName) you'd say it this way, but in \(spokenLangName)..." \
+        \
+        \(profileBlock)\
+        \
+        CRITICAL RULES: \
+        - Write ALL tips in \(nativeLangName) with \(spokenLangName) words quoted inline \
+        - Be warm, encouraging, and brief — max 2 sentences per tip \
+        - Never be condescending or overly academic \
+        - If nothing needs correcting, just say something encouraging about their speech \
+        \
+        Respond ONLY with valid JSON: \
+        {"pronunciation": "tip or null", "grammar": "tip or null"} \
+        If no issue in a category, use null (not the string "null"). \
+        If everything was great: {"pronunciation": null, "grammar": null, "praise": "short encouragement"}
+        """
+
+        let userPrompt = "Spoken \(spokenLangName) text: \"\(spokenText)\"\nGive me 1 pronunciation tip and 1 grammar tip (or praise if perfect)."
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: Any] = [
+            "model": "gpt-4o-mini",
+            "messages": [
+                ["role": "system", "content": systemPrompt],
+                ["role": "user", "content": userPrompt]
+            ],
+            "temperature": 0.5,
+            "max_tokens": 200
+        ]
+
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+
+        urlSession.dataTask(with: request) { data, _, error in
+            if let error = error { completion(.failure(error)); return }
+
+            guard let data = data,
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let choices = json["choices"] as? [[String: Any]],
+                  let message = choices.first?["message"] as? [String: Any],
+                  let content = message["content"] as? String else {
+                completion(.failure(NSError(domain: "TalkSwitchAPI", code: -4,
+                    userInfo: [NSLocalizedDescriptionKey: "Could not parse coaching response"])))
+                return
+            }
+
+            // Parse JSON response
+            let cleaned = content.trimmingCharacters(in: .whitespacesAndNewlines)
+                .replacingOccurrences(of: "```json", with: "")
+                .replacingOccurrences(of: "```", with: "")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+
+            if let tipData = cleaned.data(using: .utf8),
+               let tipJSON = try? JSONSerialization.jsonObject(with: tipData) as? [String: Any] {
+                let pronTip = tipJSON["pronunciation"] as? String
+                let gramTip = tipJSON["grammar"] as? String
+                let praise = tipJSON["praise"] as? String
+
+                // If no tips but there's praise, put praise in pronunciation slot
+                let finalPronTip = pronTip ?? praise
+                completion(.success(SpeechCoachingTip(pronunciationTip: finalPronTip, grammarTip: gramTip)))
+            } else {
+                // Fallback: use raw content as a general tip
+                completion(.success(SpeechCoachingTip(pronunciationTip: cleaned, grammarTip: nil)))
+            }
+        }.resume()
+    }
+
     // MARK: - Smart Notes (Ambient Coaching)
-    
+
     /// Generates contextual learning notes for any translation
     func getSmartNotes(
         original: String,
