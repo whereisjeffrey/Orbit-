@@ -50,7 +50,7 @@ struct TabBarItem: View {
             VStack(spacing: 4) {
                 Image(systemName: isSelected ? icon + ".fill" : icon)
                     .font(.system(size: 22))
-                
+
                 Text(label)
                     .font(.system(size: 10, weight: isSelected ? .semibold : .regular))
             }

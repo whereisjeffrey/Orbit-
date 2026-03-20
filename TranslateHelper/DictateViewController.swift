@@ -2,18 +2,24 @@
 //  DictateViewController.swift
 //  TranslateHelper
 //
+//  Records audio via AVAudioEngine, sends the WAV file to OpenAI Whisper
+//  for transcription + automatic language detection, then hands the result
+//  back to the keyboard extension via App Group UserDefaults.
+//
+//  IMPORTANT: This file is the ONLY place Whisper integration lives.
+//  KeyboardViewController.swift is NOT touched — it reads the same
+//  App Group keys as before (dictate_result, dictate_result_language, etc.).
 
 import UIKit
-import Speech
 import AVFoundation
 
 class DictateViewController: UIViewController {
 
     // MARK: - State
     private var audioEngine   = AVAudioEngine()
-    private var currentRequest: SFSpeechAudioBufferRecognitionRequest?
-    private var currentTask:    SFSpeechRecognitionTask?
+    private var audioFile:      AVAudioFile?
     private var spokenText    = ""
+    private var detectedLang  = ""
     private var committed     = false
     private var isRecording   = false
     private var elapsedSeconds = 0
@@ -25,15 +31,9 @@ class DictateViewController: UIViewController {
     /// Target language code set by SceneDelegate from the URL param (e.g. "es", "zh", "fr").
     var targetLanguage: String = "es"
 
-    // MARK: - Locale helpers
-
-    private var recognizerLocale: Locale {
-        let map: [String: String] = [
-            "es": "es-MX", "zh": "zh-CN", "fr": "fr-FR", "pt": "pt-BR",
-            "de": "de-DE", "it": "it-IT", "ja": "ja-JP",
-            "ko": "ko-KR", "ar": "ar-SA", "en": "en-US"
-        ]
-        return Locale(identifier: map[targetLanguage] ?? "es-MX")
+    /// Path to the temporary M4A file used for Whisper upload.
+    private var tempAudioURL: URL {
+        FileManager.default.temporaryDirectory.appendingPathComponent("dictate_recording.m4a")
     }
 
     // MARK: - UI elements
@@ -50,7 +50,7 @@ class DictateViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         startSonarRings()
-        startRecording()
+        beginRecording()
     }
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
@@ -93,10 +93,10 @@ class DictateViewController: UIViewController {
         // The two sonar rings will be added as sub-layers in viewDidAppear
         iconCircle.translatesAutoresizingMaskIntoConstraints = false
         iconCircle.backgroundColor = UIColor.white.withAlphaComponent(0.18)
-        iconCircle.layer.cornerRadius = 22   // diameter = 45
+        iconCircle.layer.cornerRadius = 67.5   // diameter = 135
         view.addSubview(iconCircle)
 
-        let iconCfg = UIImage.SymbolConfiguration(pointSize: 39, weight: .medium)
+        let iconCfg = UIImage.SymbolConfiguration(pointSize: 78, weight: .medium)
         iconImageView.translatesAutoresizingMaskIntoConstraints = false
         iconImageView.image = UIImage(systemName: "speaker.wave.2.fill", withConfiguration: iconCfg)
         iconImageView.tintColor = .white
@@ -142,13 +142,13 @@ class DictateViewController: UIViewController {
 
             iconCircle.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             iconCircle.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -40),
-            iconCircle.widthAnchor.constraint(equalToConstant: 45),
-            iconCircle.heightAnchor.constraint(equalToConstant: 45),
+            iconCircle.widthAnchor.constraint(equalToConstant: 135),
+            iconCircle.heightAnchor.constraint(equalToConstant: 135),
 
             iconImageView.centerXAnchor.constraint(equalTo: iconCircle.centerXAnchor),
             iconImageView.centerYAnchor.constraint(equalTo: iconCircle.centerYAnchor),
-            iconImageView.widthAnchor.constraint(equalToConstant: 36),
-            iconImageView.heightAnchor.constraint(equalToConstant: 36),
+            iconImageView.widthAnchor.constraint(equalToConstant: 72),
+            iconImageView.heightAnchor.constraint(equalToConstant: 72),
 
             timerLabel.topAnchor.constraint(equalTo: iconCircle.bottomAnchor, constant: 28),
             timerLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -167,26 +167,23 @@ class DictateViewController: UIViewController {
     }
 
     private func applyGradientBorder() {
-        // Remove old layer so we don't stack on rotation/relayout
         sendBorderGradient?.removeFromSuperlayer()
 
         let btn      = sendButton
         let radius   = btn.layer.cornerRadius
         let bounds   = btn.bounds
 
-        // 1. Gradient layer — white at top, fully transparent at bottom
         let gradient          = CAGradientLayer()
         gradient.frame        = bounds
         gradient.colors       = [
-            UIColor.white.withAlphaComponent(0.55).cgColor,   // top: bright rim
-            UIColor.white.withAlphaComponent(0.12).cgColor,   // mid: soft glow
-            UIColor.white.withAlphaComponent(0.00).cgColor,   // bottom: invisible
+            UIColor.white.withAlphaComponent(0.55).cgColor,
+            UIColor.white.withAlphaComponent(0.12).cgColor,
+            UIColor.white.withAlphaComponent(0.00).cgColor,
         ]
         gradient.locations    = [0.0, 0.45, 1.0]
         gradient.startPoint   = CGPoint(x: 0.5, y: 0.0)
         gradient.endPoint     = CGPoint(x: 0.5, y: 1.0)
 
-        // 2. Rounded-rect stroke mask — 1 pt border
         let borderWidth: CGFloat = 1.0
         let maskPath = UIBezierPath(roundedRect: bounds.insetBy(dx: borderWidth / 2,
                                                                  dy: borderWidth / 2),
@@ -194,11 +191,10 @@ class DictateViewController: UIViewController {
         let mask          = CAShapeLayer()
         mask.path         = maskPath.cgPath
         mask.lineWidth    = borderWidth
-        mask.strokeColor  = UIColor.black.cgColor   // coloured by gradient
+        mask.strokeColor  = UIColor.black.cgColor
         mask.fillColor    = UIColor.clear.cgColor
         gradient.mask     = mask
 
-        // 3. Insert behind the button's content but outside its clip-bounds layer
         btn.layer.addSublayer(gradient)
         sendBorderGradient = gradient
     }
@@ -210,7 +206,7 @@ class DictateViewController: UIViewController {
     }
 
     private func addRing(delay: Double, tag: Int) {
-        let radius: CGFloat = 22          // matches iconCircle corner radius
+        let radius: CGFloat = 67.5
         let center = CGPoint(x: view.bounds.midX, y: view.bounds.midY - 40)
         let path = UIBezierPath(arcCenter: center, radius: radius,
                                 startAngle: 0, endAngle: .pi * 2, clockwise: true)
@@ -225,7 +221,6 @@ class DictateViewController: UIViewController {
 
         if tag == 1 { ringLayer1 = ring } else { ringLayer2 = ring }
 
-        // Scale up + fade out, looping
         let scaleAnim = CABasicAnimation(keyPath: "transform.scale")
         scaleAnim.fromValue = 1.0
         scaleAnim.toValue   = 2.2
@@ -285,111 +280,245 @@ class DictateViewController: UIViewController {
         elapsedTimer?.invalidate(); elapsedTimer = nil
     }
 
-    // MARK: - Recording
-    private func startRecording() {
-        SFSpeechRecognizer.requestAuthorization { [weak self] status in
+    // MARK: - Recording (AVAudioEngine → WAV file)
+
+    private func beginRecording() {
+        AVAudioApplication.requestRecordPermission { [weak self] granted in
             DispatchQueue.main.async {
-                guard let self = self, status == .authorized else { return }
-                AVAudioApplication.requestRecordPermission { granted in
-                    DispatchQueue.main.async { if granted { self.startRecognition() } }
-                }
+                guard let self = self, granted else { return }
+                self.startAudioCapture()
             }
         }
     }
 
-    private func startRecognition() {
+    private func startAudioCapture() {
         guard !committed else { return }
-        guard let recognizer = SFSpeechRecognizer(locale: recognizerLocale) else { return }
-
-        guard let request = bootAudioEngine() else { return }
-        isRecording = true
-        startElapsedTimer()
-
-        NSLog("🎤 [Dictate] recognizer starting locale=\(recognizerLocale.identifier)")
-        currentTask = recognizer.recognitionTask(with: request) { [weak self] result, error in
-            DispatchQueue.main.async {
-                guard let self = self, !self.committed else { return }
-
-                if let r = result {
-                    let text = r.bestTranscription.formattedString
-                    if !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                        self.spokenText = text
-                    }
-                    if r.isFinal && !self.spokenText.isEmpty {
-                        self.commitWith(text: self.spokenText, lang: self.targetLanguage)
-                    }
-                }
-
-                if let error = error {
-                    NSLog("🎤 [Dictate] error: \(error.localizedDescription) — text='\(self.spokenText)'")
-                    if !self.spokenText.isEmpty {
-                        self.commitWith(text: self.spokenText, lang: self.targetLanguage)
-                    }
-                }
-            }
-        }
-    }
-
-    // MARK: - Audio engine helpers
-    private func bootAudioEngine() -> SFSpeechAudioBufferRecognitionRequest? {
-        let engine = AVAudioEngine()
-        let node   = engine.inputNode
-        let fmt    = node.outputFormat(forBus: 0)
-        guard fmt.sampleRate > 0 else { return nil }
 
         do {
-            try AVAudioSession.sharedInstance().setCategory(.record, mode: .measurement)
+            try AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .default,
+                                                            options: [.defaultToSpeaker])
             try AVAudioSession.sharedInstance().setActive(true, options: .notifyOthersOnDeactivation)
-        } catch { return nil }
-
-        let request = SFSpeechAudioBufferRecognitionRequest()
-        request.shouldReportPartialResults  = true
-        request.requiresOnDeviceRecognition = false
-
-        node.installTap(onBus: 0, bufferSize: 4096, format: fmt) { [weak request] buf, _ in
-            request?.append(buf)
+        } catch {
+            NSLog("🎤 [Dictate] audio session error: \(error)")
+            return
         }
-        engine.prepare()
-        do { try engine.start() } catch { return nil }
 
-        audioEngine    = engine
-        currentRequest = request
-        return request
+        let engine = AVAudioEngine()
+        let node   = engine.inputNode
+        let hwFmt  = node.outputFormat(forBus: 0)
+
+        NSLog("🎤 [Dictate] hardware format: \(hwFmt)")
+
+        guard hwFmt.sampleRate > 0, hwFmt.channelCount > 0 else {
+            NSLog("🎤 [Dictate] invalid hardware format — sampleRate=\(hwFmt.sampleRate) channels=\(hwFmt.channelCount)")
+            return
+        }
+
+        // Remove any leftover temp file
+        try? FileManager.default.removeItem(at: tempAudioURL)
+
+        // Write as compressed M4A (AAC) — ~80x smaller than raw WAV for faster upload.
+        // 16kHz mono is all Whisper needs for speech recognition.
+        let m4aSettings: [String: Any] = [
+            AVFormatIDKey:           Int(kAudioFormatMPEG4AAC),
+            AVSampleRateKey:         16000.0,
+            AVNumberOfChannelsKey:   1,
+            AVEncoderBitRateKey:     32000,  // 32kbps — plenty for speech
+        ]
+
+        do {
+            audioFile = try AVAudioFile(forWriting: tempAudioURL,
+                                        settings: m4aSettings,
+                                        commonFormat: .pcmFormatFloat32,
+                                        interleaved: false)
+        } catch {
+            NSLog("🎤 [Dictate] could not create audio file: \(error)")
+            return
+        }
+
+        // Tap with nil format = use hardware's native format (safest, never fails).
+        // AVAudioFile handles the conversion from hardware format → 16kHz AAC on write.
+        node.installTap(onBus: 0, bufferSize: 4096, format: nil) { [weak self] buffer, _ in
+            guard let self = self, let file = self.audioFile else { return }
+            do {
+                try file.write(from: buffer)
+            } catch {
+                NSLog("🎤 [Dictate] write error: \(error)")
+            }
+        }
+
+        engine.prepare()
+        do { try engine.start() } catch {
+            NSLog("🎤 [Dictate] engine start error: \(error)")
+            return
+        }
+
+        audioEngine = engine
+        isRecording = true
+        startElapsedTimer()
+        NSLog("🎤 [Dictate] recording started — rate=\(hwFmt.sampleRate) ch=\(hwFmt.channelCount)")
     }
 
-    private func teardownAudio() {
-        currentTask?.cancel()
-        currentRequest?.endAudio()
+    // MARK: - Audio teardown
+
+    private func stopRecordingEngine() {
         if audioEngine.isRunning {
             audioEngine.inputNode.removeTap(onBus: 0)
             audioEngine.stop()
         }
-        currentTask    = nil
-        currentRequest = nil
+        audioFile = nil
         try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
     }
 
     private func stopAll() {
-        teardownAudio()
+        stopRecordingEngine()
         isRecording = false
         stopElapsedTimer()
         stopSonarRings()
     }
 
-    // MARK: - Commit
-    private func commitWith(text: String, lang: String) {
+    // MARK: - Whisper API transcription
+
+    private func sendToWhisper() {
         guard !committed else { return }
         committed = true
-        stopAll()
+        stopRecordingEngine()
+        isRecording = false
+        showProcessingState()
 
+        let fileURL = tempAudioURL
+        guard FileManager.default.fileExists(atPath: fileURL.path) else {
+            NSLog("🎤 [Dictate] no audio file to send")
+            dismiss(animated: true)
+            return
+        }
+
+        let apiKey = APIConfig.openAIAPIKey
+        guard let url = URL(string: "\(APIConfig.openAIBaseURL)/audio/transcriptions") else { return }
+
+        // Build multipart/form-data request
+        let boundary = "Boundary-\(UUID().uuidString)"
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        request.timeoutInterval = 30
+
+        var body = Data()
+
+        // "file" field — the M4A audio
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"file\"; filename=\"recording.m4a\"\r\n".data(using: .utf8)!)
+        body.append("Content-Type: audio/m4a\r\n\r\n".data(using: .utf8)!)
+        if let audioData = try? Data(contentsOf: fileURL) {
+            body.append(audioData)
+        }
+        body.append("\r\n".data(using: .utf8)!)
+
+        // "model" field
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"model\"\r\n\r\n".data(using: .utf8)!)
+        body.append("whisper-1\r\n".data(using: .utf8)!)
+
+        // "response_format" field — we want verbose_json to get the detected language
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"response_format\"\r\n\r\n".data(using: .utf8)!)
+        body.append("verbose_json\r\n".data(using: .utf8)!)
+
+        body.append("--\(boundary)--\r\n".data(using: .utf8)!)
+
+        request.httpBody = body
+
+        NSLog("🎤 [Dictate] sending audio to Whisper API...")
+
+        URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+
+                // Clean up temp file
+                try? FileManager.default.removeItem(at: fileURL)
+
+                if let error = error {
+                    NSLog("🎤 [Dictate] Whisper error: \(error.localizedDescription)")
+                    self.dismiss(animated: true)
+                    return
+                }
+
+                guard let data = data else {
+                    NSLog("🎤 [Dictate] Whisper returned no data")
+                    self.dismiss(animated: true)
+                    return
+                }
+
+                // Parse verbose_json response: { "text": "...", "language": "english", ... }
+                guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                    NSLog("🎤 [Dictate] Whisper response not valid JSON: \(String(data: data, encoding: .utf8) ?? "")")
+                    self.dismiss(animated: true)
+                    return
+                }
+
+                let transcription = (json["text"] as? String ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+                let whisperLang   = json["language"] as? String ?? ""  // e.g. "english", "spanish", "french"
+
+                NSLog("🎤 [Dictate] Whisper result: lang=\(whisperLang) text='\(transcription)'")
+
+                guard !transcription.isEmpty else {
+                    NSLog("🎤 [Dictate] Whisper returned empty transcription")
+                    self.dismiss(animated: true)
+                    return
+                }
+
+                // Map Whisper's full language name to our ISO code
+                let detectedCode = self.whisperLangToCode(whisperLang)
+
+                // Determine the language to report to the keyboard:
+                // If user spoke in their target language → report target language (triggers correction mode)
+                // If user spoke English → report English (triggers translation mode)
+                let langForKeyboard = detectedCode.isEmpty ? self.targetLanguage : detectedCode
+
+                self.commitToKeyboard(text: transcription, lang: langForKeyboard)
+            }
+        }.resume()
+    }
+
+    /// Maps Whisper's verbose language name (e.g. "english", "spanish") to ISO code.
+    private func whisperLangToCode(_ whisperLang: String) -> String {
+        let lower = whisperLang.lowercased()
+        let map: [String: String] = [
+            "english": "en", "spanish": "es", "french": "fr",
+            "german": "de", "italian": "it", "portuguese": "pt",
+            "japanese": "ja", "chinese": "zh", "korean": "ko",
+            "arabic": "ar", "russian": "ru", "dutch": "nl",
+            "polish": "pl", "turkish": "tr", "swedish": "sv",
+            "danish": "da", "norwegian": "no", "finnish": "fi",
+            "greek": "el", "czech": "cs", "romanian": "ro",
+            "hungarian": "hu", "thai": "th", "hindi": "hi",
+            "vietnamese": "vi", "indonesian": "id", "malay": "ms",
+            "ukrainian": "uk", "catalan": "ca", "hebrew": "he",
+            "croatian": "hr", "slovak": "sk", "bulgarian": "bg",
+            "filipino": "fil", "persian": "fa", "afrikaans": "af",
+            "bengali": "bn", "urdu": "ur", "swahili": "sw",
+            "tamil": "ta",
+        ]
+        return map[lower] ?? ""
+    }
+
+    // MARK: - Commit result to keyboard via App Group
+
+    private func commitToKeyboard(text: String, lang: String) {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         NSLog("🎤 [Dictate] COMMIT lang=\(lang) text='\(trimmed)'")
         guard !trimmed.isEmpty else { dismiss(animated: true); return }
 
+        // Determine dictate mode based on what language was spoken
+        // If user spoke in the target language → accent_coach (triggers correction/coaching)
+        // If user spoke English → speech (triggers translation)
+        let mode = (lang == targetLanguage) ? "accent_coach" : "speech"
+
         let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper")
         defaults?.set(trimmed,                     forKey: "dictate_result")
         defaults?.set(lang,                        forKey: "dictate_result_language")
-        defaults?.set("accent_coach",              forKey: "dictate_mode")
+        defaults?.set(mode,                        forKey: "dictate_mode")
         defaults?.set(Date().timeIntervalSince1970, forKey: "dictate_result_timestamp")
         defaults?.synchronize()
 
@@ -408,11 +537,10 @@ class DictateViewController: UIViewController {
     // MARK: - Actions
     @objc private func doneTapped() {
         guard !committed else { return }
-        if spokenText.isEmpty {
-            // Nothing heard yet — commit what we have OR just dismiss silently
+        if !isRecording {
             stopAll(); dismiss(animated: true)
         } else {
-            commitWith(text: spokenText, lang: targetLanguage)
+            sendToWhisper()
         }
     }
 
