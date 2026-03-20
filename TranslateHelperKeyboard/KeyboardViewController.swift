@@ -39,6 +39,7 @@ class KeyboardViewController: UIInputViewController {
     private var currentTone: String = "casual"
     private var selectedLanguage: String = "es" // persisted preference (default: Spanish)
     private var lastSourceWasSpeech: Bool = false
+    private var lastSpeechDetectedLang: String = ""  // WhisperKit's language detection (more reliable than text detection)
 
     // MARK: - UI Elements
 
@@ -160,6 +161,7 @@ class KeyboardViewController: UIInputViewController {
             let textToTranslate = fullText.isEmpty ? dictated : fullText
 
             self.lastSourceWasSpeech = true
+            self.lastSpeechDetectedLang = detectedLang
 
             // Accent-coach mode: speech was recorded in the target language for pronunciation critique.
             // Force into the gentle-correction / native-speaker feedback path.
@@ -315,11 +317,16 @@ class KeyboardViewController: UIInputViewController {
 
             // Show notes for the target language text (with pronunciation tips for speech mode)
             if source == "accent_coach" {
-                // Prime the pronunciation context so smart notes focus on how the spoken words sound
                 lowConfidenceWords = ["[spoken aloud — focus on accent, rhythm, and pronunciation tips]"]
             }
             self.updateNotes(original: text, translated: text)
 
+            // Fire coaching tips in parallel (speech mode only) — will append to correction card
+            if source == "accent_coach" {
+                let spokenLang = self.lastSpeechDetectedLang.isEmpty ? targetCode : self.lastSpeechDetectedLang
+                self.fetchCoachingTipsForCorrectionCard(spokenText: text, spokenLanguage: spokenLang)
+            }
+            self.coachCard.isHidden = true  // Never show separate coach card in this path
 
             if text.split(separator: " ").count >= 1 {
                 TalkSwitchAPI.shared.getGentleCorrection(text: text, language: targetCode) { [weak self] result in
@@ -329,7 +336,6 @@ class KeyboardViewController: UIInputViewController {
                         case .success(let correction):
                             if correction.severity != "natural" {
                                 if !correction.userSaid.isEmpty && !correction.nativeSay.isEmpty {
-                                    // Intelligently replace ONLY the isolated mistake in the original text!
                                     let newText = text.replacingOccurrences(of: correction.userSaid, with: correction.nativeSay)
                                     self?.outputTextLabel.text = newText
                                     self?.translationHistory = [newText]
@@ -394,8 +400,12 @@ class KeyboardViewController: UIInputViewController {
                     self.updateNotes(original: text, translated: translation)
 
                     // ── Fire speech coaching tips (only when speaking in target language) ──
-                    if self.lastSourceWasSpeech && detected.code != "en" {
-                        self.fetchCoachingTips(spokenText: text, spokenLanguage: detected.code)
+                    // Use WhisperKit's language detection (from audio) — more reliable than text detection
+                    let spokenLang = self.lastSourceWasSpeech && !self.lastSpeechDetectedLang.isEmpty
+                        ? self.lastSpeechDetectedLang
+                        : detected.code
+                    if self.lastSourceWasSpeech && spokenLang != "en" {
+                        self.fetchCoachingTips(spokenText: text, spokenLanguage: spokenLang)
                     } else {
                         self.coachCard.isHidden = true
                     }
@@ -504,14 +514,48 @@ class KeyboardViewController: UIInputViewController {
     
     // MARK: - Speech Coaching Tips (per-audio)
 
+    /// Fetches coaching tips and appends them to the correction card (for target-language speech).
+    /// Shows pronunciation tip with 🗣 and grammar tip with 💡, below the native correction.
+    private func fetchCoachingTipsForCorrectionCard(spokenText: String, spokenLanguage: String) {
+        let mistakeProfile = ""  // TODO: load from UserDefaults once profile system is built
+
+        TalkSwitchAPI.shared.getSpeechCoachingTips(
+            spokenText: spokenText,
+            spokenLanguage: spokenLanguage,
+            nativeLanguage: "en",
+            mistakeProfile: mistakeProfile
+        ) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                switch result {
+                case .success(let tips):
+                    var tipLines: [String] = []
+                    if let pron = tips.pronunciationTip {
+                        tipLines.append("🗣 \(pron)")
+                    }
+                    if let gram = tips.grammarTip {
+                        tipLines.append("💡 \(gram)")
+                    }
+                    guard !tipLines.isEmpty else { return }
+
+                    // Append coaching tips below whatever is already in the correction card
+                    let existing = self.correctionTextLabel.text ?? ""
+                    let separator = existing.isEmpty ? "" : "\n\n"
+                    self.correctionTextLabel.text = existing + separator + tipLines.joined(separator: "\n\n")
+                    NSLog("TSKBD_COACH: pron=\(tips.pronunciationTip ?? "none") gram=\(tips.grammarTip ?? "none")")
+                case .failure(let error):
+                    NSLog("TSKBD_COACH_ERROR: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+
+    /// Fetches coaching tips for the English→target translation path (shown in separate coach card).
+    /// Only fires for voice messages where the user spoke in the target language.
     private func fetchCoachingTips(spokenText: String, spokenLanguage: String) {
         coachCard.isHidden = false
         coachTextLabel.text = "🎯 Analyzing your speech..."
 
-        let appGroup = "group.com.jeff.translatehelper"
-        let targetCode = UserDefaults(suiteName: appGroup)?.string(forKey: "talkswitch_target_lang") ?? "es"
-
-        // TODO: load mistake profile from UserDefaults once profile system is built
         let mistakeProfile = ""
 
         TalkSwitchAPI.shared.getSpeechCoachingTips(
@@ -529,7 +573,7 @@ class KeyboardViewController: UIInputViewController {
                         lines.append("🗣 \(pron)")
                     }
                     if let gram = tips.grammarTip {
-                        lines.append("📝 \(gram)")
+                        lines.append("💡 \(gram)")
                     }
                     if lines.isEmpty {
                         self.coachCard.isHidden = true
@@ -1068,7 +1112,7 @@ class KeyboardViewController: UIInputViewController {
         notesHeader.translatesAutoresizingMaskIntoConstraints = false
         notesCard.addSubview(notesHeader)
 
-        notesTextLabel.font = UIFont.systemFont(ofSize: 13)
+        notesTextLabel.font = UIFont.systemFont(ofSize: 14.5)
         notesTextLabel.textColor = textPrimary
         notesTextLabel.numberOfLines = 0
         notesTextLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -1103,7 +1147,7 @@ class KeyboardViewController: UIInputViewController {
         correctionHeader.translatesAutoresizingMaskIntoConstraints = false
         correctionCard.addSubview(correctionHeader)
 
-        correctionTextLabel.font = UIFont.systemFont(ofSize: 13)
+        correctionTextLabel.font = UIFont.systemFont(ofSize: 14.5)
         correctionTextLabel.textColor = textPrimary
         correctionTextLabel.numberOfLines = 0
         correctionTextLabel.translatesAutoresizingMaskIntoConstraints = false

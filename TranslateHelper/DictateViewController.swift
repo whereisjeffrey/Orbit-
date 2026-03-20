@@ -460,9 +460,19 @@ class DictateViewController: UIViewController {
 
         Task {
             do {
-                // Auto-detect language but use eager decoding for speed
+                // Step 1: Detect language from audio first (more reliable than inline detection)
+                let (detectedLangFull, langProbs) = try await pipe.detectLanguage(audioPath: audioPath)
+                let detectedLang = detectedLangFull.components(separatedBy: "-").first ?? detectedLangFull
+
+                // Log the top language candidates for debugging
+                let topLangs = langProbs.sorted { $0.value > $1.value }.prefix(3)
+                    .map { "\($0.key): \(String(format: "%.1f%%", $0.value * 100))" }
+                    .joined(separator: ", ")
+                NSLog("🎤 [Dictate] language detection: \(detectedLang) (candidates: \(topLangs))")
+
+                // Step 2: Transcribe with the detected language explicitly set
                 let options = DecodingOptions(
-                    language: nil,
+                    language: detectedLang,
                     temperature: 0.0,
                     usePrefillPrompt: false,
                     skipSpecialTokens: true,
@@ -482,7 +492,6 @@ class DictateViewController: UIViewController {
 
                 let fullText = results.map { $0.text }.joined(separator: " ")
                     .trimmingCharacters(in: .whitespacesAndNewlines)
-                let detectedLang = results.first?.language ?? ""
 
                 NSLog("🎤 [Dictate] WhisperKit result: lang=\(detectedLang) text='\(fullText)'")
 

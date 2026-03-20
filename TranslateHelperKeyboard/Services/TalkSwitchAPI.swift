@@ -686,7 +686,7 @@ class TalkSwitchAPI {
             • \(targetName) words/phrases appear inline in quotes within English sentences \
             • Focus on the EMOTIONAL and SOCIAL effect of the phrase — not just its literal meaning \
             • If the user's target gender is known, make the coaching specific: how does THIS phrase land on a man / woman? \
-            • Max 3-4 lines. No JSON. Plain text only.\(locationBlock)
+            • Maximum 2 sentences. Be punchy and concise — the user is mid-conversation. No JSON. Plain text only.\(locationBlock)
             """
             let promptPrefix = enOrigin
                 ? "\(targetName) phrase chosen: \"\(targetText)\""
@@ -769,7 +769,7 @@ class TalkSwitchAPI {
             • The note body MUST be in English — never write the whole note in \(targetName) \
             • \(targetName) words/phrases appear inline in quotes within English sentences \
             • Don't correct their grammar (another system does that) \
-            • Max 3-4 lines. No JSON. Plain text only.\(locationBlock)
+            • Maximum 2 sentences. Be punchy and concise — the user is mid-conversation. No JSON. Plain text only.\(locationBlock)
             """
             userPrompt = "\(targetName) phrase: \"\(original)\"\nTone context: \(toneDesc)\nIMPORTANT: Write your note in ENGLISH with \(targetName) phrases quoted inline. Write a short, varied cultural note or local slang connection ONLY about this phrase."
 
@@ -822,7 +822,7 @@ class TalkSwitchAPI {
             • The note body MUST be in English — never write the whole note in \(targetName) \
             • \(targetName) words/phrases appear inline in quotes within English sentences \
             • Do NOT explain the English phrase. Never say "In English..." — they already know English \
-            • Max 3-4 lines. No JSON. Plain text only.\(locationBlock)
+            • Maximum 2 sentences. Be punchy and concise — the user is mid-conversation. No JSON. Plain text only.\(locationBlock)
             """
             userPrompt = "\(targetName) phrase chosen: \"\(targetText)\"\nTone: \(toneDesc)\nIMPORTANT: Write your note in ENGLISH with \(targetName) phrases quoted inline. Explain why this \(targetName) phrase is a great, natural choice."
 
@@ -867,7 +867,7 @@ class TalkSwitchAPI {
             • The note body MUST be in English — never write the whole note in \(targetName) \
             • \(targetName) words/phrases appear inline in quotes within English sentences \
             • Do NOT explain the English phrase. Never say "In English..." — they already know English \
-            • Max 3-4 lines. No JSON. Plain text only.\(locationBlock)
+            • Maximum 2 sentences. Be punchy and concise — the user is mid-conversation. No JSON. Plain text only.\(locationBlock)
             """
             userPrompt = "\(targetName): \"\(targetText)\"\nEnglish: \"\(enText)\"\nTone: \(toneDesc)\nIMPORTANT: Write your note in ENGLISH with \(targetName) phrases quoted inline. Write notes ONLY about the \(targetName) phrase — cultural context, how it's used, and a natural variation."
         }
