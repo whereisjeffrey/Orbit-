@@ -26,6 +26,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         win.makeKeyAndVisible()
         window = win
 
+        // Pre-warm WhisperKit so it's ready when user taps mic
+        DictateViewController.preloadWhisperKit()
+
         if let ctx = connectionOptions.urlContexts.first {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
                 self.handle(url: ctx.url)

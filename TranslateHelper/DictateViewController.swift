@@ -27,9 +27,10 @@ class DictateViewController: UIViewController {
     private var ringLayer2:    CAShapeLayer?
     private var sendBorderGradient: CAGradientLayer?
 
-    /// WhisperKit pipeline — loaded once, reused across recordings.
-    private var whisperPipe: WhisperKit?
-    private var whisperReady = false
+    /// WhisperKit pipeline — loaded once at app level, shared across all recordings.
+    private static var sharedWhisperPipe: WhisperKit?
+    private static var sharedWhisperReady = false
+    private static var whisperLoadStarted = false
 
     /// Target language code set by SceneDelegate from the URL param (e.g. "es", "zh", "fr").
     var targetLanguage: String = "es"
@@ -57,8 +58,8 @@ class DictateViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         startSonarRings()
-        // Start the timer immediately so the UI feels responsive
-        startElapsedTimer()
+        // Timer stays hidden until audio engine is actually running
+        timerLabel.alpha = 0
         beginRecording()
     }
     override func viewWillDisappear(_ animated: Bool) {
@@ -66,25 +67,44 @@ class DictateViewController: UIViewController {
         stopAll()
     }
 
-    // MARK: - WhisperKit initialization
+    // MARK: - WhisperKit initialization (shared across all instances)
 
-    private func loadWhisperKit() {
+    /// Call this early (e.g. from AppDelegate/SceneDelegate) to pre-warm the model.
+    /// Safe to call multiple times — only loads once.
+    static func preloadWhisperKit() {
+        guard !whisperLoadStarted else { return }
+        whisperLoadStarted = true
         NSLog("🎤 [Dictate] WhisperKit: starting model load...")
         Task {
             do {
                 let startTime = CFAbsoluteTimeGetCurrent()
-                let config = WhisperKitConfig(model: "openai_whisper-base")
+                let config = WhisperKitConfig(model: "openai_whisper-tiny")
                 let pipe = try await WhisperKit(config)
-                let elapsed = CFAbsoluteTimeGetCurrent() - startTime
-                self.whisperPipe = pipe
-                self.whisperReady = true
-                NSLog("🎤 [Dictate] WhisperKit loaded successfully in %.1fs", elapsed)
+                let loadTime = CFAbsoluteTimeGetCurrent() - startTime
+                NSLog("🎤 [Dictate] WhisperKit initialized in %.1fs — warming up...", loadTime)
+
+                // Warm-up: run a tiny silent transcription to force-load all internal models
+                // (encoder, decoder, tokenizer) so the first real transcription is fast.
+                let warmupStart = CFAbsoluteTimeGetCurrent()
+                let silentSamples = [Float](repeating: 0.0, count: 16000) // 1 second of silence
+                _ = try await pipe.transcribe(audioArray: silentSamples)
+                let warmupTime = CFAbsoluteTimeGetCurrent() - warmupStart
+                NSLog("🎤 [Dictate] WhisperKit warm-up done in %.1fs", warmupTime)
+
+                sharedWhisperPipe = pipe
+                sharedWhisperReady = true
+                let totalTime = CFAbsoluteTimeGetCurrent() - startTime
+                NSLog("🎤 [Dictate] WhisperKit fully ready in %.1fs", totalTime)
             } catch {
                 NSLog("🎤 [Dictate] WhisperKit FAILED to load: \(error)")
                 NSLog("🎤 [Dictate] Will use Whisper API fallback instead")
-                self.whisperReady = false
+                sharedWhisperReady = false
             }
         }
+    }
+
+    private func loadWhisperKit() {
+        DictateViewController.preloadWhisperKit()
     }
 
     // MARK: - UI Setup
@@ -379,6 +399,13 @@ class DictateViewController: UIViewController {
 
         audioEngine = engine
         isRecording = true
+
+        // Engine is running — NOW start the timer and fade it in
+        startElapsedTimer()
+        UIView.animate(withDuration: 0.3) {
+            self.timerLabel.alpha = 1
+        }
+
         NSLog("🎤 [Dictate] recording started — rate=\(hwFmt.sampleRate) ch=\(hwFmt.channelCount)")
     }
 
@@ -415,8 +442,8 @@ class DictateViewController: UIViewController {
             return
         }
 
-        NSLog("🎤 [Dictate] whisperReady=\(whisperReady) pipe=\(whisperPipe != nil ? "loaded" : "nil")")
-        if whisperReady, let pipe = whisperPipe {
+        NSLog("🎤 [Dictate] whisperReady=\(Self.sharedWhisperReady) pipe=\(Self.sharedWhisperPipe != nil ? "loaded" : "nil")")
+        if Self.sharedWhisperReady, let pipe = Self.sharedWhisperPipe {
             NSLog("🎤 [Dictate] → Using WhisperKit (on-device)")
             transcribeOnDevice(pipe: pipe)
         } else {
@@ -433,8 +460,14 @@ class DictateViewController: UIViewController {
 
         Task {
             do {
-                // Auto-detect language (nil = auto)
-                let options = DecodingOptions(language: nil)
+                // Auto-detect language but use eager decoding for speed
+                let options = DecodingOptions(
+                    language: nil,
+                    temperature: 0.0,
+                    usePrefillPrompt: false,
+                    skipSpecialTokens: true,
+                    clipTimestamps: []
+                )
 
                 let results = try await pipe.transcribe(
                     audioPath: audioPath,
