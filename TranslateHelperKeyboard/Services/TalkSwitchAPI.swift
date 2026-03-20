@@ -544,8 +544,16 @@ class TalkSwitchAPI {
             Feel free to rephrase any of these in your own words — the goal is that no two notes \
             ever open the same way. Variety makes coaching feel human, not robotic. \
             \
+            ════════════ LANGUAGE OF OUTPUT ════════════ \
+            You MUST write the note in ENGLISH. The user is an English speaker learning \(targetName). \
+            They cannot read a note written entirely in \(targetName). \
+            Write your explanation in English. Only use \(targetName) words when quoting specific phrases — \
+            these should be in quotes inline within English sentences. \
+            ══════════════════════════════════════════════ \
+            \
             CRITICAL RULES: \
-            • Write notes in English so the learner understands — but every \(targetName) example must be in \(targetName) \
+            • The note body MUST be in English — never write the whole note in \(targetName) \
+            • \(targetName) words/phrases appear inline in quotes within English sentences \
             • Focus on the EMOTIONAL and SOCIAL effect of the phrase — not just its literal meaning \
             • If the user's target gender is known, make the coaching specific: how does THIS phrase land on a man / woman? \
             • Max 3-4 lines. No JSON. Plain text only.\(locationBlock)
@@ -553,7 +561,7 @@ class TalkSwitchAPI {
             let promptPrefix = enOrigin
                 ? "\(targetName) phrase chosen: \"\(targetText)\""
                 : "\(targetName) phrase used: \"\(targetText)\""
-            userPrompt = "\(promptPrefix)\nTone: flirty\nWrite a short, varied note about why this phrase works and how it lands — who uses it, in what situation, what feeling it creates."
+            userPrompt = "\(promptPrefix)\nTone: flirty\nIMPORTANT: Write your note in ENGLISH with \(targetName) phrases quoted inline. Write a short, varied note about why this phrase works and how it lands — who uses it, in what situation, what feeling it creates."
 
             if let pronContext = pronunciationContext {
                 userPrompt += "\n\n⚠️ \(pronContext)"
@@ -620,13 +628,20 @@ class TalkSwitchAPI {
             Feel free to rephrase any of these in your own words — the goal is that no two notes \
             ever open the same way. Variety makes the coaching feel human, not robotic. \
             \
+            ════════════ LANGUAGE OF OUTPUT ════════════ \
+            You MUST write the note in ENGLISH. The user is an English speaker learning \(targetName). \
+            They cannot read a note written entirely in \(targetName). \
+            Write your explanation in English. Only use \(targetName) words when quoting specific phrases — \
+            these should be in quotes inline within English sentences. \
+            ══════════════════════════════════════════════ \
+            \
             CRITICAL RULES: \
-            • Write notes in English so the learner understands — but every example must be in \(targetName) \
-            • Never discuss English slang, idioms, or cultural context — \(targetName) only \
+            • The note body MUST be in English — never write the whole note in \(targetName) \
+            • \(targetName) words/phrases appear inline in quotes within English sentences \
             • Don't correct their grammar (another system does that) \
             • Max 3-4 lines. No JSON. Plain text only.\(locationBlock)
             """
-            userPrompt = "\(targetName) phrase: \"\(original)\"\nTone context: \(toneDesc)\nWrite a short, varied cultural note or local slang connection ONLY about this phrase."
+            userPrompt = "\(targetName) phrase: \"\(original)\"\nTone context: \(toneDesc)\nIMPORTANT: Write your note in ENGLISH with \(targetName) phrases quoted inline. Write a short, varied cultural note or local slang connection ONLY about this phrase."
 
         } else if sourceLang == "en" {
             // ── Branch B: User typed English — we translated it to target language ──
@@ -666,13 +681,20 @@ class TalkSwitchAPI {
             Feel free to rephrase any of these in your own words — the goal is that no two notes \
             ever open the same way. Variety makes the coaching feel human, not robotic. \
             \
+            ════════════ LANGUAGE OF OUTPUT ════════════ \
+            You MUST write the note in ENGLISH. The user is an English speaker learning \(targetName). \
+            They cannot read a note written entirely in \(targetName). \
+            Write your explanation in English. Only use \(targetName) words when quoting specific phrases \
+            from the translation — these should be in quotes or italics inline within English sentences. \
+            ══════════════════════════════════════════════ \
+            \
             CRITICAL RULES: \
-            • Write notes in English so the learner understands — but every \(targetName) example must be in \(targetName) \
+            • The note body MUST be in English — never write the whole note in \(targetName) \
+            • \(targetName) words/phrases appear inline in quotes within English sentences \
             • Do NOT explain the English phrase. Never say "In English..." — they already know English \
-            • Never discuss English slang, idioms, or cultural context — \(targetName) only \
             • Max 3-4 lines. No JSON. Plain text only.\(locationBlock)
             """
-            userPrompt = "\(targetName) phrase chosen: \"\(targetText)\"\nTone: \(toneDesc)\nExplain why this \(targetName) phrase is a great, natural choice — without mentioning or comparing any other \(targetName) phrase."
+            userPrompt = "\(targetName) phrase chosen: \"\(targetText)\"\nTone: \(toneDesc)\nIMPORTANT: Write your note in ENGLISH with \(targetName) phrases quoted inline. Explain why this \(targetName) phrase is a great, natural choice."
 
         } else {
             // ── Branch C: User typed in target language, translated to English — note is about the original ──
@@ -704,13 +726,20 @@ class TalkSwitchAPI {
             Feel free to rephrase any of these in your own words — the goal is that no two notes \
             ever open the same way. Variety makes the coaching feel human, not robotic. \
             \
+            ════════════ LANGUAGE OF OUTPUT ════════════ \
+            You MUST write the note in ENGLISH. The user is an English speaker learning \(targetName). \
+            They cannot read a note written entirely in \(targetName). \
+            Write your explanation in English. Only use \(targetName) words when quoting specific phrases — \
+            these should be in quotes inline within English sentences. \
+            ══════════════════════════════════════════════ \
+            \
             CRITICAL RULES: \
-            • Write notes in English so the learner understands — but every example must be in \(targetName) \
+            • The note body MUST be in English — never write the whole note in \(targetName) \
+            • \(targetName) words/phrases appear inline in quotes within English sentences \
             • Do NOT explain the English phrase. Never say "In English..." — they already know English \
-            • Never discuss English slang, idioms, or cultural context — \(targetName) only \
             • Max 3-4 lines. No JSON. Plain text only.\(locationBlock)
             """
-            userPrompt = "\(targetName): \"\(targetText)\"\nEnglish: \"\(enText)\"\nTone: \(toneDesc)\nWrite notes ONLY about the \(targetName) phrase — cultural context, how it's used, and a natural variation."
+            userPrompt = "\(targetName): \"\(targetText)\"\nEnglish: \"\(enText)\"\nTone: \(toneDesc)\nIMPORTANT: Write your note in ENGLISH with \(targetName) phrases quoted inline. Write notes ONLY about the \(targetName) phrase — cultural context, how it's used, and a natural variation."
         }
         
         if let pronContext = pronunciationContext {
