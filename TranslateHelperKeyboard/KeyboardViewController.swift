@@ -374,20 +374,28 @@ class KeyboardViewController: UIInputViewController {
                 switch result {
                 case .success(let translation):
                     self.translationVersion = 0
-                    self.translationHistory = []
-                    self.currentHistoryIndex = -1
+                    self.translationHistory = [translation]
+                    self.currentHistoryIndex = 0
                     self.loadingSpinner.stopAnimating()
-                    // All tones get OpenAI refinement — Work needs it most for
-                    // business idiom swapping (circle back, loop you in, etc.)
+
+                    // ── Show DeepL translation IMMEDIATELY ──
+                    // User sees a result right away. Refinement updates in-place later.
+                    self.outputTextLabel.text = translation
+                    self.updateSwipeHint()
+                    NSLog("TSKBD_TRANSLATED: \(text) → \(translation)")
+
+                    let tone = Tone(rawValue: self.currentTone) ?? .casual
+
+                    // ── Fire notes in background (non-blocking) ──
+                    self.updateNotes(original: text, translated: translation)
+
+                    // ── Fire refinement in parallel (updates translation in-place) ──
                     let needsRefinement = self.currentTone == "slang"
                         || self.currentTone == "flirty"
                         || self.currentTone == "casual"
                         || self.currentTone == "work"
-                    
+
                     if needsRefinement {
-                        self.outputTextLabel.text = "✨ Refining..."
-                        
-                        let tone = Tone(rawValue: self.currentTone) ?? .slang
                         let langCode = detected.code
 
                         TalkSwitchAPI.shared.refineTranslation(
@@ -401,44 +409,35 @@ class KeyboardViewController: UIInputViewController {
                                 guard let self = self else { return }
                                 switch refineResult {
                                 case .success(let refined):
+                                    // Silently upgrade the translation in-place
                                     self.translationHistory = [refined.output]
                                     self.currentHistoryIndex = 0
                                     self.outputTextLabel.text = refined.output
                                     self.updateSwipeHint()
                                     if let notes = refined.notes {
+                                        // Refinement notes override smart notes if present
                                         self.notesCard.isHidden = false
                                         let icon: String
                                         switch self.currentTone {
                                         case "flirty": icon = "😏"
                                         case "slang":  icon = "🔥"
-                                        default:       icon = "💬"  // casual / work
+                                        default:       icon = "💬"
                                         }
                                         self.notesTextLabel.text = "\(icon) \(notes)"
-                                    } else {
-                                        self.notesCard.isHidden = true
                                     }
                                     TalkSwitchAPI.shared.recordTranslationForPersona(original: text, translated: refined.output, tone: tone)
                                     NSLog("TSKBD_REFINED: \(text) → \(refined.output)")
-                                case .failure(let error):
-                                    // Fall back to DeepL translation
-                                    self.outputTextLabel.text = translation
-                                    self.notesCard.isHidden = false
-                                    self.notesTextLabel.text = "⚠️ AI refinement unavailable, showing base translation"
+                                case .failure:
+                                    // DeepL translation already showing — just log the failure
                                     TalkSwitchAPI.shared.recordTranslationForPersona(original: text, translated: translation, tone: tone)
-                                    NSLog("TSKBD_REFINE_ERROR: \(error.localizedDescription)")
+                                    NSLog("TSKBD_REFINE_FALLBACK: using DeepL translation")
                                 }
                             }
                         }
                     } else {
-                        self.translationHistory = [translation]
-                        self.currentHistoryIndex = 0
-                        self.outputTextLabel.text = translation
-                        self.updateSwipeHint()
-                        self.updateNotes(original: text, translated: translation)
-                        TalkSwitchAPI.shared.recordTranslationForPersona(original: text, translated: translation, tone: Tone(rawValue: self.currentTone) ?? .casual)
-                        NSLog("TSKBD_TRANSLATED: \(text) → \(translation)")
+                        TalkSwitchAPI.shared.recordTranslationForPersona(original: text, translated: translation, tone: tone)
                     }
-                    
+
                 case .failure(let error):
                     self.loadingSpinner.stopAnimating()
                     self.outputTextLabel.text = "⚠️ Translation failed"
