@@ -7,6 +7,9 @@ struct StudyRevealedCardView: View {
     @Binding var currentIndex: Int
     @AppStorage("studyModeSwapLanguage") private var swapLanguage: Bool = false
     
+    /// Holds the pending auto-play work item so it can be cancelled on disappear.
+    @State private var autoPlayTask: DispatchWorkItem?
+    
     var currentPhrase: SavedPhrase? {
         guard currentIndex < phrases.count else { return nil }
         return phrases[currentIndex]
@@ -14,7 +17,8 @@ struct StudyRevealedCardView: View {
     
     var body: some View {
         ZStack {
-            Color.tsBackground.ignoresSafeArea()
+            TSGradientBackground()
+                .ignoresSafeArea()
             
             if let phrase = currentPhrase {
                 VStack(spacing: 0) {
@@ -57,9 +61,10 @@ struct StudyRevealedCardView: View {
                         // Language Switch Pill
                         HStack(spacing: 8) {
                             HStack(spacing: 4) {
-                                let leftLang = swapLanguage ? phrase.targetLang : phrase.sourceLang
-                                Text(leftLang == "en" ? "🇺🇸" : "🇲🇽").font(.custom("HelveticaNeue", size: 16))
-                                Text(leftLang == "en" ? "English" : "Spanish")
+                                let leftCode = swapLanguage ? phrase.targetLang : phrase.sourceLang
+                                let leftLang = allLanguages.first(where: { $0.code == leftCode })
+                                Text(leftLang?.flag ?? "🏴").font(.custom("HelveticaNeue", size: 16))
+                                Text(leftLang?.name ?? leftCode)
                                     .font(.custom("HelveticaNeue-Medium", size: 12)).foregroundColor(.tsLabel)
                             }
                             
@@ -68,9 +73,10 @@ struct StudyRevealedCardView: View {
                                 .foregroundColor(.tsSecondary)
                             
                             HStack(spacing: 4) {
-                                let rightLang = swapLanguage ? phrase.sourceLang : phrase.targetLang
-                                Text(rightLang == "en" ? "🇺🇸" : "🇲🇽").font(.custom("HelveticaNeue", size: 16))
-                                Text(rightLang == "en" ? "English" : "Spanish")
+                                let rightCode = swapLanguage ? phrase.sourceLang : phrase.targetLang
+                                let rightLang = allLanguages.first(where: { $0.code == rightCode })
+                                Text(rightLang?.flag ?? "🏴").font(.custom("HelveticaNeue", size: 16))
+                                Text(rightLang?.name ?? rightCode)
                                     .font(.custom("HelveticaNeue-Medium", size: 12)).foregroundColor(.tsLabel)
                             }
                             
@@ -89,7 +95,7 @@ struct StudyRevealedCardView: View {
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
-                        .background(Color.white)
+                        .background(Color.tsGrayCard)
                         .clipShape(Capsule())
                         .overlay(Capsule().stroke(Color(.systemGray4), lineWidth: 0.5))
                         .padding(.top, 24)
@@ -131,8 +137,8 @@ struct StudyRevealedCardView: View {
                                 let generator = UIImpactFeedbackGenerator(style: .medium)
                                 generator.impactOccurred()
                                 
-                                // Always speak the language being learned (target = Spanish), regardless of card orientation
-                                let langCode = phrase.targetLang == "en" ? "en-US" : "es-MX"
+                                // Always speak the language being learned (target lang), regardless of card orientation
+                                let langCode = TTSService.bcp47Locale(for: phrase.targetLang)
                                 TTSService.shared.speak(phrase.translatedText, language: langCode)
                             }) {
                                 Image(systemName: "speaker.wave.2.fill")
@@ -183,7 +189,7 @@ struct StudyRevealedCardView: View {
                         }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.tsCard)
+                    .background(Color.tsGrayCard)
                     .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
                     .overlay(
                         RoundedRectangle(cornerRadius: 32, style: .continuous)
@@ -211,6 +217,22 @@ struct StudyRevealedCardView: View {
             }
         }
         .navigationBarHidden(true)
+        .onAppear {
+            guard let phrase = currentPhrase else { return }
+            // Always speak the target (learning) language — same logic as the manual button.
+            let langCode = TTSService.bcp47Locale(for: phrase.targetLang)
+            let text = phrase.translatedText
+            let task = DispatchWorkItem {
+                TTSService.shared.speak(text, language: langCode)
+            }
+            autoPlayTask = task
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5, execute: task)
+        }
+        .onDisappear {
+            autoPlayTask?.cancel()
+            autoPlayTask = nil
+            TTSService.shared.stopSpeaking()
+        }
     }
     
     private func nextCard() {

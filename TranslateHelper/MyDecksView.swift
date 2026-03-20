@@ -349,7 +349,7 @@ struct AutoDeckCard: View {
             }
             .padding(16)
             .frame(width: 148, height: 148)
-            .background(Color.tsCard)
+            .background(Color.tsGrayCard)
             .cornerRadius(20)
             .overlay(RoundedRectangle(cornerRadius: 20).stroke(
                 Color.tsAccent.opacity(0.08),
@@ -395,7 +395,7 @@ struct UserDeckCard: View {
             }
             .padding(16)
             .frame(width: 148, height: 148)
-            .background(Color.tsCard)
+            .background(Color.tsGrayCard)
             .cornerRadius(20)
             .overlay(RoundedRectangle(cornerRadius: 20).stroke(
                 Color.tsAccent.opacity(0.08),
@@ -539,7 +539,7 @@ struct FeaturedDeckRow: View {
         }
         .frame(minHeight: 80)
         .padding(16)
-        .background(Color.tsCard)
+        .background(Color.tsGrayCard)
         .cornerRadius(16)
         .overlay(RoundedRectangle(cornerRadius: 16).stroke(
             deck.tint.opacity(colorScheme == .dark ? 0.45 : 0.35),
@@ -622,7 +622,7 @@ struct LockedFlirtingRow: View {
         }
         .frame(minHeight: 80)
         .padding(16)
-        .background(Color.tsCard)
+        .background(Color.tsGrayCard)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
@@ -650,7 +650,7 @@ struct EmptyDecksPrompt: View {
         }
         .frame(maxWidth: .infinity)
         .padding(32)
-        .background(Color.tsCard)
+        .background(Color.tsGrayCard)
         .cornerRadius(20)
         .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
     }

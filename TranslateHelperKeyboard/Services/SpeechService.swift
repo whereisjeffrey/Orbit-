@@ -23,7 +23,7 @@ class SpeechService {
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
     private var recognitionTimeout: DispatchWorkItem?
-    private var currentLanguage: String = "es-MX"
+    private var currentLanguage: String = "en-US"  // Will be set dynamically before recording
 
     private(set) var isListening = false
     private(set) var detectedLanguage: String = "en"
@@ -182,7 +182,8 @@ class SpeechService {
                 if result.isFinal {
                     self.recognitionTimeout?.cancel()
                     self.recognitionTimeout = nil
-                    let lang = language.hasPrefix("es") ? "es" : "en"
+                    // Extract 2-letter ISO code from the locale (e.g., "es-MX" → "es", "pt-BR" → "pt")
+                    let lang = String(language.prefix(2))
                     self.detectedLanguage = lang
                     var lowConfidence: [String] = []
                     for segment in result.bestTranscription.segments {
@@ -297,6 +298,39 @@ class SpeechService {
     // MARK: - Text to Speech
 
     private let synthesizer = AVSpeechSynthesizer()
+
+    // MARK: - Locale Mapping
+
+    /// Maps a 2-letter ISO code to the best iOS locale string for speech synthesis.
+    /// Called by the keyboard's playTapped to support all 40 languages, not just Spanish.
+    static func localeString(for code: String) -> String {
+        switch code {
+        case "es": return "es-MX"
+        case "pt": return "pt-BR"
+        case "zh": return "zh-Hans-CN"
+        case "fr": return "fr-FR"
+        case "de": return "de-DE"
+        case "it": return "it-IT"
+        case "ja": return "ja-JP"
+        case "ko": return "ko-KR"
+        case "ar": return "ar-SA"
+        case "ru": return "ru-RU"
+        case "nl": return "nl-NL"
+        case "pl": return "pl-PL"
+        case "tr": return "tr-TR"
+        case "uk": return "uk-UA"
+        case "sv": return "sv-SE"
+        case "da": return "da-DK"
+        case "no": return "nb-NO"
+        case "fi": return "fi-FI"
+        case "hi": return "hi-IN"
+        case "id": return "id-ID"
+        case "vi": return "vi-VN"
+        case "he": return "he-IL"
+        case "th": return "th-TH"
+        default:   return "\(code)-\(code.uppercased())"
+        }
+    }
 
     func speak(_ text: String, language: String = "es-MX") {
         let utterance = AVSpeechUtterance(string: text)

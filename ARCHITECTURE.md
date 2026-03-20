@@ -1,4 +1,4 @@
-# TalkSwitch Keyboard Architecture
+# Orbit Keyboard Architecture
 
 ## Component Hierarchy
 

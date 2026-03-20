@@ -1,4 +1,4 @@
-# TalkSwitch Keyboard Implementation Summary
+# Orbit Keyboard Implementation Summary
 
 ## ✅ Completed Implementation
 

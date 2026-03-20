@@ -1,0 +1,4 @@
+module grpcWrapper {
+umbrella "/Users/jeffrey/Library/Developer/Xcode/DerivedData/TalkSwitch-cfrbligaifswxydizshsnjnhhpgn/SourcePackages/checkouts/grpc-binary/grpc-Wrapper/include"
+export *
+}

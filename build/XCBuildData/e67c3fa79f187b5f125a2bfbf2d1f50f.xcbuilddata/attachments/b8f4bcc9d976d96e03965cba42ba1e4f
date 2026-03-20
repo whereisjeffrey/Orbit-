@@ -1,0 +1,4 @@
+module GoogleSignIn {
+umbrella header "/Users/jeffrey/Library/Developer/Xcode/DerivedData/TalkSwitch-cfrbligaifswxydizshsnjnhhpgn/SourcePackages/checkouts/GoogleSignIn-iOS/GoogleSignIn/Sources/Public/GoogleSignIn/GoogleSignIn.h"
+export *
+}

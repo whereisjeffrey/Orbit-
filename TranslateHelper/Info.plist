@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDisplayName</key>
-	<string>TalkSwitch</string>
+	<string>Orbit</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -12,6 +12,7 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>translatehelper</string>
+				<string>talkswitch</string>
 			</array>
 		</dict>
 		<dict>
@@ -23,18 +24,26 @@
 			</array>
 		</dict>
 	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>whatsapp</string>
+	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>TalkSwitch uses your location to personalise language learning content for the city you are in.</string>
+	<string>Orbit uses your location to personalise language learning content for the city you are in.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>TalkSwitch needs microphone access for voice translation and speech coaching.</string>
+	<string>Orbit needs microphone access for voice translation and speech coaching.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>TalkSwitch uses speech recognition to transcribe your voice for translation and coaching.</string>
+	<string>Orbit uses speech recognition to transcribe your voice for translation and coaching.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Sono-Regular.ttf</string>
 		<string>Comfortaa-Medium.ttf</string>
+		<string>MomoTrustDisplay-Regular.ttf</string>
+		<string>MuseoModerno-SemiBold.ttf</string>
+		<string>MuseoModerno-Bold.ttf</string>
+		<string>MuseoModerno-ExtraBold.ttf</string>
 	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
@@ -49,11 +58,11 @@
 					<string>Default Configuration</string>
 					<key>UISceneDelegateClassName</key>
 					<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
-					<key>UISceneStoryboardFile</key>
-					<string>Main</string>
 				</dict>
 			</array>
 		</dict>
 	</dict>
+	<key>CFBundleIdentifier</key>
+	<string>I don&apos;t see anything in the bottom of Xcode. So I do have a message inside the TranslateHelper keyboard. Error five. Couldn&apos;t start recording. Five. Return or return false. Mic may be in use by another app.</string>
 </dict>
 </plist>

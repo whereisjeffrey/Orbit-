@@ -72,7 +72,7 @@ class AuthManager: ObservableObject {
         user = nil
         // Clear the starter-deck seed flag so next login re-seeds exactly the
         // 3 default decks (Mexico City, Timeless Adages I, Euphemisms I).
-        UserDefaults.standard.removeObject(forKey: "starter_decks_v6")
+        UserDefaults.standard.removeObject(forKey: "starter_decks_seeded_lang")
         // Wipe any decks the user accumulated so they don't persist across logins.
         let store = DeckStore.shared
         for deck in store.decks { store.deleteDeck(deck) }

@@ -1,0 +1,4 @@
+module GoogleUtilities_UserDefaults {
+umbrella "/Users/jeffrey/Library/Developer/Xcode/DerivedData/TalkSwitch-cfrbligaifswxydizshsnjnhhpgn/SourcePackages/checkouts/GoogleUtilities/GoogleUtilities/UserDefaults/Public"
+export *
+}

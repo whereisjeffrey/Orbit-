@@ -54,6 +54,29 @@ final class DeckGenerationService {
         return try parseCards(from: raw)
     }
 
+    // MARK: - Starter Deck Generation (language-aware)
+
+    /// Generates one of the 3 universal starter decks for any target language.
+    /// Returns `[DeckCard]` ready to drop straight into DeckStore.
+    func generateStarterDeck(type deckType: StarterDeckType,
+                             targetLanguage: String,
+                             languageCode: String = "es") async throws -> [DeckCard] {
+        let raw = try await callOpenAI(
+            systemPrompt: deckType.systemPrompt
+                .replacingOccurrences(of: "TARGET LANGUAGE", with: targetLanguage),
+            userPrompt: deckType.userPrompt(forLanguage: targetLanguage)
+        )
+        let cards = try parseCards(from: raw)
+        return cards.map { c in
+            DeckCard(
+                english: c.sourceText,
+                spanish: c.translatedText,  // stores target-language text regardless of language
+                notes: c.notes,
+                targetLang: languageCode    // e.g. "zh", "fr", "ja"…
+            )
+        }
+    }
+
     // MARK: - Generic AI Deck
 
     /// Generates a deck from a free-form name + description (Create Deck flow).
@@ -134,7 +157,7 @@ final class DeckGenerationService {
                 ["role": "user",   "content": userPrompt]
             ],
             "temperature": 0.8,
-            "max_tokens": 2000
+            "max_tokens": 4000
         ]
 
         request.httpBody = try JSONSerialization.data(withJSONObject: body)

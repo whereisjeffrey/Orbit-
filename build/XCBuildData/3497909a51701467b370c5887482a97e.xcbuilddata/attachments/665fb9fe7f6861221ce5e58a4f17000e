@@ -1,0 +1,4 @@
+module GoogleUtilities_Logger {
+umbrella "/Users/jeffrey/Library/Developer/Xcode/DerivedData/TalkSwitch-cfrbligaifswxydizshsnjnhhpgn/SourcePackages/checkouts/GoogleUtilities/GoogleUtilities/Logger/Public"
+export *
+}

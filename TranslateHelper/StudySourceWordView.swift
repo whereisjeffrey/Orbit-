@@ -12,6 +12,8 @@ struct StudySourceWordView: View {
     @State private var showConfetti: Bool = false
     @State private var showCompletionUI: Bool = false
     @State private var sessionJustCompleted: Bool = false
+    @State private var showAddNew: Bool = false
+    @State private var showDeleteConfirmation: Bool = false
 
     var currentPhrase: SavedPhrase? {
         guard currentIndex < phrases.count else { return nil }
@@ -20,7 +22,8 @@ struct StudySourceWordView: View {
 
     var body: some View {
         ZStack {
-            Color.tsBackground.ignoresSafeArea()
+            TSGradientBackground()
+                .ignoresSafeArea()
             
             if let phrase = currentPhrase {
                 VStack(spacing: 0) {
@@ -73,11 +76,7 @@ struct StudySourceWordView: View {
                             .zIndex(isFlipped ? 1 : 0)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color(UIColor { trait in
-                        trait.userInterfaceStyle == .dark
-                            ? UIColor(hex: "#1E1E1E")
-                            : UIColor(hex: "#F6F5F9")
-                    }))
+                    .background(Color.tsGrayCard)
                     .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
                     .padding(.horizontal, 16)
                     .padding(.top, 16)
@@ -205,13 +204,43 @@ struct StudySourceWordView: View {
         .sheet(isPresented: $showingOptions) {
             StudyOptionsCard(
                 listName: listName,
-                onSeeList: { showPhraseList = true }
+                onEdit: {
+                    // For now, Edit opens the same QuickAddSheet as Add New
+                    // User can manually edit phrases in the list view
+                    showAddNew = true
+                },
+                onDelete: {
+                    showDeleteConfirmation = true
+                },
+                onAddNew: {
+                    showAddNew = true
+                },
+                onSeeList: {
+                    showPhraseList = true
+                }
             )
             .presentationDetents([.height(440)])
             .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showPhraseList) {
             DeckPhraseListView(phrases: phrases, deckName: listName)
+        }
+        .sheet(isPresented: $showAddNew) {
+            QuickAddSheet()
+        }
+        .alert("Delete This Card?", isPresented: $showDeleteConfirmation) {
+            Button("Cancel", role: .cancel) { }
+            Button("Delete", role: .destructive) {
+                if let phrase = currentPhrase {
+                    SharedPhraseStore.shared.delete(phrase)
+                    // Move to next card or dismiss if this was the last one
+                    if currentIndex >= phrases.count - 1 {
+                        dismiss()
+                    }
+                }
+            }
+        } message: {
+            Text("This will permanently remove this card from your library.")
         }
         .navigationBarHidden(true)
     }
@@ -264,7 +293,6 @@ struct StudySourceWordView: View {
             }
         }
         
-        SoundEngine.shared.play(.flip)   // same page-turn burst as reveal tap
         withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
             // Flip back to front
             isFlipped = false
@@ -473,8 +501,8 @@ struct BackCardView: View {
                     let generator = UIImpactFeedbackGenerator(style: .medium)
                     generator.impactOccurred()
 
-                    // Always speak the language being learned (target = Spanish), regardless of card orientation
-                    let langCode = phrase.targetLang == "en" ? "en-US" : "es-MX"
+                    // Always speak the language being learned (target lang), regardless of card orientation
+                    let langCode = TTSService.bcp47Locale(for: phrase.targetLang)
                     TTSService.shared.speak(phrase.translatedText, language: langCode)
                 }) {
                     Image(systemName: "speaker.wave.2.fill")
@@ -535,9 +563,10 @@ struct LanguageSwitchPill: View {
     var body: some View {
         HStack(spacing: 8) {
             HStack(spacing: 4) {
-                let leftLang = swapLanguage ? phrase.targetLang : phrase.sourceLang
-                Text(leftLang == "en" ? "🇺🇸" : "🇲🇽").font(.custom("HelveticaNeue", size: 16))
-                Text(leftLang == "en" ? "English" : "Spanish")
+                let leftCode = swapLanguage ? phrase.targetLang : phrase.sourceLang
+                let leftLang = allLanguages.first(where: { $0.code == leftCode })
+                Text(leftLang?.flag ?? "🏴").font(.custom("HelveticaNeue", size: 16))
+                Text(leftLang?.name ?? leftCode)
                     .font(.custom("HelveticaNeue-Medium", size: 12)).foregroundColor(.tsLabel)
             }
             
@@ -546,9 +575,10 @@ struct LanguageSwitchPill: View {
                 .foregroundColor(.tsSecondary)
             
             HStack(spacing: 4) {
-                let rightLang = swapLanguage ? phrase.sourceLang : phrase.targetLang
-                Text(rightLang == "en" ? "🇺🇸" : "🇲🇽").font(.custom("HelveticaNeue", size: 16))
-                Text(rightLang == "en" ? "English" : "Spanish")
+                let rightCode = swapLanguage ? phrase.sourceLang : phrase.targetLang
+                let rightLang = allLanguages.first(where: { $0.code == rightCode })
+                Text(rightLang?.flag ?? "🏴").font(.custom("HelveticaNeue", size: 16))
+                Text(rightLang?.name ?? rightCode)
                     .font(.custom("HelveticaNeue-Medium", size: 12)).foregroundColor(.tsLabel)
             }
             
@@ -567,11 +597,7 @@ struct LanguageSwitchPill: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
-        .background(Color(UIColor { trait in
-            trait.userInterfaceStyle == .dark
-                ? UIColor(hex: "111111")
-                : .white
-        }))
+        .background(Color.tsGrayCard)
         .clipShape(Capsule())
         .shadow(color: Color.black.opacity(0.06), radius: 6, x: 0, y: 2)
     }

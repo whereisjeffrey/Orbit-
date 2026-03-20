@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TalkSwitch – Ambient Background Preview</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #0a0a1a;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Subtle label in corner */
+    .label {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255,255,255,0.35);
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+      font-size: 13px;
+      letter-spacing: 0.05em;
+      pointer-events: none;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="bg"></canvas>
+  <div class="label">TalkSwitch · Ambient Background Preview</div>
+
+  <script>
+    const canvas = document.getElementById('bg');
+    const ctx = canvas.getContext('2d');
+
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // ─── Color Blobs ───────────────────────────────────────────────────────────
+    // Each blob has: a base position, orbit radius, orbit speed/phase, color, and size.
+    // Colors pulled directly from the reference image palette.
+    const blobs = [
+      // Orange / warm top-left
+      {
+        baseX: 0.15, baseY: 0.08,
+        orbitR: 0.12, orbitSpeed: 0.00031, orbitPhase: 0,
+        color: '#FF7A1A', size: 0.52, opacity: 0.85
+      },
+      // Hot pink / top-right
+      {
+        baseX: 0.80, baseY: 0.05,
+        orbitR: 0.10, orbitSpeed: 0.00027, orbitPhase: Math.PI * 0.7,
+        color: '#FF1FA8', size: 0.48, opacity: 0.80
+      },
+      // Deep violet / right-center
+      {
+        baseX: 0.90, baseY: 0.48,
+        orbitR: 0.14, orbitSpeed: 0.00019, orbitPhase: Math.PI * 1.3,
+        color: '#8B1FFF', size: 0.50, opacity: 0.80
+      },
+      // Purple / bottom-right
+      {
+        baseX: 0.78, baseY: 0.88,
+        orbitR: 0.12, orbitSpeed: 0.00023, orbitPhase: Math.PI * 0.4,
+        color: '#C020FF', size: 0.46, opacity: 0.78
+      },
+      // Cyan / bottom-left
+      {
+        baseX: 0.12, baseY: 0.82,
+        orbitR: 0.13, orbitSpeed: 0.00021, orbitPhase: Math.PI * 1.8,
+        color: '#00D4FF', size: 0.52, opacity: 0.75
+      },
+      // Teal / left-center
+      {
+        baseX: 0.05, baseY: 0.52,
+        orbitR: 0.10, orbitSpeed: 0.00029, orbitPhase: Math.PI * 0.9,
+        color: '#00CFA8', size: 0.44, opacity: 0.72
+      },
+      // Mid blue / bottom-center
+      {
+        baseX: 0.40, baseY: 0.95,
+        orbitR: 0.15, orbitSpeed: 0.00018, orbitPhase: Math.PI * 1.1,
+        color: '#2060FF', size: 0.56, opacity: 0.70
+      },
+      // Yellow-orange / top-center (subtle warmth)
+      {
+        baseX: 0.50, baseY: 0.10,
+        orbitR: 0.11, orbitSpeed: 0.00025, orbitPhase: Math.PI * 1.6,
+        color: '#FFB830', size: 0.38, opacity: 0.55
+      },
+      // Deep rose / center
+      {
+        baseX: 0.55, baseY: 0.45,
+        orbitR: 0.18, orbitSpeed: 0.00014, orbitPhase: Math.PI * 0.2,
+        color: '#FF3070', size: 0.40, opacity: 0.45
+      },
+    ];
+
+    // Base dark background gradient
+    function drawBase() {
+      const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+      grad.addColorStop(0.0,  '#110820');
+      grad.addColorStop(0.5,  '#0d1235');
+      grad.addColorStop(1.0,  '#0a0520');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function drawBlob(b, t) {
+      const w = canvas.width;
+      const h = canvas.height;
+
+      const cx = (b.baseX + Math.sin(t * b.orbitSpeed + b.orbitPhase) * b.orbitR) * w;
+      const cy = (b.baseY + Math.cos(t * b.orbitSpeed + b.orbitPhase * 1.3) * b.orbitR) * h;
+
+      // Make the blob size gently pulse
+      const pulse = 1 + 0.06 * Math.sin(t * b.orbitSpeed * 3.7 + b.orbitPhase);
+      const r = b.size * Math.min(w, h) * pulse;
+
+      const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+      // Parse hex to rgba for center vs edge
+      grad.addColorStop(0.0,  hexAlpha(b.color, b.opacity));
+      grad.addColorStop(0.45, hexAlpha(b.color, b.opacity * 0.55));
+      grad.addColorStop(1.0,  hexAlpha(b.color, 0));
+
+      ctx.globalCompositeOperation = 'screen';
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function hexAlpha(hex, alpha) {
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      return `rgba(${r},${g},${b},${alpha})`;
+    }
+
+    // Optional: a very large, very soft central luminance layer to keep
+    // the mid-tone warmth from the original image
+    function drawCenterGlow(t) {
+      const cx = canvas.width  * (0.42 + 0.05 * Math.sin(t * 0.00007));
+      const cy = canvas.height * (0.45 + 0.05 * Math.cos(t * 0.00009));
+      const r  = Math.min(canvas.width, canvas.height) * 0.65;
+      const g  = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+      g.addColorStop(0, 'rgba(200,140,80,0.18)');
+      g.addColorStop(1, 'rgba(200,140,80,0)');
+      ctx.globalCompositeOperation = 'screen';
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // ─── Render Loop ──────────────────────────────────────────────────────────
+    let start = null;
+
+    function frame(ts) {
+      if (!start) start = ts;
+      const t = ts - start;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.globalCompositeOperation = 'source-over';
+      drawBase();
+
+      drawCenterGlow(t);
+
+      for (const b of blobs) {
+        drawBlob(b, t);
+      }
+
+      // A very subtle noise/grain pass using tiny off-center radials gives
+      // the "depth" feeling without a texture file
+      ctx.globalCompositeOperation = 'source-over';
+
+      requestAnimationFrame(frame);
+    }
+
+    requestAnimationFrame(frame);
+  </script>
+</body>
+</html>

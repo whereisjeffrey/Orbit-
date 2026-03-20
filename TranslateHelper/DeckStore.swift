@@ -15,8 +15,9 @@ import SwiftUI
 struct DeckCard: Codable, Identifiable, Hashable {
     var id: UUID
     var english: String
-    var spanish: String
+    var spanish: String      // stores the target-language text regardless of which language it is
     var notes: String
+    var targetLang: String   // ISO 639-1 code of the translated text (e.g. "zh", "es", "fr")
     var isConquered: Bool
     var repetitions: Int
     var easinessFactor: Double
@@ -29,6 +30,7 @@ struct DeckCard: Codable, Identifiable, Hashable {
         english: String,
         spanish: String,
         notes: String = "",
+        targetLang: String = "es",
         isConquered: Bool = false,
         repetitions: Int = 0,
         easinessFactor: Double = 2.5,
@@ -40,6 +42,7 @@ struct DeckCard: Codable, Identifiable, Hashable {
         self.english = english
         self.spanish = spanish
         self.notes = notes
+        self.targetLang = targetLang
         self.isConquered = isConquered
         self.repetitions = repetitions
         self.easinessFactor = easinessFactor
@@ -55,7 +58,7 @@ struct DeckCard: Codable, Identifiable, Hashable {
             sourceText: english,
             translatedText: spanish,
             sourceLang: "en",
-            targetLang: "es",
+            targetLang: targetLang,   // use the actual language, not a hardcoded "es"
             savedAt: nextReviewDate,
             notes: notes,
             repetitions: repetitions,

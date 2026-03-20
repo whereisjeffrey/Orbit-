@@ -83,58 +83,101 @@ final class SoundEngine {
         }
         node.play()
     }
-    // MARK: - Page-Turn Whoosh
-    // Two noise layers — a gentle mid-band air rush and a fleeting high-freq paper crinkle.
-    // No low-frequency thump. Think: barely-audible breath of air as you turn a book page.
+    // MARK: - Page-Turn (Skeuomorphic v3 — Physical Model)
+    //
+    // What makes real cardstock sound like cardstock:
+    //
+    //  A) A hard, dry CLICK (0–3 ms)   — fingernail/thumb-tip releasing the edge
+    //  B) A downward CHIRP (0–40 ms)   — the card bending and snapping back
+    //                                     (sine sweep 5 kHz → 900 Hz). This "fwip"
+    //                                     shape is what the brain IDs as paper.
+    //  C) Bright PAPER NOISE (0–90 ms) — high LP coefficient (0.6) so it's mid/
+    //                                     high, not dark. Hard zero-attack.
+    //  D) A thin 2.2 kHz RING (0–20ms) — damped resonance of card stock, fades
+    //                                     in ~15 ms. Adds papery "body".
+    //  E) Settle CLICK (100–120 ms)    — tiny wideband burst as card lands flat.
+    //
+    //  Total: 120 ms stereo (left→right pan arc on layers B,C).
+    //  The key insight: filtered noise alone sounds synthetic because it has no
+    //  pitch contour. The chirp (B) is the acoustic signature of a physical object
+    //  bending — without it, everything sounds like a retro sound effect.
     private func playPageTurn() {
-        let duration: Double = 0.06
-        let fmt = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1)!
-        let frameCount = AVAudioFrameCount(sampleRate * duration)
+        let duration: Double = 0.120
+        let sr = sampleRate
+        let fmt = AVAudioFormat(standardFormatWithSampleRate: sr, channels: 2)!
+        let frameCount = AVAudioFrameCount(sr * duration)
         guard let buf = AVAudioPCMBuffer(pcmFormat: fmt, frameCapacity: frameCount),
-              let data = buf.floatChannelData?[0] else { return }
+              let chL = buf.floatChannelData?[0],
+              let chR = buf.floatChannelData?[1] else { return }
         buf.frameLength = frameCount
 
-        // --- Layer 1: Mid-band "rush of air" ---
-        // Two cascaded one-pole low-pass filters (band-limited to ~2 kHz) give a
-        // soft, breathy texture — no harsh brightness, no bassy thump.
-        var lp1: Double = 0.0
-        var lp2: Double = 0.0
-        let airCoeff: Double = 0.25  // lower = darker/softer air sound
+        // ── Filter state ───────────────────────────────────────────────────────
+        var noiseLP: Double = 0           // paper noise low-pass
+        var ringPhase: Double = 0         // 2.2 kHz ring oscillator
+        var chirpPhase: Double = 0        // fwip chirp oscillator
 
-        // --- Layer 2: High-freq "paper crinkle" ---
-        // A separate high-pass path (subtract low-pass from white noise) gives
-        // a whisper-thin papery texture that fades out very fast.
-        var hpLP: Double = 0.0
-        let hpCoeff: Double = 0.80  // high value = retain high-freq content
+        // Settle click: fires at 100 ms
+        let settleOnset: Double = 0.100
+        let settleLen:   Double = 0.018   // 18 ms burst
 
         for i in 0..<Int(frameCount) {
-            let p = Double(i) / Double(frameCount)  // 0 → 1 progress
+            let t = Double(i) / sr            // time in seconds
+            let p = t / duration              // 0 → 1
 
-            // Master envelope: gentle 4% attack, very smooth exponential tail
-            // exp(-6) gives a longer, softer fade than before (-9)
-            let masterEnv: Double = p < 0.04
-                ? p / 0.04
-                : exp(-6.0 * (p - 0.04))
+            // ── A) Click transient (0–3 ms) ─────────────────────────────────
+            // Pure white noise, instant on, instant off — dry and percussive.
+            let clickAmt: Double = t < 0.003 ? 1.0 : 0.0
+            let clickSample = Double.random(in: -1...1) * clickAmt * 0.65
 
-            // Crinkle only lives in the first 35% of the sound, then disappears
-            let crinkleEnv: Double = p < 0.04
-                ? p / 0.04
-                : exp(-18.0 * (p - 0.04))
+            // ── B) Chirp "fwip" (0–40 ms) — the physical card bend ───────────
+            // Frequency sweeps 5000 Hz → 900 Hz exponentially.
+            // Envelope: instant on, decays with exp(-80·t) → gone by ~35 ms.
+            let chirpDur: Double = 0.040
+            let chirpFreq: Double = t < chirpDur
+                ? 5000.0 * pow(0.18, t / chirpDur)  // 5k→900 Hz
+                : 0.0
+            chirpPhase += 2.0 * .pi * chirpFreq / sr
+            let chirpEnv  = t < chirpDur ? exp(-70.0 * t) : 0.0
+            let chirpSample = sin(chirpPhase) * chirpEnv * 0.55
 
-            let white1 = Double.random(in: -1...1)
-            let white2 = Double.random(in: -1...1)
+            // ── C) Paper noise (0–90 ms) ─────────────────────────────────────
+            // LP coefficient 0.62 keeps it bright (mid + upper-mid focus).
+            // Hard zero-attack — no fade-in, just like real paper.
+            let noiseCoeff: Double = 0.62
+            noiseLP = noiseLP * (1.0 - noiseCoeff) + Double.random(in: -1...1) * noiseCoeff
+            let noiseDur: Double = 0.090
+            let noiseEnv: Double = t < noiseDur
+                ? exp(-22.0 * t)   // sharp exponential tail from frame 0
+                : 0.0
+            let noiseSample = noiseLP * noiseEnv * 0.70
 
-            // Air layer: two-stage low-pass (softens the noise considerably)
-            lp1 = lp1 * (1.0 - airCoeff) + white1 * airCoeff
-            lp2 = lp2 * (1.0 - airCoeff) + lp1 * airCoeff
-            let airLayer = lp2 * 0.80
+            // ── D) 2.2 kHz resonance ring (0–20 ms) ──────────────────────────
+            // Damped sine — models the card-stock's natural resonance.
+            let ringFreq: Double = 2200.0
+            let ringDecay = exp(-200.0 * t)   // gone by ~15 ms
+            ringPhase += 2.0 * .pi * ringFreq / sr
+            let ringSample = sin(ringPhase) * ringDecay * 0.18
 
-            // Crinkle layer: high-pass = white - low-pass
-            hpLP = hpLP * (1.0 - hpCoeff) + white2 * hpCoeff
-            let crinkleLayer = (white2 - hpLP) * 0.30
+            // ── E) Settle click (100–118 ms) ─────────────────────────────────
+            // A short wideband burst; sounds like the card landing flat.
+            var settleSample: Double = 0.0
+            if t >= settleOnset && t < (settleOnset + settleLen) {
+                let q = (t - settleOnset) / settleLen   // 0 → 1 within burst
+                let settleEnv = q < 0.08 ? q / 0.08 : exp(-30.0 * (q - 0.08))
+                settleSample = Double.random(in: -1...1) * settleEnv * 0.28
+            }
 
-            let sample = (airLayer * masterEnv) + (crinkleLayer * crinkleEnv)
-            data[i] = Float(sample * 0.40)  // punchier for the short burst
+            // ── Stereo pan: left→right with sine-arc ─────────────────────────
+            // Layers B and C pan; A, D, E stay center (they're very short).
+            let panAngle = p * .pi
+            let panL = cos(panAngle / 2)
+            let panR = sin(panAngle / 2)
+
+            let panMono   = (chirpSample + noiseSample)               // panned
+            let centerMono = (clickSample + ringSample + settleSample) // center
+
+            chL[i] = Float((panMono * panL + centerMono) * 0.62)
+            chR[i] = Float((panMono * panR + centerMono) * 0.62)
         }
 
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in

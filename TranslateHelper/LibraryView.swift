@@ -10,15 +10,20 @@ struct LibraryView: View {
     @Environment(\.colorScheme) var colorScheme
     @StateObject private var store = SharedPhraseStore.shared
     @State private var searchText = ""
+    @FocusState private var searchFocused: Bool
+    @State private var selectedPhraseForDetail: SavedPhrase? = nil
+    @State private var searchBarMaxY: CGFloat = 140  // updated dynamically
     @State private var showingGoalSheet = false
     @State private var showingStudyMode = false
     @State private var showMyDecks = false
+
     @ObservedObject private var deckStore = DeckStore.shared
     @State private var showNewDeck = false
     @AppStorage("daily_goal") private var dailyGoal: Int = 20
     @AppStorage("phrases_reviewed_today") private var reviewedToday: Int = 0
     @AppStorage("has_swiped_to_deck_v2") private var hasSwipedToDeck: Bool = false
-    @AppStorage("starter_decks_v7") private var starterDecksSeeded: Bool = false
+    @AppStorage("starter_decks_seeded_lang") private var seededLanguageCode: String = ""
+    @State private var isSeedingDecks: Bool = false
     @State private var activeWidgetPage: Int = 0
     // nil = no deck open; set to a Deck to present study mode.
     // Using item: binding avoids the Bool + optional race that caused a
@@ -66,23 +71,8 @@ struct LibraryView: View {
 
                     // ── Header ─────────────────────────────────────────
                     HStack(alignment: .center) {
-                        Text("wandr")
-                            .font(.custom("Comfortaa-Medium", size: 28))
-                            .kerning(28 * 0.01)
-                            .foregroundColor(.tsLabel)
+                        OrbitWordmark()
                         Spacer()
-                        HStack(spacing: 12) {
-                            Button(action: { auth.signOut() }) {
-                                Circle()
-                                    .fill(Color.tsCard)
-                                    .frame(width: 36, height: 36)
-                                    .overlay(
-                                        Image(systemName: "rectangle.portrait.and.arrow.right")
-                                            .foregroundColor(.tsAccent)
-                                            .font(.custom("HelveticaNeue", size: 16))
-                                    )
-                            }
-                        }
                     }
                     .frame(minHeight: 36)
                     .padding(.horizontal, 16)
@@ -104,10 +94,34 @@ struct LibraryView: View {
                             .foregroundColor(.tsLabel)
                             .tint(.tsAccent)
                             .autocorrectionDisabled()
+                            .focused($searchFocused)
+                        if !searchText.isEmpty || searchFocused {
+                            Button {
+                                withAnimation(.easeOut(duration: 0.15)) {
+                                    searchText = ""
+                                    searchFocused = false
+                                }
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .font(.system(size: 15))
+                                    .foregroundColor(.tsSecondary)
+                            }
+                        }
                     }
                     .padding(.horizontal, 12)
                     .frame(height: 40)
-                    .background(Color.tsCard)
+                    .background(
+                        Color.tsCard
+                            .background(
+                                GeometryReader { geo in
+                                    Color.clear
+                                        .onAppear { searchBarMaxY = geo.frame(in: .global).maxY }
+                                        .onChange(of: geo.frame(in: .global).maxY) { _, newY in
+                                            searchBarMaxY = newY
+                                        }
+                                }
+                            )
+                    )
                     .cornerRadius(12)
                     .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                     .padding(.horizontal, 16)
@@ -142,7 +156,7 @@ struct LibraryView: View {
                     DeckPagerContainer(pages: widgetPages,
                                        currentPage: $activeWidgetPage)
                     .frame(height: 440)
-                    .onChange(of: activeWidgetPage) { p in
+                    .onChange(of: activeWidgetPage) { _, p in
                         if p > 0 { hasSwipedToDeck = true }
                     }
                     .padding(.bottom, 8)
@@ -239,31 +253,94 @@ struct LibraryView: View {
                     .padding(.bottom, 120)
                 }
             }
+
+            // ── Search results overlay (escapes ScrollView clipping) ─────────
+            if searchFocused || !searchText.isEmpty {
+                // Transparent tap-outside area — dismisses keyboard & collapses search
+                Color.clear
+                    .contentShape(Rectangle())
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        withAnimation(.easeOut(duration: 0.15)) {
+                            searchText = ""
+                            searchFocused = false
+                        }
+                    }
+                    .zIndex(49)
+
+                VStack(spacing: 0) {
+                    Spacer().frame(height: searchBarMaxY + 8)
+                    PhraseSearchOverlay(
+                        searchText: $searchText,
+                        allPhrases: allSearchablePhrases,
+                        selectedPhrase: $selectedPhraseForDetail
+                    )
+                    Spacer()
+                }
+                .ignoresSafeArea(edges: .bottom)
+                .zIndex(50)
+                .transition(.opacity.combined(with: .move(edge: .top)))
+                .animation(.spring(response: 0.28, dampingFraction: 0.82), value: searchText)
+            }
+
+            // ── Deck seeding overlay (AI generation only) ─────────────
+            if isSeedingDecks {
+                ZStack {
+                    Color.black.opacity(0.45).ignoresSafeArea()
+                    VStack(spacing: 16) {
+                        ProgressView()
+                            .scaleEffect(1.4)
+                            .tint(.white)
+                        Text("Building your starter decks…")
+                            .font(.custom("HelveticaNeue-Bold", size: 16))
+                            .foregroundColor(.white)
+                        Text("Crafting Timeless Adages, Euphemisms & Dating & Romance in \(StarterDeckSeeder.shared.targetLanguageName)")
+                            .font(.custom("HelveticaNeue", size: 13))
+                            .foregroundColor(.white.opacity(0.80))
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 24)
+                    }
+                    .padding(28)
+                    .background(
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(.ultraThinMaterial)
+                    )
+                    .padding(.horizontal, 48)
+                }
+                .transition(.opacity)
+            }
         }
         .onAppear {
             store.load()
             store.seedDemoPhrasesIfNeeded()
-            // Seed starter decks v7 — wipe ALL existing, add in reverse so insert-at-0 gives correct order
-            if !starterDecksSeeded {
-                starterDecksSeeded = true
-                // Clear every existing deck regardless of content
-                for deck in Array(deckStore.decks) { deckStore.deleteDeck(deck) }
-                // Add in reverse order so insert-at-0 gives: Mexico City → Timeless Adages → Euphemisms
-                deckStore.addDeck(Deck(emoji: "😏", name: "Euphemisms I",
-                                       isAI: false, tintName: "purple",
-                                       cards: FeaturedDeckContent.cards(forId: "f14")))
-                deckStore.addDeck(Deck(emoji: "📜", name: "Timeless Adages I",
-                                       isAI: false, tintName: "orange",
-                                       cards: FeaturedDeckContent.cards(forId: "f13")))
-                deckStore.addDeck(Deck(emoji: "🌆", name: "Mexico City Slang I",
-                                       isAI: false, tintName: "blue",
-                                       cards: Array(FeaturedDeckContent.cards(forId: "f1").prefix(20))))
+
+            // Seed language-specific starter decks whenever the target language changes
+            let langCode = StarterDeckSeeder.shared.targetLanguageCode
+            if seededLanguageCode != langCode {
+                seededLanguageCode = langCode
+
+                if langCode == "es" {
+                    // Spanish: instant, static content — no loading overlay needed
+                    StarterDeckSeeder.shared.seed(forceLanguage: "es") { _ in }
+                } else {
+                    // Other languages: AI generation — show overlay while generating
+                    isSeedingDecks = true
+                    StarterDeckSeeder.shared.seed(forceLanguage: langCode) { _ in
+                        withAnimation(.easeOut(duration: 0.3)) {
+                            isSeedingDecks = false
+                        }
+                    }
+                }
             }
         }
         .sheet(isPresented: $showingGoalSheet) {
             SetDailyGoalSheet(dailyGoal: $dailyGoal)
         }
+
         .sheet(isPresented: $showNewDeck) { CreateDeckSheet() }
+        .sheet(item: $selectedPhraseForDetail) { phrase in
+            PhraseDetailSheet(phrase: phrase)
+        }
         .fullScreenCover(isPresented: $showMyDecks) {
             MyDecksView()
         }

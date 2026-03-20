@@ -7,7 +7,7 @@ import SwiftUI
 
 struct OnboardingView: View {
     @State private var step = 1
-    @State private var selectedLanguage: Language? = spanishLanguage
+    @State private var selectedLanguage: Language? = nil
 
     var body: some View {
         switch step {

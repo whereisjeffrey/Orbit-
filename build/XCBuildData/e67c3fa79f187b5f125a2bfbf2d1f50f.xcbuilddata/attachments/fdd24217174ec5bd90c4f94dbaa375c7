@@ -1,0 +1,4 @@
+module abslWrapper {
+umbrella "/Users/jeffrey/Library/Developer/Xcode/DerivedData/TalkSwitch-cfrbligaifswxydizshsnjnhhpgn/SourcePackages/checkouts/abseil-cpp-binary/absl-Wrapper/include"
+export *
+}

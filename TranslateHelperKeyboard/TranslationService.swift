@@ -6,16 +6,59 @@ class TranslationService {
     private init() {}
     
     enum Language: String {
-        case english = "EN"
+        // Tier 1 — DeepL natively supported
+        case english      = "EN"
+        case spanish      = "ES"
+        case french       = "FR"
+        case german       = "DE"
+        case italian      = "IT"
+        case japanese     = "JA"
+        case chinese      = "ZH"
+        case arabic       = "AR"
+        case korean       = "KO"
         case portugueseBR = "PT-BR"
-        case spanish = "ES"
-        case french = "FR"
-        case german = "DE"
-        case italian = "IT"
-        case japanese = "JA"
-        case chinese = "ZH"
-        case arabic = "AR"
-        case korean = "KO"
+        case russian      = "RU"
+        case dutch        = "NL"
+        case polish       = "PL"
+        case turkish      = "TR"
+        case ukrainian    = "UK"
+        case czech        = "CS"
+        case romanian     = "RO"
+        case bulgarian    = "BG"
+        case greek        = "EL"
+        case swedish      = "SV"
+        case danish       = "DA"
+        case norwegian    = "NB"   // DeepL uses NB (Bokmål) for Norwegian
+        case finnish      = "FI"
+        case hungarian    = "HU"
+        case slovak       = "SK"
+        case indonesian   = "ID"
+        case vietnamese   = "VI"
+        case hebrew       = "HE"
+        case croatian     = "HR"
+        // Tier 2 — Not in DeepL; we use English as the API fallback and let
+        //          OpenAI refinement handle the actual target language.
+        //          The raw values are non-DeepL placeholders — the TSProfile
+        //          for these langs sets deepL: .english so the DeepL call
+        //          always has a valid target, and refineTranslation is given
+        //          the real ISO code so GPT produces the correct output.
+        case hindi        = "HI_FALLBACK"
+        case bengali      = "BN_FALLBACK"
+        case urdu         = "UR_FALLBACK"
+        case swahili      = "SW_FALLBACK"
+        case persian      = "FA_FALLBACK"
+        case thai         = "TH_FALLBACK"
+        case catalan      = "CA_FALLBACK"
+        case malay        = "MS_FALLBACK"
+        case filipino     = "FIL_FALLBACK"
+        case afrikaans    = "AF_FALLBACK"
+        case tamil        = "TA_FALLBACK"
+        
+        /// Languages not natively supported by DeepL. For these, `translate()` returns
+        /// the original text immediately and OpenAI refinement handles the actual output.
+        var isFallbackOnly: Bool {
+            rawValue.hasSuffix("_FALLBACK")
+        }
     }
     
     enum TranslationStyle {
@@ -37,6 +80,15 @@ class TranslationService {
         style: TranslationStyle = .natural,
         completion: @escaping (Result<String, Error>) -> Void
     ) {
+        // Tier-2 languages aren't in DeepL — pass the original through unchanged;
+        // the caller's OpenAI refinement step performs the actual translation.
+        if targetLanguage.isFallbackOnly {
+            NSLog("TSKBD_API: Tier-2 fallback lang \(targetLanguage.rawValue) — skipping DeepL")
+            completion(.success(text))
+            return
+        }
+        
+
         let urlString = "\(APIConfig.deeplBaseURL)/translate"
         guard let url = URL(string: urlString) else {
             completion(.failure(NSError(domain: "TranslationService", code: -1,

@@ -1,0 +1,275 @@
+//
+//  SpeechService.swift
+//  TalkSwitch
+//
+//  Uses AVAudioEngine → live buffer → SFSpeechAudioBufferRecognitionRequest.
+//  AVAudioRecorder silently captures 0 bytes in keyboard extension sandboxes
+//  even when permissions are granted. The live buffer approach bypasses the
+//  file write layer entirely and works with the .playAndRecord audio session.
+//
+
+import Foundation
+import Speech
+import AVFoundation
+
+protocol SpeechServiceDelegate: AnyObject {
+    func speechService(_ service: SpeechService, didRecognize text: String, isFinal: Bool)
+    func speechService(_ service: SpeechService, didFinishWith text: String, language: String, lowConfidenceWords: [String])
+    func speechService(_ service: SpeechService, didFailWith error: Error)
+}
+
+class SpeechService {
+
+    static let shared = SpeechService()
+    weak var delegate: SpeechServiceDelegate?
+
+    private var audioEngine: AVAudioEngine?
+    private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
+    private var recognitionTask: SFSpeechRecognitionTask?
+
+    private(set) var isListening = false
+    private(set) var detectedLanguage: String = "en"
+
+    private init() {}
+
+    // MARK: - Permissions
+
+    func requestPermissions(completion: @escaping (Bool) -> Void) {
+        var speechOK = false
+        var micOK = false
+        let group = DispatchGroup()
+
+        group.enter()
+        SFSpeechRecognizer.requestAuthorization { status in
+            speechOK = (status == .authorized)
+            NSLog("TSKBD_PERM: speech=\(status.rawValue) ok=\(speechOK)")
+            group.leave()
+        }
+
+        group.enter()
+        AVAudioApplication.requestRecordPermission { granted in
+            micOK = granted
+            NSLog("TSKBD_PERM: mic ok=\(granted)")
+            group.leave()
+        }
+
+        group.notify(queue: .main) {
+            completion(speechOK && micOK)
+        }
+    }
+
+    // MARK: - Start
+
+    func startListening() {
+        if isListening { cancelListening() }
+
+        // 1. Activate audio session — .playAndRecord required in extensions.
+        //    .record-only category fails in extension sandboxes because the
+        //    host app (WhatsApp etc.) holds the audio session exclusively.
+        let session = AVAudioSession.sharedInstance()
+        do {
+            try session.setCategory(
+                .playAndRecord,
+                mode: .default,
+                options: [.defaultToSpeaker, .allowBluetooth, .mixWithOthers]
+            )
+            try session.setActive(true)
+            let sr = session.sampleRate
+            NSLog("TSKBD_AUDIO: session active — sampleRate=\(sr) category=\(session.category.rawValue)")
+            guard sr > 0 else {
+                throw NSError(
+                    domain: "SpeechService", code: -4,
+                    userInfo: [NSLocalizedDescriptionKey:
+                        "Audio hardware not available (sampleRate=0). Try switching keyboards off and back on."])
+            }
+        } catch {
+            let e = error as NSError
+            NSLog("TSKBD_AUDIO: FAILED code=\(e.code) — \(e.localizedDescription)")
+            DispatchQueue.main.async { self.delegate?.speechService(self, didFailWith: error) }
+            return
+        }
+
+        // 2. Speech recognizer — en-US handles both English and Spanish.
+        //    Language detection happens post-transcription in the delegate.
+        guard let recognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US")),
+              recognizer.isAvailable else {
+            let err = NSError(
+                domain: "SpeechService", code: -1,
+                userInfo: [NSLocalizedDescriptionKey: "Speech recognizer unavailable. Check internet connection."])
+            NSLog("TSKBD_SPEECH: recognizer unavailable")
+            DispatchQueue.main.async { self.delegate?.speechService(self, didFailWith: err) }
+            return
+        }
+
+        // 3. Build live-buffer recognition request
+        let request = SFSpeechAudioBufferRecognitionRequest()
+        request.shouldReportPartialResults = true
+        request.taskHint = .dictation
+        recognitionRequest = request
+
+        // 4. Start recognition task — fires continuously as audio arrives
+        recognitionTask = recognizer.recognitionTask(with: request) { [weak self] result, error in
+            guard let self = self else { return }
+
+            if let result = result {
+                let text = result.bestTranscription.formattedString
+                let isFinal = result.isFinal
+                NSLog("TSKBD_SPEECH: partial='\(text)' final=\(isFinal)")
+
+                var lowConfidence: [String] = []
+                for seg in result.bestTranscription.segments {
+                    if seg.confidence > 0 && seg.confidence < 0.5 {
+                        lowConfidence.append(seg.substring)
+                    }
+                }
+
+                DispatchQueue.main.async {
+                    self.delegate?.speechService(self, didRecognize: text, isFinal: isFinal)
+                }
+
+                if isFinal {
+                    self.isListening = false
+                    self.audioEngine?.stop()
+                    self.audioEngine?.inputNode.removeTap(onBus: 0)
+                    self.audioEngine = nil
+                    try? AVAudioSession.sharedInstance().setActive(false)
+                    DispatchQueue.main.async {
+                        self.delegate?.speechService(self,
+                                                     didFinishWith: text,
+                                                     language: "en",
+                                                     lowConfidenceWords: lowConfidence)
+                    }
+                }
+            }
+
+            if let error = error {
+                let e = error as NSError
+                // Code 1110 = no speech detected, 203 = recognizer unavailable
+                NSLog("TSKBD_SPEECH_ERR: code=\(e.code) — \(e.localizedDescription)")
+                self.isListening = false
+                self.audioEngine?.stop()
+                self.audioEngine?.inputNode.removeTap(onBus: 0)
+                self.audioEngine = nil
+                try? AVAudioSession.sharedInstance().setActive(false)
+                DispatchQueue.main.async {
+                    self.delegate?.speechService(self, didFailWith: NSError(
+                        domain: "SpeechService", code: e.code,
+                        userInfo: [NSLocalizedDescriptionKey: "Speech error \(e.code): \(e.localizedDescription)"]))
+                }
+            }
+        }
+
+        // 5. Wire AVAudioEngine input tap → recognition request buffer.
+        //    Must use inputFormat(forBus:) — outputFormat returns the wrong
+        //    format in keyboard extension processes and produces silent buffers.
+        let engine = AVAudioEngine()
+        audioEngine = engine
+        let inputNode = engine.inputNode
+        let recordingFormat = inputNode.inputFormat(forBus: 0)
+        NSLog("TSKBD_ENGINE: inputFormat sampleRate=\(recordingFormat.sampleRate) ch=\(recordingFormat.channelCount)")
+
+        guard recordingFormat.sampleRate > 0 else {
+            NSLog("TSKBD_ENGINE: sampleRate=0 — mic hardware not ready")
+            recognitionTask?.cancel()
+            recognitionRequest = nil
+            audioEngine = nil
+            try? AVAudioSession.sharedInstance().setActive(false)
+            DispatchQueue.main.async {
+                self.delegate?.speechService(self, didFailWith: NSError(
+                    domain: "SpeechService", code: -4,
+                    userInfo: [NSLocalizedDescriptionKey: "Mic not ready (sampleRate=0). Switch to TalkSwitch keyboard, wait 1 second, then tap mic again."]))
+            }
+            return
+        }
+
+        inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { buffer, _ in
+            request.append(buffer)
+        }
+
+        do {
+            engine.prepare()
+            try engine.start()
+            isListening = true
+            NSLog("TSKBD_ENGINE: started — isRunning=\(engine.isRunning)")
+        } catch {
+            let e = error as NSError
+            NSLog("TSKBD_ENGINE: start FAILED code=\(e.code) — \(e.localizedDescription)")
+            // Cancel task BEFORE endAudio — calling endAudio() with 0 buffers
+            // triggers error 1110 (no speech) which is misleading. Cancel is clean.
+            recognitionTask?.cancel()
+            recognitionRequest = nil
+            recognitionTask = nil
+            audioEngine?.inputNode.removeTap(onBus: 0)
+            audioEngine = nil
+            try? AVAudioSession.sharedInstance().setActive(false)
+            DispatchQueue.main.async { self.delegate?.speechService(self, didFailWith: error) }
+        }
+    }
+
+    func startListeningIn(language: String) {
+        // Language detection happens post-recognition via detectLanguage() in delegate.
+        startListening()
+    }
+
+    // MARK: - Stop (signals end of speech → triggers final result)
+
+    func stopListening() {
+        guard isListening else { return }
+        NSLog("TSKBD_STOP: ending audio — signalling end of stream")
+        recognitionRequest?.endAudio()
+        // The recognition task fires its completion with isFinal=true after endAudio()
+    }
+
+    // MARK: - Cancel (discards audio, no transcription)
+
+    func cancelListening() {
+        isListening = false
+        audioEngine?.stop()
+        audioEngine?.inputNode.removeTap(onBus: 0)
+        audioEngine = nil
+        recognitionTask?.cancel()
+        recognitionTask = nil
+        recognitionRequest = nil
+        try? AVAudioSession.sharedInstance().setActive(false)
+        NSLog("TSKBD_CANCEL: recording cancelled")
+    }
+
+    // MARK: - Voice Quality Helpers
+
+    static func bestVoice(for language: String) -> AVSpeechSynthesisVoice? {
+        let prefix = String(language.prefix(2))
+        let voices = AVSpeechSynthesisVoice.speechVoices().filter { $0.language.hasPrefix(prefix) }
+        if #available(iOS 16, *),
+           let p = voices.first(where: { $0.quality == .premium }) { return p }
+        if let e = voices.first(where: { $0.quality == .enhanced }) { return e }
+        return AVSpeechSynthesisVoice(language: language)
+    }
+
+    static func hasEnhancedVoice(for language: String) -> Bool {
+        let prefix = String(language.prefix(2))
+        let voices = AVSpeechSynthesisVoice.speechVoices().filter { $0.language.hasPrefix(prefix) }
+        if #available(iOS 16, *), voices.contains(where: { $0.quality == .premium }) { return true }
+        return voices.contains { $0.quality == .enhanced }
+    }
+
+    // MARK: - Text to Speech
+
+    private let synthesizer = AVSpeechSynthesizer()
+
+    func speak(_ text: String, language: String = "es-MX") {
+        let utterance = AVSpeechUtterance(string: text)
+        utterance.voice = SpeechService.bestVoice(for: language)
+        utterance.rate = 0.48
+        utterance.pitchMultiplier = 1.0
+
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+        try? AVAudioSession.sharedInstance().setActive(true)
+
+        synthesizer.stopSpeaking(at: .immediate)
+        synthesizer.speak(utterance)
+    }
+
+    func stopSpeaking() {
+        synthesizer.stopSpeaking(at: .immediate)
+    }
+}

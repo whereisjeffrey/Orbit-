@@ -1,0 +1,4 @@
+module AppAuth {
+umbrella "/Users/jeffrey/Library/Developer/Xcode/DerivedData/TalkSwitch-cfrbligaifswxydizshsnjnhhpgn/SourcePackages/checkouts/AppAuth-iOS/Sources/AppAuth"
+export *
+}

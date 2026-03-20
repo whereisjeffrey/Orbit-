@@ -317,7 +317,7 @@ class KeyboardViewController: UIInputViewController {
 
 
             if text.split(separator: " ").count >= 1 {
-                TalkSwitchAPI.shared.getGentleCorrection(text: text) { [weak self] result in
+                TalkSwitchAPI.shared.getGentleCorrection(text: text, language: targetCode) { [weak self] result in
                     DispatchQueue.main.async {
                         let isSpeech = source == "accent_coach"
                         switch result {
@@ -989,11 +989,13 @@ class KeyboardViewController: UIInputViewController {
         swipeHintLabel.isHidden = true
         outputCard.isHidden = false
 
+        let targetCode = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
         let tone = Tone(rawValue: currentTone) ?? .casual
         TalkSwitchAPI.shared.alternativeTranslation(
             original: inputText,
             currentTranslation: previousTranslation,
             sourceLang: detectedLanguage,
+            targetLang: targetCode,
             tone: tone,
             variation: version
         ) { [weak self] result in

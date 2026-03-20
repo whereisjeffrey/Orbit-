@@ -1,0 +1,426 @@
+{
+  "" : {
+    "const-values" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/TranslateHelper-primary.swiftconstvalues",
+    "dependencies" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/TranslateHelper-primary.d",
+    "diagnostics" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/TranslateHelper-primary.dia",
+    "emit-module-dependencies" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/TranslateHelper-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/TranslateHelper-primary-emit-module.dia",
+    "pch" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/TranslateHelper-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/TranslateHelper-primary.swiftdeps"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/AddCardSheet.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/AddCardSheet.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/AddCardSheet.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/AddCardSheet.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/AppDelegate.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/AppDelegate.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/AppDelegate.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/AppDelegate.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/AppleSignInHelper.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/AppleSignInHelper.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/AppleSignInHelper.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/AppleSignInHelper.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/AskALocalView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/AskALocalView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/AskALocalView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/AskALocalView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/AuthManager.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/AuthManager.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/AuthManager.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/AuthManager.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/BadgeSystem.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/BadgeSystem.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/BadgeSystem.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/BadgeSystem.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/BureaucracyView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/BureaucracyView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/BureaucracyView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/BureaucracyView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/CafeSpace.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CafeSpace.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CafeSpace.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CafeSpace.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/CityModel.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CityModel.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CityModel.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CityModel.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/CommunityCoachMark.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CommunityCoachMark.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CommunityCoachMark.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CommunityCoachMark.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/CommunityUserProfileView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CommunityUserProfileView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CommunityUserProfileView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CommunityUserProfileView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/CommunityView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CommunityView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CommunityView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CommunityView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/ComposePostSheet.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/ComposePostSheet.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/ComposePostSheet.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/ComposePostSheet.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/Config.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/Config.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/Config.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/Config.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/ContactPickerView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/ContactPickerView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/ContactPickerView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/ContactPickerView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/CoworkSpace.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CoworkSpace.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CoworkSpace.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CoworkSpace.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/CoworkSubmitView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CoworkSubmitView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CoworkSubmitView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CoworkSubmitView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/CoworkView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CoworkView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CoworkView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CoworkView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/CreateAccountView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CreateAccountView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CreateAccountView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CreateAccountView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/CurrencyStore.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CurrencyStore.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CurrencyStore.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CurrencyStore.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/CurrencyView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CurrencyView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CurrencyView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/CurrencyView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/DeckGenerationService.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/DeckGenerationService.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/DeckGenerationService.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/DeckGenerationService.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/DeckPhraseListView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/DeckPhraseListView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/DeckPhraseListView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/DeckPhraseListView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/DeckStore.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/DeckStore.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/DeckStore.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/DeckStore.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/DesignSystem.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/DesignSystem.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/DesignSystem.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/DesignSystem.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/DictateViewController.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/DictateViewController.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/DictateViewController.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/DictateViewController.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/FeaturedDeckContent.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/FeaturedDeckContent.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/FeaturedDeckContent.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/FeaturedDeckContent.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/FitnessView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/FitnessView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/FitnessView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/FitnessView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/FlirtyContextSheet.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/FlirtyContextSheet.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/FlirtyContextSheet.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/FlirtyContextSheet.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/ForgotPasswordView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/ForgotPasswordView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/ForgotPasswordView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/ForgotPasswordView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/GroupDirectory.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/GroupDirectory.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/GroupDirectory.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/GroupDirectory.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/InsuranceView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/InsuranceView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/InsuranceView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/InsuranceView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/KeyboardSetupBanner.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/KeyboardSetupBanner.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/KeyboardSetupBanner.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/KeyboardSetupBanner.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/KeyboardSetupSplashView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/KeyboardSetupSplashView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/KeyboardSetupSplashView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/KeyboardSetupSplashView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/KitSegmentedPicker.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/KitSegmentedPicker.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/KitSegmentedPicker.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/KitSegmentedPicker.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/KitView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/KitView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/KitView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/KitView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/LanguageSelectionView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/LanguageSelectionView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/LanguageSelectionView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/LanguageSelectionView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/LibraryView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/LibraryView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/LibraryView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/LibraryView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/LinkPreviewFetcher.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/LinkPreviewFetcher.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/LinkPreviewFetcher.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/LinkPreviewFetcher.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/LocalsUseView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/LocalsUseView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/LocalsUseView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/LocalsUseView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/MainTabView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/MainTabView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/MainTabView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/MainTabView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/MyDecksView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/MyDecksView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/MyDecksView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/MyDecksView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/NeighbourhoodPolygons.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/NeighbourhoodPolygons.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/NeighbourhoodPolygons.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/NeighbourhoodPolygons.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/NeighbourhoodsView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/NeighbourhoodsView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/NeighbourhoodsView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/NeighbourhoodsView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/NewInTownSection.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/NewInTownSection.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/NewInTownSection.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/NewInTownSection.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/OGImageFetcher.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/OGImageFetcher.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/OGImageFetcher.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/OGImageFetcher.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/OnboardingGoalsView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/OnboardingGoalsView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/OnboardingGoalsView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/OnboardingGoalsView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/OnboardingInterestsView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/OnboardingInterestsView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/OnboardingInterestsView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/OnboardingInterestsView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/OnboardingLocationView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/OnboardingLocationView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/OnboardingLocationView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/OnboardingLocationView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/OnboardingPaywallView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/OnboardingPaywallView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/OnboardingPaywallView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/OnboardingPaywallView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/OnboardingPlanView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/OnboardingPlanView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/OnboardingPlanView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/OnboardingPlanView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/OnboardingStatusView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/OnboardingStatusView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/OnboardingStatusView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/OnboardingStatusView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/OnboardingView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/OnboardingView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/OnboardingView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/OnboardingView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/PlaceDataFetcher.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/PlaceDataFetcher.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/PlaceDataFetcher.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/PlaceDataFetcher.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/PlacePhotoCarousel.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/PlacePhotoCarousel.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/PlacePhotoCarousel.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/PlacePhotoCarousel.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/PlacePhotoStore.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/PlacePhotoStore.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/PlacePhotoStore.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/PlacePhotoStore.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/ProfilePhotoManager.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/ProfilePhotoManager.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/ProfilePhotoManager.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/ProfilePhotoManager.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/QuickAddSheet.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/QuickAddSheet.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/QuickAddSheet.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/QuickAddSheet.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/RootView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/RootView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/RootView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/RootView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/SIMGuideView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/SIMGuideView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/SIMGuideView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/SIMGuideView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/ScamRadarView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/ScamRadarView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/ScamRadarView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/ScamRadarView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/SceneDelegate.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/SceneDelegate.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/SceneDelegate.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/SceneDelegate.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/SettingsView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/SettingsView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/SettingsView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/SettingsView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/SharedPhraseStore.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/SharedPhraseStore.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/SharedPhraseStore.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/SharedPhraseStore.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/SignInView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/SignInView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/SignInView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/SignInView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/SoundEngine.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/SoundEngine.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/SoundEngine.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/SoundEngine.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/StudyOptionsCard.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/StudyOptionsCard.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/StudyOptionsCard.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/StudyOptionsCard.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/StudyRevealedCardView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/StudyRevealedCardView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/StudyRevealedCardView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/StudyRevealedCardView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/StudySourceWordView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/StudySourceWordView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/StudySourceWordView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/StudySourceWordView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/SubscriptionManager.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/SubscriptionManager.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/SubscriptionManager.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/SubscriptionManager.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/TTSService.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/TTSService.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/TTSService.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/TTSService.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/TransportationView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/TransportationView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/TransportationView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/TransportationView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/TrialSuccessView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/TrialSuccessView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/TrialSuccessView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/TrialSuccessView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/UpgradeSheet.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/UpgradeSheet.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/UpgradeSheet.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/UpgradeSheet.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/UserLocationsStore.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/UserLocationsStore.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/UserLocationsStore.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/UserLocationsStore.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/ViewController.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/ViewController.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/ViewController.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/ViewController.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/VoiceKeyboardView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/VoiceKeyboardView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/VoiceKeyboardView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/VoiceKeyboardView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/WeeklyLibraryWidgets.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/WeeklyLibraryWidgets.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/WeeklyLibraryWidgets.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/WeeklyLibraryWidgets.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/WorkTipStore.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/WorkTipStore.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/WorkTipStore.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/WorkTipStore.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/WorkTipViews.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/WorkTipViews.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/WorkTipViews.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/WorkTipViews.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelper/WorkView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/WorkView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/WorkView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/WorkView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/GeneratedAssetSymbols.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/DerivedSources/GeneratedStringSymbols_Localizable.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/GeneratedStringSymbols_Localizable.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/GeneratedStringSymbols_Localizable.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelper.build/Objects-normal/arm64/GeneratedStringSymbols_Localizable.o"
+  }
+}

@@ -497,10 +497,26 @@ struct DeckClipboardWidget: View {
         VStack(alignment: .leading, spacing: 0) {
 
             // ── Header ──────────────────────────────────────
-            HStack(alignment: .center) {
-                Text(deck.name)
-                    .font(.custom("HelveticaNeue-Bold", size: 18))
-                    .foregroundColor(.tsLabel)
+            HStack(alignment: .center, spacing: 10) {
+                // Deck icon — tinted rounded square, matches LibraryDeckCard
+                ZStack {
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(deck.tintColor.opacity(0.15))
+                        .frame(width: 38, height: 38)
+                    Text(deck.emoji)
+                        .font(.system(size: 20))
+                }
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(deck.name)
+                        .font(.custom("HelveticaNeue-Bold", size: 17))
+                        .foregroundColor(.tsLabel)
+                        .lineLimit(1)
+                    Text("\(deck.cards.count) cards")
+                        .font(.custom("HelveticaNeue", size: 11))
+                        .foregroundColor(.tsSecondary)
+                }
+
                 Spacer()
                 if !deck.cards.isEmpty {
                     Button(action: onStudy) {
@@ -517,7 +533,7 @@ struct DeckClipboardWidget: View {
                 }
             }
             .padding(.horizontal, 16)
-            .padding(.top, 14)
+            .padding(.top, 12)
             .padding(.bottom, 10)
             .background(colorScheme == .dark ? Color.tsInputBg : Color(hex: "#F2F8FA"))
 

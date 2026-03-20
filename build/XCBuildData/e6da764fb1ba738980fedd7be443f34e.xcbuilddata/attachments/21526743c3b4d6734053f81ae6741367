@@ -1,0 +1,76 @@
+{
+  "" : {
+    "const-values" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/TranslateHelperKeyboard-primary.swiftconstvalues",
+    "dependencies" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/TranslateHelperKeyboard-primary.d",
+    "diagnostics" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/TranslateHelperKeyboard-primary.dia",
+    "emit-module-dependencies" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/TranslateHelperKeyboard-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/TranslateHelperKeyboard-primary-emit-module.dia",
+    "pch" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/TranslateHelperKeyboard-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/TranslateHelperKeyboard-primary.swiftdeps"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelperKeyboard/Config.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/Config.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/Config.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/Config.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelperKeyboard/KeyButton.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/KeyButton.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/KeyButton.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/KeyButton.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelperKeyboard/KeyboardViewController.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/KeyboardViewController.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/KeyboardViewController.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/KeyboardViewController.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelperKeyboard/Models/Tone.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/Tone.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/Tone.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/Tone.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelperKeyboard/Services/LanguageDetector.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/LanguageDetector.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/LanguageDetector.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/LanguageDetector.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelperKeyboard/Services/PhraseStore.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/PhraseStore.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/PhraseStore.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/PhraseStore.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelperKeyboard/Services/SpeechService.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/SpeechService.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/SpeechService.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/SpeechService.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelperKeyboard/Services/TalkSwitchAPI.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/TalkSwitchAPI.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/TalkSwitchAPI.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/TalkSwitchAPI.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelperKeyboard/Services/Untitled.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/Untitled.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/Untitled.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/Untitled.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelperKeyboard/TranslationService.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/TranslationService.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/TranslationService.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/TranslationService.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelperKeyboard/Views/ResultPanelView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/ResultPanelView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/ResultPanelView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/ResultPanelView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/TranslateHelperKeyboard/Views/TopBarView.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/TopBarView.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/TopBarView.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/TopBarView.o"
+  },
+  "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "index-unit-output-path" : "/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/jeffrey/Desktop/TalkSwitch/build/TalkSwitch.build/Release-iphoneos/TranslateHelperKeyboard.build/Objects-normal/arm64/GeneratedAssetSymbols.o"
+  }
+}

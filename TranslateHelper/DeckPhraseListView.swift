@@ -16,6 +16,18 @@ struct DeckPhraseListView: View {
     @State private var searchText = ""
     @AppStorage("studyModeSwapLanguage") private var swapLanguage: Bool = false
 
+    // Language metadata derived from the actual phrase data
+    private var sourceLang: Language? {
+        guard let code = phrases.first?.sourceLang else { return nil }
+        return allLanguages.first(where: { $0.code == code })
+    }
+    private var targetLang: Language? {
+        guard let code = phrases.first?.targetLang else { return nil }
+        return allLanguages.first(where: { $0.code == code })
+    }
+    private var leftLang: Language?  { swapLanguage ? targetLang : sourceLang }
+    private var rightLang: Language? { swapLanguage ? sourceLang : targetLang }
+
     var filtered: [SavedPhrase] {
         guard !searchText.isEmpty else { return phrases }
         return phrases.filter {
@@ -56,13 +68,17 @@ struct DeckPhraseListView: View {
                         }
                     }) {
                         HStack(spacing: 6) {
-                            Text(swapLanguage ? "🇲🇽 Spanish" : "🇺🇸 English")
+                            Text(leftLang?.flag ?? "🏴")
+                                .font(.custom("HelveticaNeue-Medium", size: 13))
+                            Text(leftLang?.name ?? "Source")
                                 .font(.custom("HelveticaNeue-Medium", size: 12))
                                 .foregroundColor(.tsLabel)
                             Image(systemName: "arrow.right")
                                 .font(.custom("HelveticaNeue-Bold", size: 11))
                                 .foregroundColor(.tsSecondary)
-                            Text(swapLanguage ? "🇺🇸 English" : "🇲🇽 Spanish")
+                            Text(rightLang?.flag ?? "🏴")
+                                .font(.custom("HelveticaNeue-Medium", size: 13))
+                            Text(rightLang?.name ?? "Target")
                                 .font(.custom("HelveticaNeue-Medium", size: 12))
                                 .foregroundColor(.tsLabel)
                             Image(systemName: "arrow.triangle.2.circlepath")
@@ -144,7 +160,7 @@ private struct PhraseListRow: View {
     var speakText: String     { swapLanguage ? phrase.sourceText     : phrase.translatedText }
     var speakLang: String     {
         let code = swapLanguage ? phrase.sourceLang : phrase.targetLang
-        return code == "en" ? "en-US" : "es-MX"
+        return TTSService.bcp47Locale(for: code)
     }
 
     var body: some View {

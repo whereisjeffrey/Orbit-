@@ -1,6 +1,8 @@
-# TalkSwitch — CLAUDE.md
+# Orbit — CLAUDE.md
 > Read this at the start of every session. No exceptions.
-> Last updated: 2026-03-05 by Nigel (OpenClaw agent)
+> Last updated: 2026-03-19 by Antigravity
+
+> ⚠️ **PATH WARNING FOR ALL AGENTS:** The project lives at `/Users/jeffrey/Desktop/Orbit/` — NOT `TalkSwitch/`. If your workspace is pointing to `TalkSwitch/TranslateHelper`, you are in the wrong place. Always verify paths before editing files.
 
 ---
 
@@ -35,7 +37,7 @@ Append to `WORK_LOG.md`:
 
 ## 🏗️ What This App Is
 
-**TalkSwitch** — expat companion app for digital nomads and long-term expats.
+**Orbit** — expat companion app for digital nomads and long-term expats.
 Not a language learning app. Language tools (keyboard, decks) are features within a larger platform.
 
 **Launch market:** Mexico City (Spanish)
@@ -50,15 +52,21 @@ Not a language learning app. Language tools (keyboard, decks) are features withi
 ## 📁 Project Structure
 
 ```
-TalkSwitch/
-├── TalkSwitch.xcodeproj          ← USE THIS to open, NOT xcworkspace
-├── TranslateHelper.xcworkspace   ← CocoaPods workspace (still references TalkSwitch.xcodeproj now)
-├── TranslateHelper/              ← Main app Swift files (ALL of them)
-├── TranslateHelperKeyboard/      ← Keyboard extension
-├── CLAUDE.md                     ← You are here
-├── HANDOFF.md                    ← Current session state (rewritten each session)
-└── WORK_LOG.md                   ← Append-only audit trail
+/Users/jeffrey/Desktop/Orbit/          ← ROOT — this is where everything lives
+├── Orbit.xcodeproj                    ← USE THIS to open in Xcode
+├── TranslateHelper.xcworkspace        ← CocoaPods workspace (references Orbit.xcodeproj)
+├── TranslateHelper/                   ← Main app Swift files (ALL of them)
+├── TranslateHelperKeyboard/           ← Keyboard extension Swift files
+├── Pods/                              ← CocoaPods (do not edit)
+├── CLAUDE.md                          ← You are here
+├── HANDOFF.md                         ← Current session state (rewritten each session)
+├── WORK_LOG.md                        ← Append-only audit trail
+├── ROADMAP.md                         ← Feature roadmap
+└── QUICK_START.md                     ← Stale setup doc from early build (mostly ignore)
 ```
+
+> The app target is named **TranslateHelper** inside Xcode but the product/brand name is **Orbit**.
+> The bundle ID `com.jeffrey.TranslateHelper` is intentionally kept as-is for App Store continuity.
 
 ---
 
@@ -127,10 +135,11 @@ All colours are semantic tokens — NEVER hardcode hex values in views.
 **8pt grid rule:** All spacing must be multiples of 4 (prefer 8). Never odd numbers.
 
 **Fonts:**
-- Sono-Regular: `TSWordmark` only
-- SF Pro: everything else
+- **Momo Trust Display (MomoTrustDisplay-Regular.ttf)**: PRIMARY BRAND FONT — use for the Orbit wordmark, splash screen brand text, and any display headline carrying the Orbit brand. Call `.font(.momoTrustDisplay(size))` from DesignSystem.swift. This is the font that represents Orbit as a brand.
+- Sono-Regular: legacy wordmark, kept for backwards-compatible contexts only
+- SF Pro: all body copy and UI text
 
-**Reusable components:** `TSButton`, `TSTextField`, `TSGradientBackground`, `TSWordmark`, `TSProgressRing`, `ScaleButtonStyle`, `TrustBadge`
+**Reusable components:** `TSButton`, `TSTextField`, `TSGradientBackground`, `OrbitWordmark`, `TSProgressRing`, `ScaleButtonStyle`, `TrustBadge`
 
 ---
 

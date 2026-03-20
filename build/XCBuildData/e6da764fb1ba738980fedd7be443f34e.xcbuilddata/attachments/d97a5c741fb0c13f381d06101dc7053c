@@ -1,0 +1,4 @@
+module nanopb {
+umbrella "/Users/jeffrey/Library/Developer/Xcode/DerivedData/TalkSwitch-cfrbligaifswxydizshsnjnhhpgn/SourcePackages/checkouts/nanopb/spm_headers"
+export *
+}

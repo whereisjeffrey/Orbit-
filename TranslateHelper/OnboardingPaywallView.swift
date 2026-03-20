@@ -5,259 +5,177 @@
 
 import SwiftUI
 
+// MARK: - Plan Model
+
+enum WandrPlan: Identifiable, CaseIterable {
+    case free, founder, standard, coach
+
+    var id: String { title }
+
+    var title: String {
+        switch self {
+        case .free:     return "Free"
+        case .founder:  return "Founder"
+        case .standard: return "Standard"
+        case .coach:    return "Coach"
+        }
+    }
+
+    var price: String {
+        switch self {
+        case .free:     return "$0"
+        case .founder:  return "$1.99"
+        case .standard: return "$4.99"
+        case .coach:    return "$14.99"
+        }
+    }
+
+    var period: String {
+        switch self {
+        case .free:     return "forever"
+        case .founder:  return "/ mo — locked"
+        case .standard: return "/ mo"
+        case .coach:    return "/ mo"
+        }
+    }
+
+    var badge: String? {
+        switch self {
+        case .founder:  return "Founder's Pick"
+        case .coach:    return "Best for Fluency"
+        default:        return nil
+        }
+    }
+
+    var features: [PlanFeature] {
+        switch self {
+        case .free:
+            return [
+                PlanFeature(icon: "keyboard",            text: "15 keyboard translations/day",  included: true),
+                PlanFeature(icon: "rectangle.stack",     text: "3 starter decks",               included: true),
+                PlanFeature(icon: "infinity",            text: "Unlimited translations",         included: false),
+                PlanFeature(icon: "rectangle.stack.badge.plus", text: "Create custom decks",    included: false),
+                PlanFeature(icon: "waveform",            text: "Voice translate",               included: false),
+            ]
+        case .founder:
+            return [
+                PlanFeature(icon: "keyboard",            text: "Unlimited keyboard translations", included: true),
+                PlanFeature(icon: "rectangle.stack",     text: "Unlimited decks",               included: true),
+                PlanFeature(icon: "waveform",            text: "Voice translate",               included: true),
+                PlanFeature(icon: "lock.rotation",       text: "Price locked forever",          included: true),
+                PlanFeature(icon: "person.2",            text: "Share with 3 friends (honor system)", included: true),
+            ]
+        case .standard:
+            return [
+                PlanFeature(icon: "keyboard",            text: "Unlimited keyboard translations", included: true),
+                PlanFeature(icon: "rectangle.stack",     text: "Unlimited decks",               included: true),
+                PlanFeature(icon: "waveform",            text: "Voice translate",               included: true),
+                PlanFeature(icon: "lock.rotation",       text: "Price locked forever",          included: false),
+                PlanFeature(icon: "person.2",            text: "No action required",            included: true),
+            ]
+        case .coach:
+            return [
+                PlanFeature(icon: "keyboard",            text: "Everything in Standard",               included: true),
+                PlanFeature(icon: "waveform.and.person.filled", text: "AI coaching on every audio",    included: true),
+                PlanFeature(icon: "chart.line.uptrend.xyaxis", text: "Mistake inventory + progress",   included: true),
+                PlanFeature(icon: "sparkles",            text: "Pattern recognition across sessions",  included: true),
+                PlanFeature(icon: "battery.100",         text: "500 coaching analyses / month",        included: true),
+            ]
+        }
+    }
+}
+
+struct PlanFeature: Identifiable {
+    let id = UUID()
+    let icon: String
+    let text: String
+    let included: Bool
+}
+
+// MARK: - Main Paywall View
+
 struct OnboardingPaywallView: View {
     let onBack: () -> Void
     let onComplete: () -> Void
 
-    @State private var cardNumber    = ""
-    @State private var expiry        = ""
-    @State private var cvv           = ""
-    @State private var cardholderName = ""
-    @FocusState private var focusedField: CardField?
+    @State private var selectedPlan: WandrPlan = .founder
+    @State private var showFounderConfirm = false
     @State private var showSuccess = false
-
-    var cardLastFour: String {
-        let digits = cardNumber.filter(\.isNumber)
-        return digits.count >= 4 ? String(digits.suffix(4)) : ""
-    }
-
-    enum CardField { case number, expiry, cvv, name }
-
-    var chargeDate: String {
-        let d = Calendar.current.date(byAdding: .day, value: 7, to: Date()) ?? Date()
-        let f = DateFormatter()
-        f.dateFormat = "MMMM d, yyyy"
-        return f.string(from: d)
-    }
-
-    var isFormComplete: Bool {
-        cardNumber.filter(\.isNumber).count == 16 &&
-        expiry.count == 5 &&
-        cvv.count >= 3 &&
-        !cardholderName.isEmpty
-    }
+    @State private var appearAnimation = false
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            Color.tsBackground.ignoresSafeArea()
+            TSGradientBackground().ignoresSafeArea()
 
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
 
-                    // ── Nav ───────────────────────────────────────────
+                    // ── Nav bar ───────────────────────────────────────
                     HStack {
                         Button(action: onBack) {
                             Image(systemName: "chevron.left")
-                                .font(.custom("HelveticaNeue-Medium", size: 22))
+                                .font(.system(size: 20, weight: .medium))
                                 .foregroundColor(.tsAccent)
+                                .frame(width: 40, height: 40)
                         }
-                        .frame(width: 40, height: 40)
                         Spacer()
-                        // DEBUG: skip paywall during testing
-                        Button("Skip") {
-                            showSuccess = true
-                        }
-                        .font(.custom("HelveticaNeue", size: 15))
-                        .foregroundColor(.tsSecondary)
+                        Button("Skip") { onComplete() }
+                            .font(.custom("HelveticaNeue", size: 15))
+                            .foregroundColor(.tsSecondary)
                     }
                     .padding(.horizontal, 16)
                     .padding(.top, 8)
 
                     // ── Header ────────────────────────────────────────
                     VStack(spacing: 8) {
-                        HStack(spacing: 6) {
-                            Image(systemName: "lock.fill")
-                                .font(.custom("HelveticaNeue", size: 14))
-                                .foregroundColor(.tsAccent)
-                            Text("Secured Payment")
-                                .font(.custom("HelveticaNeue-Medium", size: 13))
-                                .foregroundColor(.tsAccent)
-                        }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(Color.tsAccent.opacity(0.12))
-                        .clipShape(Capsule())
-
-                        Text("Start your free trial")
-                            .font(.custom("HelveticaNeue-Bold", size: 28))
+                        Text("Choose your plan")
+                            .font(.custom("HelveticaNeue-Bold", size: 30))
                             .foregroundColor(.tsLabel)
+                            .multilineTextAlignment(.center)
 
-                        // Charge summary card
-                        VStack(spacing: 4) {
-                            HStack {
-                                Text("TalkSwitch Pro")
-                                    .font(.custom("HelveticaNeue-Medium", size: 16))
-                                    .foregroundColor(.tsLabel)
-                                Spacer()
-                                Text("$7.99/mo")
-                                    .font(.custom("HelveticaNeue-Bold", size: 16))
-                                    .foregroundColor(.tsAccent)
-                            }
-                            HStack {
-                                Text("7-day free trial")
-                                    .font(.custom("HelveticaNeue", size: 13))
-                                    .foregroundColor(.tsSecondary)
-                                Spacer()
-                                Text("Free today")
-                                    .font(.custom("HelveticaNeue-Medium", size: 13))
-                                    .foregroundColor(Color(hex: "#34C759"))
-                            }
-                            Divider().background(Color.tsBorder).padding(.vertical, 8)
-                            HStack {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("First charge")
-                                        .font(.custom("HelveticaNeue", size: 12))
-                                        .foregroundColor(.tsSecondary)
-                                    Text(chargeDate)
-                                        .font(.custom("HelveticaNeue-Medium", size: 14))
-                                        .foregroundColor(.tsLabel)
-                                }
-                                Spacer()
-                                Text("$7.99")
-                                    .font(.custom("HelveticaNeue-Bold", size: 14))
-                                    .foregroundColor(.tsLabel)
-                            }
-                        }
-                        .padding(16)
-                        .background(Color.tsCard)
-                        .cornerRadius(16)
-                        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
-                        .padding(.top, 8)
-                    }
-                    .padding(.horizontal, 24)
-                    .padding(.top, 8)
-                    .padding(.bottom, 24)
-
-                    // ── Express checkout ──────────────────────────────
-                    VStack(spacing: 10) {
-                        // Apple Pay
-                        Button(action: { showSuccess = true }) {
-                            HStack(spacing: 8) {
-                                Image(systemName: "applelogo")
-                                    .font(.system(size: 16, weight: .semibold))
-                                Text("Pay")
-                                    .font(.custom("HelveticaNeue-Bold", size: 17))
-                            }
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 52)
-                            .background(Color.black)
-                            .clipShape(Capsule())
-                        }
-                        .buttonStyle(PlainButtonStyle())
-
-                        // Google Pay
-                        Button(action: { showSuccess = true }) {
-                            HStack(spacing: 6) {
-                                Text("G")
-                                    .font(.system(size: 18, weight: .bold))
-                                    .foregroundColor(Color(hex: "#4285F4"))
-                                Text("Pay")
-                                    .font(.custom("HelveticaNeue-Bold", size: 17))
-                                    .foregroundColor(.tsLabel)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 52)
-                            .background(Color.tsCard)
-                            .clipShape(Capsule())
-                            .overlay(Capsule().stroke(Color.tsBorder, lineWidth: 1))
-                        }
-                        .buttonStyle(PlainButtonStyle())
-
-                        // PayPal
-                        Button(action: { showSuccess = true }) {
-                            HStack(spacing: 6) {
-                                Text("Pay")
-                                    .font(.custom("HelveticaNeue-Bold", size: 17))
-                                    .foregroundColor(Color(hex: "#003087"))
-                                + Text("Pal")
-                                    .font(.custom("HelveticaNeue-Bold", size: 17))
-                                    .foregroundColor(Color(hex: "#009CDE"))
-                            }
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 52)
-                            .background(Color(hex: "#FFC439"))
-                            .clipShape(Capsule())
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                    }
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, 16)
-
-                    // Divider
-                    HStack(spacing: 12) {
-                        Rectangle().fill(Color.tsBorder).frame(height: 0.5)
-                        Text("or pay with card")
-                            .font(.custom("HelveticaNeue", size: 12))
+                        Text("Start free. Upgrade whenever you're ready.")
+                            .font(.custom("HelveticaNeue", size: 15))
                             .foregroundColor(.tsSecondary)
-                            .fixedSize()
-                        Rectangle().fill(Color.tsBorder).frame(height: 0.5)
+                            .multilineTextAlignment(.center)
                     }
                     .padding(.horizontal, 24)
-                    .padding(.bottom, 16)
+                    .padding(.top, 16)
+                    .padding(.bottom, 28)
+                    .opacity(appearAnimation ? 1 : 0)
+                    .offset(y: appearAnimation ? 0 : 10)
 
-                    // ── Card form ─────────────────────────────────────
-                    VStack(spacing: 12) {
-
-                        // Card number
-                        CardInputField(
-                            label: "Card Number",
-                            placeholder: "1234 5678 9012 3456",
-                            text: $cardNumber,
-                            isFocused: focusedField == .number,
-                            keyboardType: .numberPad,
-                            trailingIcon: "creditcard"
-                        )
-                        .focused($focusedField, equals: .number)
-                        .onChange(of: cardNumber) { _, val in
-                            cardNumber = formatCardNumber(val)
-                        }
-
-                        HStack(spacing: 12) {
-                            // Expiry
-                            CardInputField(
-                                label: "Expiry",
-                                placeholder: "MM/YY",
-                                text: $expiry,
-                                isFocused: focusedField == .expiry,
-                                keyboardType: .numberPad
-                            )
-                            .focused($focusedField, equals: .expiry)
-                            .onChange(of: expiry) { _, val in
-                                expiry = formatExpiry(val)
-                            }
-
-                            // CVV
-                            CardInputField(
-                                label: "CVV",
-                                placeholder: "123",
-                                text: $cvv,
-                                isFocused: focusedField == .cvv,
-                                keyboardType: .numberPad,
-                                isSecure: true
-                            )
-                            .focused($focusedField, equals: .cvv)
-                            .onChange(of: cvv) { _, val in
-                                if val.count > 4 { cvv = String(val.prefix(4)) }
+                    // ── Plan cards ────────────────────────────────────
+                    VStack(spacing: 14) {
+                        ForEach(WandrPlan.allCases) { plan in
+                            PlanCard(
+                                plan: plan,
+                                isSelected: selectedPlan == plan
+                            ) {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                                    selectedPlan = plan
+                                }
+                                let gen = UIImpactFeedbackGenerator(style: .light)
+                                gen.impactOccurred()
                             }
                         }
-
-                        // Cardholder name
-                        CardInputField(
-                            label: "Cardholder Name",
-                            placeholder: "Full Name",
-                            text: $cardholderName,
-                            isFocused: focusedField == .name,
-                            keyboardType: .default
-                        )
-                        .focused($focusedField, equals: .name)
                     }
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, 140)
+                    .padding(.horizontal, 20)
+                    .opacity(appearAnimation ? 1 : 0)
+                    .offset(y: appearAnimation ? 0 : 16)
+
+                    // ── Founder callout (only shown when selected) ────
+                    if selectedPlan == .founder {
+                        FounderCallout()
+                            .padding(.horizontal, 20)
+                            .padding(.top, 16)
+                            .transition(.move(edge: .top).combined(with: .opacity))
+                    }
+
+                    Spacer().frame(height: 160)
                 }
             }
 
-            // ── Fixed bottom CTA ───────────────────────────────────────
+            // ── Sticky bottom CTA ──────────────────────────────────────
             VStack(spacing: 0) {
                 LinearGradient(
                     colors: [Color.tsBackground.opacity(0), Color.tsBackground],
@@ -266,36 +184,26 @@ struct OnboardingPaywallView: View {
                 .frame(height: 32)
                 .allowsHitTesting(false)
 
-                VStack(spacing: 12) {
-                    Button(action: {
-                            let gen = UIImpactFeedbackGenerator(style: .medium)
-                            gen.impactOccurred()
-                            showSuccess = true
-                        }) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "lock.fill")
-                                .font(.custom("HelveticaNeue", size: 14))
-                            Text("Start Free Trial")
-                                .font(.custom("HelveticaNeue-Bold", size: 18))
-                        }
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 56)
-                        .background(
-                            isFormComplete
-                                ? AnyShapeStyle(LinearGradient(
-                                    colors: [Color(hex: "#3B99FC"), Color(hex: "#007AFF")],
-                                    startPoint: .topLeading, endPoint: .bottomTrailing))
-                                : AnyShapeStyle(Color.tsCard)
-                        )
-                        .clipShape(Capsule())
-                        .shadow(color: Color.tsAccent.opacity(isFormComplete ? 0.3 : 0), radius: 16, x: 0, y: 4)
+                VStack(spacing: 10) {
+                    Button(action: handleCTA) {
+                        Text(ctaLabel)
+                            .font(.custom("HelveticaNeue-Bold", size: 18))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 56)
+                            .background(
+                                LinearGradient(
+                                    colors: [Color(hex: "3B99FC"), Color(hex: "007AFF")],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .clipShape(Capsule())
+                            .shadow(color: Color.tsAccent.opacity(0.3), radius: 16, x: 0, y: 4)
                     }
-                    .disabled(!isFormComplete)
-                    .animation(.easeInOut(duration: 0.2), value: isFormComplete)
                     .padding(.horizontal, 24)
 
-                    Text("You won\'t be charged until \(chargeDate). Cancel anytime before then.")
+                    Text(ctaSubtext)
                         .font(.custom("HelveticaNeue", size: 11))
                         .foregroundColor(.tsSecondary)
                         .multilineTextAlignment(.center)
@@ -309,79 +217,397 @@ struct OnboardingPaywallView: View {
                 .background(Color.tsBackground)
             }
         }
-        .onTapGesture { focusedField = nil }
+        .onAppear {
+            withAnimation(.easeOut(duration: 0.45).delay(0.1)) {
+                appearAnimation = true
+            }
+        }
+        .sheet(isPresented: $showFounderConfirm) {
+            FounderPriceConfirmView {
+                showFounderConfirm = false
+                showSuccess = true
+            }
+        }
         .fullScreenCover(isPresented: $showSuccess) {
-            TrialSuccessView(
-                onDone: onComplete,
-                chargeDate: chargeDate,
-                cardLastFour: cardLastFour
-            )
+            PlanSuccessView(plan: selectedPlan, onDone: onComplete)
         }
     }
 
-    // MARK: - Formatters
-    func formatCardNumber(_ raw: String) -> String {
-        let digits = raw.filter(\.isNumber).prefix(16)
-        var result = ""
-        for (i, ch) in digits.enumerated() {
-            if i > 0 && i % 4 == 0 { result += " " }
-            result.append(ch)
+    // MARK: - Helpers
+
+    var ctaLabel: String {
+        switch selectedPlan {
+        case .free:     return "Continue for Free"
+        case .founder:  return "Claim Founding Price ✨"
+        case .standard: return "Get Standard — $4.99/mo"
+        case .coach:    return "Try Coach Free for 30 Days"
         }
-        return result
     }
 
-    func formatExpiry(_ raw: String) -> String {
-        let digits = raw.filter(\.isNumber).prefix(4)
-        if digits.count > 2 {
-            return String(digits.prefix(2)) + "/" + String(digits.dropFirst(2))
+    var ctaSubtext: String {
+        switch selectedPlan {
+        case .free:     return "15 keyboard translations per day. Upgrade anytime."
+        case .founder:  return "Locked in forever. No proof required — we trust you."
+        case .standard: return "Full access. No strings attached."
+        case .coach:    return "Billed $149.99 after 30 days (2 months free vs. monthly). Cancel anytime."
         }
-        return String(digits)
+    }
+
+    func handleCTA() {
+        let gen = UIImpactFeedbackGenerator(style: .medium)
+        gen.impactOccurred()
+        switch selectedPlan {
+        case .free:
+            onComplete()
+        case .founder:
+            showFounderConfirm = true
+        case .standard:
+            showSuccess = true
+        case .coach:
+            // TODO: wire to StoreKit introductory 30-day free period on $149.99/yr subscription
+            showSuccess = true
+        }
     }
 }
 
-// MARK: - Reusable card input field
-struct CardInputField: View {
-    let label: String
-    let placeholder: String
-    @Binding var text: String
-    var isFocused: Bool
-    var keyboardType: UIKeyboardType = .default
-    var isSecure: Bool = false
-    var trailingIcon: String? = nil
+// MARK: - Plan Card
+
+struct PlanCard: View {
+    let plan: WandrPlan
+    let isSelected: Bool
+    let onTap: () -> Void
+
+    @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(label)
-                .font(.custom("HelveticaNeue-Medium", size: 12))
-                .foregroundColor(.tsSecondary)
+        Button(action: onTap) {
+            VStack(alignment: .leading, spacing: 0) {
 
-            HStack {
-                Group {
-                    if isSecure {
-                        SecureField(placeholder, text: $text)
-                    } else {
-                        TextField(placeholder, text: $text)
-                            .keyboardType(keyboardType)
+                // ── Badge row ─────────────────────────────────────
+                if let badge = plan.badge {
+                    HStack {
+                        Spacer()
+                        Text(badge.uppercased())
+                            .font(.custom("HelveticaNeue-Bold", size: 10))
+                            .foregroundColor(.white)
+                            .kerning(0.8)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 5)
+                            .background(
+                                LinearGradient(
+                                    colors: [Color(hex: "3B99FC"), Color(hex: "007AFF")],
+                                    startPoint: .leading, endPoint: .trailing
+                                )
+                            )
+                            .clipShape(Capsule())
+                    }
+                    .padding(.bottom, 10)
+                } else if plan == .free {
+                    // Spacer to align cards that have no badge
+                    Color.clear.frame(height: 0)
+                        .padding(.bottom, 0)
+                }
+
+                // ── Price row ─────────────────────────────────────
+                HStack(alignment: .firstTextBaseline, spacing: 0) {
+                    Text(plan.price)
+                        .font(.custom("HelveticaNeue-Bold", size: plan == .free ? 26 : 32))
+                        .foregroundColor(isSelected ? .tsAccent : .tsLabel)
+                    Text(plan.period)
+                        .font(.custom("HelveticaNeue", size: 13))
+                        .foregroundColor(.tsSecondary)
+                        .padding(.leading, 4)
+                    Spacer()
+
+                    // Selection indicator
+                    ZStack {
+                        Circle()
+                            .strokeBorder(isSelected ? Color.tsAccent : Color.tsSecondary.opacity(0.3), lineWidth: 2)
+                            .frame(width: 22, height: 22)
+                        if isSelected {
+                            Circle()
+                                .fill(Color.tsAccent)
+                                .frame(width: 13, height: 13)
+                        }
                     }
                 }
-                .font(.custom("HelveticaNeue", size: 17))
-                .foregroundColor(.tsLabel)
+                .padding(.bottom, 14)
 
-                if let icon = trailingIcon {
-                    Image(systemName: icon)
-                        .font(.custom("HelveticaNeue", size: 14))
-                        .foregroundColor(.tsSecondary)
+                // ── Feature list ──────────────────────────────────
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(plan.features) { feature in
+                        HStack(spacing: 9) {
+                            Image(systemName: feature.included ? "checkmark" : "xmark")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundColor(feature.included
+                                    ? (isSelected ? .tsAccent : Color(hex: "34C759"))
+                                    : .tsSecondary.opacity(0.4))
+                                .frame(width: 16)
+                            Text(feature.text)
+                                .font(.custom("HelveticaNeue", size: 13))
+                                .foregroundColor(feature.included ? .tsLabel : .tsSecondary.opacity(0.5))
+                        }
+                    }
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 14)
-            .background(Color.tsInputBg)
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(isFocused ? Color.tsAccent : Color.tsBorder, lineWidth: isFocused ? 1.5 : 0.5)
+            .padding(18)
+            .background(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(isSelected
+                        ? Color.tsAccent.opacity(colorScheme == .dark ? 0.10 : 0.06)
+                        : Color.tsCard)
             )
-            .animation(.easeInOut(duration: 0.15), value: isFocused)
+            .overlay(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .strokeBorder(
+                        isSelected ? Color.tsAccent : Color.tsAccent.opacity(0.08),
+                        lineWidth: isSelected ? 1.5 : 0.5
+                    )
+            )
+            .shadow(
+                color: isSelected ? Color.tsAccent.opacity(0.12) : Color.clear,
+                radius: 12, x: 0, y: 4
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
+        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isSelected)
+    }
+}
+
+// MARK: - Founder Callout
+
+struct FounderCallout: View {
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Text("✨")
+                .font(.system(size: 20))
+                .padding(.top, 1)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Honor system — no proof needed.")
+                    .font(.custom("HelveticaNeue-Bold", size: 13))
+                    .foregroundColor(.tsLabel)
+                Text("Share wandr with 3 friends and post about it on social. We trust you — and your $1.99 rate is yours forever.")
+                    .font(.custom("HelveticaNeue", size: 12))
+                    .foregroundColor(.tsSecondary)
+                    .lineSpacing(2)
+            }
+        }
+        .padding(14)
+        .background(Color.tsAccent.opacity(0.08))
+        .cornerRadius(14)
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(Color.tsAccent.opacity(0.15), lineWidth: 1)
+        )
+    }
+}
+
+// MARK: - Founder Confirm Sheet
+
+struct FounderPriceConfirmView: View {
+    let onConfirm: () -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        ZStack {
+            TSGradientBackground().ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                // Handle
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(Color.tsSecondary.opacity(0.3))
+                    .frame(width: 40, height: 5)
+                    .padding(.top, 12)
+                    .padding(.bottom, 32)
+
+                // Icon
+                Text("✨")
+                    .font(.system(size: 52))
+                    .padding(.bottom, 20)
+
+                VStack(spacing: 10) {
+                    Text("You're in.\nWelcome, founder.")
+                        .font(.custom("HelveticaNeue-Bold", size: 26))
+                        .foregroundColor(.tsLabel)
+                        .multilineTextAlignment(.center)
+
+                    Text("Your $1.99/month rate is locked in — for life. No matter what wandr becomes, this is your price. Always.")
+                        .font(.custom("HelveticaNeue", size: 15))
+                        .foregroundColor(.tsSecondary)
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(3)
+                        .padding(.horizontal, 8)
+                }
+                .padding(.horizontal, 28)
+                .padding(.bottom, 28)
+
+                // What we ask
+                VStack(alignment: .leading, spacing: 12) {
+                    FounderAskRow(icon: "person.2.fill", text: "Share wandr with 3 friends")
+                    FounderAskRow(icon: "square.and.arrow.up", text: "Post about it on social media")
+                }
+                .padding(18)
+                .background(Color.tsCard)
+                .cornerRadius(16)
+                .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
+                .padding(.horizontal, 24)
+                .padding(.bottom, 16)
+
+                Text("We're early, we're scrappy, and we're building something we genuinely believe in. If you feel like telling someone about it, we'd love that. But no pressure — we're just glad you're here.")
+                    .font(.custom("HelveticaNeue", size: 12))
+                    .foregroundColor(.tsSecondary)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(2)
+                    .padding(.horizontal, 32)
+                    .padding(.bottom, 32)
+
+                // CTA
+                Button(action: onConfirm) {
+                    Text("Lock in my founding price")
+                        .font(.custom("HelveticaNeue-Bold", size: 17))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 54)
+                        .background(
+                            LinearGradient(
+                                colors: [Color(hex: "3B99FC"), Color(hex: "007AFF")],
+                                startPoint: .topLeading, endPoint: .bottomTrailing
+                            )
+                        )
+                        .clipShape(Capsule())
+                        .shadow(color: Color.tsAccent.opacity(0.3), radius: 12, x: 0, y: 4)
+                }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 12)
+
+                Button(action: { dismiss() }) {
+                    Text("Cancel")
+                        .font(.custom("HelveticaNeue", size: 15))
+                        .foregroundColor(.tsSecondary)
+                }
+                .padding(.bottom, 32)
+            }
+        }
+        .presentationDetents([.large])
+        .presentationDragIndicator(.hidden)
+    }
+}
+
+private struct FounderAskRow: View {
+    let icon: String
+    let text: String
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 14))
+                .foregroundColor(.tsAccent)
+                .frame(width: 20)
+            Text(text)
+                .font(.custom("HelveticaNeue-Medium", size: 14))
+                .foregroundColor(.tsLabel)
+        }
+    }
+}
+
+// MARK: - Plan Success View
+
+struct PlanSuccessView: View {
+    let plan: WandrPlan
+    let onDone: () -> Void
+
+    @State private var showContent = false
+    @State private var checkScale: CGFloat = 0.3
+    @State private var checkOpacity: Double = 0
+
+    var headline: String {
+        switch plan {
+        case .free:     return "You're all set 🎉"
+        case .founder:  return "Welcome, founder 🌎"
+        case .standard: return "Welcome to wandr 🌎"
+        case .coach:    return "Your coach is ready 🤖"
+        }
+    }
+
+    var subheadline: String {
+        switch plan {
+        case .free:     return "You've got 15 translations a day to get started. Upgrade anytime from Settings."
+        case .founder:  return "Your $1.99/month founding rate is locked in forever. Thanks for believing early."
+        case .standard: return "Unlimited translations, voice, decks — everything you need."
+        case .coach:    return "30 days free, then $149.99/year. Your first 300 coaching analyses are on us."
+        }
+    }
+
+    var body: some View {
+        ZStack {
+            TSGradientBackground().ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                Spacer()
+
+                // Animated check
+                ZStack {
+                    Circle()
+                        .fill(Color(hex: "34C759").opacity(0.12))
+                        .frame(width: 120, height: 120)
+                    Circle()
+                        .fill(Color(hex: "34C759").opacity(0.08))
+                        .frame(width: 96, height: 96)
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 64))
+                        .foregroundColor(Color(hex: "34C759"))
+                        .scaleEffect(checkScale)
+                        .opacity(checkOpacity)
+                }
+                .padding(.bottom, 32)
+
+                VStack(spacing: 8) {
+                    Text(headline)
+                        .font(.custom("HelveticaNeue-Bold", size: 28))
+                        .foregroundColor(.tsLabel)
+                        .multilineTextAlignment(.center)
+                    Text(subheadline)
+                        .font(.custom("HelveticaNeue", size: 15))
+                        .foregroundColor(.tsSecondary)
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(3)
+                }
+                .padding(.horizontal, 32)
+                .padding(.bottom, 48)
+                .opacity(showContent ? 1 : 0)
+                .offset(y: showContent ? 0 : 12)
+
+                Spacer()
+
+                Button(action: onDone) {
+                    Text("Let's go 🚀")
+                        .font(.custom("HelveticaNeue-Bold", size: 18))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 56)
+                        .background(
+                            LinearGradient(
+                                colors: [Color(hex: "3B99FC"), Color(hex: "007AFF")],
+                                startPoint: .topLeading, endPoint: .bottomTrailing
+                            )
+                        )
+                        .clipShape(Capsule())
+                        .shadow(color: Color.tsAccent.opacity(0.3), radius: 16, x: 0, y: 4)
+                }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 48)
+                .opacity(showContent ? 1 : 0)
+            }
+        }
+        .onAppear {
+            let gen = UINotificationFeedbackGenerator()
+            gen.notificationOccurred(.success)
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.6).delay(0.1)) {
+                checkScale = 1.0
+                checkOpacity = 1.0
+            }
+            withAnimation(.easeOut(duration: 0.4).delay(0.4)) {
+                showContent = true
+            }
         }
     }
 }

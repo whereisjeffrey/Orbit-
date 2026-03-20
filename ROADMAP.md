@@ -1,4 +1,56 @@
 
+## Pricing Structure
+
+**Last reviewed: March 2026**
+
+Four tiers. Each one earns its place.
+
+| Plan | Monthly | Annual | Who it's for |
+|------|---------|--------|--------------|
+| **Free** | $0 | — | Try-before-you-buy; 15 keyboard translations/day |
+| **Founder** | $1.99/mo (locked) | — | Early believers; claimable via honour-system share |
+| **Standard / Pro** | $4.99/mo | — | Full access; keyboard + decks + voice |
+| **Coach** | $14.99/mo | **$149.99/yr** | Power users who want to actually get better |
+
+### Coach Plan — Billing Design
+
+**Monthly:** $14.99/month, billed after the first 30 days.
+- "Pay nothing today, billed $149.99 in 30 days, cancel anytime before then" framing
+- StoreKit: auto-renewable subscription with 30-day introductory free period
+
+**Annual:** $149.99/year (= $12.50/month) — 2 months free vs. monthly.
+- Default CTA on the Coach plan card
+- Framing: "Billed $149.99 after your first 30 days. Cancel anytime."
+
+### Coach Plan — Usage Ceiling (Soft Cap)
+
+**Cap:** 500 coaching analyses per month.
+
+| Usage type | Daily audios | Monthly total | AI cost | Margin |
+|---|---|---|---|---|
+| Light | 5/day | 150 | ~$1.50 | ~$13.49 (90%) |
+| Normal | 20/day | ~400 | ~$4.00 | ~$10.99 (73%) |
+| Heavy | 50/day | cap hit day 10 | $5.00 max | ~$9.99 (67%) |
+| Extreme | 100+/day | cap hit day 5 | $5.00 max | ~$9.99 (67%) |
+
+**How the soft cap works — not a hard wall:**
+When a user hits 500 analyses, the transcript is still cleaned up and sent normally.
+They simply don't receive AI coaching feedback for that session.
+
+**Message shown when cap is reached:**
+> "You've been putting in serious work today — Coach is recharging and will be back with you shortly. Your message looks great. 🔋"
+
+This turns a ceiling into a flex. Heavy users feel engaged, not punished.
+
+### Founder Plan — Clarification
+
+- Price: **$1.99/month, locked forever** as long as the user remains subscribed
+- Claimed via honour system: share with 3 friends + post on social (no proof required)
+- Does **not** include Coach features — Coach is a separate, higher tier
+- If a Founder user churns and re-subscribes, they re-enter at the prevailing rate
+
+---
+
 ## Onboarding: Intent-Based Personalisation (future)
 
 **Trigger:** User selects "Just Arrived" or "Planning to Visit" on the expat status screen.

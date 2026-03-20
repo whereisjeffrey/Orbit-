@@ -1,0 +1,4 @@
+module opensslWrapper {
+umbrella "/Users/jeffrey/Library/Developer/Xcode/DerivedData/TalkSwitch-cfrbligaifswxydizshsnjnhhpgn/SourcePackages/checkouts/grpc-binary/openssl-grpc-Wrapper/include"
+export *
+}

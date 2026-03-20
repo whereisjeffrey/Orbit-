@@ -3,31 +3,16 @@ import FirebaseAuth
 import MapKit
 import PhotosUI
 
-@MainActor @ViewBuilder
-private func initialsCircle(auth: AuthManager) -> some View {
-    let initials = String(auth.displayName.prefix(2)).uppercased()
-    ZStack {
-        Circle()
-            .fill(LinearGradient(
-                stops: [.init(color: Color(hex: "#69B6C1").opacity(0.10), location: 0.3),
-                        .init(color: Color(hex: "#0079C6").opacity(0.10), location: 1.0)],
-                startPoint: .top, endPoint: .bottom))
-            .frame(width: 64, height: 64)
-        Text(initials)
-            .font(.custom("HelveticaNeue-Bold", size: 22))
-            .foregroundColor(.tsLabel)
-    }
-}
-
 struct SettingsView: View {
     @ObservedObject private var sub = SubscriptionManager.shared
     @EnvironmentObject var auth: AuthManager
     @StateObject private var locStore = UserLocationsStore.shared
     @StateObject private var photoManager = ProfilePhotoManager.shared
+
     @State private var showLocationSheet = false
+    @State private var showLanguageSheet  = false
     @State private var photosItem: PhotosPickerItem? = nil
     
-    @AppStorage("appTheme") private var appTheme: Int = 1 // 0 for Light, 1 for Dark
     @State private var notificationsEnabled: Bool = true
     @AppStorage("instagram_handle") private var instagramHandle = ""
     @AppStorage("linkedin_handle")  private var linkedinHandle  = ""
@@ -35,12 +20,22 @@ struct SettingsView: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            Color.tsBackground.ignoresSafeArea()
-            
+            TSGradientBackground()
+                .ignoresSafeArea()
+
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    
+
+                    // ── Page title ─────────────────────────────────
+                    Text("Settings")
+                        .font(.custom("HelveticaNeue-Bold", size: 28))
+                        .foregroundColor(.tsLabel)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 16)
+                        .padding(.bottom, 8)
+
                     // ── Profile header ─────────────────────────────
+
                     VStack(spacing: 12) {
                         PhotosPicker(selection: $photosItem, matching: .images) {
                             ZStack(alignment: .bottomTrailing) {
@@ -58,12 +53,12 @@ struct SettingsView: View {
                                                     .frame(width: 88, height: 88)
                                                     .clipShape(Circle())
                                             default:
-                                                initialsCircle(auth: auth)
+                                                initialsCircleView
                                                     .frame(width: 88, height: 88)
                                             }
                                         }
                                     } else {
-                                        initialsCircle(auth: auth)
+                                        initialsCircleView
                                             .frame(width: 88, height: 88)
                                     }
                                 }
@@ -101,65 +96,16 @@ struct SettingsView: View {
                     .padding(.top, 32)
                     .padding(.bottom, 28)
                     
-                    // Appearance Section
-                    SectionHeader(title: "Appearance")
-                    VStack(spacing: 0) {
-                        HStack {
-                            Text("Theme")
-                                .font(.custom("HelveticaNeue", size: 17))
-                                .foregroundColor(.tsLabel)
-                            Spacer()
-                            
-                            // Custom segment control
-                            HStack(spacing: 0) {
-                                Button(action: { appTheme = 0 }) {
-                                    Text("Light")
-                                        .font(.custom("HelveticaNeue-Medium", size: 13))
-                                        .foregroundColor(appTheme == 0 ? .tsLabel : Color.tsSecondary)
-                                        .padding(.horizontal, 16)
-                                        .padding(.vertical, 6)
-                                        .background(appTheme == 0 ? Color.tsBackground : Color.clear)
-                                        .cornerRadius(6)
-                                }
-                                Button(action: { appTheme = 1 }) {
-                                    Text("Dark")
-                                        .font(.custom("HelveticaNeue-Medium", size: 13))
-                                        .foregroundColor(appTheme == 1 ? .tsLabel : Color.tsSecondary)
-                                        .padding(.horizontal, 16)
-                                        .padding(.vertical, 6)
-                                        .background(appTheme == 1 ? Color.tsBackground : Color.clear)
-                                        .cornerRadius(6)
-                                }
-                            }
-                            .padding(2)
-                            .background(Color.tsInputBg)
-                            .cornerRadius(8)
-                        }
-                        .padding(.horizontal, 16)
-                        .frame(height: 48)
-                    }
-                    .background(Color.tsCard)
-                    .cornerRadius(12)
-                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
-                    .padding(.horizontal, 16)
-                    
-                    Text("Choose your preferred interface style for optimal learning.")
-                        .font(.custom("HelveticaNeue", size: 12))
-                        .foregroundColor(Color.tsSecondary)
-                        .padding(.horizontal, 32)
-                        .padding(.top, 8)
-                        .padding(.bottom, 32)
-                    
                     // Learning Section
                     SectionHeader(title: "Learning")
                     VStack(spacing: 0) {
-                        Button(action: {}) {
+                        Button(action: { showLanguageSheet = true }) {
                             HStack {
                                 Text("Language")
                                     .font(.custom("HelveticaNeue", size: 17))
                                     .foregroundColor(.tsLabel)
                                 Spacer()
-                                Text("Spanish")
+                                Text(currentLanguageLabel)
                                     .font(.custom("HelveticaNeue", size: 17))
                                     .foregroundColor(Color.tsSecondary)
                                 Image(systemName: "chevron.right")
@@ -168,6 +114,9 @@ struct SettingsView: View {
                             }
                             .padding(.horizontal, 16)
                             .frame(height: 48)
+                        }
+                        .sheet(isPresented: $showLanguageSheet) {
+                            LanguageSettingsSheet()
                         }
                         
                         Divider().background(Color.tsBorder).padding(.leading, 16)
@@ -213,7 +162,7 @@ struct SettingsView: View {
                             LocationSettingsSheet()
                         }
                     }
-                    .background(Color.tsCard)
+                    .background(Color.tsGrayCard)
                     .cornerRadius(12)
                     .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                     .padding(.horizontal, 16)
@@ -271,7 +220,7 @@ struct SettingsView: View {
                         .padding(.horizontal, 16)
                         .frame(height: 48)
                     }
-                    .background(Color.tsCard)
+                    .background(Color.tsGrayCard)
                     .cornerRadius(12)
                     .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                     .padding(.horizontal, 16)
@@ -286,7 +235,7 @@ struct SettingsView: View {
                         Divider().background(Color.tsBorder).padding(.leading, 56)
                         SocialConnectRow(platform: .facebook,  handle: $facebookHandle)
                     }
-                    .background(Color.tsCard)
+                    .background(Color.tsGrayCard)
                     .cornerRadius(12)
                     .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                     .padding(.horizontal, 16)
@@ -301,7 +250,7 @@ struct SettingsView: View {
                             .foregroundColor(Color(hex: "FF453A"))
                             .frame(maxWidth: .infinity)
                             .frame(height: 52)
-                            .background(Color.tsCard)
+                            .background(Color.tsGrayCard)
                             .cornerRadius(12)
                             .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                     }
@@ -338,7 +287,7 @@ struct SettingsView: View {
                             .padding(.vertical, 12)
                         }
                     }
-                    .background(Color.tsCard)
+                    .background(Color.tsGrayCard)
                     .clipShape(RoundedRectangle(cornerRadius: 16))
                     .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                     .padding(.horizontal, 16)
@@ -350,7 +299,7 @@ struct SettingsView: View {
                             // Reset onboarding flow
                             UserDefaults.standard.removeObject(forKey: "onboarding_complete")
                             // Also clear the deck seed flag so next launch re-seeds the 3 starter decks
-                            UserDefaults.standard.removeObject(forKey: "starter_decks_v7")
+                            UserDefaults.standard.removeObject(forKey: "starter_decks_seeded_lang")
                             // Wipe all existing decks for a clean new-user experience
                             let deckStore = DeckStore.shared
                             for deck in deckStore.decks { deckStore.deleteDeck(deck) }
@@ -372,8 +321,31 @@ struct SettingsView: View {
                             .padding(.horizontal, 16)
                             .padding(.vertical, 12)
                         }
+
+                        Divider().background(Color.tsBorder).padding(.leading, 16)
+
+                        // Keyboard debug snapshot — shows what the keyboard saw on last translation
+                        let kbdSnap = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_kbd_debug") ?? "No snapshot yet — use the keyboard to translate something first."
+                        HStack(alignment: .top, spacing: 10) {
+                            Image(systemName: "keyboard")
+                                .foregroundColor(.blue)
+                                .frame(width: 28, height: 28)
+                                .background(Color.blue.opacity(0.12))
+                                .clipShape(RoundedRectangle(cornerRadius: 6))
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("Keyboard Debug Snapshot")
+                                    .font(.custom("HelveticaNeue-Medium", size: 14))
+                                    .foregroundColor(.tsLabel)
+                                Text(kbdSnap)
+                                    .font(.custom("HelveticaNeue", size: 11))
+                                    .foregroundColor(.tsSecondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
                     }
-                    .background(Color.tsCard)
+                    .background(Color.tsGrayCard)
                     .cornerRadius(12)
                     .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                     .padding(.horizontal, 16)
@@ -388,6 +360,178 @@ struct SettingsView: View {
                         .padding(.bottom, 120) // Provide room for bottom tabs
                 }
             }
+        }
+    }
+
+    // MARK: - Helpers
+    /// Returns the display label for the currently saved target language.
+    private var currentLanguageLabel: String {
+        let appGroup = "group.com.jeff.translatehelper"
+        if let code = UserDefaults(suiteName: appGroup)?.string(forKey: "talkswitch_target_lang"),
+           let lang  = allLanguages.first(where: { $0.code == code }) {
+            return "\(lang.flag) \(lang.name)"
+        }
+        return "Not set"
+    }
+
+    /// Initials avatar — defined as a view property so it's always evaluated
+    /// on the MainActor (no actor-isolation crossing from closures).
+    @ViewBuilder
+    private var initialsCircleView: some View {
+        let initials = String(auth.displayName.prefix(2)).uppercased()
+        ZStack {
+            Circle()
+                .fill(LinearGradient(
+                    stops: [.init(color: Color(hex: "#69B6C1").opacity(0.10), location: 0.3),
+                            .init(color: Color(hex: "#0079C6").opacity(0.10), location: 1.0)],
+                    startPoint: .top, endPoint: .bottom))
+                .frame(width: 64, height: 64)
+            Text(initials)
+                .font(.custom("HelveticaNeue-Bold", size: 22))
+                .foregroundColor(.tsLabel)
+        }
+    }
+}
+
+
+
+// MARK: - Language Settings Sheet
+
+struct LanguageSettingsSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    private let appGroup = "group.com.jeff.translatehelper"
+
+    /// The code currently stored in the App Group
+    @State private var selectedCode: String = ""
+
+    /// Mirrors selectedCode so the grid can show a selected Language
+    @State private var selectedLanguage: Language? = nil
+
+    @State private var searchText: String = ""
+
+    var filteredLanguages: [Language] {
+        let q = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if q.isEmpty { return allLanguages }
+        return allLanguages.filter { $0.name.localizedCaseInsensitiveContains(q) }
+    }
+
+    let columns = [
+        GridItem(.flexible(), spacing: 16),
+        GridItem(.flexible(), spacing: 16),
+    ]
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                TSGradientBackground().ignoresSafeArea()
+
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+
+                        // ── Header ────────────────────────────────────
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Change Language")
+                                .font(.custom("HelveticaNeue-Bold", size: 28))
+                                .foregroundColor(.tsLabel)
+                            Text("Select the language you want to translate into.")
+                                .font(.custom("HelveticaNeue", size: 15))
+                                .foregroundColor(.tsSecondary)
+                        }
+                        .padding(.bottom, 20)
+
+                        // ── Search bar ────────────────────────────────
+                        HStack(spacing: 10) {
+                            Image(systemName: "magnifyingglass")
+                                .font(.system(size: 15, weight: .medium))
+                                .foregroundColor(.tsSecondary)
+                            TextField("Search language...", text: $searchText)
+                                .font(.custom("HelveticaNeue", size: 16))
+                                .foregroundColor(.tsLabel)
+                                .autocorrectionDisabled()
+                            if !searchText.isEmpty {
+                                Button {
+                                    withAnimation(.easeOut(duration: 0.15)) { searchText = "" }
+                                } label: {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .font(.system(size: 15))
+                                        .foregroundColor(.tsSecondary)
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .fill(Color.tsCard)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .stroke(Color.tsBorder.opacity(0.6), lineWidth: 1)
+                        )
+                        .padding(.bottom, 20)
+
+                        // ── Language grid ─────────────────────────────
+                        if filteredLanguages.isEmpty {
+                            VStack(spacing: 10) {
+                                Image(systemName: "magnifyingglass")
+                                    .font(.system(size: 32))
+                                    .foregroundColor(.tsSecondary.opacity(0.5))
+                                Text("No languages match \"\(searchText)\"")
+                                    .font(.custom("HelveticaNeue", size: 15))
+                                    .foregroundColor(.tsSecondary)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 48)
+                        } else {
+                            LazyVGrid(columns: columns, spacing: 16) {
+                                ForEach(filteredLanguages) { language in
+                                    LanguageCard(
+                                        language: language,
+                                        isSelected: selectedLanguage?.code == language.code,
+                                        isComingSoon: false
+                                    ) {
+                                        selectedLanguage = language
+                                        selectedCode = language.code
+                                    }
+                                }
+                            }
+                        }
+
+                        Spacer(minLength: 100)
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.top, 16)
+                }
+            }
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                        .font(.custom("HelveticaNeue", size: 17))
+                        .foregroundColor(.tsAccent)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        if let code = selectedLanguage?.code {
+                            let ud = UserDefaults(suiteName: appGroup)
+                            ud?.set(code, forKey: "talkswitch_lang")
+                            ud?.set(code, forKey: "talkswitch_target_lang")
+                            ud?.synchronize()
+                        }
+                        dismiss()
+                    }
+                    .font(.custom("HelveticaNeue-Medium", size: 17))
+                    .foregroundColor(selectedLanguage != nil ? .tsAccent : .tsSecondary)
+                    .disabled(selectedLanguage == nil)
+                }
+            }
+        }
+        .onAppear {
+            let code = UserDefaults(suiteName: appGroup)?.string(forKey: "talkswitch_target_lang") ?? ""
+            selectedCode = code
+            selectedLanguage = allLanguages.first(where: { $0.code == code })
         }
     }
 }
@@ -407,7 +551,8 @@ struct LocationSettingsSheet: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color.tsBackground.ignoresSafeArea()
+                TSGradientBackground()
+                    .ignoresSafeArea()
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 24) {
@@ -767,7 +912,7 @@ struct ConnectHandleSheet: View {
                 Spacer()
             }
             .padding(.top, 40)
-            .background(Color.tsBackground.ignoresSafeArea())
+            .background(TSGradientBackground().ignoresSafeArea())
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }

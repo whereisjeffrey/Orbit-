@@ -10,7 +10,7 @@ struct Language: Identifiable, Hashable, Codable {
     let flag: String
     let name: String
     let code: String
-    
+
     init(id: UUID = UUID(), flag: String, name: String, code: String) {
         self.id = id
         self.flag = flag
@@ -19,30 +19,57 @@ struct Language: Identifiable, Hashable, Codable {
     }
 }
 
-// v1 Launch: Spanish is the only selectable language.
-// All others are shown dimmed with "Coming Soon" and cannot be tapped.
-let spanishLanguage = Language(flag: "\u{1F1EA}\u{1F1F8}", name: "Spanish", code: "es")
+// MARK: - Language Catalogue
+// All 40 languages are fully selectable — no "coming soon" locks.
+// Ordered by approximate global speaker count (native + L2).
 
 let allLanguages: [Language] = [
-    spanishLanguage,                                                                  // ← Available in v1
-    Language(flag: "\u{1F1E7}\u{1F1F7}", name: "Portuguese", code: "pt"),
-    Language(flag: "\u{1F1EB}\u{1F1F7}", name: "French", code: "fr"),
-    Language(flag: "\u{1F1E9}\u{1F1EA}", name: "German", code: "de"),
-    Language(flag: "\u{1F1EE}\u{1F1F9}", name: "Italian", code: "it"),
-    Language(flag: "\u{1F1EF}\u{1F1F5}", name: "Japanese", code: "ja"),
-    Language(flag: "\u{1F1F0}\u{1F1F7}", name: "Korean", code: "ko"),
+    Language(flag: "🇺🇸", name: "English",    code: "en"),   // 1.5 B
+    Language(flag: "🇨🇳", name: "Chinese",    code: "zh"),   // 1.1 B
+    Language(flag: "🇪🇸", name: "Spanish",    code: "es"),   // 550 M
+    Language(flag: "🇮🇳", name: "Hindi",      code: "hi"),   // 600 M
+    Language(flag: "🇸🇦", name: "Arabic",     code: "ar"),   // 430 M
+    Language(flag: "🇧🇩", name: "Bengali",    code: "bn"),   // 270 M
+    Language(flag: "🇫🇷", name: "French",     code: "fr"),   // 280 M
+    Language(flag: "🇧🇷", name: "Portuguese", code: "pt"),   // 260 M
+    Language(flag: "🇷🇺", name: "Russian",    code: "ru"),   // 255 M
+    Language(flag: "🇮🇩", name: "Indonesian", code: "id"),   // 200 M
+    Language(flag: "🇵🇰", name: "Urdu",       code: "ur"),   // 230 M
+    Language(flag: "🇩🇪", name: "German",     code: "de"),   // 130 M
+    Language(flag: "🇯🇵", name: "Japanese",   code: "ja"),   // 125 M
+    Language(flag: "🇳🇬", name: "Swahili",    code: "sw"),   // 200 M
+    Language(flag: "🇰🇷", name: "Korean",     code: "ko"),   // 80 M
+    Language(flag: "🇮🇷", name: "Persian",    code: "fa"),   // 110 M
+    Language(flag: "🇻🇳", name: "Vietnamese", code: "vi"),   // 95 M
+    Language(flag: "🇨🇿", name: "Czech",      code: "cs"),
+    Language(flag: "🇮🇹", name: "Italian",    code: "it"),   // 90 M
+    Language(flag: "🇹🇭", name: "Thai",       code: "th"),   // 60 M
+    Language(flag: "🇵🇱", name: "Polish",     code: "pl"),   // 55 M
+    Language(flag: "🇺🇦", name: "Ukrainian",  code: "uk"),   // 45 M
+    Language(flag: "🇳🇱", name: "Dutch",      code: "nl"),   // 30 M
+    Language(flag: "🇹🇷", name: "Turkish",    code: "tr"),   // 85 M
+    Language(flag: "🇮🇱", name: "Hebrew",     code: "he"),   // 10 M
+    Language(flag: "🇬🇷", name: "Greek",      code: "el"),   // 13 M
+    Language(flag: "🇸🇪", name: "Swedish",    code: "sv"),   // 13 M
+    Language(flag: "🇩🇰", name: "Danish",     code: "da"),   // 6 M
+    Language(flag: "🇳🇴", name: "Norwegian",  code: "no"),   // 5 M
+    Language(flag: "🇫🇮", name: "Finnish",    code: "fi"),   // 5 M
+    Language(flag: "🇭🇺", name: "Hungarian",  code: "hu"),   // 13 M
+    Language(flag: "🇷🇴", name: "Romanian",   code: "ro"),   // 24 M
+    Language(flag: "🇧🇬", name: "Bulgarian",  code: "bg"),   // 8 M
+    Language(flag: "🇭🇷", name: "Croatian",   code: "hr"),   // 7 M
+    Language(flag: "🇸🇰", name: "Slovak",     code: "sk"),   // 5 M
+    Language(flag: "🇵🇹", name: "Catalan",    code: "ca"),   // 10 M
+    Language(flag: "🇮🇱", name: "Malay",      code: "ms"),   // 80 M
+    Language(flag: "🇵🇭", name: "Filipino",   code: "fil"),  // 90 M
+    Language(flag: "🇿🇦", name: "Afrikaans",  code: "af"),   // 17 M
+    Language(flag: "🇮🇳", name: "Tamil",      code: "ta"),   // 85 M
 ]
 
-let nativeLanguages: [Language] = [
-    Language(flag: "\u{1F1FA}\u{1F1F8}", name: "English", code: "en"),
-    Language(flag: "\u{1F1E7}\u{1F1F7}", name: "Portuguese", code: "pt"),
-    Language(flag: "\u{1F1EA}\u{1F1F8}", name: "Spanish", code: "es"),
-    Language(flag: "\u{1F1EB}\u{1F1F7}", name: "French", code: "fr"),
-    Language(flag: "\u{1F1E9}\u{1F1EA}", name: "German", code: "de"),
-    Language(flag: "\u{1F1EE}\u{1F1F9}", name: "Italian", code: "it"),
-    Language(flag: "\u{1F1EF}\u{1F1F5}", name: "Japanese", code: "ja"),
-    Language(flag: "\u{1F1F0}\u{1F1F7}", name: "Korean", code: "ko"),
-]
+// Native language picker — same full catalogue so anyone can pick their mother tongue
+let nativeLanguages: [Language] = allLanguages
+
+// MARK: - Language Selection View
 
 struct LanguageSelectionView: View {
     var step: Int = 1
@@ -58,11 +85,15 @@ struct LanguageSelectionView: View {
         return nativeLanguages.first(where: { $0.code == baseCode }) ?? nativeLanguages[0]
     }()
 
-    // nativePickerOpen removed — TSPickerField no longer needs an isOpen binding
+    @State private var searchText: String = ""
 
-    /// Returns true if this language is available in v1 (Spanish only).
-    private func isAvailable(_ language: Language) -> Bool {
-        language.code == "es"
+    var filteredLanguages: [Language] {
+        if searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return allLanguages
+        }
+        return allLanguages.filter {
+            $0.name.localizedCaseInsensitiveContains(searchText)
+        }
     }
 
     let columns = [
@@ -113,7 +144,7 @@ struct LanguageSelectionView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
 
-                        // ── Native language section ────────────────────
+                        // ── Native language section ───────────────────
                         VStack(alignment: .leading, spacing: 8) {
                             Text("My native language")
                                 .font(.custom("HelveticaNeue-Bold", size: 34))
@@ -136,7 +167,7 @@ struct LanguageSelectionView: View {
                         }
                         .padding(.bottom, 32)
 
-                        // ── Learn section ──────────────────────────────
+                        // ── Learn section ─────────────────────────────
                         VStack(alignment: .leading, spacing: 8) {
                             Text("I want to learn...")
                                 .font(.custom("HelveticaNeue-Bold", size: 34))
@@ -145,35 +176,68 @@ struct LanguageSelectionView: View {
                                 .font(.custom("HelveticaNeue", size: 17))
                                 .foregroundColor(.tsSecondary)
                         }
-                        .padding(.bottom, 24)
+                        .padding(.bottom, 16)
 
-                        // Language grid — 2 columns
-                        // v1: Spanish only. Others are dimmed + "Coming Soon".
-                        LazyVGrid(columns: columns, spacing: 16) {
-                            ForEach(allLanguages) { language in
-                                let available = isAvailable(language)
-                                LanguageCard(
-                                    language: language,
-                                    isSelected: selectedLanguage?.name == language.name,
-                                    isComingSoon: !available
-                                ) {
-                                    if available { selectedLanguage = language }
+                        // ── Search bar ────────────────────────────────
+                        HStack(spacing: 10) {
+                            Image(systemName: "magnifyingglass")
+                                .font(.system(size: 15, weight: .medium))
+                                .foregroundColor(.tsSecondary)
+                            TextField("Search language...", text: $searchText)
+                                .font(.custom("HelveticaNeue", size: 16))
+                                .foregroundColor(.tsLabel)
+                                .autocorrectionDisabled()
+                            if !searchText.isEmpty {
+                                Button {
+                                    withAnimation(.easeOut(duration: 0.15)) {
+                                        searchText = ""
+                                    }
+                                } label: {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .font(.system(size: 15))
+                                        .foregroundColor(.tsSecondary)
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .fill(Color.tsCard)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .stroke(Color.tsBorder.opacity(0.6), lineWidth: 1)
+                        )
+                        .padding(.bottom, 20)
+
+                        // ── Language grid — 2 columns, all selectable ─
+                        if filteredLanguages.isEmpty {
+                            VStack(spacing: 10) {
+                                Image(systemName: "magnifyingglass")
+                                    .font(.system(size: 32))
+                                    .foregroundColor(.tsSecondary.opacity(0.5))
+                                Text("No languages match \"\(searchText)\"")
+                                    .font(.custom("HelveticaNeue", size: 15))
+                                    .foregroundColor(.tsSecondary)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 48)
+                        } else {
+                            LazyVGrid(columns: columns, spacing: 16) {
+                                ForEach(filteredLanguages) { language in
+                                    LanguageCard(
+                                        language: language,
+                                        isSelected: selectedLanguage?.code == language.code,
+                                        isComingSoon: false
+                                    ) {
+                                        selectedLanguage = language
+                                    }
                                 }
                             }
                         }
 
-                        // Coming soon note
-                        HStack(spacing: 6) {
-                            Image(systemName: "clock")
-                                .font(.custom("HelveticaNeue", size: 13))
-                                .foregroundColor(.tsSecondary)
-                            Text("More languages coming soon")
-                                .font(.custom("HelveticaNeue", size: 13))
-                                .foregroundColor(.tsSecondary)
-                        }
-                        .padding(.top, 8)
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .padding(.bottom, 120)
+                        Spacer(minLength: 120)
                     }
                     .padding(.horizontal, 24)
                     .padding(.top, 16)
@@ -258,7 +322,6 @@ struct LanguageCard: View {
                     .padding(8)
                 }
 
-                // "Coming Soon" pill overlaid on top-right
                 if isComingSoon {
                     Text("Soon")
                         .font(.custom("HelveticaNeue-Bold", size: 9))
@@ -275,5 +338,3 @@ struct LanguageCard: View {
         .disabled(isComingSoon)
     }
 }
-
-

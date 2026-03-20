@@ -1,0 +1,4 @@
+module leveldb {
+umbrella "/Users/jeffrey/Library/Developer/Xcode/DerivedData/TalkSwitch-cfrbligaifswxydizshsnjnhhpgn/SourcePackages/checkouts/leveldb/include"
+export *
+}

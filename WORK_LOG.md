@@ -309,3 +309,24 @@ TranslateHelper/AuthManager.swift TranslateHelper/BadgeSystem.swift TranslateHel
 ?? TranslateHelper/CommunityCoachMark.swift
 ### Files
 ROADMAP.md TranslateHelper/CommunityView.swift TranslateHelper/ComposePostSheet.swift TranslateHelper/Localizable.xcstrings TranslateHelper/CommunityCoachMark.swift 
+
+## 2026-03-19 — Antigravity
+### Changed
+- Fonts/Momo_Trust_Display/MomoTrustDisplay-Regular.ttf: Added to project by Jeffrey
+- TranslateHelper/MomoTrustDisplay-Regular.ttf: Copied font into app bundle so Xcode picks it up automatically via fileSystemSynchronizedGroups
+- TranslateHelper/Info.plist: Registered MomoTrustDisplay-Regular.ttf in UIAppFonts array
+- TranslateHelper/DesignSystem.swift: Added `.momoTrustDisplay(_ size)` Font extension helper; documented as PRIMARY BRAND FONT; applied to OrbitWordmark Text; renamed TSWordmark/TSVerticalWordmark note to reflect legacy status
+- TranslateHelper/SplashScreenView.swift: Applied .momoTrustDisplay(46) to "Orbit" wordmark on splash screen
+- CLAUDE.md: Renamed TalkSwitch → Orbit in brand description; updated Design System fonts section to document Momo Trust Display as primary brand font
+- TranslateHelper/marketing.md: Renamed TalkSwitch → Orbit in title
+- ARCHITECTURE.md: Renamed TalkSwitch → Orbit in title
+- README_TALKSWITCH.md: Renamed TalkSwitch → Orbit in title
+- IMPLEMENTATION_SUMMARY.md: Renamed TalkSwitch → Orbit in title
+- FLOW_DIAGRAM.md: Renamed TalkSwitch → Orbit in title
+### Decided
+- Momo Trust Display is the canonical Orbit brand typeface. Use it anywhere the logo name "Orbit" appears in display contexts (splash, header wordmark, etc.)
+- Sono-Regular is kept for backwards compatibility but is no longer the brand font
+- SF Pro remains for all body/UI text
+### Watch out
+- Font PostScript name must be exactly "MomoTrustDisplay-Regular" (verify in Font Book or by checking the .ttf metadata)
+- MomoTrustDisplay-Regular.ttf must be included in Copy Bundle Resources phase in Xcode — since the app uses fileSystemSynchronizedGroups it should appear automatically, but confirm after next clean build

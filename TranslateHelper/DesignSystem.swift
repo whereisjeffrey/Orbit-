@@ -107,6 +107,15 @@ extension Color {
         trait.userInterfaceStyle == .dark ? UIColor(hex: "#787880").withAlphaComponent(0.12) : UIColor(hex: "#E8F4FA")
     })
 
+    /// Gray card surface — matches the community profile‐card fill.
+    /// Light: systemGray6 @ 90 % opacity (≈ #F2F2F7 softened).
+    /// Dark:  same elevated surface as tsCard (#1E1E1E).
+    static let tsGrayCard = Color(UIColor { trait in
+        trait.userInterfaceStyle == .dark
+            ? UIColor(hex: "#1E1E1E")
+            : UIColor.systemGray6.withAlphaComponent(0.90)
+    })
+
     /// Footer / tab bar background.
     /// Dark:  #1E1E1E — lifted near-black with a subtle warm haze (à la TestFlight banner).
     /// Light: #FFFFFF — standard white to match system tab bar convention.
@@ -129,7 +138,30 @@ extension Color {
 
 // MARK: - Fonts
 extension Font {
-    /// Sono Regular — used for TalkSwitch wordmark / brand text
+    // ─────────────────────────────────────────────────────────────────
+    // Brand Typeface: Museo Moderno ExtraBold  ← trying this weight
+    //   Use for: the Orbit wordmark, splash screen logo text,
+    //            and any display-size headline that carries the brand.
+    //   Font file: MuseoModerno-ExtraBold.ttf
+    //   PostScript name: MuseoModerno-ExtraBold
+    //   To roll back one step: swap to museoModernoBold()
+    //   To roll back two steps: swap to museoModernoSemiBold()
+    // ─────────────────────────────────────────────────────────────────
+    static func museoModerno(_ size: CGFloat) -> Font {
+        .custom("MuseoModerno-ExtraBold", size: size)
+    }
+
+    /// One step down — Bold (previous default)
+    static func museoModernoBold(_ size: CGFloat) -> Font {
+        .custom("MuseoModerno-Bold", size: size)
+    }
+
+    /// Two steps down — SemiBold (original weight)
+    static func museoModernoSemiBold(_ size: CGFloat) -> Font {
+        .custom("MuseoModerno-SemiBold", size: size)
+    }
+
+    /// Sono Regular — legacy; kept for backwards-compatible contexts
     static func sono(_ size: CGFloat) -> Font {
         .custom("Sono-Regular", size: size)
     }
@@ -200,6 +232,65 @@ struct TSVerticalWordmark: View {
                 .font(.custom("Sono-Regular", size: fontSize))
                 .kerning(fontSize * 0.01)
                 .foregroundColor(.tsLabel) // black in light, white in dark ✅
+        }
+    }
+}
+
+// MARK: - Orbit Wordmark
+//
+// Logo sits to the left, tinted with the same gradient as the page background.
+// Logo height is ~50% taller than the text cap-height, so at fontSize 28 the
+// logo renders at 42 pt tall.
+//
+// Light mode:  gradient orange→pink→blue (mirrors splash blobs).
+// Dark mode:   white, matching the splash-screen treatment.
+
+struct OrbitWordmark: View {
+    var fontSize: CGFloat = 28
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var logoSize: CGFloat { 42 }  // fixed 42pt
+
+    // The gradient uses the same hue family as the SplashFinisherBackground
+    // blobs, sampled into three representative stops.
+    private static let lightGradient = LinearGradient(
+        colors: [
+            Color(red: 1.0,  green: 0.42, blue: 0.0),   // orange
+            Color(red: 0.98, green: 0.0,  blue: 0.38),  // pink-red
+            Color(red: 0.05, green: 0.30, blue: 0.98),  // electric blue
+        ],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 3) {
+            // Gradient logo (light) / white logo (dark)
+            if colorScheme == .dark {
+                Image("OrbitLogo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: logoSize, height: logoSize)
+                    .foregroundColor(.white)
+            } else {
+                // Render the image then mask the gradient through it
+                Image("OrbitLogo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: logoSize, height: logoSize)
+                    .overlay(
+                        Self.lightGradient
+                            .mask(
+                                Image("OrbitLogo")
+                                    .resizable()
+                                    .scaledToFit()
+                            )
+                    )
+            }
+
+            Text("Orbit")
+                .font(.museoModerno(fontSize))
+                .foregroundColor(.tsLabel)
         }
     }
 }
@@ -388,10 +479,7 @@ struct TSPageHeader: View {
 
     var body: some View {
         HStack(alignment: .center) {
-            Text("wandr")
-                .font(.custom("Comfortaa-Medium", size: 28))
-                .kerning(28 * 0.01)
-                .foregroundColor(.tsLabel)
+            OrbitWordmark()
             Spacer()
             Button(action: action) {
                 HStack(spacing: 6) {

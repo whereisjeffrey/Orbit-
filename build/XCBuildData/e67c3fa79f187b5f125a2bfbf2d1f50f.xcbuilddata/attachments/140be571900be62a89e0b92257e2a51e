@@ -1,0 +1,4 @@
+module AppAuthCore {
+umbrella "/Users/jeffrey/Library/Developer/Xcode/DerivedData/TalkSwitch-cfrbligaifswxydizshsnjnhhpgn/SourcePackages/checkouts/AppAuth-iOS/Sources/AppAuthCore"
+export *
+}

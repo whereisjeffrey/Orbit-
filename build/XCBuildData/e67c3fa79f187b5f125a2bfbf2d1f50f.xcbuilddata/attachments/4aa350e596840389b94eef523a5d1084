@@ -1,0 +1,4 @@
+module FirebaseAuthInternal {
+umbrella "/Users/jeffrey/Library/Developer/Xcode/DerivedData/TalkSwitch-cfrbligaifswxydizshsnjnhhpgn/SourcePackages/checkouts/firebase-ios-sdk/FirebaseAuth/Sources/Public"
+export *
+}
