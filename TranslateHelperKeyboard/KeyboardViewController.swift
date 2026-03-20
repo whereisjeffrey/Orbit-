@@ -1411,7 +1411,7 @@ class KeyboardViewController: UIInputViewController {
         generator.impactOccurred()
 
         // Show voice quality nudge with smart frequency logic
-        let langPrefix = lang.hasPrefix("es") ? "es" : "en"
+        let langPrefix = String(lang.prefix(2))
         if !SpeechService.hasEnhancedVoice(for: langPrefix) && shouldShowNaturalVoiceBanner() {
             showEnhancedVoiceBanner(language: langPrefix)
         }
