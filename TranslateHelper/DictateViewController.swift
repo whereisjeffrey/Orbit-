@@ -31,9 +31,9 @@ class DictateViewController: UIViewController {
     /// Target language code set by SceneDelegate from the URL param (e.g. "es", "zh", "fr").
     var targetLanguage: String = "es"
 
-    /// Path to the temporary M4A file used for Whisper upload.
+    /// Path to the temporary WAV file used for Whisper upload.
     private var tempAudioURL: URL {
-        FileManager.default.temporaryDirectory.appendingPathComponent("dictate_recording.m4a")
+        FileManager.default.temporaryDirectory.appendingPathComponent("dictate_recording.wav")
     }
 
     // MARK: - UI elements
@@ -93,10 +93,10 @@ class DictateViewController: UIViewController {
         // The two sonar rings will be added as sub-layers in viewDidAppear
         iconCircle.translatesAutoresizingMaskIntoConstraints = false
         iconCircle.backgroundColor = UIColor.white.withAlphaComponent(0.18)
-        iconCircle.layer.cornerRadius = 67.5   // diameter = 135
+        iconCircle.layer.cornerRadius = 33.75   // diameter = 67.5
         view.addSubview(iconCircle)
 
-        let iconCfg = UIImage.SymbolConfiguration(pointSize: 78, weight: .medium)
+        let iconCfg = UIImage.SymbolConfiguration(pointSize: 39, weight: .medium)
         iconImageView.translatesAutoresizingMaskIntoConstraints = false
         iconImageView.image = UIImage(systemName: "speaker.wave.2.fill", withConfiguration: iconCfg)
         iconImageView.tintColor = .white
@@ -142,13 +142,13 @@ class DictateViewController: UIViewController {
 
             iconCircle.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             iconCircle.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -40),
-            iconCircle.widthAnchor.constraint(equalToConstant: 135),
-            iconCircle.heightAnchor.constraint(equalToConstant: 135),
+            iconCircle.widthAnchor.constraint(equalToConstant: 67.5),
+            iconCircle.heightAnchor.constraint(equalToConstant: 67.5),
 
             iconImageView.centerXAnchor.constraint(equalTo: iconCircle.centerXAnchor),
             iconImageView.centerYAnchor.constraint(equalTo: iconCircle.centerYAnchor),
-            iconImageView.widthAnchor.constraint(equalToConstant: 72),
-            iconImageView.heightAnchor.constraint(equalToConstant: 72),
+            iconImageView.widthAnchor.constraint(equalToConstant: 36),
+            iconImageView.heightAnchor.constraint(equalToConstant: 36),
 
             timerLabel.topAnchor.constraint(equalTo: iconCircle.bottomAnchor, constant: 28),
             timerLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -206,7 +206,7 @@ class DictateViewController: UIViewController {
     }
 
     private func addRing(delay: Double, tag: Int) {
-        let radius: CGFloat = 67.5
+        let radius: CGFloat = 33.75
         let center = CGPoint(x: view.bounds.midX, y: view.bounds.midY - 40)
         let path = UIBezierPath(arcCenter: center, radius: radius,
                                 startAngle: 0, endAngle: .pi * 2, clockwise: true)
@@ -317,27 +317,17 @@ class DictateViewController: UIViewController {
         // Remove any leftover temp file
         try? FileManager.default.removeItem(at: tempAudioURL)
 
-        // Write as compressed M4A (AAC) — ~80x smaller than raw WAV for faster upload.
-        // 16kHz mono is all Whisper needs for speech recognition.
-        let m4aSettings: [String: Any] = [
-            AVFormatIDKey:           Int(kAudioFormatMPEG4AAC),
-            AVSampleRateKey:         16000.0,
-            AVNumberOfChannelsKey:   1,
-            AVEncoderBitRateKey:     32000,  // 32kbps — plenty for speech
-        ]
-
+        // Write WAV in the hardware's native format — reliable, no conversion.
+        // Whisper handles any sample rate.
         do {
             audioFile = try AVAudioFile(forWriting: tempAudioURL,
-                                        settings: m4aSettings,
-                                        commonFormat: .pcmFormatFloat32,
-                                        interleaved: false)
+                                        settings: hwFmt.settings)
         } catch {
             NSLog("🎤 [Dictate] could not create audio file: \(error)")
             return
         }
 
         // Tap with nil format = use hardware's native format (safest, never fails).
-        // AVAudioFile handles the conversion from hardware format → 16kHz AAC on write.
         node.installTap(onBus: 0, bufferSize: 4096, format: nil) { [weak self] buffer, _ in
             guard let self = self, let file = self.audioFile else { return }
             do {
@@ -377,6 +367,53 @@ class DictateViewController: UIViewController {
         stopSonarRings()
     }
 
+    // MARK: - Compress audio for fast upload
+
+    /// URL for the compressed M4A file.
+    private var compressedURL: URL {
+        FileManager.default.temporaryDirectory.appendingPathComponent("dictate_compressed.m4a")
+    }
+
+    /// Uses AVAssetExportSession to compress the recorded WAV → M4A (AAC).
+    /// Calls completion with the URL to upload (compressed if successful, original WAV if not).
+    private func compressForWhisper(completion: @escaping (URL) -> Void) {
+        let srcURL = tempAudioURL
+        let dstURL = compressedURL
+        try? FileManager.default.removeItem(at: dstURL)
+
+        let asset = AVURLAsset(url: srcURL)
+
+        guard let exporter = AVAssetExportSession(asset: asset,
+                                                   presetName: AVAssetExportPresetAppleM4A) else {
+            NSLog("🎤 [Dictate] compress: could not create export session")
+            completion(srcURL)
+            return
+        }
+
+        exporter.outputURL = dstURL
+        exporter.outputFileType = .m4a
+
+        exporter.exportAsynchronously { [srcURL, dstURL] in
+            switch exporter.status {
+            case .completed:
+                let srcSize = (try? FileManager.default.attributesOfItem(atPath: srcURL.path)[.size] as? Int) ?? 0
+                let dstSize = (try? FileManager.default.attributesOfItem(atPath: dstURL.path)[.size] as? Int) ?? 0
+                NSLog("🎤 [Dictate] compressed: \(srcSize) → \(dstSize) bytes (\(srcSize > 0 ? Int(100 - Double(dstSize)/Double(srcSize)*100) : 0)%% smaller)")
+                // Clean up the large WAV
+                try? FileManager.default.removeItem(at: srcURL)
+                completion(dstURL)
+            case .failed:
+                NSLog("🎤 [Dictate] compress failed: \(exporter.error?.localizedDescription ?? "unknown") — using original")
+                completion(srcURL)
+            case .cancelled:
+                NSLog("🎤 [Dictate] compress cancelled — using original")
+                completion(srcURL)
+            default:
+                completion(srcURL)
+            }
+        }
+    }
+
     // MARK: - Whisper API transcription
 
     private func sendToWhisper() {
@@ -386,99 +423,107 @@ class DictateViewController: UIViewController {
         isRecording = false
         showProcessingState()
 
-        let fileURL = tempAudioURL
-        guard FileManager.default.fileExists(atPath: fileURL.path) else {
+        guard FileManager.default.fileExists(atPath: tempAudioURL.path) else {
             NSLog("🎤 [Dictate] no audio file to send")
             dismiss(animated: true)
             return
         }
 
-        let apiKey = APIConfig.openAIAPIKey
-        guard let url = URL(string: "\(APIConfig.openAIBaseURL)/audio/transcriptions") else { return }
+        // Compress then upload
+        compressForWhisper { [weak self] fileURL in
+            guard let self = self else { return }
 
-        // Build multipart/form-data request
-        let boundary = "Boundary-\(UUID().uuidString)"
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
-        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-        request.timeoutInterval = 30
+            let apiKey = APIConfig.openAIAPIKey
+            guard let url = URL(string: "\(APIConfig.openAIBaseURL)/audio/transcriptions") else { return }
 
-        var body = Data()
+            // Build multipart/form-data request
+            let boundary = "Boundary-\(UUID().uuidString)"
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+            request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+            request.timeoutInterval = 30
 
-        // "file" field — the M4A audio
-        body.append("--\(boundary)\r\n".data(using: .utf8)!)
-        body.append("Content-Disposition: form-data; name=\"file\"; filename=\"recording.m4a\"\r\n".data(using: .utf8)!)
-        body.append("Content-Type: audio/m4a\r\n\r\n".data(using: .utf8)!)
-        if let audioData = try? Data(contentsOf: fileURL) {
-            body.append(audioData)
-        }
-        body.append("\r\n".data(using: .utf8)!)
+            var body = Data()
 
-        // "model" field
-        body.append("--\(boundary)\r\n".data(using: .utf8)!)
-        body.append("Content-Disposition: form-data; name=\"model\"\r\n\r\n".data(using: .utf8)!)
-        body.append("whisper-1\r\n".data(using: .utf8)!)
+            // "file" field — the audio (M4A if compressed, WAV fallback)
+            let isM4A = fileURL.pathExtension == "m4a"
+            let filename = isM4A ? "recording.m4a" : "recording.wav"
+            let mimeType = isM4A ? "audio/m4a" : "audio/wav"
+            body.append("--\(boundary)\r\n".data(using: .utf8)!)
+            body.append("Content-Disposition: form-data; name=\"file\"; filename=\"\(filename)\"\r\n".data(using: .utf8)!)
+            body.append("Content-Type: \(mimeType)\r\n\r\n".data(using: .utf8)!)
+            if let audioData = try? Data(contentsOf: fileURL) {
+                body.append(audioData)
+                NSLog("🎤 [Dictate] uploading \(audioData.count) bytes to Whisper")
+            }
+            body.append("\r\n".data(using: .utf8)!)
 
-        // "response_format" field — we want verbose_json to get the detected language
-        body.append("--\(boundary)\r\n".data(using: .utf8)!)
-        body.append("Content-Disposition: form-data; name=\"response_format\"\r\n\r\n".data(using: .utf8)!)
-        body.append("verbose_json\r\n".data(using: .utf8)!)
+            // "model" field
+            body.append("--\(boundary)\r\n".data(using: .utf8)!)
+            body.append("Content-Disposition: form-data; name=\"model\"\r\n\r\n".data(using: .utf8)!)
+            body.append("whisper-1\r\n".data(using: .utf8)!)
 
-        body.append("--\(boundary)--\r\n".data(using: .utf8)!)
+            // "response_format" field — verbose_json gives us detected language
+            body.append("--\(boundary)\r\n".data(using: .utf8)!)
+            body.append("Content-Disposition: form-data; name=\"response_format\"\r\n\r\n".data(using: .utf8)!)
+            body.append("verbose_json\r\n".data(using: .utf8)!)
 
-        request.httpBody = body
+            body.append("--\(boundary)--\r\n".data(using: .utf8)!)
 
-        NSLog("🎤 [Dictate] sending audio to Whisper API...")
+            request.httpBody = body
 
-        URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
-            DispatchQueue.main.async {
-                guard let self = self else { return }
+            NSLog("🎤 [Dictate] sending to Whisper API...")
 
-                // Clean up temp file
+            URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+                // Clean up temp files
                 try? FileManager.default.removeItem(at: fileURL)
 
-                if let error = error {
-                    NSLog("🎤 [Dictate] Whisper error: \(error.localizedDescription)")
-                    self.dismiss(animated: true)
-                    return
+                DispatchQueue.main.async {
+                    guard let self = self else { return }
+
+                    if let error = error {
+                        NSLog("🎤 [Dictate] Whisper error: \(error.localizedDescription)")
+                        self.dismiss(animated: true)
+                        return
+                    }
+
+                    guard let data = data else {
+                        NSLog("🎤 [Dictate] Whisper returned no data")
+                        self.dismiss(animated: true)
+                        return
+                    }
+
+                    // Parse verbose_json response: { "text": "...", "language": "english", ... }
+                    guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                        NSLog("🎤 [Dictate] Whisper response not valid JSON: \(String(data: data, encoding: .utf8) ?? "")")
+                        self.dismiss(animated: true)
+                        return
+                    }
+
+                    let transcription = (json["text"] as? String ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+                    let whisperLang   = json["language"] as? String ?? ""  // e.g. "english", "spanish", "french"
+
+                    NSLog("🎤 [Dictate] Whisper result: lang=\(whisperLang) text='\(transcription)'")
+
+                    guard !transcription.isEmpty else {
+                        NSLog("🎤 [Dictate] Whisper returned empty transcription")
+                        self.dismiss(animated: true)
+                        return
+                    }
+
+                    // Map Whisper's full language name to our ISO code
+                    let detectedCode = self.whisperLangToCode(whisperLang)
+
+                    // Determine the language to report to the keyboard:
+                    // If user spoke in their target language → report target language (triggers correction mode)
+                    // If user spoke English → report English (triggers translation mode)
+                    let langForKeyboard = detectedCode.isEmpty ? self.targetLanguage : detectedCode
+
+                    self.commitToKeyboard(text: transcription, lang: langForKeyboard)
                 }
-
-                guard let data = data else {
-                    NSLog("🎤 [Dictate] Whisper returned no data")
-                    self.dismiss(animated: true)
-                    return
-                }
-
-                // Parse verbose_json response: { "text": "...", "language": "english", ... }
-                guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-                    NSLog("🎤 [Dictate] Whisper response not valid JSON: \(String(data: data, encoding: .utf8) ?? "")")
-                    self.dismiss(animated: true)
-                    return
-                }
-
-                let transcription = (json["text"] as? String ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-                let whisperLang   = json["language"] as? String ?? ""  // e.g. "english", "spanish", "french"
-
-                NSLog("🎤 [Dictate] Whisper result: lang=\(whisperLang) text='\(transcription)'")
-
-                guard !transcription.isEmpty else {
-                    NSLog("🎤 [Dictate] Whisper returned empty transcription")
-                    self.dismiss(animated: true)
-                    return
-                }
-
-                // Map Whisper's full language name to our ISO code
-                let detectedCode = self.whisperLangToCode(whisperLang)
-
-                // Determine the language to report to the keyboard:
-                // If user spoke in their target language → report target language (triggers correction mode)
-                // If user spoke English → report English (triggers translation mode)
-                let langForKeyboard = detectedCode.isEmpty ? self.targetLanguage : detectedCode
-
-                self.commitToKeyboard(text: transcription, lang: langForKeyboard)
-            }
-        }.resume()
+            }.resume()
+        }
     }
 
     /// Maps Whisper's verbose language name (e.g. "english", "spanish") to ISO code.
@@ -522,14 +567,11 @@ class DictateViewController: UIViewController {
         defaults?.set(Date().timeIntervalSince1970, forKey: "dictate_result_timestamp")
         defaults?.synchronize()
 
-        showProcessingState()
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [weak self] in
-            self?.dismiss(animated: true)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                if let url = URL(string: "whatsapp://") {
-                    UIApplication.shared.open(url, options: [:], completionHandler: nil)
-                }
+        // Dismiss immediately — no artificial delay. The result is ready.
+        dismiss(animated: true)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            if let url = URL(string: "whatsapp://") {
+                UIApplication.shared.open(url, options: [:], completionHandler: nil)
             }
         }
     }
