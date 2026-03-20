@@ -233,8 +233,8 @@ class TalkSwitchAPI {
         \
         Keep explanations short and friendly. If they did great, say so! \
         "mistakes" can be empty if there are none. Always provide at least one tip. \
-        For Spanish, pay attention to: preposition contractions, ser vs estar, gender agreement, \
-        verb conjugation, subjunctive mood, and informal (tú/vos) vs formal (usted) register.
+        Pay attention to common grammar pitfalls in \(langName) — verb conjugation, gender agreement, \
+        formal vs informal register, and any language-specific patterns learners often get wrong.
         """
         
         let userPrompt = """
@@ -497,31 +497,31 @@ class TalkSwitchAPI {
             ? ""
             : "\n\n\(locationInstruction)"
 
-        // Notes are ALWAYS about the Spanish phrase — regardless of which direction the card is studied.
-        // The English side is never the subject. Teach the learner about Spanish usage, culture, slang.
-        
+        // Notes are ALWAYS about the target-language phrase — regardless of which direction the card is studied.
+        // The English side is never the subject. Teach the learner about target language usage, culture, slang.
+
         var systemPrompt = ""
         var userPrompt = ""
 
         // ── FLIRTY TONE: completely separate, gender-aware prompt ──────────────────────
         if tone == .flirty {
             let genderContext = buildFlirtyGenderContext()
-            let esText = sourceLang == "en" ? translated : original
+            let targetText = sourceLang == "en" ? translated : original
             let enOrigin = sourceLang == "en"
 
             let prohibitionBlock = enOrigin ? """
             \
             ════════════ ABSOLUTE PROHIBITION ════════════ \
-            The user typed in ENGLISH. They have NO idea what any other Spanish phrasing would be. \
-            NEVER write: "[Spanish A] was changed to [Spanish B]" or compare two Spanish options. \
+            The user typed in ENGLISH. They have NO idea what any other \(targetName) phrasing would be. \
+            NEVER write: "[\(targetName) A] was changed to [\(targetName) B]" or compare two \(targetName) options. \
             NEVER say "instead of '...' we used '...'". \
             ══════════════════════════════════════════════
             """ : ""
 
             systemPrompt = """
-            You are a charming, insider bilingual coach specialising in Mexican Spanish flirting and social dynamics. \
-            Your job is to write a short, memorable coaching note about the Spanish phrase used — \
-            WHY it works, what emotional effect it has on the listener, and how Mexicans actually use it \
+            You are a charming, insider bilingual coach specialising in \(targetName) flirting and social dynamics. \
+            Your job is to write a short, memorable coaching note about the \(targetName) phrase used — \
+            WHY it works, what emotional effect it has on the listener, and how native \(targetName) speakers actually use it \
             in real flirty situations. \
             \(prohibitionBlock)\
             \
@@ -533,8 +533,8 @@ class TalkSwitchAPI {
             Draw naturally from openers like these — or invent your own variation: \
             • "A little insider tip: '...' is what smooth speakers reach for when they want to..." \
             • "There's something magnetic about '...' — it signals..." \
-            • "If you said this in Mexico City, they'd..." \
-            • "Mexicans who know how to charm naturally reach for '...' — it carries..." \
+            • "If you said this to a native speaker, they'd..." \
+            • "Native \(targetName) speakers who know how to charm naturally reach for '...' — it carries..." \
             • "The secret power of '...' is that it sounds effortless, not rehearsed —" \
             • "This phrase hits differently because..." \
             • "'...' walks the perfect line between warm and bold — you'd use it when..." \
@@ -545,14 +545,14 @@ class TalkSwitchAPI {
             ever open the same way. Variety makes coaching feel human, not robotic. \
             \
             CRITICAL RULES: \
-            • Write notes in English so the learner understands — but every Spanish example must be in Spanish \
+            • Write notes in English so the learner understands — but every \(targetName) example must be in \(targetName) \
             • Focus on the EMOTIONAL and SOCIAL effect of the phrase — not just its literal meaning \
             • If the user's target gender is known, make the coaching specific: how does THIS phrase land on a man / woman? \
             • Max 3-4 lines. No JSON. Plain text only.\(locationBlock)
             """
             let promptPrefix = enOrigin
-                ? "Spanish phrase chosen: \"\(esText)\""
-                : "Spanish phrase used: \"\(esText)\""
+                ? "\(targetName) phrase chosen: \"\(targetText)\""
+                : "\(targetName) phrase used: \"\(targetText)\""
             userPrompt = "\(promptPrefix)\nTone: flirty\nWrite a short, varied note about why this phrase works and how it lands — who uses it, in what situation, what feeling it creates."
 
             if let pronContext = pronunciationContext {
@@ -592,126 +592,125 @@ class TalkSwitchAPI {
         }
 
         // ── All other tones ────────────────────────────────────────────────────────────
-        if original == translated && sourceLang == "es" {
-            // ── Branch A: User typed raw Spanish — note is a pure cultural observation ──
+        if original == translated && sourceLang == targetLang {
+            // ── Branch A: User typed in target language — note is a pure cultural observation ──
             systemPrompt = """
-            You are a bilingual cultural coach specialising in Mexican Spanish. \
-            A learner has typed a phrase in Spanish. \
-            Write a short cultural note EXCLUSIVELY about their Spanish phrase. \
+            You are a bilingual cultural coach specialising in \(targetName). \
+            A learner has typed a phrase in \(targetName). \
+            Write a short cultural note EXCLUSIVELY about their \(targetName) phrase. \
             \
             Always cover: \
-            1. How the Spanish phrase is actually used — regional flavour, tone, register \
+            1. How the \(targetName) phrase is actually used — regional flavour, tone, register \
             2. A more natural or \(toneDesc) alternative a native speaker might reach for, and why \
-            3. One Mexican or Latin American slang, idiom, or cultural tip about the phrasing \
+            3. One cultural slang, idiom, or tip about the phrasing \
             \
             VARIETY RULE — CRITICAL: \
             Every note must open with a DIFFERENT sentence structure. \
             Draw naturally from openers like these — or invent your own variation: \
-            • "In Mexico City, you'd typically hear..." \
-            • "A Mexican would lean toward... because..." \
+            • "A native speaker would typically say..." \
+            • "A local would lean toward... because..." \
             • "Worth knowing:" \
             • "Locals would probably phrase it as..." \
             • "One thing to notice:" \
             • "This phrasing works, but..." \
             • "The street-level version of this is..." \
             • "Native twist:" \
-            • "If you were at a taquería, you'd hear..." \
+            • "In everyday conversation, you'd hear..." \
             • "The neighbourhood way of saying this is..." \
             Feel free to rephrase any of these in your own words — the goal is that no two notes \
             ever open the same way. Variety makes the coaching feel human, not robotic. \
             \
             CRITICAL RULES: \
-            • Write notes in English so the learner understands — but every example must be in Spanish \
-            • Never discuss English slang, idioms, or cultural context — Spanish only \
+            • Write notes in English so the learner understands — but every example must be in \(targetName) \
+            • Never discuss English slang, idioms, or cultural context — \(targetName) only \
             • Don't correct their grammar (another system does that) \
             • Max 3-4 lines. No JSON. Plain text only.\(locationBlock)
             """
-            userPrompt = "Spanish phrase: \"\(original)\"\nTone context: \(toneDesc)\nWrite a short, varied cultural note or local slang connection ONLY about this phrase."
+            userPrompt = "\(targetName) phrase: \"\(original)\"\nTone context: \(toneDesc)\nWrite a short, varied cultural note or local slang connection ONLY about this phrase."
 
         } else if sourceLang == "en" {
-            // ── Branch B: User typed English — we translated it to Spanish ──
-            // The user NEVER said anything in Spanish. NEVER compare Spanish phrase A to Spanish phrase B.
-            // The note should explain what Spanish expression was chosen and WHY it sounds natural.
-            let esText = translated
+            // ── Branch B: User typed English — we translated it to target language ──
+            // The user NEVER said anything in the target language. NEVER compare target phrase A to target phrase B.
+            let targetText = translated
             systemPrompt = """
-            You are a bilingual cultural coach specialising in Mexican Spanish. \
-            A user typed something in ENGLISH and we translated it into Spanish. \
-            Write a short cultural note explaining the Spanish phrase that was chosen — \
-            what it means culturally, why it sounds natural, and how Mexicans actually use it. \
+            You are a bilingual cultural coach specialising in \(targetName). \
+            A user typed something in ENGLISH and we translated it into \(targetName). \
+            Write a short cultural note explaining the \(targetName) phrase that was chosen — \
+            what it means culturally, why it sounds natural, and how native speakers actually use it. \
             \
             Always cover: \
-            1. Why this particular Spanish phrase is a natural, culturally fitting choice \
-            2. How Mexicans actually use it — context, register, vibe \
+            1. Why this particular \(targetName) phrase is a natural, culturally fitting choice \
+            2. How native speakers actually use it — context, register, vibe \
             3. One slang, idiom, or cultural tip that enriches the learner's understanding \
             \
             ════════════ ABSOLUTE PROHIBITION ════════════ \
-            The user typed in ENGLISH. They have NO idea what any other Spanish phrasing would be. \
-            NEVER write notes in the form: "[Spanish A] was changed to [Spanish B]". \
-            NEVER write: "instead of [Spanish phrase], we used [Spanish phrase]". \
-            NEVER compare two Spanish options — that is broken logic for an English speaker. \
+            The user typed in ENGLISH. They have NO idea what any other \(targetName) phrasing would be. \
+            NEVER write notes in the form: "[\(targetName) A] was changed to [\(targetName) B]". \
+            NEVER write: "instead of [\(targetName) phrase], we used [\(targetName) phrase]". \
+            NEVER compare two \(targetName) options — that is broken logic for an English speaker. \
             ══════════════════════════════════════════════ \
             \
             VARIETY RULE — CRITICAL: \
             Every note must open with a DIFFERENT sentence structure. \
             Draw naturally from openers like these — or invent your own variation: \
             • "We went with '...' here because..." \
-            • "People often use '...' in Mexican Spanish to..." \
-            • "A very natural way to say this in Mexico is '...' — you'd hear it when..." \
+            • "People often use '...' in \(targetName) to..." \
+            • "A very natural way to say this is '...' — you'd hear it when..." \
             • "The phrase chosen here — '...' — is deliberate:" \
             • "Worth noting: '...' has a..." \
             • "This expression lands well because..." \
             • "You'll hear '...' when..." \
             • "The cultural pick here is '...' —" \
-            • "Mexicans naturally gravitate toward '...' because..." \
-            • "In Mexican Spanish, this kind of phrase tends to use '...' — it carries..." \
+            • "Native speakers naturally gravitate toward '...' because..." \
+            • "In \(targetName), this kind of phrase tends to use '...' — it carries..." \
             Feel free to rephrase any of these in your own words — the goal is that no two notes \
             ever open the same way. Variety makes the coaching feel human, not robotic. \
             \
             CRITICAL RULES: \
-            • Write notes in English so the learner understands — but every Spanish example must be in Spanish \
+            • Write notes in English so the learner understands — but every \(targetName) example must be in \(targetName) \
             • Do NOT explain the English phrase. Never say "In English..." — they already know English \
-            • Never discuss English slang, idioms, or cultural context — Spanish only \
+            • Never discuss English slang, idioms, or cultural context — \(targetName) only \
             • Max 3-4 lines. No JSON. Plain text only.\(locationBlock)
             """
-            userPrompt = "Spanish phrase chosen: \"\(esText)\"\nTone: \(toneDesc)\nExplain why this Spanish phrase is a great, natural choice — without mentioning or comparing any other Spanish phrase."
+            userPrompt = "\(targetName) phrase chosen: \"\(targetText)\"\nTone: \(toneDesc)\nExplain why this \(targetName) phrase is a great, natural choice — without mentioning or comparing any other \(targetName) phrase."
 
         } else {
-            // ── Branch C: User typed Spanish, translated to English — note is about the Spanish original ──
-            let esText = original
+            // ── Branch C: User typed in target language, translated to English — note is about the original ──
+            let targetText = original
             let enText = translated
             systemPrompt = """
-            You are a bilingual cultural coach specialising in Mexican Spanish. \
-            A user typed something in SPANISH and we translated it to English. \
-            Write a short cultural note EXCLUSIVELY about their Spanish phrase. \
+            You are a bilingual cultural coach specialising in \(targetName). \
+            A user typed something in \(targetName) and we translated it to English. \
+            Write a short cultural note EXCLUSIVELY about their \(targetName) phrase. \
             \
             Always cover: \
-            1. How the Spanish phrase is actually used — regional flavour, tone, register \
-            2. A more natural or \(toneDesc) Spanish alternative a native speaker might prefer, and why \
-            3. One Mexican or Latin American slang, idiom, or cultural tip about the phrasing \
+            1. How the \(targetName) phrase is actually used — regional flavour, tone, register \
+            2. A more natural or \(toneDesc) \(targetName) alternative a native speaker might prefer, and why \
+            3. One cultural slang, idiom, or tip about the phrasing \
             \
             VARIETY RULE — CRITICAL: \
             Every note must open with a DIFFERENT sentence structure. \
             Draw naturally from openers like these — or invent your own variation: \
-            • "In Mexico City, you'd typically hear..." \
-            • "A Mexican would lean toward... because..." \
+            • "A native speaker would typically say..." \
+            • "A local would lean toward... because..." \
             • "Worth knowing:" \
             • "Locals would probably phrase it as..." \
             • "One thing to notice:" \
             • "This phrasing works, but..." \
             • "The street-level version of this is..." \
             • "Native twist:" \
-            • "If you were at a taquería, you'd say..." \
+            • "In everyday conversation, you'd hear..." \
             • "The neighbourhood way of saying this is..." \
             Feel free to rephrase any of these in your own words — the goal is that no two notes \
             ever open the same way. Variety makes the coaching feel human, not robotic. \
             \
             CRITICAL RULES: \
-            • Write notes in English so the learner understands — but every example must be in Spanish \
+            • Write notes in English so the learner understands — but every example must be in \(targetName) \
             • Do NOT explain the English phrase. Never say "In English..." — they already know English \
-            • Never discuss English slang, idioms, or cultural context — Spanish only \
+            • Never discuss English slang, idioms, or cultural context — \(targetName) only \
             • Max 3-4 lines. No JSON. Plain text only.\(locationBlock)
             """
-            userPrompt = "Spanish: \"\(esText)\"\nEnglish: \"\(enText)\"\nTone: \(toneDesc)\nWrite notes ONLY about the Spanish phrase — cultural context, how it's used, and a natural variation."
+            userPrompt = "\(targetName): \"\(targetText)\"\nEnglish: \"\(enText)\"\nTone: \(toneDesc)\nWrite notes ONLY about the \(targetName) phrase — cultural context, how it's used, and a natural variation."
         }
         
         if let pronContext = pronunciationContext {
@@ -957,13 +956,13 @@ class TalkSwitchAPI {
             \
             Respond ONLY with valid JSON: {"translation": "...", "notes": "...", "localityTag": "..."}
             The "notes" field should briefly explain what flirty expressions you chose in the OUTPUT translation and why they work. \
-            CRITICAL: Never frame notes as comparing a Spanish version to another Spanish version. \
+            CRITICAL: Never frame notes as comparing one \(targetName) version to another \(targetName) version. \
             Describe the word or phrase you chose and why a native speaker would use it in that flirty, charming way. \
             If the grammatical gender was adjusted, mention the alternate form naturally in the note. \
             VARIETY RULE: Every note must open with a different sentence structure — draw from openers like: \
             "We went with '...' because...", "This expression lands well because...", "People often reach for '...' when...", \
             "A very natural flirty choice here is '...' —", "Worth noting: '...' carries...", \
-            "Mexicans naturally gravitate toward '...' in this kind of moment because...". \
+            "Native \(targetName) speakers naturally gravitate toward '...' in this kind of moment because...". \
             Feel free to rephrase these in your own words — variety makes coaching feel human, not robotic.
             The "localityTag" field should describe the geographic scope of the translation, e.g. \
             "Understood in Spain & Latin America", "Common across Latin America", \
@@ -973,7 +972,7 @@ class TalkSwitchAPI {
         case .casual, .work:
             let toneLabel = tone == .work ? "professional business" : "casual conversational"
             let workExtra = tone == .work
-                ? "For business tone: treat phrases like 'circle back', 'heads-down', 'loop you in', 'take this offline', 'bandwidth', 'move the needle', 'in the weeds', etc. as idioms that need cultural equivalents — not literal translations. In Spanish/Portuguese, business people use different fixed expressions to convey these ideas. \\"
+                ? "For business tone: treat phrases like 'circle back', 'heads-down', 'loop you in', 'take this offline', 'bandwidth', 'move the needle', 'in the weeds', etc. as idioms that need cultural equivalents — not literal translations. In \(targetName), business people use different fixed expressions to convey these ideas. \\"
                 : ""
             return """
             You are a bilingual translation expert specializing in \(langPair). \
@@ -995,8 +994,8 @@ class TalkSwitchAPI {
             If no idiom is present, leave a brief, vivid observation about why the chosen phrasing sounds natural. \
             VARIETY RULE: Every note must open with a different sentence structure — draw from openers like: \
             "We went with '...' here because...", "People often use '...' to...", "A very natural way to say this is '...' —", \
-            "Worth noting: '...' carries...", "This expression lands well because...", "In Mexican Spanish, this kind of phrase tends toward '...' —", \
-            "The cultural pick here is '...' because...", "Mexicans naturally reach for '...' when...". \
+            "Worth noting: '...' carries...", "This expression lands well because...", "In \(targetName), this kind of phrase tends toward '...' —", \
+            "The cultural pick here is '...' because...", "Native speakers naturally reach for '...' when...". \
             Feel free to rephrase these in your own words — variety makes coaching feel human, not robotic. \
             \
             Respond ONLY with valid JSON: {"translation": "...", "notes": "...", "localityTag": "..."}
@@ -1049,8 +1048,8 @@ class TalkSwitchAPI {
         LOCATION CONTEXT FOR SLANG DISTRIBUTION:\
         The user is primarily learning in \(primary.displayName). \
         When choosing slang expressions, distribute them across these 4 tiers:\
-        1. UNIVERSAL (🌐): ~40% — expressions understood in both Spain AND all Latin America.\
-        2. PAN-REGIONAL (🌎): ~30% — expressions common across all Spanish-speaking countries.\
+        1. UNIVERSAL (🌐): ~40% — expressions understood broadly across all regions where this language is spoken.\
+        2. PAN-REGIONAL (🌎): ~30% — expressions common across multiple regions.\
         3. COUNTRY-SPECIFIC (🇦🇷): ~20% — expressions specific to \(primary.country). Label these as "Used in \(primary.country)".\
         4. CITY-SPECIFIC (📍): ~10% max — expressions specific to \(primary.city). Label these as "Used in \(primary.city)".\
         IMPORTANT: Never give more than 30% city-specific slang. The user needs broad, transferable language skills — local flavor is a bonus, not the focus.
@@ -1210,8 +1209,8 @@ class TalkSwitchAPI {
         Respond ONLY with valid JSON: {"translation": "...", "notes": "..."}
         The "notes" field should briefly explain what makes this version different by describing \
         the specific word, expression, or tone choice used in the new translation — \
-        e.g. "Used 'qué onda' for a more casual, Mexican feel." \
-        CRITICAL: Do NOT frame notes as changing one Spanish phrase into another Spanish phrase. \
+        e.g. "Used a more casual, colloquial expression for a natural feel." \
+        CRITICAL: Do NOT frame notes as changing one \(targetName) phrase into another \(targetName) phrase. \
         Simply describe what was chosen and why it sounds natural or different.
         """
 

@@ -291,7 +291,8 @@ class KeyboardViewController: UIInputViewController {
         default: style = .natural
         }
 
-        // Gentle Correction (only if typing/speaking in target language, e.g. Spanish)
+        // Gentle Correction (only if typing/speaking in target language)
+        let targetName = TSProfiles[targetCode]?.name.capitalized ?? "target language"
         if isSourceTarget {
             self.outputCard.isHidden = true
 
@@ -305,10 +306,10 @@ class KeyboardViewController: UIInputViewController {
             self.correctionIcon.text = source == "accent_coach" ? "🎤" : "💬"
             self.correctionHeader.text = source == "accent_coach" ? "ACCENT COACH" : "NATIVE"
             self.correctionTextLabel.text = source == "accent_coach"
-                ? "Analyzing your spoken Spanish…"
-                : "Analyzing your Spanish..."
+                ? "Analyzing your spoken \(targetName)…"
+                : "Analyzing your \(targetName)..."
 
-            // Show notes for the Spanish text (with pronunciation tips for speech mode)
+            // Show notes for the target language text (with pronunciation tips for speech mode)
             if source == "accent_coach" {
                 // Prime the pronunciation context so smart notes focus on how the spoken words sound
                 lowConfidenceWords = ["[spoken aloud — focus on accent, rhythm, and pronunciation tips]"]
@@ -341,9 +342,10 @@ class KeyboardViewController: UIInputViewController {
                                 self?.correctionCard.backgroundColor = UIColor.systemGreen.withAlphaComponent(0.08)
                                 self?.correctionIcon.text = "👌"
                                 self?.correctionHeader.text = isSpeech ? "SOUNDS AUTHENTIC" : "SOUNDS NATIVE"
+                                let tgtName = TSProfiles[targetCode]?.name.capitalized ?? "target language"
                                 self?.correctionTextLabel.text = isSpeech
-                                    ? "Your spoken Spanish sounds natural and authentic!\n\"\(correction.nativeSay)\""
-                                    : "Your Spanish sounds natural here.\n\"\(correction.nativeSay)\""
+                                    ? "Your spoken \(tgtName) sounds natural and authentic!\n\"\(correction.nativeSay)\""
+                                    : "Your \(tgtName) sounds natural here.\n\"\(correction.nativeSay)\""
                             }
                         case .failure(let error):
                             self?.correctionHeader.text = "CORRECTION OFFLINE"
@@ -387,12 +389,12 @@ class KeyboardViewController: UIInputViewController {
                         
                         let tone = Tone(rawValue: self.currentTone) ?? .slang
                         let langCode = detected.code
-                        
+
                         TalkSwitchAPI.shared.refineTranslation(
                             original: text,
                             deeplTranslation: translation,
                             sourceLang: langCode,
-                            targetLang: langCode == "es" ? "en" : "es",
+                            targetLang: targetCode,
                             tone: tone
                         ) { [weak self] refineResult in
                             DispatchQueue.main.async {
@@ -455,7 +457,9 @@ class KeyboardViewController: UIInputViewController {
         
         let detected = detectLanguage(original)
         let sourceLang = detected.code
-        let targetLang = sourceLang == "es" ? "en" : "es"
+        let appGroupNotes = "group.com.jeff.translatehelper"
+        let targetCode = UserDefaults(suiteName: appGroupNotes)?.string(forKey: "talkswitch_target_lang") ?? "es"
+        let targetLang = (sourceLang == targetCode) ? "en" : targetCode
         let tone = Tone(rawValue: currentTone) ?? .casual
         
         // Add pronunciation context if we have low-confidence words from speech
