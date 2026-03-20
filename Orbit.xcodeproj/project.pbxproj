@@ -150,6 +150,7 @@
 				006F75122F547CA800D581A9 /* FirebaseAuth */,
 				006F75142F547CA800D581A9 /* FirebaseFirestore */,
 				006F769D2F54C7FA00D581A9 /* GoogleSignIn */,
+				002D3B582F6D938900E624A3 /* WhisperKit */,
 			);
 			productName = TranslateHelper;
 			productReference = 003133452F3DE56A00F7A418 /* TranslateHelper.app */;
@@ -207,6 +208,7 @@
 			packageReferences = (
 				006F75112F547CA800D581A9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				006F76952F54898800D581A9 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+				002D3B572F6D938900E624A3 /* XCRemoteSwiftPackageReference "WhisperKit" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 003133462F3DE56A00F7A418 /* Products */;
@@ -540,6 +542,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		002D3B572F6D938900E624A3 /* XCRemoteSwiftPackageReference "WhisperKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/argmaxinc/WhisperKit.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 		006F75112F547CA800D581A9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
@@ -573,6 +583,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 006F76952F54898800D581A9 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
 			productName = GoogleSignIn;
+		};
+		002D3B582F6D938900E624A3 /* WhisperKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 002D3B572F6D938900E624A3 /* XCRemoteSwiftPackageReference "WhisperKit" */;
+			productName = WhisperKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
