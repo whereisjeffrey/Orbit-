@@ -521,84 +521,41 @@ class KeyboardViewController: UIInputViewController {
             emptyBar.heightAnchor.constraint(equalToConstant: emptyHeight),
         ])
 
-        // ── Clean empty bar: icon + label centred, mic button right ──────
-        // Icon view (blue mic circle)
-        let iconView = UIImageView()
-        iconView.translatesAutoresizingMaskIntoConstraints = false
-        // Try keyboard bundle first, then containing app bundle
-        var logoImage: UIImage? = UIImage(named: "TalkSwitchLogo")
-        if logoImage == nil {
-            let appBundleURL = Bundle.main.bundleURL
-                .deletingLastPathComponent()
-                .deletingLastPathComponent()
-            if let appBundle = Bundle(url: appBundleURL) {
-                logoImage = UIImage(named: "AppIcon", in: appBundle, compatibleWith: nil)
-            }
-        }
-        if let logo = logoImage {
-            iconView.image = logo.withRenderingMode(.alwaysOriginal)
-        } else {
-            let cfg = UIImage.SymbolConfiguration(pointSize: 14, weight: .semibold)
-            iconView.image = UIImage(systemName: "bubble.left.and.bubble.right.fill", withConfiguration: cfg)
-            iconView.tintColor = UIColor.systemBlue
-        }
-        iconView.contentMode = .scaleAspectFit
-        emptyBar.addSubview(iconView)
-
-        emptyLabel.translatesAutoresizingMaskIntoConstraints = false
-        emptyLabel.text = "Start typing to translate"
-        emptyLabel.font = UIFont.systemFont(ofSize: 14, weight: .medium)
-        emptyLabel.textColor = textSecondary
-        emptyBar.addSubview(emptyLabel)
-
-        // Speak button — visible "🎤 Speak" CTA on the left of the empty bar
+        // ── Full-width Speak button — the only element in the empty state ──
         micButton.translatesAutoresizingMaskIntoConstraints = false
-        micButton.setTitle("🎤 Speak", for: .normal)
-        micButton.titleLabel?.font = UIFont.systemFont(ofSize: 13, weight: .semibold)
+        micButton.setTitle("🎤  Speak", for: .normal)
+        micButton.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
         micButton.setTitleColor(.white, for: .normal)
-        micButton.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.15)
+        micButton.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.18)
         micButton.layer.cornerRadius = 14
         micButton.layer.borderWidth = 1.0
         micButton.layer.borderColor = UIColor.systemBlue.withAlphaComponent(0.5).cgColor
         micButton.clipsToBounds = true
-        micButton.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
         micButton.addTarget(self, action: #selector(micTapped), for: .touchUpInside)
         emptyBar.addSubview(micButton)
 
-        // Language pill — small, right side, tap to toggle
+        // langPill and emptyLabel kept as hidden — referenced elsewhere in state management
         langPill.translatesAutoresizingMaskIntoConstraints = false
-        langPill.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
-        langPill.layer.cornerRadius = 12
-        langPill.clipsToBounds = true
-        langPill.addTarget(self, action: #selector(langPillTapped), for: .touchUpInside)
+        langPill.isHidden = true
         emptyBar.addSubview(langPill)
         updateLangPill()
 
-        // Tap anywhere on empty bar opens DictateVC
-        let barTap = UITapGestureRecognizer(target: self, action: #selector(micTapped))
-        emptyBar.addGestureRecognizer(barTap)
-
-        let centerStack = UIStackView(arrangedSubviews: [iconView, emptyLabel])
-        centerStack.translatesAutoresizingMaskIntoConstraints = false
-        centerStack.axis = .horizontal
-        centerStack.spacing = 6
-        centerStack.alignment = .center
-        emptyBar.addSubview(centerStack)
+        emptyLabel.translatesAutoresizingMaskIntoConstraints = false
+        emptyLabel.isHidden = true
+        emptyBar.addSubview(emptyLabel)
 
         NSLayoutConstraint.activate([
-            iconView.widthAnchor.constraint(equalToConstant: 45),
-            iconView.heightAnchor.constraint(equalToConstant: 45),
-
-            centerStack.centerXAnchor.constraint(equalTo: emptyBar.centerXAnchor),
-            centerStack.centerYAnchor.constraint(equalTo: emptyBar.centerYAnchor),
+            micButton.leadingAnchor.constraint(equalTo: emptyBar.leadingAnchor, constant: 10),
+            micButton.trailingAnchor.constraint(equalTo: emptyBar.trailingAnchor, constant: -10),
+            micButton.topAnchor.constraint(equalTo: emptyBar.topAnchor, constant: 10),
+            micButton.bottomAnchor.constraint(equalTo: emptyBar.bottomAnchor, constant: -10),
 
             langPill.trailingAnchor.constraint(equalTo: emptyBar.trailingAnchor, constant: -12),
             langPill.centerYAnchor.constraint(equalTo: emptyBar.centerYAnchor),
             langPill.heightAnchor.constraint(equalToConstant: 26),
 
-            micButton.leadingAnchor.constraint(equalTo: emptyBar.leadingAnchor, constant: 14),
-            micButton.centerYAnchor.constraint(equalTo: emptyBar.centerYAnchor),
-            micButton.heightAnchor.constraint(equalToConstant: 30),
+            emptyLabel.centerXAnchor.constraint(equalTo: emptyBar.centerXAnchor),
+            emptyLabel.centerYAnchor.constraint(equalTo: emptyBar.centerYAnchor),
         ])
 
         // ── Recording bar (hidden until mic is tapped) ──────────────────────
@@ -1259,11 +1216,8 @@ class KeyboardViewController: UIInputViewController {
     /// Shows a "waiting for result" state in the empty bar while the keyboard polls
     /// for the dictation result from the main app's App Group UserDefaults.
     private func showPollingState() {
-        emptyLabel.text = "Listening for result…"
-        emptyLabel.textColor = UIColor.systemBlue.withAlphaComponent(0.8)
-
         // Dim and disable the Speak button while waiting
-        micButton.setTitle("⏳ Waiting", for: .normal)
+        micButton.setTitle("⏳ Waiting…", for: .normal)
         micButton.backgroundColor = UIColor.systemGray.withAlphaComponent(0.12)
         micButton.layer.borderColor = UIColor.systemGray.withAlphaComponent(0.3).cgColor
         micButton.setTitleColor(UIColor.systemGray, for: .normal)
@@ -1272,12 +1226,8 @@ class KeyboardViewController: UIInputViewController {
 
     /// Restores the empty bar to its normal idle state.
     private func hidePollingState() {
-        emptyLabel.text = "Start typing to translate"
-        emptyLabel.textColor = textSecondary
-        emptyLabel.font = UIFont.systemFont(ofSize: 14, weight: .medium)
-
-        micButton.setTitle("🎤 Speak", for: .normal)
-        micButton.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.15)
+        micButton.setTitle("🎤  Speak", for: .normal)
+        micButton.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.18)
         micButton.layer.borderColor = UIColor.systemBlue.withAlphaComponent(0.5).cgColor
         micButton.setTitleColor(.white, for: .normal)
         micButton.isEnabled = true
@@ -1326,9 +1276,7 @@ class KeyboardViewController: UIInputViewController {
     private func showRecordingBar() {
         // Always collapse the panel first — recording bar lives on the empty bar
         showEmpty()
-        emptyLabel.isHidden = true
         micButton.isHidden = true
-        langPill.isHidden = true
 
         recordingSeconds = 0
         recordingTimeLbl.text = "0:00"
@@ -1363,9 +1311,7 @@ class KeyboardViewController: UIInputViewController {
         sendRecordBtn.isHidden = true
         recordingDotLbl.isHidden = true
         recordingTimeLbl.isHidden = true
-        emptyLabel.isHidden = false
         micButton.isHidden = false
-        langPill.isHidden = false
     }
 
     @objc private func cancelRecording() {
