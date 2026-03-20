@@ -20,6 +20,7 @@ class DictateViewController: UIViewController {
     private var elapsedTimer:  Timer?
     private var ringLayer1:    CAShapeLayer?
     private var ringLayer2:    CAShapeLayer?
+    private var sendBorderGradient: CAGradientLayer?
 
     /// Target language code set by SceneDelegate from the URL param (e.g. "es", "zh", "fr").
     var targetLanguage: String = "es"
@@ -126,8 +127,6 @@ class DictateViewController: UIViewController {
             return a
         }
         sendButton.configuration = config
-        sendButton.layer.borderWidth = 1.0
-        sendButton.layer.borderColor = UIColor.white.withAlphaComponent(0.35).cgColor
         sendButton.layer.cornerRadius = 18
         sendButton.clipsToBounds = true
         sendButton.addTarget(self, action: #selector(doneTapped), for: .touchUpInside)
@@ -159,6 +158,49 @@ class DictateViewController: UIViewController {
             sendButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             sendButton.heightAnchor.constraint(equalToConstant: 58),
         ])
+    }
+
+    // MARK: - Gradient border for send button
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        applyGradientBorder()
+    }
+
+    private func applyGradientBorder() {
+        // Remove old layer so we don't stack on rotation/relayout
+        sendBorderGradient?.removeFromSuperlayer()
+
+        let btn      = sendButton
+        let radius   = btn.layer.cornerRadius
+        let bounds   = btn.bounds
+
+        // 1. Gradient layer — white at top, fully transparent at bottom
+        let gradient          = CAGradientLayer()
+        gradient.frame        = bounds
+        gradient.colors       = [
+            UIColor.white.withAlphaComponent(0.55).cgColor,   // top: bright rim
+            UIColor.white.withAlphaComponent(0.12).cgColor,   // mid: soft glow
+            UIColor.white.withAlphaComponent(0.00).cgColor,   // bottom: invisible
+        ]
+        gradient.locations    = [0.0, 0.45, 1.0]
+        gradient.startPoint   = CGPoint(x: 0.5, y: 0.0)
+        gradient.endPoint     = CGPoint(x: 0.5, y: 1.0)
+
+        // 2. Rounded-rect stroke mask — 1 pt border
+        let borderWidth: CGFloat = 1.0
+        let maskPath = UIBezierPath(roundedRect: bounds.insetBy(dx: borderWidth / 2,
+                                                                 dy: borderWidth / 2),
+                                    cornerRadius: radius)
+        let mask          = CAShapeLayer()
+        mask.path         = maskPath.cgPath
+        mask.lineWidth    = borderWidth
+        mask.strokeColor  = UIColor.black.cgColor   // coloured by gradient
+        mask.fillColor    = UIColor.clear.cgColor
+        gradient.mask     = mask
+
+        // 3. Insert behind the button's content but outside its clip-bounds layer
+        btn.layer.addSublayer(gradient)
+        sendBorderGradient = gradient
     }
 
     // MARK: - Sonar ring animation (two expanding rings)
