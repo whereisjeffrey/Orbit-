@@ -18,6 +18,31 @@ class DictateViewController: UIViewController {
     private var isRecording   = false
     private var pulseTimer:   Timer?
 
+    /// Target language code set by SceneDelegate from the URL param (e.g. "es", "zh", "fr").
+    var targetLanguage: String = "es"
+
+    // MARK: - Locale + prompt helpers
+
+    private var recognizerLocale: Locale {
+        let map: [String: String] = [
+            "es": "es-MX", "zh": "zh-CN", "fr": "fr-FR", "pt": "pt-BR",
+            "de": "de-DE", "it": "it-IT", "ja": "ja-JP",
+            "ko": "ko-KR", "ar": "ar-SA", "en": "en-US"
+        ]
+        return Locale(identifier: map[targetLanguage] ?? "es-MX")
+    }
+
+    private var promptText: String {
+        let map: [String: String] = [
+            "es": "Habla en Español", "zh": "说中文",
+            "fr": "Parlez en Français", "pt": "Fale em Português",
+            "de": "Sprechen Sie Deutsch", "it": "Parla in Italiano",
+            "ja": "日本語で話してください", "ko": "한국어로 말세요",
+            "ar": "تحدث بالعربية", "en": "Speak in English"
+        ]
+        return map[targetLanguage] ?? "Speak now"
+    }
+
     // MARK: - UI
     private let micCircle       = UIView()
     private let micImageView    = UIImageView()
@@ -34,36 +59,36 @@ class DictateViewController: UIViewController {
 
     // MARK: - UI
     private func setupUI() {
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .clear
 
         // ── Mic circle ─────────────────────────────────────────────────────
         micCircle.translatesAutoresizingMaskIntoConstraints = false
-        micCircle.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.12)
+        micCircle.backgroundColor = UIColor.white.withAlphaComponent(0.15)
         micCircle.layer.cornerRadius = 64
         micCircle.layer.borderWidth  = 2
-        micCircle.layer.borderColor  = UIColor.systemBlue.cgColor
+        micCircle.layer.borderColor  = UIColor.white.withAlphaComponent(0.6).cgColor
         view.addSubview(micCircle)
 
         let cfg = UIImage.SymbolConfiguration(pointSize: 48, weight: .medium)
         micImageView.translatesAutoresizingMaskIntoConstraints = false
         micImageView.image = UIImage(systemName: "mic.fill", withConfiguration: cfg)
-        micImageView.tintColor = .systemBlue
+        micImageView.tintColor = .white
         micImageView.contentMode = .scaleAspectFit
         micCircle.addSubview(micImageView)
 
         // ── Status label ───────────────────────────────────────────────────
         statusLabel.translatesAutoresizingMaskIntoConstraints = false
-        statusLabel.text = "Habla en Español"
+        statusLabel.text = promptText
         statusLabel.font = .systemFont(ofSize: 24, weight: .semibold)
-        statusLabel.textColor = .label
+        statusLabel.textColor = .white
         statusLabel.textAlignment = .center
         view.addSubview(statusLabel)
 
         // ── Subtitle / coaching hint ───────────────────────────────────────
         subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        subtitleLabel.text = "Speak in Spanish — we'll critique your accent & phrasing"
+        subtitleLabel.text = "Speak naturally — we'll analyze your pronunciation & phrasing"
         subtitleLabel.font = .systemFont(ofSize: 14)
-        subtitleLabel.textColor = .secondaryLabel
+        subtitleLabel.textColor = UIColor.white.withAlphaComponent(0.72)
         subtitleLabel.textAlignment = .center
         subtitleLabel.numberOfLines = 0
         view.addSubview(subtitleLabel)
@@ -72,7 +97,7 @@ class DictateViewController: UIViewController {
         transcriptLabel.translatesAutoresizingMaskIntoConstraints = false
         transcriptLabel.text = ""
         transcriptLabel.font = .systemFont(ofSize: 18)
-        transcriptLabel.textColor = .label
+        transcriptLabel.textColor = .white
         transcriptLabel.textAlignment = .center
         transcriptLabel.numberOfLines = 0
         view.addSubview(transcriptLabel)
@@ -81,7 +106,9 @@ class DictateViewController: UIViewController {
         doneButton.translatesAutoresizingMaskIntoConstraints = false
         doneButton.setTitle("Done", for: .normal)
         doneButton.titleLabel?.font = .systemFont(ofSize: 18, weight: .semibold)
-        doneButton.backgroundColor = .systemBlue
+        doneButton.backgroundColor = UIColor.white.withAlphaComponent(0.22)
+        doneButton.layer.borderWidth = 1
+        doneButton.layer.borderColor = UIColor.white.withAlphaComponent(0.55).cgColor
         doneButton.setTitleColor(.white, for: .normal)
         doneButton.layer.cornerRadius = 14
         doneButton.addTarget(self, action: #selector(doneTapped), for: .touchUpInside)
@@ -90,7 +117,7 @@ class DictateViewController: UIViewController {
         // ── Cancel button ──────────────────────────────────────────────────
         cancelButton.translatesAutoresizingMaskIntoConstraints = false
         cancelButton.setTitle("Cancel", for: .normal)
-        cancelButton.setTitleColor(.secondaryLabel, for: .normal)
+        cancelButton.setTitleColor(UIColor.white.withAlphaComponent(0.6), for: .normal)
         cancelButton.addTarget(self, action: #selector(cancelTapped), for: .touchUpInside)
         view.addSubview(cancelButton)
 
@@ -133,11 +160,11 @@ class DictateViewController: UIViewController {
             guard let self = self else { return }
             UIView.animate(withDuration: 0.45) {
                 self.micCircle.transform = CGAffineTransform(scaleX: 1.12, y: 1.12)
-                self.micCircle.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.22)
+                self.micCircle.backgroundColor = UIColor.white.withAlphaComponent(0.28)
             } completion: { _ in
                 UIView.animate(withDuration: 0.45) {
                     self.micCircle.transform = .identity
-                    self.micCircle.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.12)
+                    self.micCircle.backgroundColor = UIColor.white.withAlphaComponent(0.15)
                 }
             }
         }
@@ -146,7 +173,7 @@ class DictateViewController: UIViewController {
         pulseTimer?.invalidate(); pulseTimer = nil
         UIView.animate(withDuration: 0.2) {
             self.micCircle.transform = .identity
-            self.micCircle.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.12)
+            self.micCircle.backgroundColor = UIColor.white.withAlphaComponent(0.15)
         }
     }
 
@@ -156,18 +183,17 @@ class DictateViewController: UIViewController {
             DispatchQueue.main.async {
                 guard let self = self, status == .authorized else { return }
                 AVAudioApplication.requestRecordPermission { granted in
-                    DispatchQueue.main.async { if granted { self.startEsMX() } }
+                    DispatchQueue.main.async { if granted { self.startRecognition() } }
                 }
             }
         }
     }
 
-    /// Spanish-only recognition — no English fallback.
-    /// The keyboard will route this through accent critique automatically.
-    private func startEsMX() {
+    /// Starts recognition using the locale derived from targetLanguage.
+    private func startRecognition() {
         guard !committed else { return }
-        guard let recognizer = SFSpeechRecognizer(locale: Locale(identifier: "es-MX")) else {
-            statusLabel.text = "Spanish recognition unavailable"
+        guard let recognizer = SFSpeechRecognizer(locale: recognizerLocale) else {
+            statusLabel.text = "Recognition unavailable for this language"
             return
         }
 
@@ -175,35 +201,34 @@ class DictateViewController: UIViewController {
         isRecording = true
         startPulse()
 
-        NSLog("🎤 [Dictate] es-MX recognizer starting (Spanish-only mode)")
+        NSLog("🎤 [Dictate] recognizer starting locale=\(recognizerLocale.identifier)")
         currentTask = recognizer.recognitionTask(with: request) { [weak self] result, error in
             DispatchQueue.main.async {
                 guard let self = self, !self.committed else { return }
 
                 if let r = result {
                     let text = r.bestTranscription.formattedString
-                    NSLog("🎤 [Dictate] es-MX partial: '\(text)' isFinal=\(r.isFinal)")
+                    NSLog("🎤 [Dictate] partial: '\(text)' isFinal=\(r.isFinal)")
                     if !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                         self.esText = text
                         self.transcriptLabel.text = text
                         self.transcriptLabel.textColor = .label
                     }
                     if r.isFinal {
-                        NSLog("🎤 [Dictate] es-MX final: '\(text)'")
+                        NSLog("🎤 [Dictate] final: '\(text)'")
                         if self.esText.isEmpty {
-                            self.statusLabel.text = "No escuché nada — inténtalo de nuevo"
+                            self.statusLabel.text = "Nothing heard — try again"
                         } else {
-                            self.commitWith(text: self.esText, lang: "es")
+                            self.commitWith(text: self.esText, lang: self.targetLanguage)
                         }
                     }
                 }
 
                 if let error = error {
-                    NSLog("🎤 [Dictate] es-MX error: \(error.localizedDescription) — esText='\(self.esText)'")
+                    NSLog("🎤 [Dictate] error: \(error.localizedDescription) — esText='\(self.esText)'")
                     if !self.esText.isEmpty {
-                        self.commitWith(text: self.esText, lang: "es")
+                        self.commitWith(text: self.esText, lang: self.targetLanguage)
                     } else {
-                        // Recognition session closed without any result — keep mic alive
                         self.statusLabel.text = "Listening…"
                     }
                 }

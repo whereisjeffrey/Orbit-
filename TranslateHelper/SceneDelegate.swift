@@ -45,17 +45,25 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     private func handle(url: URL) {
         guard url.scheme == "translatehelper", url.host == "dictate" else { return }
-        presentDictate()
+        // Extract ?lang=es (or zh, fr, etc.) — defaults to "es" if missing
+        let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+        let lang = components?.queryItems?.first(where: { $0.name == "lang" })?.value ?? "es"
+        presentDictate(language: lang)
     }
 
-    private func presentDictate() {
+    private func presentDictate(language: String) {
         guard let root = window?.rootViewController else { return }
-        let vc = DictateViewController()
-        vc.modalPresentationStyle = .fullScreen
+
+        // Wrap DictateViewController inside the VoiceKeyboardBackground blob gradient.
+        // A container VC holds the SwiftUI background, with the recording VC on top.
+        let container = VoiceDictateContainerViewController()
+        container.targetLanguage = language
+        container.modalPresentationStyle = .fullScreen
+
         if let presented = root.presentedViewController {
-            presented.dismiss(animated: false) { root.present(vc, animated: true) }
+            presented.dismiss(animated: false) { root.present(container, animated: true) }
         } else {
-            root.present(vc, animated: true)
+            root.present(container, animated: true)
         }
     }
 

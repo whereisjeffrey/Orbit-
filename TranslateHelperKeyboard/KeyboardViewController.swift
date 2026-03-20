@@ -551,9 +551,17 @@ class KeyboardViewController: UIInputViewController {
         emptyLabel.textColor = textSecondary
         emptyBar.addSubview(emptyLabel)
 
-        // Mic button — kept in view hierarchy but hidden (tap-anywhere handles it)
+        // Speak button — visible "🎤 Speak" CTA on the left of the empty bar
         micButton.translatesAutoresizingMaskIntoConstraints = false
-        micButton.isHidden = true
+        micButton.setTitle("🎤 Speak", for: .normal)
+        micButton.titleLabel?.font = UIFont.systemFont(ofSize: 13, weight: .semibold)
+        micButton.setTitleColor(.white, for: .normal)
+        micButton.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.15)
+        micButton.layer.cornerRadius = 14
+        micButton.layer.borderWidth = 1.0
+        micButton.layer.borderColor = UIColor.systemBlue.withAlphaComponent(0.5).cgColor
+        micButton.clipsToBounds = true
+        micButton.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
         micButton.addTarget(self, action: #selector(micTapped), for: .touchUpInside)
         emptyBar.addSubview(micButton)
 
@@ -588,10 +596,9 @@ class KeyboardViewController: UIInputViewController {
             langPill.centerYAnchor.constraint(equalTo: emptyBar.centerYAnchor),
             langPill.heightAnchor.constraint(equalToConstant: 26),
 
-            micButton.trailingAnchor.constraint(equalTo: emptyBar.trailingAnchor, constant: -14),
+            micButton.leadingAnchor.constraint(equalTo: emptyBar.leadingAnchor, constant: 14),
             micButton.centerYAnchor.constraint(equalTo: emptyBar.centerYAnchor),
-            micButton.widthAnchor.constraint(equalToConstant: 44),
-            micButton.heightAnchor.constraint(equalToConstant: 44),
+            micButton.heightAnchor.constraint(equalToConstant: 30),
         ])
 
         // ── Recording bar (hidden until mic is tapped) ──────────────────────
@@ -1126,8 +1133,8 @@ class KeyboardViewController: UIInputViewController {
 
         let actions: [(String, Selector)] = [
             ("Replace ↩️", #selector(replaceTapped)),
-            ("Copy 📋", #selector(copyTapped)),
             ("Save 💾", #selector(saveTapped)),
+            ("🎤 Speak", #selector(micTapped)),
         ]
         for (title, action) in actions {
             let btn = UIButton(type: .custom)
@@ -1189,6 +1196,7 @@ class KeyboardViewController: UIInputViewController {
         correctionCard.isHidden = true
         notesCard.isHidden = true
         heightConstraint.constant = emptyHeight
+        hidePollingState() // reset any polling UI when going back to empty
     }
 
     private func showPanel() {
@@ -1246,14 +1254,60 @@ class KeyboardViewController: UIInputViewController {
 
     // MARK: - Actions
 
+    // MARK: - Polling State UI
+
+    /// Shows a "waiting for result" state in the empty bar while the keyboard polls
+    /// for the dictation result from the main app's App Group UserDefaults.
+    private func showPollingState() {
+        emptyLabel.text = "Listening for result…"
+        emptyLabel.textColor = UIColor.systemBlue.withAlphaComponent(0.8)
+
+        // Dim and disable the Speak button while waiting
+        micButton.setTitle("⏳ Waiting", for: .normal)
+        micButton.backgroundColor = UIColor.systemGray.withAlphaComponent(0.12)
+        micButton.layer.borderColor = UIColor.systemGray.withAlphaComponent(0.3).cgColor
+        micButton.setTitleColor(UIColor.systemGray, for: .normal)
+        micButton.isEnabled = false
+    }
+
+    /// Restores the empty bar to its normal idle state.
+    private func hidePollingState() {
+        emptyLabel.text = "Start typing to translate"
+        emptyLabel.textColor = textSecondary
+        emptyLabel.font = UIFont.systemFont(ofSize: 14, weight: .medium)
+
+        micButton.setTitle("🎤 Speak", for: .normal)
+        micButton.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.15)
+        micButton.layer.borderColor = UIColor.systemBlue.withAlphaComponent(0.5).cgColor
+        micButton.setTitleColor(.white, for: .normal)
+        micButton.isEnabled = true
+    }
+
     // MARK: - Mic (Speech-to-Text)
     
     @objc private func micTapped() {
-        // MVP: native iOS mic handles recording. Show one-time guidance tip only.
-        let key = "talkswitch_mic_tip_shown"
-        guard UserDefaults.standard.bool(forKey: key) == false else { return }
-        UserDefaults.standard.set(true, forKey: key)
-        // showMicTip() // Removed as it was missing from this scope
+        // Don't double-fire if we're already waiting for a result
+        guard dictationPollTimer == nil else { return }
+
+        // Write a request timestamp so checkForPendingDictation ignores stale results
+        // from any previous recording session.
+        let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper")
+        defaults?.set(Date().timeIntervalSince1970, forKey: "dictate_request_timestamp")
+        defaults?.synchronize()
+
+        // Pass the currently selected target language to the recording screen.
+        let lang = selectedLanguage
+        if let url = URL(string: "translatehelper://dictate?lang=\(lang)") {
+            openURLViaResponder(url)
+        }
+
+        // Immediately show "waiting" state in the empty bar so the user knows
+        // the keyboard is listening for the result from the main app.
+        showPollingState()
+
+        // Start polling — the main app will write the result to the App Group.
+        startDictationPolling()
+        NSLog("TSKBD_SPEAK: fired dictate URL, lang=\(lang), polling started")
     }
 
     private func openURLViaResponder(_ url: URL) {
@@ -1466,10 +1520,6 @@ class KeyboardViewController: UIInputViewController {
         advanceToNextInputMode()
     }
 
-    @objc private func copyTapped() {
-        UIPasteboard.general.string = outputTextLabel.text
-        flashActionButton(index: 1, tempTitle: "Copied! ✅", originalTitle: "Copy 📋")
-    }
 
     @objc private func saveTapped() {
         let source      = inputTextLabel.text ?? ""
@@ -1483,7 +1533,7 @@ class KeyboardViewController: UIInputViewController {
         let targetLang = selectedLanguage
         let sourceLang = selectedLanguage == targetCode ? "en" : targetCode
 
-        guard let saveBtn = actionStack.arrangedSubviews[2] as? UIButton else { return }
+        guard let saveBtn = actionStack.arrangedSubviews[1] as? UIButton else { return }
         let originalTitle = saveBtn.title(for: .normal) ?? "Save 💾"
         saveBtn.setTitle("Extracting…", for: .normal)
         saveBtn.isEnabled = false
