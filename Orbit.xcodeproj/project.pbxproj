@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		000832D42F6F33570064CC4A /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = 002D3B582F6D938900E624A3 /* WhisperKit */; };
 		006F75132F547CA800D581A9 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 006F75122F547CA800D581A9 /* FirebaseAuth */; };
 		006F75152F547CA800D581A9 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 006F75142F547CA800D581A9 /* FirebaseFirestore */; };
 		006F75ED2F547E3500D581A9 /* TranslateHelperKeyboard.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 006F75E62F547E3500D581A9 /* TranslateHelperKeyboard.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -83,6 +84,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				000832D42F6F33570064CC4A /* WhisperKit in Frameworks */,
 				006F75132F547CA800D581A9 /* FirebaseAuth in Frameworks */,
 				006F75152F547CA800D581A9 /* FirebaseFirestore in Frameworks */,
 				006F769E2F54C7FA00D581A9 /* GoogleSignIn in Frameworks */,
@@ -569,6 +571,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		002D3B582F6D938900E624A3 /* WhisperKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 002D3B572F6D938900E624A3 /* XCRemoteSwiftPackageReference "WhisperKit" */;
+			productName = WhisperKit;
+		};
 		006F75122F547CA800D581A9 /* FirebaseAuth */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 006F75112F547CA800D581A9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
@@ -583,11 +590,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 006F76952F54898800D581A9 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
 			productName = GoogleSignIn;
-		};
-		002D3B582F6D938900E624A3 /* WhisperKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 002D3B572F6D938900E624A3 /* XCRemoteSwiftPackageReference "WhisperKit" */;
-			productName = WhisperKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
