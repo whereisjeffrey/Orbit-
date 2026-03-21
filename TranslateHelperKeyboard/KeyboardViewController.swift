@@ -1534,13 +1534,17 @@ class KeyboardViewController: UIInputViewController {
               text != "✨ Refining...",
               text != "⚠️ Translation failed" else { return }
         
-        // Determine language of the translation output
+        // Determine language of the translation output from actual target language setting
+        let appGroup = "group.com.jeff.translatehelper"
+        let targetCode = UserDefaults(suiteName: appGroup)?.string(forKey: "talkswitch_target_lang") ?? "es"
+
+        // If the output card is showing the target language, use that locale. Otherwise English.
+        let detected = detectLanguage(text)
         let lang: String
-        // Detect output language from the flag in the label
-        if outputLangLabel.text?.contains("🇲🇽") == true || outputLangLabel.text?.contains("🇪🇸") == true {
-            lang = "es-MX"
-        } else {
+        if detected.code == "en" {
             lang = "en-US"
+        } else {
+            lang = SpeechService.localeString(for: detected.code)
         }
         
         SpeechService.shared.speak(text, language: lang)

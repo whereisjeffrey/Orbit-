@@ -349,6 +349,7 @@ class SpeechService {
         }
 
         // Try Google WaveNet first
+        NSLog("TSKBD_TTS: requesting WaveNet for language=\(language)")
         speakWithWaveNet(text: text, language: language, cacheKey: cacheKey)
     }
 
