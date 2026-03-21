@@ -318,6 +318,7 @@ class TalkSwitchAPI {
         }
 
         let langName = languageName(for: language)
+        let transferBlock = TransferPatterns.patterns(for: language)
         let systemPrompt = """
         You are a warm, advanced language coach for \(langName).
         A student typed a passage in \(langName). Your ONLY job is to isolate a specific phrase
@@ -326,6 +327,8 @@ class TalkSwitchAPI {
         CRITICAL: The student is an ENGLISH speaker learning \(langName). \
         You MUST write the "explanation" field in ENGLISH. \
         Use \(langName) words only when quoting specific phrases inline within English sentences.
+
+        \(transferBlock)
 
         RULES:
         - NEVER rewrite their entire passage. Only pick out the specific phrase or sentence chunk that needs fixing.
@@ -1090,6 +1093,9 @@ class TalkSwitchAPI {
         let targetName = languageName(for: targetLang)
         let langPair = "\(sourceName) to \(targetName)"
 
+        // Inject transfer patterns for the target language
+        let transferBlock = TransferPatterns.patterns(for: targetLang)
+
         // Fetch user persona if it exists
         var personaInstruction = ""
         if let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper"),
@@ -1138,11 +1144,13 @@ class TalkSwitchAPI {
             let workExtra = tone == .work
                 ? "For business tone: treat phrases like 'circle back', 'heads-down', 'loop you in', 'take this offline', 'bandwidth', 'move the needle', 'in the weeds', etc. as idioms that need cultural equivalents — not literal translations. In \(targetName), business people use different fixed expressions to convey these ideas. \\"
                 : ""
+            let transferContext = transferBlock.isEmpty ? "" : "\n\n\(transferBlock)"
             return """
             You are a bilingual translation expert specializing in \(langPair). \
             Refine the translation to sound natural with a \(toneLabel) tone. \(personaInstruction)\
             \(locationInstruction)\
             \(paragraphInstruction)\
+            \(transferContext)\
             \
             IDIOM AWARENESS — CRITICAL RULE: \
             If the source text contains a recognizable idiom, proverb, or fixed expression \
