@@ -79,23 +79,24 @@ class DictateViewController: UIViewController {
         Task {
             do {
                 let startTime = CFAbsoluteTimeGetCurrent()
-                let config = WhisperKitConfig(model: "openai_whisper-base")
+                let config = WhisperKitConfig(model: "openai_whisper-tiny")
                 let pipe = try await WhisperKit(config)
                 let loadTime = CFAbsoluteTimeGetCurrent() - startTime
-                NSLog("🎤 [Dictate] WhisperKit initialized in %.1fs — warming up...", loadTime)
 
-                // Warm-up: run a tiny silent transcription to force-load all internal models
-                // (encoder, decoder, tokenizer) so the first real transcription is fast.
-                let warmupStart = CFAbsoluteTimeGetCurrent()
-                let silentSamples = [Float](repeating: 0.0, count: 16000) // 1 second of silence
-                _ = try await pipe.transcribe(audioArray: silentSamples)
-                let warmupTime = CFAbsoluteTimeGetCurrent() - warmupStart
-                NSLog("🎤 [Dictate] WhisperKit warm-up done in %.1fs", warmupTime)
-
+                // Mark as ready IMMEDIATELY after init — don't wait for warm-up
                 sharedWhisperPipe = pipe
                 sharedWhisperReady = true
-                let totalTime = CFAbsoluteTimeGetCurrent() - startTime
-                NSLog("🎤 [Dictate] WhisperKit fully ready in %.1fs", totalTime)
+                NSLog("🎤 [Dictate] WhisperKit ready in %.1fs", loadTime)
+
+                // Optional warm-up: run a tiny transcription to pre-load encoder/decoder.
+                // If this fails, the model is still usable — first real transcription will just be slightly slower.
+                do {
+                    let silentSamples = [Float](repeating: 0.0, count: 16000)
+                    _ = try await pipe.transcribe(audioArray: silentSamples)
+                    NSLog("🎤 [Dictate] WhisperKit warm-up complete")
+                } catch {
+                    NSLog("🎤 [Dictate] WhisperKit warm-up skipped (non-fatal): \(error.localizedDescription)")
+                }
             } catch {
                 NSLog("🎤 [Dictate] WhisperKit FAILED to load: \(error)")
                 NSLog("🎤 [Dictate] Will use Whisper API fallback instead")
@@ -461,30 +462,60 @@ class DictateViewController: UIViewController {
 
         Task {
             do {
-                // Base model handles auto-detection reliably (unlike tiny).
-                // Single pass with language auto-detect.
-                let options = DecodingOptions(
-                    language: nil,
+                // Hybrid approach:
+                // 1. Try WhisperKit tiny (English, fast, on-device)
+                // 2. Check if the result is real English
+                // 3. If not → user spoke target language → send to Whisper API (reliable for all languages)
+
+                NSLog("🎤 [Dictate] Step 1: trying WhisperKit tiny (English)")
+                let enOptions = DecodingOptions(
+                    language: "en",
                     temperature: 0.0,
                     usePrefillPrompt: false,
                     skipSpecialTokens: true,
                     clipTimestamps: []
                 )
 
-                let results = try await pipe.transcribe(
+                let enResults = try await pipe.transcribe(
                     audioPath: audioPath,
-                    decodeOptions: options
+                    decodeOptions: enOptions
                 )
 
-                let elapsed = CFAbsoluteTimeGetCurrent() - startTime
-                NSLog("🎤 [Dictate] WhisperKit transcribed in %.2fs", elapsed)
-
-                // Clean up temp file
-                try? FileManager.default.removeItem(at: tempAudioURL)
-
-                let fullText = results.map { $0.text }.joined(separator: " ")
+                let enText = enResults.map { $0.text }.joined(separator: " ")
                     .trimmingCharacters(in: .whitespacesAndNewlines)
-                let detectedLang = results.first?.language ?? "en"
+
+                let step1Time = CFAbsoluteTimeGetCurrent() - startTime
+                NSLog("🎤 [Dictate] WhisperKit English in %.2fs: '\(enText.prefix(60))'", step1Time)
+
+                // Check if the result is actually English
+                let recognizer = NLLanguageRecognizer()
+                recognizer.processString(enText)
+                let textLang = recognizer.dominantLanguage?.rawValue
+                    .components(separatedBy: "-").first ?? ""
+
+                NSLog("🎤 [Dictate] NLLanguageRecognizer says text is: \(textLang)")
+
+                let fullText: String
+                let detectedLang: String
+
+                if textLang == "en" && !enText.isEmpty {
+                    // Real English text — use it
+                    fullText = enText
+                    detectedLang = "en"
+                    // Clean up temp file
+                    try? FileManager.default.removeItem(at: self.tempAudioURL)
+                    NSLog("🎤 [Dictate] → confirmed English (on-device, fast)")
+                } else {
+                    // Not English — user spoke target language
+                    // Send to Whisper API for reliable multilingual transcription
+                    NSLog("🎤 [Dictate] → not English, sending to Whisper API for \(self.targetLanguage)...")
+
+                    // Don't clean up temp file yet — API needs it
+                    await MainActor.run {
+                        self.commitViaAPI()
+                    }
+                    return
+                }
 
                 NSLog("🎤 [Dictate] result: lang=\(detectedLang) text='\(fullText.prefix(80))'")
 
@@ -511,7 +542,12 @@ class DictateViewController: UIViewController {
         }
     }
 
-    // MARK: - Whisper API fallback (for older devices)
+    // MARK: - Whisper API (used for target language transcription + older device fallback)
+
+    /// Called from hybrid path when WhisperKit detects non-English speech
+    private func commitViaAPI() {
+        transcribeViaAPI()
+    }
 
     private func transcribeViaAPI() {
         committed = true

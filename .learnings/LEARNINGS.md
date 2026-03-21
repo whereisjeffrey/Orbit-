@@ -1,5 +1,66 @@
 # Learnings Log
 
+## [LRN-20260321-001] correction
+
+**Logged**: 2026-03-21T08:00:00Z
+**Priority**: critical
+**Status**: pending
+**Area**: process
+
+### Summary
+Stop declaring fixes before verifying them. Map ALL variables before attempting ANY fix.
+
+### Details
+Spent 8+ iterations trying to fix Portuguese language detection in WhisperKit. Each time, identified ONE possible cause, "fixed" it, told user it should work, and it didn't. The actual root cause (warm-up crash preventing WhisperKit from loading at all) was variable #2 or #3 on a list that should have been created BEFORE the first fix attempt.
+
+Pattern: diagnose one thing → claim it's fixed → user tests → fails → diagnose next thing → repeat. This is wasteful, frustrating, and erodes trust.
+
+### Correct Approach
+1. **Enumerate ALL variables** that could cause the problem before touching code
+2. **Add diagnostic logging** for every variable in one pass
+3. **Ask user to test ONCE** and report the logs
+4. **Read the logs** to identify the actual root cause
+5. **Fix the root cause** (not a guess)
+6. **Say "this should address it based on the logs" not "it's fixed"**
+7. **Verify** with the user before moving on
+
+### Suggested Action
+Follow the Engineering Protocol below for every non-trivial bug. Never say "it's fixed" — say "I've made a change that addresses [specific log evidence]. Let's verify."
+
+### Metadata
+- Source: user_feedback
+- Tags: process, debugging, trust, communication
+- Pattern-Key: process.premature_fix_declaration
+- Recurrence-Count: 1
+- First-Seen: 2026-03-21
+
+---
+
+## [LRN-20260321-002] best_practice
+
+**Logged**: 2026-03-21T08:00:00Z
+**Priority**: critical
+**Status**: pending
+**Area**: backend
+
+### Summary
+WhisperKit warm-up transcription of silence crashes on base model, silently disabling the entire pipeline.
+
+### Details
+WhisperKit `base` model initialized successfully (9.4s) but `pipe.transcribe(audioArray: silentSamples)` with 16000 zero-valued floats (1 second of silence) threw an exception. Because `sharedWhisperReady` was set AFTER the warm-up in the same try block, the catch set it to `false`, causing every subsequent recording to fall back to Whisper API. User tested 8+ times thinking WhisperKit was running — it never was.
+
+### Suggested Action
+Always set critical state (ready flags) immediately after the essential step succeeds. Wrap optional follow-up steps (warm-up) in their own do/catch so they can't take down the main pipeline.
+
+### Metadata
+- Source: error
+- Related Files: TranslateHelper/DictateViewController.swift
+- Tags: whisperkit, initialization, silent-failure
+- Pattern-Key: init.warmup_crash_disables_pipeline
+- See Also: LRN-20260320-001
+
+---
+
 ## [LRN-20260320-001] best_practice
 
 **Logged**: 2026-03-20T17:30:00Z
@@ -11,10 +72,7 @@
 WhisperKit `base` model is too slow for iPhone 13 — use `tiny` model and warm up on app launch.
 
 ### Details
-WhisperKit `openai_whisper-base` took 35+ seconds to load and transcribe on iPhone 13. The model re-loads internal components (encoder, decoder, tokenizer) on first transcription even if `WhisperKit()` init completed. Switching to `openai_whisper-tiny` and running a warm-up transcription (1 second of silence) at app startup forces all components into memory. Result: transcription completes in 1-3 seconds.
-
-### Suggested Action
-Always use `tiny` for mobile. Always warm up with a silent transcription after init. Pre-load at app startup (SceneDelegate), not on viewDidLoad.
+UPDATE 2026-03-21: `tiny` model cannot handle Portuguese at all — produces garbage for non-English. `base` is the minimum viable model for multilingual. The speed issue was actually caused by the warm-up crash (see LRN-20260321-002) which forced API fallback, not by the model itself being slow.
 
 ### Metadata
 - Source: error
@@ -34,11 +92,8 @@ Always use `tiny` for mobile. Always warm up with a silent transcription after i
 ### Summary
 AVAudioConverter buffer format mismatch crashes when converting to int16 interleaved in audio tap callback.
 
-### Details
-Attempted to downsample 48kHz stereo to 16kHz mono int16 using AVAudioConverter inside an installTap callback. The converter produced buffers that crashed on AVAudioFile.write() with EXC_BREAKPOINT. Root cause: AVAudioConverter's input callback pattern doesn't work reliably in a tap context with format changes across both sample rate and bit depth simultaneously.
-
 ### Suggested Action
-Never use AVAudioConverter with pcmFormatInt16 interleaved in audio tap callbacks. For format conversion, either: (1) record in native format and convert after recording stops, or (2) use AVAssetExportSession for compression. For Whisper specifically, just send native format — it handles any sample rate.
+Never use AVAudioConverter with pcmFormatInt16 interleaved in audio tap callbacks. For Whisper, just send native format — it handles any sample rate.
 
 ### Metadata
 - Source: error
@@ -58,12 +113,6 @@ Never use AVAudioConverter with pcmFormatInt16 interleaved in audio tap callback
 ### Summary
 Whisper API hallucinates Korean text when receiving corrupted or silent audio.
 
-### Details
-When M4A encoding produced a corrupted audio file, OpenAI Whisper API returned Korean text as transcription. This is a well-documented Whisper behavior — it hallucinates in Korean (and sometimes other languages) when receiving silence or garbage audio. The user had no Korean language settings.
-
-### Suggested Action
-Always validate audio file integrity before sending to Whisper. If transcription returns unexpected languages not in the user's language pair, treat it as a failed transcription and retry or show an error.
-
 ### Metadata
 - Source: error
 - Related Files: TranslateHelper/DictateViewController.swift
@@ -81,12 +130,6 @@ Always validate audio file integrity before sending to Whisper. If transcription
 
 ### Summary
 Keyboard translation pipeline was hardcoded to Spanish in multiple places despite supporting language selection.
-
-### Details
-User could select French/Chinese/etc in the host app, and the keyboard showed the correct flag and labels, but translations always came back in Spanish. Root causes: (1) refineTranslation targetLang used `langCode == "es" ? "en" : "es"` instead of actual targetCode, (2) updateNotes had same hardcoded flip, (3) all GPT prompts in TalkSwitchAPI.swift referenced "Mexican Spanish" instead of using dynamic language names.
-
-### Suggested Action
-Never hardcode language codes in translation logic. Always read from App Group UserDefaults (`talkswitch_target_lang`). Use `languageName(for:)` in all GPT prompts.
 
 ### Metadata
 - Source: user_feedback
