@@ -332,7 +332,144 @@ class SpeechService {
         }
     }
 
+    // MARK: - Audio player for WaveNet
+    private var audioPlayer: AVAudioPlayer?
+    private var cachedAudio: [String: Data] = [:]  // cache keyed by "text|language"
+
     func speak(_ text: String, language: String = "es-MX") {
+        synthesizer.stopSpeaking(at: .immediate)
+        audioPlayer?.stop()
+
+        let cacheKey = "\(text)|\(language)"
+
+        // Check cache first — instant playback on repeat taps
+        if let cached = cachedAudio[cacheKey] {
+            playAudioData(cached)
+            return
+        }
+
+        // Try Google WaveNet first
+        speakWithWaveNet(text: text, language: language, cacheKey: cacheKey)
+    }
+
+    func stopSpeaking() {
+        synthesizer.stopSpeaking(at: .immediate)
+        audioPlayer?.stop()
+    }
+
+    // MARK: - Google WaveNet TTS
+
+    /// Google Cloud TTS locale codes (BCP-47 format)
+    private static func googleLocale(for language: String) -> String {
+        let code = String(language.prefix(2))
+        switch code {
+        case "es": return "es-US"
+        case "pt": return "pt-BR"
+        case "zh": return "cmn-CN"
+        case "fr": return "fr-FR"
+        case "de": return "de-DE"
+        case "it": return "it-IT"
+        case "ja": return "ja-JP"
+        case "ko": return "ko-KR"
+        case "ar": return "ar-XA"
+        case "ru": return "ru-RU"
+        case "nl": return "nl-NL"
+        case "pl": return "pl-PL"
+        case "tr": return "tr-TR"
+        case "uk": return "uk-UA"
+        case "sv": return "sv-SE"
+        case "da": return "da-DK"
+        case "no": return "nb-NO"
+        case "fi": return "fi-FI"
+        case "hi": return "hi-IN"
+        case "id": return "id-ID"
+        case "vi": return "vi-VN"
+        case "he": return "he-IL"
+        case "th": return "th-TH"
+        case "en": return "en-US"
+        default:   return "\(code)-\(code.uppercased())"
+        }
+    }
+
+    private func speakWithWaveNet(text: String, language: String, cacheKey: String) {
+        let apiKey = APIConfig.googleTTSAPIKey
+        let baseURL = APIConfig.googleTTSBaseURL
+
+        guard let url = URL(string: "\(baseURL)/text:synthesize?key=\(apiKey)") else {
+            NSLog("TSKBD_TTS: invalid Google TTS URL — falling back to Apple")
+            speakWithApple(text: text, language: language)
+            return
+        }
+
+        let locale = SpeechService.googleLocale(for: language)
+
+        let body: [String: Any] = [
+            "input": ["text": text],
+            "voice": [
+                "languageCode": locale,
+                "ssmlGender": "FEMALE"
+            ],
+            "audioConfig": [
+                "audioEncoding": "MP3",
+                "speakingRate": 0.92,
+                "pitch": 0.0
+            ]
+        ]
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        request.timeoutInterval = 10
+
+        URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            guard let self = self else { return }
+
+            if let error = error {
+                NSLog("TSKBD_TTS: WaveNet error: \(error.localizedDescription) — falling back to Apple")
+                DispatchQueue.main.async { self.speakWithApple(text: text, language: language) }
+                return
+            }
+
+            guard let data = data,
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let audioContent = json["audioContent"] as? String,
+                  let audioData = Data(base64Encoded: audioContent) else {
+                NSLog("TSKBD_TTS: WaveNet response invalid — falling back to Apple")
+                DispatchQueue.main.async { self.speakWithApple(text: text, language: language) }
+                return
+            }
+
+            // Cache the audio for instant replay
+            self.cachedAudio[cacheKey] = audioData
+
+            // Keep cache reasonable — max 20 entries
+            if self.cachedAudio.count > 20 {
+                self.cachedAudio.removeAll()
+                self.cachedAudio[cacheKey] = audioData
+            }
+
+            DispatchQueue.main.async {
+                self.playAudioData(audioData)
+            }
+        }.resume()
+    }
+
+    private func playAudioData(_ data: Data) {
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+            try AVAudioSession.sharedInstance().setActive(true)
+
+            audioPlayer = try AVAudioPlayer(data: data)
+            audioPlayer?.play()
+        } catch {
+            NSLog("TSKBD_TTS: audio playback error: \(error.localizedDescription)")
+        }
+    }
+
+    // MARK: - Apple TTS Fallback
+
+    private func speakWithApple(text: String, language: String) {
         let utterance = AVSpeechUtterance(string: text)
         utterance.voice = SpeechService.bestVoice(for: language)
         utterance.rate = 0.48
@@ -343,9 +480,5 @@ class SpeechService {
 
         synthesizer.stopSpeaking(at: .immediate)
         synthesizer.speak(utterance)
-    }
-
-    func stopSpeaking() {
-        synthesizer.stopSpeaking(at: .immediate)
     }
 }
