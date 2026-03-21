@@ -458,14 +458,15 @@ class DictateViewController: UIViewController {
         let center = CGPoint(x: view.bounds.midX, y: view.bounds.midY - 40)
         let diameter = radius * 2
 
-        // Filled disc — same size as the icon circle
+        // Stroke-only ring — no fill so it doesn't blanch the gradient behind it
         let pulse = CAShapeLayer()
-        pulse.path      = UIBezierPath(ovalIn: CGRect(x: -radius, y: -radius,
-                                                       width: diameter, height: diameter)).cgPath
-        pulse.fillColor = UIColor.white.withAlphaComponent(0.35).cgColor
-        pulse.strokeColor = UIColor.clear.cgColor
-        pulse.opacity   = 0
-        pulse.position  = center
+        pulse.path        = UIBezierPath(ovalIn: CGRect(x: -radius, y: -radius,
+                                                        width: diameter, height: diameter)).cgPath
+        pulse.fillColor   = UIColor.clear.cgColor
+        pulse.strokeColor = UIColor.white.withAlphaComponent(0.55).cgColor
+        pulse.lineWidth   = 1.5
+        pulse.opacity     = 0
+        pulse.position    = center
         view.layer.insertSublayer(pulse, below: iconCircle.layer)
 
         if tag == 1 { bubbleLayers.append(pulse) } else { bubbleLayers.append(pulse) }
@@ -481,7 +482,7 @@ class DictateViewController: UIViewController {
 
         // Opacity: flash in fast, then slowly dissolve
         let fadeAnim = CAKeyframeAnimation(keyPath: "opacity")
-        fadeAnim.values    = [0.0, 0.35, 0.0]
+        fadeAnim.values    = [0.0, 0.55, 0.0]
         fadeAnim.keyTimes  = [0.0, 0.15, 1.0]
         fadeAnim.duration  = 1.8
         fadeAnim.beginTime = scaleAnim.beginTime

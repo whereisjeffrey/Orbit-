@@ -255,7 +255,7 @@ class TalkSwitchAPI {
                 ["role": "user", "content": userPrompt]
             ],
             "temperature": 0.6,
-            "max_tokens": 600
+            "max_tokens": 200
         ]
         
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
@@ -323,6 +323,10 @@ class TalkSwitchAPI {
         A student typed a passage in \(langName). Your ONLY job is to isolate a specific phrase
         where they made a mistake or sounded unnatural, and show them how a native speaker would naturally express *just that part*.
 
+        CRITICAL: The student is an ENGLISH speaker learning \(langName). \
+        You MUST write the "explanation" field in ENGLISH. \
+        Use \(langName) words only when quoting specific phrases inline within English sentences.
+
         RULES:
         - NEVER rewrite their entire passage. Only pick out the specific phrase or sentence chunk that needs fixing.
         - Focus on these common advanced-learner patterns:
@@ -330,13 +334,13 @@ class TalkSwitchAPI {
           2. Register mismatch (overly formal when casual is natural)
           3. Literal translation from English (word order, false friends)
           4. Idiomatic phrasing
-        - Keep explanations ultra-brief (1 sentence).
+        - Keep explanations ultra-brief (1 sentence, in English).
 
         Respond ONLY with valid JSON:
         {
-          "userSaid": "the specific short phrase they wrote that needs fixing",
-          "nativeSay": "how a native speaker would say that exact short phrase",
-          "explanation": "brief, warm explanation of the difference",
+          "userSaid": "the specific short phrase they wrote that needs fixing (in \(langName))",
+          "nativeSay": "how a native speaker would say that exact short phrase (in \(langName))",
+          "explanation": "1 sentence IN ENGLISH explaining the difference — use \(langName) words only when quoting",
           "severity": "improvement" | "natural"
         }
         If severity is "natural", it means their language was already native-sounding, and you should leave userSaid/nativeSay blank.
@@ -708,7 +712,7 @@ class TalkSwitchAPI {
                     ["role": "user", "content": userPrompt]
                 ],
                 "temperature": 0.85,  // Higher for flirty — more personality, more warmth
-                "max_tokens": 300
+                "max_tokens": 100
             ]
             request.httpBody = try? JSONSerialization.data(withJSONObject: body)
             self.urlSession.dataTask(with: request) { data, _, error in
@@ -888,7 +892,7 @@ class TalkSwitchAPI {
                 ["role": "user", "content": userPrompt]
             ],
             "temperature": 0.78,  // Slightly higher for more expressive, human-feeling phrasing variety
-            "max_tokens": 280
+            "max_tokens": 100
         ]
         
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
@@ -1114,6 +1118,7 @@ class TalkSwitchAPI {
             \(paragraphInstruction)\
             \
             Respond ONLY with valid JSON: {"translation": "...", "notes": "...", "localityTag": "..."}
+            CRITICAL: The "notes" field MUST be written in English, maximum 2 sentences. The user is an English speaker. Use \(targetName) words only when quoting specific phrases inline. \
             The "notes" field should briefly explain what flirty expressions you chose in the OUTPUT translation and why they work. \
             CRITICAL: Never frame notes as comparing one \(targetName) version to another \(targetName) version. \
             Describe the word or phrase you chose and why a native speaker would use it in that flirty, charming way. \
@@ -1147,7 +1152,7 @@ class TalkSwitchAPI {
             that a native \(targetName) speaker would actually use, \
             and substitute it naturally in the translation. \
             \(workExtra)\
-            When an idiom swap was made, explain it in the "notes" field: name what the source idiom meant and why the chosen expression in \(targetName) carries the same weight. \
+            When an idiom swap was made, explain it in the "notes" field (maximum 2 sentences): name what the source idiom meant and why the chosen expression in \(targetName) carries the same weight. \
             CRITICAL: Do NOT frame notes as comparing one phrase to another phrase in the target language. \
             The notes explain what choice was made in the OUTPUT and why it resonates with a native speaker. \
             If no idiom is present, leave a brief, vivid observation about why the chosen phrasing sounds natural. \
@@ -1158,6 +1163,7 @@ class TalkSwitchAPI {
             Feel free to rephrase these in your own words — variety makes coaching feel human, not robotic. \
             \
             Respond ONLY with valid JSON: {"translation": "...", "notes": "...", "localityTag": "..."}
+            CRITICAL: The "notes" field MUST be written in English, maximum 2 sentences. The user is an English speaker. Use \(targetName) words only when quoting specific phrases inline. \
             The "localityTag" field should describe the geographic scope, e.g. \
             "Understood in Spain & Latin America", "Common across Latin America", \
             "Used in [Country]", or "Used in [City]". Set to null if no location context.
@@ -1172,7 +1178,8 @@ class TalkSwitchAPI {
             \(paragraphInstruction)\
             \
             Respond ONLY with valid JSON: {"translation": "...", "notes": "...", "localityTag": "..."}
-            The "notes" field should explain the slang terms you chose in the OUTPUT translation so the user learns and remembers them. \
+            CRITICAL: The "notes" field MUST be written in English, maximum 2 sentences. The user is an English speaker. Use \(targetName) words only when quoting specific phrases inline. \
+            The "notes" field should explain the slang terms you chose in the OUTPUT translation so the user learns and remembers them (max 2 sentences). \
             CRITICAL: Do NOT frame notes as comparing one phrase to another phrase in the target language. \
             Describe what slang word or expression you picked and what it means — bring it to life with a sentence about how and where you'd hear it. \
             VARIETY RULE: Every note must open with a different sentence structure — draw from openers like: \

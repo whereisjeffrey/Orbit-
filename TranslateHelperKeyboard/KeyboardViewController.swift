@@ -297,75 +297,112 @@ class KeyboardViewController: UIInputViewController {
         default: style = .natural
         }
 
-        // Gentle Correction (only if typing/speaking in target language)
+        // Target language speech — show corrected version in output card (same UI as English path)
         let targetName = TSProfiles[targetCode]?.name.capitalized ?? "target language"
         if isSourceTarget {
-            self.outputCard.isHidden = true
-
-            // Populate output text just in case user hits "Replace" before api finishes
-            self.outputTextLabel.text = text
-            self.translationHistory = [text]
-            self.currentHistoryIndex = 0
-
+            // Show output card (corrected version goes here) + correction card (tips)
+            // Hide input card — it's redundant with the WhatsApp text box
+            self.inputCard.isHidden = true
+            self.outputCard.isHidden = false
             self.correctionCard.isHidden = false
             self.correctionCard.backgroundColor = UIColor.systemGreen.withAlphaComponent(0.05)
-            self.correctionIcon.text = source == "accent_coach" ? "🎤" : "💬"
-            self.correctionHeader.text = source == "accent_coach" ? "ACCENT COACH" : "NATIVE"
-            self.correctionTextLabel.text = source == "accent_coach"
-                ? "Analyzing your spoken \(targetName)…"
-                : "Analyzing your \(targetName)..."
+            self.correctionIcon.text = "💬"
+            self.correctionHeader.text = "NATIVE"
+            self.correctionTextLabel.text = "Analyzing your \(targetName)..."
+            self.coachCard.isHidden = true
 
-            // Show notes for the target language text (with pronunciation tips for speech mode)
+            // Input card shows original text with target language flag
+            inputLangLabel.text = "\(TSProfiles[targetCode]?.flag ?? "🌐") \(TSProfiles[targetCode]?.name ?? targetCode)"
+            inputTextLabel.text = text
+
+            // Output card shows loading state
+            outputLangLabel.text = "\(TSProfiles[targetCode]?.flag ?? "🌐") \(targetName.uppercased())"
+            outputTextLabel.text = "Translating..."
+            showPanel()
+
+            // Fire coaching tips in parallel
             if source == "accent_coach" {
                 lowConfidenceWords = ["[spoken aloud — focus on accent, rhythm, and pronunciation tips]"]
-            }
-            self.updateNotes(original: text, translated: text)
-
-            // Fire coaching tips in parallel (speech mode only) — will append to correction card
-            if source == "accent_coach" {
                 let spokenLang = self.lastSpeechDetectedLang.isEmpty ? targetCode : self.lastSpeechDetectedLang
                 self.fetchCoachingTipsForCorrectionCard(spokenText: text, spokenLanguage: spokenLang)
             }
-            self.coachCard.isHidden = true  // Never show separate coach card in this path
 
-            if text.split(separator: " ").count >= 1 {
-                TalkSwitchAPI.shared.getGentleCorrection(text: text, language: targetCode) { [weak self] result in
-                    DispatchQueue.main.async {
-                        let isSpeech = source == "accent_coach"
-                        switch result {
-                        case .success(let correction):
-                            if correction.severity != "natural" {
-                                if !correction.userSaid.isEmpty && !correction.nativeSay.isEmpty {
-                                    let newText = text.replacingOccurrences(of: correction.userSaid, with: correction.nativeSay)
-                                    self?.outputTextLabel.text = newText
-                                    self?.translationHistory = [newText]
-                                }
+            // Send directly to OpenAI for correction + tone (skip DeepL — same language)
+            let tone = Tone(rawValue: self.currentTone) ?? .casual
 
-                                self?.correctionCard.backgroundColor = UIColor.systemGreen.withAlphaComponent(0.10)
-                                self?.correctionIcon.text = isSpeech ? "🎤" : "💬"
-                                self?.correctionHeader.text = isSpeech ? "ACCENT COACH" : "NATIVE"
-                                let coachPrefix = isSpeech
-                                    ? "A native speaker would say"
-                                    : "Instead of"
-                                self?.correctionTextLabel.text = "\(coachPrefix) \"\(correction.userSaid)\", try \"\(correction.nativeSay)\".\n\n💡 \(correction.explanation)"
-                            } else {
-                                self?.correctionCard.backgroundColor = UIColor.systemGreen.withAlphaComponent(0.08)
-                                self?.correctionIcon.text = "👌"
-                                self?.correctionHeader.text = isSpeech ? "SOUNDS AUTHENTIC" : "SOUNDS NATIVE"
-                                let tgtName = TSProfiles[targetCode]?.name.capitalized ?? "target language"
-                                self?.correctionTextLabel.text = isSpeech
-                                    ? "Your spoken \(tgtName) sounds natural and authentic!\n\"\(correction.nativeSay)\""
-                                    : "Your \(tgtName) sounds natural here.\n\"\(correction.nativeSay)\""
-                            }
-                        case .failure(let error):
-                            self?.correctionHeader.text = "CORRECTION OFFLINE"
-                            self?.correctionIcon.text = "⚠️"
-                            self?.correctionTextLabel.text = "Error: \(error.localizedDescription)"
+            TalkSwitchAPI.shared.refineTranslation(
+                original: text,
+                deeplTranslation: text,  // no DeepL translation — pass original as the "base"
+                sourceLang: targetCode,
+                targetLang: targetCode,  // same language — correction, not translation
+                tone: tone
+            ) { [weak self] refineResult in
+                DispatchQueue.main.async {
+                    guard let self = self else { return }
+                    self.loadingSpinner.stopAnimating()
+
+                    switch refineResult {
+                    case .success(let refined):
+                        self.translationHistory = [refined.output]
+                        self.currentHistoryIndex = 0
+                        self.outputTextLabel.text = refined.output
+                        self.updateSwipeHint()
+
+                        if let notes = refined.notes {
+                            self.correctionCard.isHidden = false
+                            self.correctionIcon.text = "💬"
+                            self.correctionHeader.text = "NATIVE"
+                            self.correctionTextLabel.text = "💡 \(notes)"
                         }
+
+                        // Fire smart notes after correction is ready
+                        self.updateNotes(original: text, translated: refined.output)
+                        TalkSwitchAPI.shared.recordTranslationForPersona(original: text, translated: refined.output, tone: tone)
+                        NSLog("TSKBD_CORRECTED: \(text) → \(refined.output)")
+
+                    case .failure:
+                        // Correction failed — show original text as-is
+                        self.translationHistory = [text]
+                        self.currentHistoryIndex = 0
+                        self.outputTextLabel.text = text
+                        self.updateSwipeHint()
+                        self.correctionHeader.text = "NATIVE"
+                        self.correctionTextLabel.text = "Your \(targetName) sounds good here."
+                        self.updateNotes(original: text, translated: text)
+                        NSLog("TSKBD_CORRECT_FALLBACK: showing original text")
                     }
                 }
             }
-            return // Skip DeepL translation completely!
+
+            // Also fire gentle correction for the coaching card tips
+            TalkSwitchAPI.shared.getGentleCorrection(text: text, language: targetCode) { [weak self] result in
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success(let correction):
+                        if correction.severity != "natural" {
+                            let existing = self?.correctionTextLabel.text ?? ""
+                            let tip = "Instead of \"\(correction.userSaid)\", try \"\(correction.nativeSay)\".\n💡 \(correction.explanation)"
+                            // Append to existing correction text if refinement already populated it
+                            if existing.isEmpty || existing.contains("Analyzing") {
+                                self?.correctionTextLabel.text = tip
+                            } else {
+                                self?.correctionTextLabel.text = existing + "\n\n" + tip
+                            }
+                        } else {
+                            let existing = self?.correctionTextLabel.text ?? ""
+                            if existing.contains("Analyzing") {
+                                self?.correctionIcon.text = "👌"
+                                self?.correctionHeader.text = "SOUNDS NATIVE"
+                                self?.correctionTextLabel.text = "Your \(targetName) sounds natural here.\n\"\(correction.nativeSay)\""
+                            }
+                        }
+                    case .failure:
+                        break // Refinement handles the fallback
+                    }
+                }
+            }
+
+            return // Skip DeepL — we're correcting, not translating
 
         } else {
             self.correctionCard.isHidden = true
@@ -432,7 +469,7 @@ class KeyboardViewController: UIInputViewController {
                                         case "slang":  icon = "🔥"
                                         default:       icon = "💬"
                                         }
-                                        self.notesTextLabel.text = "\(icon) \(notes)"
+                                        self.notesTextLabel.text = "\(icon) \(self.capToTwoSentences(notes))"
                                     }
                                     // Fire smart notes AFTER refinement — so notes match the final translation
                                     self.updateNotes(original: text, translated: refined.output)
@@ -471,6 +508,25 @@ class KeyboardViewController: UIInputViewController {
         }
     }
 
+    /// Hard-caps any notes string to 2 sentences max, regardless of what GPT returned.
+    private func capToTwoSentences(_ text: String) -> String {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Split on sentence-ending punctuation followed by a space or end of string
+        var sentences: [String] = []
+        var current = ""
+        for char in trimmed {
+            current.append(char)
+            if (char == "." || char == "!" || char == "?") {
+                sentences.append(current.trimmingCharacters(in: .whitespaces))
+                current = ""
+                if sentences.count >= 2 { break }
+            }
+        }
+        // If we didn't find 2 sentence endings, just return the original
+        if sentences.isEmpty { return trimmed }
+        return sentences.joined(separator: " ")
+    }
+
     private func updateNotes(original: String, translated: String) {
         // Always show notes with smart coaching from OpenAI
         notesCard.isHidden = false
@@ -504,7 +560,7 @@ class KeyboardViewController: UIInputViewController {
                 guard let self = self else { return }
                 switch result {
                 case .success(let notes):
-                    self.notesTextLabel.text = notes
+                    self.notesTextLabel.text = self.capToTwoSentences(notes)
                 case .failure(let error):
                     // Fallback to basic notes + show error
                     self.notesTextLabel.text = "⚠️ Error loading phrase tips: \(error.localizedDescription)"
@@ -1512,7 +1568,7 @@ class KeyboardViewController: UIInputViewController {
                     
                     // Notes card: mistakes + tips
                     self.notesCard.isHidden = false
-                    self.notesTextLabel.text = coaching.rawNotes
+                    self.notesTextLabel.text = self.capToTwoSentences(coaching.rawNotes)
                     
                     NSLog("TSKBD_COACHED: \(text) → \(coaching.nativeVersion)")
                     
