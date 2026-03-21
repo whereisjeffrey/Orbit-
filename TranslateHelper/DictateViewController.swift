@@ -79,7 +79,7 @@ class DictateViewController: UIViewController {
         Task {
             do {
                 let startTime = CFAbsoluteTimeGetCurrent()
-                let config = WhisperKitConfig(model: "openai_whisper-tiny")
+                let config = WhisperKitConfig(model: "openai_whisper-base")
                 let pipe = try await WhisperKit(config)
                 let loadTime = CFAbsoluteTimeGetCurrent() - startTime
                 NSLog("🎤 [Dictate] WhisperKit initialized in %.1fs — warming up...", loadTime)
@@ -461,87 +461,32 @@ class DictateViewController: UIViewController {
 
         Task {
             do {
-                // Dual transcription: transcribe as English AND as target language,
-                // then pick the best result. The tiny model can't auto-detect reliably,
-                // so we force both languages and let NLLanguageRecognizer decide.
-
-                let enOptions = DecodingOptions(
-                    language: "en",
+                // Base model handles auto-detection reliably (unlike tiny).
+                // Single pass with language auto-detect.
+                let options = DecodingOptions(
+                    language: nil,
                     temperature: 0.0,
                     usePrefillPrompt: false,
                     skipSpecialTokens: true,
                     clipTimestamps: []
                 )
 
-                let targetOptions = DecodingOptions(
-                    language: self.targetLanguage,
-                    temperature: 0.0,
-                    usePrefillPrompt: false,
-                    skipSpecialTokens: true,
-                    clipTimestamps: []
+                let results = try await pipe.transcribe(
+                    audioPath: audioPath,
+                    decodeOptions: options
                 )
-
-                // Run both transcriptions (model is already warm, each takes ~1-2s)
-                async let enResultsTask = pipe.transcribe(audioPath: audioPath, decodeOptions: enOptions)
-                async let targetResultsTask = pipe.transcribe(audioPath: audioPath, decodeOptions: targetOptions)
-
-                let enResults = try await enResultsTask
-                let targetResults = try await targetResultsTask
 
                 let elapsed = CFAbsoluteTimeGetCurrent() - startTime
-                NSLog("🎤 [Dictate] dual transcription in %.2fs", elapsed)
+                NSLog("🎤 [Dictate] WhisperKit transcribed in %.2fs", elapsed)
 
                 // Clean up temp file
                 try? FileManager.default.removeItem(at: tempAudioURL)
 
-                let enText = enResults.map { $0.text }.joined(separator: " ")
+                let fullText = results.map { $0.text }.joined(separator: " ")
                     .trimmingCharacters(in: .whitespacesAndNewlines)
-                let targetText = targetResults.map { $0.text }.joined(separator: " ")
-                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                let detectedLang = results.first?.language ?? "en"
 
-                NSLog("🎤 [Dictate] EN transcription: '\(enText.prefix(60))'")
-                NSLog("🎤 [Dictate] \(self.targetLanguage.uppercased()) transcription: '\(targetText.prefix(60))'")
-
-                // Use NLLanguageRecognizer on BOTH transcriptions to determine which is real
-                let recognizer = NLLanguageRecognizer()
-
-                recognizer.processString(targetText)
-                let targetTextLang = recognizer.dominantLanguage?.rawValue
-                    .components(separatedBy: "-").first ?? ""
-                recognizer.reset()
-
-                recognizer.processString(enText)
-                let enTextLang = recognizer.dominantLanguage?.rawValue
-                    .components(separatedBy: "-").first ?? ""
-
-                // Decision logic:
-                // If the target-language transcription produces text that NLLanguageRecognizer
-                // identifies as the target language → user was speaking the target language
-                // Otherwise → user was speaking English
-                let fullText: String
-                let detectedLang: String
-
-                if targetTextLang == self.targetLanguage {
-                    // Target language transcription produced real target-language text
-                    fullText = targetText
-                    detectedLang = self.targetLanguage
-                    NSLog("🎤 [Dictate] → User spoke \(self.targetLanguage.uppercased()) (target transcription confirmed)")
-                } else if enTextLang == "en" {
-                    // English transcription produced real English text
-                    fullText = enText
-                    detectedLang = "en"
-                    NSLog("🎤 [Dictate] → User spoke ENGLISH (en transcription confirmed)")
-                } else {
-                    // Fallback: use whichever transcription is longer (more content = better match)
-                    if targetText.count > enText.count {
-                        fullText = targetText
-                        detectedLang = self.targetLanguage
-                    } else {
-                        fullText = enText
-                        detectedLang = "en"
-                    }
-                    NSLog("🎤 [Dictate] → Fallback: using \(detectedLang) (longer transcription)")
-                }
+                NSLog("🎤 [Dictate] result: lang=\(detectedLang) text='\(fullText.prefix(80))'")
 
 
                 await MainActor.run {
