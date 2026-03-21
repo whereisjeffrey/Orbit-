@@ -24,8 +24,8 @@ class DictateViewController: UIViewController {
     private var isRecording   = false
     private var elapsedSeconds = 0
     private var elapsedTimer:  Timer?
-    private var ringLayer1:    CAShapeLayer?
-    private var ringLayer2:    CAShapeLayer?
+    private var bubbleLayers:   [CAShapeLayer] = []
+    private var burstTimer:     Timer?
     private var sendBorderGradient: CAGradientLayer?
     private var hasSeenOnboarding = false
 
@@ -78,6 +78,7 @@ class DictateViewController: UIViewController {
     private var isToggleOnTarget = true  // true = speaking target language, false = speaking English
 
     // Onboarding
+    private let onboardingCard  = UIView()
     private let flagLabel       = UILabel()
     private let onboardingLabel = UILabel()
     private let startButton     = UIButton(type: .custom)
@@ -85,10 +86,6 @@ class DictateViewController: UIViewController {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        // TODO: Remove these lines before shipping — forces onboarding to show every time during development
-        UserDefaults.standard.removeObject(forKey: "dictate_onboarding_seen")
-        UserDefaults(suiteName: "group.com.jeff.translatehelper")?.removeObject(forKey: "dictate_speaking_language")
-
         hasSeenOnboarding = UserDefaults.standard.bool(forKey: "dictate_onboarding_seen")
         // Default speaking language is always the target language (the one they're learning)
         if speakingLanguage == "en" && !hasSeenOnboarding {
@@ -213,7 +210,7 @@ class DictateViewController: UIViewController {
             cancelButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
 
             toggleHost!.view.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            toggleHost!.view.topAnchor.constraint(equalTo: view.topAnchor, constant: UIScreen.main.bounds.height * 0.18),
+            toggleHost!.view.topAnchor.constraint(equalTo: view.topAnchor, constant: UIScreen.main.bounds.height * 0.09),
 
             iconCircle.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             iconCircle.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -40),
@@ -240,9 +237,7 @@ class DictateViewController: UIViewController {
             sendButton.isHidden = true
             iconCircle.isHidden = true
         } else {
-            flagLabel.isHidden = true
-            onboardingLabel.isHidden = true
-            startButton.isHidden = true
+            onboardingCard.isHidden = true
         }
     }
 
@@ -265,21 +260,46 @@ class DictateViewController: UIViewController {
     // MARK: - Onboarding (first-time only)
 
     private func setupOnboarding() {
-        // ── Flag emoji ────────────────────────────────────────────────
+        // ── Container card ────────────────────────────────────────────
+        onboardingCard.translatesAutoresizingMaskIntoConstraints = false
+        onboardingCard.backgroundColor = UIColor.white.withAlphaComponent(0.08)
+        onboardingCard.layer.cornerRadius = 28
+        onboardingCard.layer.masksToBounds = true
+        onboardingCard.layer.borderColor = UIColor.white.withAlphaComponent(0.10).cgColor
+        onboardingCard.layer.borderWidth = 1
+        view.addSubview(onboardingCard)
+
+        // ── Flag haze glow (behind flag) ──────────────────────────────
+        let flagHaze = UIView()
+        flagHaze.translatesAutoresizingMaskIntoConstraints = false
+        flagHaze.isUserInteractionEnabled = false
+        let hazeGradient = CAGradientLayer()
+        hazeGradient.type       = .radial
+        hazeGradient.colors     = [
+            UIColor.white.withAlphaComponent(0.28).cgColor,
+            UIColor.white.withAlphaComponent(0.00).cgColor,
+        ]
+        hazeGradient.startPoint = CGPoint(x: 0.5, y: 0.5)
+        hazeGradient.endPoint   = CGPoint(x: 1.0, y: 1.0)
+        hazeGradient.frame      = CGRect(x: 0, y: 0, width: 153, height: 153)
+        flagHaze.layer.addSublayer(hazeGradient)
+        onboardingCard.addSubview(flagHaze)  // ← before flagLabel so it renders behind
+
+        // ── Flag emoji (inside card) ──────────────────────────────────
         flagLabel.translatesAutoresizingMaskIntoConstraints = false
         flagLabel.text = flag(for: targetLanguage)
-        flagLabel.font = .systemFont(ofSize: 72)
+        flagLabel.font = .systemFont(ofSize: 86)   // 20% bigger than 72
         flagLabel.textAlignment = .center
-        view.addSubview(flagLabel)
+        onboardingCard.addSubview(flagLabel)
 
-        // ── Description text ─────────────────────────────────────────
+        // ── Description text (inside card) ────────────────────────────
         onboardingLabel.translatesAutoresizingMaskIntoConstraints = false
         onboardingLabel.numberOfLines = 0
         onboardingLabel.textAlignment = .center
         updateOnboardingText()
-        view.addSubview(onboardingLabel)
+        onboardingCard.addSubview(onboardingLabel)
 
-        // ── Start button ─────────────────────────────────────────────
+        // ── Start button (inside card) ────────────────────────────────
         startButton.translatesAutoresizingMaskIntoConstraints = false
         var btnConfig = UIButton.Configuration.filled()
         btnConfig.baseBackgroundColor = UIColor.white.withAlphaComponent(0.2)
@@ -298,21 +318,38 @@ class DictateViewController: UIViewController {
         startButton.layer.cornerRadius = 18
         startButton.clipsToBounds = true
         startButton.addTarget(self, action: #selector(startRecordingTapped), for: .touchUpInside)
-        view.addSubview(startButton)
+        onboardingCard.addSubview(startButton)
+
+        let pad: CGFloat = 28
 
         NSLayoutConstraint.activate([
-            flagLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            flagLabel.topAnchor.constraint(equalTo: toggleHost!.view.bottomAnchor, constant: 48),
+            // Card sits 3 units below the toggle pill (1 unit = 32pt)
+            onboardingCard.topAnchor.constraint(equalTo: toggleHost!.view.bottomAnchor, constant: 96),
+            onboardingCard.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            onboardingCard.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
 
-            onboardingLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            onboardingLabel.topAnchor.constraint(equalTo: flagLabel.bottomAnchor, constant: 20),
-            onboardingLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 40),
-            onboardingLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -40),
+            // Haze glow — 180×180, centered on the flag
+            flagHaze.centerXAnchor.constraint(equalTo: onboardingCard.centerXAnchor),
+            flagHaze.centerYAnchor.constraint(equalTo: flagLabel.centerYAnchor),
+            flagHaze.widthAnchor.constraint(equalToConstant: 153),
+            flagHaze.heightAnchor.constraint(equalToConstant: 153),
 
-            startButton.topAnchor.constraint(equalTo: onboardingLabel.bottomAnchor, constant: 32),
-            startButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            // Flag at top of card
+            flagLabel.centerXAnchor.constraint(equalTo: onboardingCard.centerXAnchor),
+            flagLabel.topAnchor.constraint(equalTo: onboardingCard.topAnchor, constant: pad),
+
+            // Label below flag
+            onboardingLabel.centerXAnchor.constraint(equalTo: onboardingCard.centerXAnchor),
+            onboardingLabel.topAnchor.constraint(equalTo: flagLabel.bottomAnchor, constant: 16),
+            onboardingLabel.leadingAnchor.constraint(equalTo: onboardingCard.leadingAnchor, constant: pad),
+            onboardingLabel.trailingAnchor.constraint(equalTo: onboardingCard.trailingAnchor, constant: -pad),
+
+            // Button below label — pins the card's bottom height
+            startButton.topAnchor.constraint(equalTo: onboardingLabel.bottomAnchor, constant: 24),
+            startButton.centerXAnchor.constraint(equalTo: onboardingCard.centerXAnchor),
             startButton.widthAnchor.constraint(equalToConstant: 220),
             startButton.heightAnchor.constraint(equalToConstant: 52),
+            startButton.bottomAnchor.constraint(equalTo: onboardingCard.bottomAnchor, constant: -pad),
         ])
     }
 
@@ -330,7 +367,7 @@ class DictateViewController: UIViewController {
         let rest = "\n\nSpeak naturally — we'll transcribe\nand translate for you.\n\nTo switch languages, tap the toggle above."
         let restAttrs: [NSAttributedString.Key: Any] = [
             .font: UIFont.systemFont(ofSize: 15, weight: .regular),
-            .foregroundColor: UIColor.white.withAlphaComponent(0.75),
+            .foregroundColor: UIColor.white,
         ]
 
         let attributed = NSMutableAttributedString(string: firstLine, attributes: firstAttrs)
@@ -342,19 +379,15 @@ class DictateViewController: UIViewController {
         hasSeenOnboarding = true
         UserDefaults.standard.set(true, forKey: "dictate_onboarding_seen")
 
-        // Reveal circle first, then fade out onboarding elements
+        // Reveal circle, fade card out as one unit
         iconCircle.isHidden = false
         iconCircle.alpha = 0
 
         UIView.animate(withDuration: 0.35) {
-            self.flagLabel.alpha = 0
-            self.onboardingLabel.alpha = 0
-            self.startButton.alpha = 0
+            self.onboardingCard.alpha = 0
             self.iconCircle.alpha = 1
         } completion: { _ in
-            self.flagLabel.isHidden = true
-            self.onboardingLabel.isHidden = true
-            self.startButton.isHidden = true
+            self.onboardingCard.isHidden = true
             self.timerLabel.isHidden = false
             self.sendButton.isHidden = false
             self.timerLabel.alpha = 0
@@ -390,9 +423,10 @@ class DictateViewController: UIViewController {
         gradient.colors       = [
             UIColor.white.withAlphaComponent(0.55).cgColor,
             UIColor.white.withAlphaComponent(0.12).cgColor,
-            UIColor.white.withAlphaComponent(0.00).cgColor,
+            UIColor.white.withAlphaComponent(0.04).cgColor,
+            UIColor.white.withAlphaComponent(0.18).cgColor,
         ]
-        gradient.locations    = [0.0, 0.45, 1.0]
+        gradient.locations    = [0.0, 0.45, 0.78, 1.0]
         gradient.startPoint   = CGPoint(x: 0.5, y: 0.0)
         gradient.endPoint     = CGPoint(x: 0.5, y: 1.0)
 
@@ -411,51 +445,58 @@ class DictateViewController: UIViewController {
         sendBorderGradient = gradient
     }
 
-    // MARK: - Sonar ring animation
+    // MARK: - Pulse ring animation
+
+    /// Launches two staggered filled-circle pulses that expand from the icon and fade out.
     private func startSonarRings() {
-        addRing(delay: 0.0, tag: 1)
-        addRing(delay: 0.7, tag: 2)
+        addPulse(delay: 0.0, tag: 1)
+        addPulse(delay: 0.9, tag: 2)
     }
 
-    private func addRing(delay: Double, tag: Int) {
+    private func addPulse(delay: Double, tag: Int) {
         let radius: CGFloat = 33.75
         let center = CGPoint(x: view.bounds.midX, y: view.bounds.midY - 40)
-        let path = UIBezierPath(arcCenter: center, radius: radius,
-                                startAngle: 0, endAngle: .pi * 2, clockwise: true)
+        let diameter = radius * 2
 
-        let ring = CAShapeLayer()
-        ring.path = path.cgPath
-        ring.fillColor = UIColor.clear.cgColor
-        ring.strokeColor = UIColor.white.withAlphaComponent(0.5).cgColor
-        ring.lineWidth = 2
-        ring.opacity = 0
-        view.layer.insertSublayer(ring, below: iconCircle.layer)
+        // Filled disc — same size as the icon circle
+        let pulse = CAShapeLayer()
+        pulse.path      = UIBezierPath(ovalIn: CGRect(x: -radius, y: -radius,
+                                                       width: diameter, height: diameter)).cgPath
+        pulse.fillColor = UIColor.white.withAlphaComponent(0.35).cgColor
+        pulse.strokeColor = UIColor.clear.cgColor
+        pulse.opacity   = 0
+        pulse.position  = center
+        view.layer.insertSublayer(pulse, below: iconCircle.layer)
 
-        if tag == 1 { ringLayer1 = ring } else { ringLayer2 = ring }
+        if tag == 1 { bubbleLayers.append(pulse) } else { bubbleLayers.append(pulse) }
 
+        // Scale: grow from 1× to 2.5× the circle's size
         let scaleAnim = CABasicAnimation(keyPath: "transform.scale")
-        scaleAnim.fromValue = 1.0
-        scaleAnim.toValue   = 2.2
-        scaleAnim.duration  = 1.8
-        scaleAnim.beginTime = CACurrentMediaTime() + delay
+        scaleAnim.fromValue  = 1.0
+        scaleAnim.toValue    = 2.5
+        scaleAnim.duration   = 1.8
+        scaleAnim.beginTime  = CACurrentMediaTime() + delay
         scaleAnim.repeatCount = .greatestFiniteMagnitude
         scaleAnim.timingFunction = CAMediaTimingFunction(name: .easeOut)
 
-        let fadeAnim = CABasicAnimation(keyPath: "opacity")
-        fadeAnim.fromValue = 0.5
-        fadeAnim.toValue   = 0
+        // Opacity: flash in fast, then slowly dissolve
+        let fadeAnim = CAKeyframeAnimation(keyPath: "opacity")
+        fadeAnim.values    = [0.0, 0.35, 0.0]
+        fadeAnim.keyTimes  = [0.0, 0.15, 1.0]
         fadeAnim.duration  = 1.8
         fadeAnim.beginTime = scaleAnim.beginTime
         fadeAnim.repeatCount = .greatestFiniteMagnitude
         fadeAnim.timingFunction = CAMediaTimingFunction(name: .easeOut)
 
-        ring.add(scaleAnim, forKey: "scale_\(tag)")
-        ring.add(fadeAnim, forKey: "fade_\(tag)")
+        pulse.add(scaleAnim, forKey: "scale_\(tag)")
+        pulse.add(fadeAnim,  forKey: "fade_\(tag)")
     }
 
     private func stopSonarRings() {
-        ringLayer1?.removeAllAnimations(); ringLayer1?.removeFromSuperlayer(); ringLayer1 = nil
-        ringLayer2?.removeAllAnimations(); ringLayer2?.removeFromSuperlayer(); ringLayer2 = nil
+        burstTimer?.invalidate()
+        burstTimer = nil
+        bubbleLayers.forEach { $0.removeAllAnimations(); $0.removeFromSuperlayer() }
+        bubbleLayers.removeAll()
     }
 
     // MARK: - Processing state
@@ -474,6 +515,28 @@ class DictateViewController: UIViewController {
         UIView.animate(withDuration: 0.3) {
             self.sendButton.alpha = 0
             self.iconCircle.backgroundColor = UIColor.white.withAlphaComponent(0.12)
+        }
+
+        // ── Stars bounce animation ─────────────────────────────────────
+        // Phase 1: snap down (like a button press)
+        iconImageView.transform = CGAffineTransform(scaleX: 0.82, y: 0.82)
+        UIView.animate(
+            withDuration: 0.55,
+            delay: 0.05,
+            usingSpringWithDamping: 0.38,
+            initialSpringVelocity: 6.0,
+            options: [.allowUserInteraction]
+        ) {
+            self.iconImageView.transform = .identity
+        } completion: { _ in
+            // Phase 2: gentle repeating pulse while processing
+            UIView.animate(
+                withDuration: 0.9,
+                delay: 0.1,
+                options: [.repeat, .autoreverse, .allowUserInteraction, .curveEaseInOut]
+            ) {
+                self.iconImageView.transform = CGAffineTransform(scaleX: 1.12, y: 1.12)
+            }
         }
     }
 
@@ -570,6 +633,8 @@ class DictateViewController: UIViewController {
         isRecording = false
         stopElapsedTimer()
         stopSonarRings()
+        iconImageView.layer.removeAllAnimations()
+        iconImageView.transform = .identity
     }
 
     // MARK: - Process recording (routes based on toggle)
