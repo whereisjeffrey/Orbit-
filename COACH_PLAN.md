@@ -40,17 +40,43 @@ Core brand principle: **"Language in the Wild."**
 ## Coach Feature — Core Loop
 
 ### Per-Audio Coaching (passive, background)
-Every voice message gets a maximum of:
-- **1 pronunciation tip**
-- **1 grammar tip**
+Every voice message gets a maximum of **2 tips**. The prompt chooses the 2 most impactful — could be:
+- 2 pronunciation tips
+- 2 grammar tips
+- 1 of each
 
-Never more. Users are busy — this is about drip-feeding improvement, not overwhelming.
+No hard rule on the split. Let the AI pick what matters most for that specific message.
+
+Never more than 2. Users are busy — this is about drip-feeding improvement, not overwhelming.
+
+### Per-Message Pronunciation Score (toggleable)
+Each voice message gets a pronunciation score (0-100) displayed as a small badge.
+- **Per message** (not daily) — so users can pinpoint exactly which message had issues
+- A score of 99 = "you're good, move on." A score of 62 = "something in here needs attention, read the tips"
+- Daily aggregate scores were considered but rejected — they confuse users when scores fluctuate day-to-day without clear reasons
+- **Settings options:** Per message / Off (default: per message for Coach users)
+- Introduced via onboarding so users know it's optional
+
+### Emotional Variety in Coaching
+The prompt must vary its emotional tone across tips. Never robotic, never the same voice twice in a row:
+- Sometimes **playful:** "There's that sneaky preposition again!"
+- Sometimes **matter-of-fact:** "Quick note — 'at the beach,' not 'on the beach.'"
+- Sometimes **celebratory:** "YES. You nailed 'estar' vs 'ser.' That's a hard one."
+- Sometimes **empathetic:** "This one trips up literally everyone. You're not alone."
+
+This variety is what makes it feel like a real friend/teacher, not a bot.
 
 ### Personalized Callbacks
 The coach tracks recurring mistakes and calls them out with empathy:
 - Pattern detected (same mistake 3+ times): "That sneaky preposition again — 'at the beach' not 'on the beach.' You're getting closer."
 - Past mistake corrected: "You got 'estar' right this time — you're building the instinct."
 - Callback to earlier practice sessions: "Remember our conversation about ordering at the taqueria? You just used 'me gustaría' naturally — that's growth."
+
+### Milestone Callbacks
+After the coach detects that a previously recurring mistake hasn't appeared for 2 weeks:
+> "Hey, you haven't mixed up 'ser' and 'estar' in 14 days. That's not luck — that's muscle memory forming. One down."
+
+This is critical for retention. It gives people concrete, undeniable evidence of progress. Most language learners can't feel their own improvement — this makes it visible.
 
 ### Native Language Transfer Coaching
 When users make errors that stem from directly translating structures from English:
