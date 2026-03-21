@@ -384,23 +384,12 @@ class KeyboardViewController: UIInputViewController {
                 switch result {
                 case .success(let translation):
                     self.translationVersion = 0
-                    self.translationHistory = [translation]
-                    self.currentHistoryIndex = 0
                     self.loadingSpinner.stopAnimating()
-
-                    // ── Show DeepL translation IMMEDIATELY ──
-                    // User sees a result right away. Refinement updates in-place later.
-                    self.outputTextLabel.text = translation
-                    self.updateSwipeHint()
                     NSLog("TSKBD_TRANSLATED: \(text) → \(translation)")
 
                     let tone = Tone(rawValue: self.currentTone) ?? .casual
 
-                    // ── Fire notes in background (non-blocking) ──
-                    self.updateNotes(original: text, translated: translation)
-
                     // ── Fire speech coaching tips (only when speaking in target language) ──
-                    // Use WhisperKit's language detection (from audio) — more reliable than text detection
                     let spokenLang = self.lastSourceWasSpeech && !self.lastSpeechDetectedLang.isEmpty
                         ? self.lastSpeechDetectedLang
                         : detected.code
@@ -410,7 +399,7 @@ class KeyboardViewController: UIInputViewController {
                         self.coachCard.isHidden = true
                     }
 
-                    // ── Fire refinement in parallel (updates translation in-place) ──
+                    // ── Refinement path: wait for final result before showing anything ──
                     let needsRefinement = self.currentTone == "slang"
                         || self.currentTone == "flirty"
                         || self.currentTone == "casual"
@@ -430,13 +419,12 @@ class KeyboardViewController: UIInputViewController {
                                 guard let self = self else { return }
                                 switch refineResult {
                                 case .success(let refined):
-                                    // Silently upgrade the translation in-place
+                                    // Show ONLY the final refined translation — no intermediate flicker
                                     self.translationHistory = [refined.output]
                                     self.currentHistoryIndex = 0
                                     self.outputTextLabel.text = refined.output
                                     self.updateSwipeHint()
                                     if let notes = refined.notes {
-                                        // Refinement notes override smart notes if present
                                         self.notesCard.isHidden = false
                                         let icon: String
                                         switch self.currentTone {
@@ -446,16 +434,29 @@ class KeyboardViewController: UIInputViewController {
                                         }
                                         self.notesTextLabel.text = "\(icon) \(notes)"
                                     }
+                                    // Fire smart notes AFTER refinement — so notes match the final translation
+                                    self.updateNotes(original: text, translated: refined.output)
                                     TalkSwitchAPI.shared.recordTranslationForPersona(original: text, translated: refined.output, tone: tone)
                                     NSLog("TSKBD_REFINED: \(text) → \(refined.output)")
                                 case .failure:
-                                    // DeepL translation already showing — just log the failure
+                                    // Refinement failed — show DeepL translation as final
+                                    self.translationHistory = [translation]
+                                    self.currentHistoryIndex = 0
+                                    self.outputTextLabel.text = translation
+                                    self.updateSwipeHint()
+                                    self.updateNotes(original: text, translated: translation)
                                     TalkSwitchAPI.shared.recordTranslationForPersona(original: text, translated: translation, tone: tone)
                                     NSLog("TSKBD_REFINE_FALLBACK: using DeepL translation")
                                 }
                             }
                         }
                     } else {
+                        // No refinement needed — show DeepL translation directly
+                        self.translationHistory = [translation]
+                        self.currentHistoryIndex = 0
+                        self.outputTextLabel.text = translation
+                        self.updateSwipeHint()
+                        self.updateNotes(original: text, translated: translation)
                         TalkSwitchAPI.shared.recordTranslationForPersona(original: text, translated: translation, tone: tone)
                     }
 
@@ -1552,11 +1553,7 @@ class KeyboardViewController: UIInputViewController {
         let generator = UIImpactFeedbackGenerator(style: .light)
         generator.impactOccurred()
 
-        // Show voice quality nudge with smart frequency logic
-        let langPrefix = String(lang.prefix(2))
-        if !SpeechService.hasEnhancedVoice(for: langPrefix) && shouldShowNaturalVoiceBanner() {
-            showEnhancedVoiceBanner(language: langPrefix)
-        }
+        // Voice quality nudge retired — using Google WaveNet TTS now
     }
     
     @objc private func outputCardTapped() {
