@@ -793,11 +793,8 @@ struct CoachPopulatedView: View {
                         .font(.system(size: 20, weight: .bold))
                         .foregroundColor(Color(hex: "#34C759"))
                 } else if case .inProgress(let current, let total) = status {
-                    VStack(spacing: 2) {
-                        Text("\(current)/\(total)")
-                            .font(.custom("HelveticaNeue-Bold", size: 13))
-                            .foregroundColor(.tsLabel)
-                        // Mini progress bar
+                    VStack(spacing: 6) {
+                        // Progress bar only — no numbers
                         GeometryReader { geo in
                             ZStack(alignment: .leading) {
                                 RoundedRectangle(cornerRadius: 2)
@@ -808,7 +805,13 @@ struct CoachPopulatedView: View {
                                     .frame(width: geo.size.width * CGFloat(current) / CGFloat(total), height: 4)
                             }
                         }
-                        .frame(width: 40, height: 4)
+                        .frame(width: 44, height: 4)
+
+                        // Human-readable status
+                        let pct = Double(current) / Double(total)
+                        Text(pct >= 0.75 ? "Almost there" : pct >= 0.4 ? "Getting closer" : "Just started")
+                            .font(.custom("HelveticaNeue", size: 9))
+                            .foregroundColor(.tsAccent)
                     }
                 }
             }
@@ -1004,14 +1007,38 @@ struct PracticeSessionView: View {
     @Environment(\.colorScheme) private var colorScheme
 
     @State private var userInput = ""
-    @State private var messages: [PracticeMessage] = [
-        PracticeMessage(role: .sol,
-                        text: "E aí! 👋 Então, tô sabendo que você tá morando no Rio já faz um tempinho, né? Me conta — já rolou alguma situação zoada por causa do idioma? Tipo, você tentou falar uma coisa e saiu completamente diferente? Todo mundo tem essas histórias. 😄",
-                        translation: "Hey! 👋 So, I hear you've been living in Rio for a while now, right? Tell me — has anything awkward happened because of the language? Like, you tried to say one thing and it came out completely different? Everyone has those stories. 😄",
-                        translationNotes: "'tô sabendo' = casual 'I know/I heard' · 'rolou' = 'happened' (slang) · 'zoada' = 'awkward/embarrassing' (Rio slang, never in textbooks)"),
-        PracticeMessage(role: .coaching,
-                        text: "💡 Sol speaks like a real carioca — casual, full of slang. Respond naturally. Don't worry about mistakes."),
+    @State private var currentTopicIndex = 0
+    @State private var swipeOffset: CGFloat = 0
+
+    // Topic pool — universal, open-ended, personal, low-stakes
+    private let topicPool: [(text: String, translation: String, notes: String, tag: String)] = [
+        ("E aí! 👋 Me conta do teu bairro no Rio — qual é a vibe? Tipo, é mais tranquilo ou é agitado? Tem algum cantinho que cê curte demais?",
+         "Hey! 👋 Tell me about your neighborhood in Rio — what's the vibe? Like, is it more chill or lively? Is there a spot you really love?",
+         "'bairro' = neighborhood · 'cantinho' = little corner/spot (diminutive, warm) · 'cê curte' = 'you enjoy' (casual contraction of 'você')",
+         "neighborhood"),
+
+        ("Fala aí — qual foi a última coisa que cê comeu que ficou pensando nela o dia inteiro? Tipo, aquela comida que te deixou com saudade depois. 😄",
+         "Tell me — what was the last thing you ate that you kept thinking about all day? Like, that food that left you missing it afterwards. 😄",
+         "'fala aí' = 'tell me' (very casual opener) · 'ficou pensando nela' = 'kept thinking about it' · 'saudade' = that deep longing (untranslatable)",
+         "food"),
+
+        ("Se um amigo teu viesse visitar o Rio por um dia só, pra onde cê levaria? Tipo, o rolê perfeito de um dia — pode ser qualquer coisa.",
+         "If a friend of yours came to visit Rio for just one day, where would you take them? Like, the perfect one-day hangout — could be anything.",
+         "'amigo teu' = 'friend of yours' (informal possessive) · 'rolê' = 'hangout/outing' (pure slang, never in textbooks) · 'pode ser qualquer coisa' = 'could be anything'",
+         "travel"),
+
+        ("Qual a coisa mais brasileira que cê já se pegou fazendo sem perceber? Tipo, algo que antes cê achava estranho e agora faz naturalmente.",
+         "What's the most Brazilian thing you've caught yourself doing without realizing? Like, something you used to find weird but now do naturally.",
+         "'se pegou fazendo' = 'caught yourself doing' · 'sem perceber' = 'without noticing' · 'achava estranho' = 'used to find weird' (imperfect tense, natural here)",
+         "culture"),
+
+        ("Cê curte música brasileira? Tô curioso — o que cê tem escutado ultimamente? Pode ser qualquer coisa, de sertanejo a funk carioca. 🎵",
+         "Do you like Brazilian music? I'm curious — what have you been listening to lately? Could be anything, from sertanejo to funk carioca. 🎵",
+         "'tô curioso' = 'I'm curious' (casual) · 'tem escutado' = 'have been listening' (present perfect continuous) · 'sertanejo' = Brazilian country music · 'funk carioca' = Rio's bass-heavy street music",
+         "music"),
     ]
+
+    @State private var messages: [PracticeMessage] = []
 
     @State private var messageCount = 0
     @State private var revealedTranslations: Set<UUID> = []
@@ -1077,6 +1104,38 @@ struct PracticeSessionView: View {
                         VStack(spacing: 16) {
                             ForEach(Array(messages.enumerated()), id: \.element.id) { index, message in
                                 chatBubble(message: message)
+                                    // Swipe gesture on Sol's first message to change topic
+                                    .offset(x: (index == 0 && message.role == .sol && messageCount == 0) ? swipeOffset : 0)
+                                    .gesture(
+                                        (index == 0 && message.role == .sol && messageCount == 0) ?
+                                        DragGesture()
+                                            .onChanged { gesture in
+                                                let tx = gesture.translation.width
+                                                if tx < 0 { // left swipe only
+                                                    swipeOffset = tx * 0.6
+                                                }
+                                            }
+                                            .onEnded { gesture in
+                                                if gesture.translation.width < -80 {
+                                                    // Swipe threshold met — animate out and load new topic
+                                                    withAnimation(.easeOut(duration: 0.2)) {
+                                                        swipeOffset = -500
+                                                    }
+                                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                                                        swipeOffset = 300 // position off-screen right
+                                                        swipeToNextTopic()
+                                                        withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                                                            swipeOffset = 0
+                                                        }
+                                                    }
+                                                } else {
+                                                    withAnimation(.spring()) {
+                                                        swipeOffset = 0
+                                                    }
+                                                }
+                                            }
+                                        : nil
+                                    )
                                     .id(message.id)
 
                                 // Show Sol double-tap hint after Sol's first message
@@ -1198,15 +1257,19 @@ struct PracticeSessionView: View {
             }
         }
         .onAppear {
-            // Pre-reveal text for initial messages
-            for msg in messages {
-                revealedText.insert(msg.id)
-            }
+            // Initialize with first topic
+            loadTopic(index: 0)
 
             // Start session timer
             sessionTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
                 sessionSeconds += 1
             }
+
+            // TODO: Remove reset lines before shipping — forces hints to show during dev
+            doubleTapValidated = false
+            doubleTapDismissCount = 0
+            nativeDoubleTapValidated = false
+            nativeDismissCount = 0
 
             if !doubleTapValidated && doubleTapDismissCount < 3 {
                 withAnimation(.easeIn(duration: 0.3).delay(0.5)) {
@@ -1513,6 +1576,64 @@ struct PracticeSessionView: View {
         }
     }
 
+    // MARK: - Topic Loading & Swiping
+
+    private func loadTopic(index: Int) {
+        let topic = topicPool[index % topicPool.count]
+        messages = [
+            PracticeMessage(role: .sol,
+                           text: topic.text,
+                           translation: topic.translation,
+                           translationNotes: topic.notes),
+            PracticeMessage(role: .coaching,
+                           text: "💡 Sol speaks like a real carioca — casual, full of slang. Respond naturally. Swipe Sol's message → for a different topic."),
+        ]
+        // Pre-reveal initial messages
+        for msg in messages {
+            revealedText.insert(msg.id)
+        }
+        messageCount = 0
+    }
+
+    private func swipeToNextTopic() {
+        // Log the swipe for interest tracking
+        let swipedTag = topicPool[currentTopicIndex % topicPool.count].tag
+        logInterest(topic: swipedTag, action: "swiped")
+
+        // Move to next topic
+        currentTopicIndex += 1
+        withAnimation(.easeInOut(duration: 0.3)) {
+            loadTopic(index: currentTopicIndex)
+        }
+    }
+
+    private func logInterest(topic: String, action: String) {
+        let appGroup = "group.com.jeff.translatehelper"
+        guard let dir = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup) else { return }
+
+        let file = dir.appendingPathComponent("interest_profile.json")
+        var profile: [[String: String]] = []
+
+        if let data = try? Data(contentsOf: file),
+           let existing = try? JSONSerialization.jsonObject(with: data) as? [[String: String]] {
+            profile = existing
+        }
+
+        profile.append([
+            "topic": topic,
+            "action": action,
+            "timestamp": ISO8601DateFormatter().string(from: Date())
+        ])
+
+        // Keep last 100 entries
+        if profile.count > 100 { profile = Array(profile.suffix(100)) }
+
+        if let data = try? JSONSerialization.data(withJSONObject: profile) {
+            try? data.write(to: file)
+        }
+        NSLog("🎯 [Practice] interest logged: \(action) → \(topic)")
+    }
+
     // MARK: - Sol Audio Playback
 
     /// Play audio first, then fade text in after it completes
@@ -1613,6 +1734,12 @@ struct PracticeSessionView: View {
         messages.append(msg)
         userInput = ""
         messageCount += 1
+
+        // Log engagement on first message for this topic
+        if messageCount == 1 {
+            let engagedTag = topicPool[currentTopicIndex % topicPool.count].tag
+            logInterest(topic: engagedTag, action: "engaged")
+        }
 
         // Show native hint after first user message
         if !nativeDoubleTapValidated && nativeDismissCount < 3 && messageCount == 1 {
