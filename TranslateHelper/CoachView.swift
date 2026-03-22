@@ -898,12 +898,14 @@ struct PracticeSessionView: View {
                         translation: "Hey! 👋 So, you live in Rio, right? Have you tried ordering a coffee at a bakery without switching to English? Let's practice that. I'll be the guy behind the counter. You walk into the bakery...",
                         translationNotes: "'trocar pro inglês' = 'switch to English' — very natural, casual phrasing"),
         PracticeMessage(role: .coaching,
-                        text: "💡 I'll be speaking in Portuguese. Try to respond in Portuguese too — don't worry about mistakes, that's what I'm here for. Double-tap any of my messages to see the English translation."),
+                        text: "💡 I'll be speaking in Portuguese. Try to respond in Portuguese too — don't worry about mistakes, that's what I'm here for."),
     ]
 
     @State private var messageCount = 0
     @State private var revealedTranslations: Set<UUID> = []
-    @State private var hasSeenDoubleTapHint = false
+    @State private var showDoubleTapHint = false
+    @AppStorage("practice_doubletap_validated") private var doubleTapValidated = false
+    @AppStorage("practice_doubletap_dismiss_count") private var doubleTapDismissCount = 0
     private let maxMessages = 10
 
     var body: some View {
@@ -937,6 +939,51 @@ struct PracticeSessionView: View {
                 .padding(.vertical, 12)
 
                 Divider().opacity(0.2)
+
+                // ── Double-tap hint card ─────────────────────
+                if showDoubleTapHint {
+                    HStack(spacing: 12) {
+                        Text("👆👆")
+                            .font(.system(size: 20))
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Don't understand something?")
+                                .font(.custom("HelveticaNeue-Bold", size: 13))
+                                .foregroundColor(.tsLabel)
+                            Text("Double-tap any message for the English translation. Give it a try!")
+                                .font(.custom("HelveticaNeue", size: 12))
+                                .foregroundColor(.tsSecondary)
+                                .lineSpacing(1)
+                        }
+
+                        Spacer()
+
+                        Button {
+                            withAnimation(.easeOut(duration: 0.2)) {
+                                showDoubleTapHint = false
+                                doubleTapDismissCount += 1
+                            }
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(.tsSecondary)
+                                .padding(6)
+                                .background(Circle().fill(Color.tsSecondary.opacity(0.1)))
+                        }
+                    }
+                    .padding(14)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.tsAccent.opacity(0.08))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.tsAccent.opacity(0.15), lineWidth: 0.5)
+                    )
+                    .padding(.horizontal, 20)
+                    .padding(.top, 8)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+                }
 
                 // ── Chat messages ────────────────────────────
                 ScrollViewReader { proxy in
@@ -973,6 +1020,10 @@ struct PracticeSessionView: View {
                                 RoundedRectangle(cornerRadius: 20)
                                     .fill(Color.tsInputBg)
                             )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .stroke(Color.tsBorder, lineWidth: 1)
+                            )
 
                         Button {
                             sendMessage()
@@ -986,6 +1037,13 @@ struct PracticeSessionView: View {
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
                     .background(colorScheme == .dark ? Color.tsCard : Color.white)
+                }
+            }
+        }
+        .onAppear {
+            if !doubleTapValidated && doubleTapDismissCount < 3 {
+                withAnimation(.easeIn(duration: 0.3).delay(0.5)) {
+                    showDoubleTapHint = true
                 }
             }
         }
@@ -1042,6 +1100,13 @@ struct PracticeSessionView: View {
                                     revealedTranslations.remove(message.id)
                                 } else {
                                     revealedTranslations.insert(message.id)
+                                    // User proved they know how it works — dismiss hint permanently
+                                    if !doubleTapValidated {
+                                        doubleTapValidated = true
+                                        withAnimation(.easeOut(duration: 0.2)) {
+                                            showDoubleTapHint = false
+                                        }
+                                    }
                                 }
                             }
                         }
