@@ -277,6 +277,9 @@ struct CoachPopulatedView: View {
                 Spacer(minLength: 80)
             }
         }
+        .fullScreenCover(isPresented: $showPracticeSession) {
+            PracticeSessionView()
+        }
     }
 
     // MARK: - 1. Greeting Card
@@ -362,7 +365,15 @@ struct CoachPopulatedView: View {
                 if !locked {
                     Circle()
                         .trim(from: 0, to: progress)
-                        .stroke(color, style: StrokeStyle(lineWidth: 6, lineCap: .round))
+                        .stroke(
+                            AngularGradient(
+                                gradient: Gradient(colors: [color.opacity(0.4), color]),
+                                center: .center,
+                                startAngle: .degrees(-90),
+                                endAngle: .degrees(-90 + 360 * Double(progress))
+                            ),
+                            style: StrokeStyle(lineWidth: 6, lineCap: .round)
+                        )
                         .frame(width: 64, height: 64)
                         .rotationEffect(.degrees(-90))
                 }
@@ -387,12 +398,13 @@ struct CoachPopulatedView: View {
     // MARK: - 3. Weekly Snapshot
 
     @State private var showFullReport = false
+    @State private var showPracticeSession = false
 
     private var weeklySnapshot: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text("📊")
-                    .font(.system(size: 16))
+                Text("📅")
+                    .font(.system(size: 14))
                 Text("THIS WEEK")
                     .font(.custom("HelveticaNeue-Bold", size: 11))
                     .foregroundColor(.tsSecondary)
@@ -402,31 +414,6 @@ struct CoachPopulatedView: View {
                     .font(.custom("HelveticaNeue", size: 12))
                     .foregroundColor(.tsSecondary)
             }
-
-            // ── Mini calendar (7 days) ──────────────────────
-            HStack(spacing: 0) {
-                ForEach(weekDays, id: \.day) { item in
-                    VStack(spacing: 6) {
-                        Text(item.label)
-                            .font(.custom("HelveticaNeue", size: 10))
-                            .foregroundColor(.tsSecondary)
-                        ZStack {
-                            Circle()
-                                .fill(item.active ? Color.tsAccent.opacity(0.15) : Color.clear)
-                                .frame(width: 32, height: 32)
-                            Text("\(item.day)")
-                                .font(.custom("HelveticaNeue-Bold", size: 13))
-                                .foregroundColor(item.isToday ? .tsAccent : (item.active ? .tsLabel : .tsSecondary.opacity(0.5)))
-                        }
-                        // Activity dot
-                        Circle()
-                            .fill(item.active ? Color(hex: "#34C759") : Color.clear)
-                            .frame(width: 5, height: 5)
-                    }
-                    .frame(maxWidth: .infinity)
-                }
-            }
-            .padding(.vertical, 4)
 
             // ── Stats row ───────────────────────────────────
             HStack(spacing: 16) {
@@ -439,9 +426,9 @@ struct CoachPopulatedView: View {
 
             // ── Summary ─────────────────────────────────────
             VStack(alignment: .leading, spacing: 12) {
-                weeklyRow(icon: "checkmark.circle.fill", color: Color(hex: "#34C759"), text: "Win: Graduated 'ser vs estar'")
-                weeklyRow(icon: "pencil.circle.fill", color: Color.tsAccent, text: "Work on: Gender agreement (72%)")
-                weeklyRow(icon: "target", color: Color(hex: "#FF9500"), text: "Challenge: Try ordering food without switching to English")
+                weeklyRow(emoji: "✅", text: "Win: Graduated 'ser vs estar'")
+                weeklyRow(emoji: "✏️", text: "Work on: Gender agreement (72%)")
+                weeklyRow(emoji: "🎯", text: "Challenge: Try ordering food without switching to English")
             }
 
             Button { showFullReport = true } label: {
@@ -464,25 +451,6 @@ struct CoachPopulatedView: View {
         }
     }
 
-    private struct WeekDay {
-        let label: String
-        let day: Int
-        let active: Bool
-        let isToday: Bool
-    }
-
-    private var weekDays: [WeekDay] {
-        [
-            WeekDay(label: "Mon", day: 17, active: true, isToday: false),
-            WeekDay(label: "Tue", day: 18, active: true, isToday: false),
-            WeekDay(label: "Wed", day: 19, active: true, isToday: false),
-            WeekDay(label: "Thu", day: 20, active: false, isToday: false),
-            WeekDay(label: "Fri", day: 21, active: true, isToday: false),
-            WeekDay(label: "Sat", day: 22, active: true, isToday: true),
-            WeekDay(label: "Sun", day: 23, active: false, isToday: false),
-        ]
-    }
-
     private func statPill(value: String, label: String) -> some View {
         VStack(spacing: 2) {
             Text(value)
@@ -495,11 +463,10 @@ struct CoachPopulatedView: View {
         .frame(maxWidth: .infinity)
     }
 
-    private func weeklyRow(icon: String, color: Color, text: String) -> some View {
+    private func weeklyRow(emoji: String, text: String) -> some View {
         HStack(alignment: .top, spacing: 12) {
-            Image(systemName: icon)
-                .font(.system(size: 16))
-                .foregroundColor(color)
+            Text(emoji)
+                .font(.system(size: 14))
                 .frame(width: 24)
             Text(text)
                 .font(.custom("HelveticaNeue", size: 14))
@@ -517,9 +484,21 @@ struct CoachPopulatedView: View {
                 .foregroundColor(.tsSecondary)
                 .kerning(1.2)
 
-            tipCard(icon: "🗣", date: "Mar 22, 5:23 PM", text: "Watch the nasal 'ão' in 'coração' — tongue further back.", color: Color.tsAccent)
-            tipCard(icon: "💡", date: "Mar 22, 4:45 PM", text: "'a casa dele' not 'do ele.' Portuguese flips possession.", color: Color(hex: "#FF9500"))
-            tipCard(icon: "🎉", date: "Mar 21", text: "MILESTONE: ser/estar not confused in 14 days!", color: Color(hex: "#FFD700"))
+            // Today
+            tipCard(icon: "🗣", date: "Mar 22, 5:23 PM", text: "Watch the nasal 'ão' in 'coração' — tongue further back.", color: Color.tsAccent, type: .regular)
+
+            tipCard(icon: "📝", date: "Mar 22, 4:45 PM", text: "Remember — 'a casa dele,' possession flips in Portuguese. Getting closer. 👊", color: Color(hex: "#FF9500"), type: .regular)
+
+            // Transfer insight (special styling)
+            tipCard(icon: "🧠", date: "Mar 22, 2:10 PM", text: "In English you'd say 'I am 25.' But Portuguese uses 'ter' (to have): 'eu tenho 25 anos.' Your English brain is doing what it's trained to do — this is a normal hurdle.", color: Color(hex: "#AF52DE"), type: .insight)
+
+            // Milestone (special styling)
+            tipCard(icon: "🎉", date: "Mar 21", text: "MILESTONE: You haven't mixed up 'ser' and 'estar' in 14 days. That's not luck — that's muscle memory forming. One down.", color: Color(hex: "#FFD700"), type: .milestone)
+
+            // Older tips
+            tipCard(icon: "💡", date: "Mar 20", text: "Gender on '-ade' words: 'a cidade,' 'a saudade,' 'a liberdade' — always feminine.", color: Color(hex: "#34C759"), type: .regular)
+
+            tipCard(icon: "🗣", date: "Mar 19", text: "Your speaking pace is fast — try pausing between ideas. Natives will understand you better.", color: Color.tsAccent, type: .regular)
 
             Button {} label: {
                 Text("View all tips →")
@@ -531,23 +510,32 @@ struct CoachPopulatedView: View {
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.tsCard)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.tsBorder, lineWidth: 1)
+                .fill(colorScheme == .dark ? Color.tsCard : Color.white)
         )
     }
 
-    private func tipCard(icon: String, date: String, text: String, color: Color) -> some View {
+    enum TipType { case regular, insight, milestone }
+
+    private func tipCard(icon: String, date: String, text: String, color: Color, type: TipType = .regular) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
                 Text(icon)
                     .font(.system(size: 14))
+                if type == .insight {
+                    Text("LANGUAGE INSIGHT")
+                        .font(.custom("HelveticaNeue-Bold", size: 9))
+                        .foregroundColor(color)
+                        .kerning(0.8)
+                } else if type == .milestone {
+                    Text("MILESTONE")
+                        .font(.custom("HelveticaNeue-Bold", size: 9))
+                        .foregroundColor(color)
+                        .kerning(0.8)
+                }
+                Spacer()
                 Text(date)
                     .font(.custom("HelveticaNeue", size: 11))
                     .foregroundColor(.tsSecondary)
-                Spacer()
             }
             Text(text)
                 .font(.custom("HelveticaNeue", size: 14))
@@ -557,7 +545,13 @@ struct CoachPopulatedView: View {
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(color.opacity(0.06))
+                .fill(color.opacity(type == .regular ? 0.06 : 0.10))
+        )
+        .overlay(
+            type != .regular ?
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(color.opacity(0.2), lineWidth: 0.5)
+            : nil
         )
     }
 
@@ -580,7 +574,7 @@ struct CoachPopulatedView: View {
                 .foregroundColor(.tsLabel)
                 .lineSpacing(2)
 
-            Button {} label: {
+            Button { showPracticeSession = true } label: {
                 Text("Start Session")
                     .font(.custom("HelveticaNeue-Bold", size: 15))
                     .foregroundColor(.white)
@@ -719,6 +713,387 @@ struct CoachPopulatedView: View {
     }
 }
 
+
+// MARK: - Weekly Full Report (sheet)
+
+struct WeeklyFullReportView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        NavigationView {
+            ZStack {
+                TSGradientBackground().ignoresSafeArea()
+
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 24) {
+
+                        // ── Header ──────────────────────────────
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Weekly Report")
+                                .font(.custom("HelveticaNeue-Bold", size: 24))
+                                .foregroundColor(.tsLabel)
+                            Text("March 17 – 22, 2026")
+                                .font(.custom("HelveticaNeue", size: 14))
+                                .foregroundColor(.tsSecondary)
+                        }
+
+                        // ── Wins ────────────────────────────────
+                        reportSection(title: "WINS", icon: "🎉") {
+                            VStack(alignment: .leading, spacing: 10) {
+                                reportRow("Graduated: ser vs estar — 14 days clean")
+                                reportRow("Gender accuracy: 72% → 81%")
+                                reportRow("New words used: 'saudade', 'madrugada', 'concorrência'")
+                            }
+                        }
+
+                        // ── Work On ─────────────────────────────
+                        reportSection(title: "WORK ON", icon: "📝") {
+                            VStack(alignment: .leading, spacing: 10) {
+                                reportRow("Gender agreement: 81% — defaulting to masculine with -ade words")
+                                reportRow("Prepositions: 'em' vs 'a' for direction (72% accuracy)")
+                                reportRow("Past subjunctive: emerging pattern, 3 occurrences this week")
+                            }
+                        }
+
+                        // ── By the Numbers ──────────────────────
+                        reportSection(title: "BY THE NUMBERS", icon: "📊") {
+                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
+                                numberCard(value: "47", label: "Messages sent")
+                                numberCard(value: "23", label: "Voice messages")
+                                numberCard(value: "12", label: "Minutes of audio")
+                                numberCard(value: "74", label: "Avg pronunciation")
+                            }
+                        }
+
+                        // ── Trends ──────────────────────────────
+                        reportSection(title: "TRENDS", icon: "📈") {
+                            VStack(alignment: .leading, spacing: 10) {
+                                trendRow(category: "Pronunciation", direction: "↑", detail: "improving", color: Color(hex: "#34C759"))
+                                trendRow(category: "Grammar", direction: "↑", detail: "big jump to B1", color: Color.tsAccent)
+                                trendRow(category: "Vocabulary", direction: "↑", detail: "growing steadily", color: Color(hex: "#FF9500"))
+                                trendRow(category: "Fluency", direction: "→", detail: "plateau — try slowing down", color: Color(hex: "#AF52DE"))
+                            }
+                        }
+
+                        // ── Challenge ────────────────────────────
+                        reportSection(title: "THIS WEEK'S CHALLENGE", icon: "🎯") {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Try ordering food at a restaurant without switching to English.")
+                                    .font(.custom("HelveticaNeue", size: 14))
+                                    .foregroundColor(.tsLabel)
+                                    .lineSpacing(2)
+                                Text("You have the vocabulary for it — 'eu gostaria de...' is your friend.")
+                                    .font(.custom("HelveticaNeue", size: 13))
+                                    .foregroundColor(.tsSecondary)
+                                    .italic()
+                            }
+                        }
+
+                        Spacer(minLength: 40)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 16)
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") { dismiss() }
+                        .font(.custom("HelveticaNeue-Medium", size: 16))
+                        .foregroundColor(.tsAccent)
+                }
+            }
+        }
+    }
+
+    private func reportSection<Content: View>(title: String, icon: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 6) {
+                Text(icon)
+                    .font(.system(size: 14))
+                Text(title)
+                    .font(.custom("HelveticaNeue-Bold", size: 11))
+                    .foregroundColor(.tsSecondary)
+                    .kerning(1.2)
+            }
+            content()
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.tsCard)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.tsBorder, lineWidth: 1)
+        )
+    }
+
+    private func reportRow(_ text: String) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Circle()
+                .fill(Color.tsAccent.opacity(0.4))
+                .frame(width: 6, height: 6)
+                .padding(.top, 6)
+            Text(text)
+                .font(.custom("HelveticaNeue", size: 14))
+                .foregroundColor(.tsLabel)
+                .lineSpacing(2)
+        }
+    }
+
+    private func numberCard(value: String, label: String) -> some View {
+        VStack(spacing: 4) {
+            Text(value)
+                .font(.custom("HelveticaNeue-Bold", size: 24))
+                .foregroundColor(.tsLabel)
+            Text(label)
+                .font(.custom("HelveticaNeue", size: 12))
+                .foregroundColor(.tsSecondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Color.tsAccent.opacity(0.06))
+        )
+    }
+
+    private func trendRow(category: String, direction: String, detail: String, color: Color) -> some View {
+        HStack(spacing: 10) {
+            Circle()
+                .fill(color)
+                .frame(width: 8, height: 8)
+            Text(category)
+                .font(.custom("HelveticaNeue-Medium", size: 14))
+                .foregroundColor(.tsLabel)
+                .frame(width: 100, alignment: .leading)
+            Text(direction)
+                .font(.system(size: 14, weight: .bold))
+                .foregroundColor(direction == "↑" ? Color(hex: "#34C759") : .tsSecondary)
+            Text(detail)
+                .font(.custom("HelveticaNeue", size: 13))
+                .foregroundColor(.tsSecondary)
+            Spacer()
+        }
+    }
+}
+
+// MARK: - Practice Session (full-screen chat)
+
+struct PracticeSessionView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
+
+    @State private var userInput = ""
+    @State private var messages: [PracticeMessage] = [
+        PracticeMessage(role: .sol, text: "Oi! 👋 Então, você mora no Rio, né? Já tentou pedir um cafezinho numa padaria sem trocar pro inglês? Vamos praticar isso. Eu vou ser o cara do balcão. Você entra na padaria..."),
+        PracticeMessage(role: .coaching, text: "💡 I'll be speaking in Portuguese. Try to respond in Portuguese too — don't worry about mistakes, that's what I'm here for."),
+    ]
+
+    @State private var messageCount = 0
+    private let maxMessages = 10
+
+    var body: some View {
+        ZStack {
+            TSGradientBackground().ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                // ── Header ──────────────────────────────────
+                HStack {
+                    Button { dismiss() } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 14, weight: .semibold))
+                            Text("End session")
+                                .font(.custom("HelveticaNeue-Medium", size: 15))
+                        }
+                        .foregroundColor(.tsAccent)
+                    }
+
+                    Spacer()
+
+                    Text("\(messageCount)/\(maxMessages)")
+                        .font(.custom("HelveticaNeue-Bold", size: 13))
+                        .foregroundColor(.tsSecondary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 4)
+                        .background(Color.tsCard)
+                        .clipShape(Capsule())
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
+
+                Divider().opacity(0.2)
+
+                // ── Chat messages ────────────────────────────
+                ScrollViewReader { proxy in
+                    ScrollView(showsIndicators: false) {
+                        VStack(spacing: 16) {
+                            ForEach(messages) { message in
+                                chatBubble(message: message)
+                                    .id(message.id)
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 16)
+                    }
+                    .onChange(of: messages.count) { _ in
+                        if let last = messages.last {
+                            withAnimation {
+                                proxy.scrollTo(last.id, anchor: .bottom)
+                            }
+                        }
+                    }
+                }
+
+                // ── Input bar ────────────────────────────────
+                VStack(spacing: 0) {
+                    Divider().opacity(0.2)
+
+                    HStack(spacing: 12) {
+                        TextField("Type in Portuguese...", text: $userInput)
+                            .font(.custom("HelveticaNeue", size: 15))
+                            .foregroundColor(.tsLabel)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                            .background(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .fill(Color.tsInputBg)
+                            )
+
+                        Button {
+                            sendMessage()
+                        } label: {
+                            Image(systemName: "arrow.up.circle.fill")
+                                .font(.system(size: 32))
+                                .foregroundColor(userInput.isEmpty ? .tsSecondary.opacity(0.4) : .tsAccent)
+                        }
+                        .disabled(userInput.isEmpty)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(colorScheme == .dark ? Color.tsCard : Color.white)
+                }
+            }
+        }
+    }
+
+    // MARK: - Chat Bubble
+
+    private func chatBubble(message: PracticeMessage) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            if message.role == .sol || message.role == .coaching {
+                // Sol avatar
+                Circle()
+                    .fill(Color.tsAccent.opacity(0.12))
+                    .frame(width: 32, height: 32)
+                    .overlay(
+                        Circle()
+                            .stroke(Color.tsAccent.opacity(0.2), lineWidth: 0.5)
+                    )
+            }
+
+            if message.role == .user {
+                Spacer(minLength: 60)
+            }
+
+            VStack(alignment: message.role == .user ? .trailing : .leading, spacing: 4) {
+                if message.role == .sol {
+                    Text("Sol")
+                        .font(.custom("HelveticaNeue-Bold", size: 11))
+                        .foregroundColor(.tsSecondary)
+                } else if message.role == .coaching {
+                    Text("COACHING TIP")
+                        .font(.custom("HelveticaNeue-Bold", size: 9))
+                        .foregroundColor(Color(hex: "#FF9500"))
+                        .kerning(0.8)
+                }
+
+                Text(message.text)
+                    .font(.custom("HelveticaNeue", size: 14))
+                    .foregroundColor(message.role == .user ? .white : .tsLabel)
+                    .lineSpacing(3)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(bubbleColor(for: message.role))
+                    )
+            }
+
+            if message.role == .sol || message.role == .coaching {
+                Spacer(minLength: 40)
+            }
+        }
+    }
+
+    private func bubbleColor(for role: PracticeMessage.Role) -> Color {
+        switch role {
+        case .sol:
+            return colorScheme == .dark ? Color.tsCard : Color.tsCard
+        case .user:
+            return Color.tsAccent
+        case .coaching:
+            return Color(hex: "#FF9500").opacity(0.1)
+        }
+    }
+
+    // MARK: - Send Message
+
+    private func sendMessage() {
+        let text = userInput.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return }
+
+        // Add user message
+        messages.append(PracticeMessage(role: .user, text: text))
+        userInput = ""
+        messageCount += 1
+
+        // Simulate Sol's response after a short delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+            if messageCount >= maxMessages {
+                // Session wrap-up
+                messages.append(PracticeMessage(role: .sol, text: "Ótimo trabalho! 🎉 You used 'eu gostaria' naturally — that's a big improvement from last session."))
+                messages.append(PracticeMessage(role: .coaching, text: "✨ SESSION COMPLETE: You nailed possessives today and used past subjunctive once correctly. Challenge for the week: try ordering food at a real restaurant without switching to English."))
+            } else {
+                // Mock responses based on message count
+                let responses: [(PracticeMessage.Role, String)] = mockResponses()
+                let idx = min(messageCount - 1, responses.count - 1)
+                let response = responses[max(0, idx)]
+                messages.append(PracticeMessage(role: response.0, text: response.1))
+                messageCount += 1
+            }
+        }
+    }
+
+    private func mockResponses() -> [(PracticeMessage.Role, String)] {
+        [
+            (.sol, "Bom dia! Bem-vindo à padaria. O que você gostaria de pedir?"),
+            (.sol, "Claro! Um cafezinho e um pão de queijo. Mais alguma coisa?"),
+            (.coaching, "💡 Nice! You used 'gostaria' — that's the polite conditional form. Very natural."),
+            (.sol, "São quatro e cinquenta. Vai pagar com cartão ou dinheiro?"),
+            (.sol, "Pronto! Aqui está o seu cafezinho. Bom apetite! 😊"),
+            (.coaching, "🧠 You said 'eu quero pagar com cartão' — that works! But a native might say 'vou pagar no cartão' — the preposition changes."),
+            (.sol, "Então, o que mais você costuma pedir quando vai na padaria?"),
+            (.sol, "Que legal! Eu adoro coxinha também. Aqui no Rio tem as melhores!"),
+        ]
+    }
+}
+
+struct PracticeMessage: Identifiable {
+    let id = UUID()
+    let role: Role
+    let text: String
+
+    enum Role {
+        case sol
+        case user
+        case coaching
+    }
+}
 
 #Preview {
     CoachView()
