@@ -1853,15 +1853,14 @@ class PracticeTTSService: NSObject, AVAudioPlayerDelegate {
 
     func playData(_ data: Data) {
         do {
-            if !audioSessionReady {
-                try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
-                try AVAudioSession.sharedInstance().setActive(true)
-                audioSessionReady = true
-            }
+            // Always re-set session — recording may have switched it to .record
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+            try AVAudioSession.sharedInstance().setActive(true)
+            audioSessionReady = true
+
             audioPlayer = try AVAudioPlayer(data: data)
             audioPlayer?.delegate = self
             audioPlayer?.prepareToPlay()
-            // Small delay to let audio hardware fully activate before playing
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
                 self.audioPlayer?.play()
             }

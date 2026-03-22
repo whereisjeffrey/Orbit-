@@ -122,7 +122,13 @@ class PronunciationScorer {
         audioEngine.inputNode.removeTap(onBus: 0)
         audioEngine.stop()
 
-        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        // Switch back to playback mode so WaveNet audio can play immediately after
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+            try AVAudioSession.sharedInstance().setActive(true)
+        } catch {
+            NSLog("PronunciationScorer: failed to switch back to playback: \(error)")
+        }
     }
 
     // MARK: - Scoring
