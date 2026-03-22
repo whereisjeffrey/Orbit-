@@ -1010,33 +1010,22 @@ struct PracticeSessionView: View {
     @State private var currentTopicIndex = 0
     @State private var swipeOffset: CGFloat = 0
 
-    // Topic pool — universal, open-ended, personal, low-stakes
-    private let topicPool: [(text: String, translation: String, notes: String, tag: String)] = [
-        ("E aí! 👋 Me conta do teu bairro no Rio — qual é a vibe? Tipo, é mais tranquilo ou é agitado? Tem algum cantinho que cê curte demais?",
-         "Hey! 👋 Tell me about your neighborhood in Rio — what's the vibe? Like, is it more chill or lively? Is there a spot you really love?",
-         "'bairro' = neighborhood · 'cantinho' = little corner/spot (diminutive, warm) · 'cê curte' = 'you enjoy' (casual contraction of 'você')",
-         "neighborhood"),
-
-        ("Fala aí — qual foi a última coisa que cê comeu que ficou pensando nela o dia inteiro? Tipo, aquela comida que te deixou com saudade depois. 😄",
-         "Tell me — what was the last thing you ate that you kept thinking about all day? Like, that food that left you missing it afterwards. 😄",
-         "'fala aí' = 'tell me' (very casual opener) · 'ficou pensando nela' = 'kept thinking about it' · 'saudade' = that deep longing (untranslatable)",
-         "food"),
-
-        ("Se um amigo teu viesse visitar o Rio por um dia só, pra onde cê levaria? Tipo, o rolê perfeito de um dia — pode ser qualquer coisa.",
-         "If a friend of yours came to visit Rio for just one day, where would you take them? Like, the perfect one-day hangout — could be anything.",
-         "'amigo teu' = 'friend of yours' (informal possessive) · 'rolê' = 'hangout/outing' (pure slang, never in textbooks) · 'pode ser qualquer coisa' = 'could be anything'",
-         "travel"),
-
-        ("Qual a coisa mais brasileira que cê já se pegou fazendo sem perceber? Tipo, algo que antes cê achava estranho e agora faz naturalmente.",
-         "What's the most Brazilian thing you've caught yourself doing without realizing? Like, something you used to find weird but now do naturally.",
-         "'se pegou fazendo' = 'caught yourself doing' · 'sem perceber' = 'without noticing' · 'achava estranho' = 'used to find weird' (imperfect tense, natural here)",
-         "culture"),
-
-        ("Cê curte música brasileira? Tô curioso — o que cê tem escutado ultimamente? Pode ser qualquer coisa, de sertanejo a funk carioca. 🎵",
-         "Do you like Brazilian music? I'm curious — what have you been listening to lately? Could be anything, from sertanejo to funk carioca. 🎵",
-         "'tô curioso' = 'I'm curious' (casual) · 'tem escutado' = 'have been listening' (present perfect continuous) · 'sertanejo' = Brazilian country music · 'funk carioca' = Rio's bass-heavy street music",
-         "music"),
+    // Topic prompts sent to GPT — Sol generates the actual message
+    // in the right language, dialect, and city context automatically.
+    // These are just topic DIRECTIONS, not hardcoded messages.
+    private let topicPrompts: [(prompt: String, tag: String)] = [
+        ("Ask about their neighborhood — what's the vibe, favorite spots, daily routine there", "neighborhood"),
+        ("Ask about food — last amazing meal, favorite local dish, where they eat", "food"),
+        ("Ask what they'd show a visiting friend — one perfect day in their city", "travel"),
+        ("Ask about cultural habits they've picked up — things they do now that they wouldn't have done before", "culture"),
+        ("Ask about local music, entertainment, or nightlife — what they're into", "music"),
+        ("Ask about their work life abroad — what it's like working in another language/culture", "work"),
+        ("Ask about dating or friendships — making connections in another language", "social"),
+        ("Ask about something they miss from home vs something they'd never go back to", "identity"),
     ]
+
+    @State private var generatedTopics: [PracticeMessage] = []
+    @State private var isLoadingTopic = true
 
     @State private var messages: [PracticeMessage] = []
 
@@ -1137,6 +1126,22 @@ struct PracticeSessionView: View {
                                         : nil
                                     )
                                     .id(message.id)
+
+                                // Swipe indicator on Sol's first message
+                                if index == 0 && message.role == .sol && messageCount == 0 {
+                                    HStack {
+                                        Spacer()
+                                        HStack(spacing: 4) {
+                                            Text("swipe for different topic")
+                                                .font(.custom("HelveticaNeue", size: 11))
+                                                .foregroundColor(.tsSecondary.opacity(0.6))
+                                            Image(systemName: "chevron.left")
+                                                .font(.system(size: 9, weight: .medium))
+                                                .foregroundColor(.tsSecondary.opacity(0.6))
+                                        }
+                                    }
+                                    .padding(.top, -8)
+                                }
 
                                 // Show Sol double-tap hint after Sol's first message
                                 if index == 0 && showDoubleTapHint {
@@ -1579,28 +1584,77 @@ struct PracticeSessionView: View {
     // MARK: - Topic Loading & Swiping
 
     private func loadTopic(index: Int) {
-        let topic = topicPool[index % topicPool.count]
+        isLoadingTopic = true
+        let topicDirection = topicPrompts[index % topicPrompts.count]
+
+        // Read user's city from settings
+        let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper")
+        let cityId = defaults?.string(forKey: "selected_city_id") ?? ""
+        let targetLang = defaults?.string(forKey: "talkswitch_target_lang") ?? "pt"
+
+        // Map city ID to display name (or use generic)
+        let userCity = cityId.isEmpty ? "their city" : cityId.replacingOccurrences(of: "_", with: " ").replacingOccurrences(of: "mx ", with: "").capitalized
+
         messages = [
-            PracticeMessage(role: .sol,
-                           text: topic.text,
-                           translation: topic.translation,
-                           translationNotes: topic.notes),
             PracticeMessage(role: .coaching,
-                           text: "💡 Sol speaks like a real carioca — casual, full of slang. Respond naturally. Swipe Sol's message → for a different topic."),
+                           text: "💡 Sol speaks like a local — casual, full of slang. Respond naturally. ← Swipe for a different topic."),
         ]
-        // Pre-reveal initial messages
-        for msg in messages {
-            revealedText.insert(msg.id)
-        }
+        for msg in messages { revealedText.insert(msg.id) }
         messageCount = 0
+
+        // Generate Sol's opening via GPT
+        let openingPrompt = """
+        Generate a casual, warm opening message for a practice conversation.
+        Topic direction: \(topicDirection.prompt)
+
+        Speak naturally in the target language as someone from \(userCity).
+        Use local slang and contractions. 2-3 sentences max.
+        Make it a question they can easily answer — nothing too specific.
+
+        Respond ONLY with JSON:
+        {"message": "your opening in target language", "translation": "English translation", "notes": "brief slang/vocab notes"}
+        """
+
+        conversationService.getSolResponse(
+            conversationHistory: [(role: "user", text: openingPrompt)],
+            userCity: userCity,
+            targetLanguage: targetLang
+        ) { [self] response in
+            isLoadingTopic = false
+            if let sol = response {
+                let solMsg = PracticeMessage(
+                    role: .sol,
+                    text: sol.text,
+                    translation: sol.translation,
+                    translationNotes: sol.translationNotes
+                )
+                messages.insert(solMsg, at: 0)
+                revealedText.insert(solMsg.id)
+
+                // Add slang notes
+                for note in sol.slangNotes {
+                    messages.append(PracticeMessage(
+                        role: .coaching,
+                        text: "📖 \"\(note.phrase)\" — \(note.meaning). \(note.context)"
+                    ))
+                }
+            } else {
+                // Fallback — generic opening
+                let fallback = PracticeMessage(
+                    role: .sol,
+                    text: "E aí! Tudo bem? Me conta — como tá sendo o dia hoje?",
+                    translation: "Hey! Everything good? Tell me — how's your day going?",
+                    translationNotes: "'tudo bem' = 'everything good?' · 'como tá sendo' = 'how's it going' (casual)")
+                messages.insert(fallback, at: 0)
+                revealedText.insert(fallback.id)
+            }
+        }
     }
 
     private func swipeToNextTopic() {
-        // Log the swipe for interest tracking
-        let swipedTag = topicPool[currentTopicIndex % topicPool.count].tag
+        let swipedTag = topicPrompts[currentTopicIndex % topicPrompts.count].tag
         logInterest(topic: swipedTag, action: "swiped")
 
-        // Move to next topic
         currentTopicIndex += 1
         withAnimation(.easeInOut(duration: 0.3)) {
             loadTopic(index: currentTopicIndex)
