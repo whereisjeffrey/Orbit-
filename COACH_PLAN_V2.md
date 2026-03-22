@@ -140,6 +140,30 @@ A curated database of the most common transfer errors for each L1→L2 pair:
 - Content marketing goldmine: "We analyzed 1 million voice messages from Portuguese learners. Here are the 10 mistakes every English speaker makes."
 - Competitors can't replicate this without the user base generating the data
 
+### Transfer Insight Cadence (how often to surface insights)
+
+The transfer insight is a ONE-TIME gift. After that, it's just coaching. Nobody wants the same fun fact five times.
+
+Each tracked pattern in the mistake profile has a `transferInsightShown: Date?` field.
+
+| Timing | What the user sees | Prompt instruction |
+|--------|-------------------|-------------------|
+| **1st occurrence** | Full transfer insight — the "aha" moment. "I know in English you'd say it this way, but Portuguese flips it..." | `transferInsightShown` is nil → show full English comparison |
+| **Same day / next 48 hours** | Quick warm nudge only, no lecture. "Remember — 'a casa dele,' possession flips." | `transferInsightShown` < 48hrs → short correction only, no English comparison |
+| **2-7 days later** | Light acknowledgment, different wording. "That possessive order snuck past you again — you'll get it." | `transferInsightShown` 2-7 days ago → acknowledge pattern without re-explaining |
+| **1+ week, still occurring** | Progress framing. "You're getting closer with possessives. Last week you missed 4, this week just 1." | `transferInsightShown` > 7 days → frame as progress, show improvement data |
+| **2 weeks clean** | Milestone graduation. "You haven't flipped a possessive in 2 weeks. That English pattern is officially losing." | Pattern clean for 14 days → celebrate and graduate |
+
+**Key principle:** The insight is valuable because it's surprising. Repeating it kills the magic. After the first time, the user KNOWS why they make the mistake — they just need reminders that their coach is watching and that they're improving.
+
+**Prompt context sent to AI:**
+```
+TRANSFER INSIGHT STATUS:
+- Possessive word order: insight shown 2026-03-15, last error 2026-03-20 (use short nudge, don't re-explain)
+- Ser vs estar: insight shown 2026-03-10, no errors in 14 days (ready for graduation milestone)
+- Gender agreement: insight NOT YET SHOWN (show full English comparison on next occurrence)
+```
+
 ### Training the model
 Feed the transfer library into coaching prompts:
 ```

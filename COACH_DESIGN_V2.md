@@ -284,6 +284,40 @@ A vertical scrollable list of the most recent coaching tips (last 5-7).
 
 **My recommendation:** Option B for v1 — cards with subtle background. Clean, modern, easy to scan. Option C (timeline) for v2 when there's enough history to make a timeline feel meaningful.
 
+### Transfer Insight Tips (special first-time styling)
+When the coach surfaces a transfer pattern for the FIRST time, it gets special visual treatment:
+```
+┌────────────────────────────────────┐
+│ 🧠 LANGUAGE INSIGHT        Mar 21  │
+│ ──────────────────────────────── │
+│ In English you'd say "John's       │
+│ house" — possessor first. But      │
+│ Portuguese flips it: "a casa do    │
+│ John." Your English brain is doing │
+│ what it's trained to do.           │
+│                                    │
+│ This is a normal hurdle. You'll    │
+│ untrain it. 💪                     │
+└────────────────────────────────────┘
+```
+- Different background color (subtle blue/purple — "insight" feel)
+- Brain icon 🧠 — signals this is about HOW your mind works, not just a correction
+- Only shows with full explanation ONCE per pattern
+- Subsequent mentions of the same pattern use regular tip styling (short nudge)
+
+### Transfer Nudge Tips (after first insight was shown)
+```
+┌────────────────────────────────────┐
+│ 💡 Mar 23                          │
+│ That possessive order again —      │
+│ "a casa dele," not "dele casa."    │
+│ Getting closer. 👊                 │
+└────────────────────────────────────┘
+```
+- Regular tip styling — no special background
+- Short, warm, no re-explanation
+- Different wording each time (variety rule applies)
+
 ### Milestone Tips (special styling)
 ```
 ┌────────────────────────────────────┐
