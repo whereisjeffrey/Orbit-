@@ -216,20 +216,10 @@ struct CoachPopulatedView: View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 0) {
 
-                // ── Header ──────────────────────────────────────
-                HStack {
-                    Text("Coach")
-                        .font(.museoModerno(28))
-                        .foregroundColor(.tsLabel)
-                    Spacer()
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                .padding(.bottom, 24)
-
                 // ── 1. Coach Greeting Card ───────────────────────
                 greetingCard
                     .padding(.horizontal, 20)
+                    .padding(.top, 16)
                     .padding(.bottom, 20)
 
                 // ── 2. Score Overview (4 gauges) ─────────────────
@@ -316,23 +306,90 @@ struct CoachPopulatedView: View {
         }
         .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color(hex: "#FF6B35"),  // orange
-                            Color(hex: "#FF3D8B"),  // hot pink
-                            Color(hex: "#C338C3"),  // magenta
-                            Color(hex: "#7B2FBE"),  // purple
-                            Color(hex: "#2BBCD4"),  // teal
-                            Color(hex: "#3B6FE8"),  // blue
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+            GreetingCardBackground()
+                .clipShape(RoundedRectangle(cornerRadius: 12))
         )
     }
+}
+
+// MARK: - Animated blob gradient (card-sized version of splash / recorder background)
+//
+// Same 7-blob radial system as SplashFinisherBackground / VoiceKeyboardBackground.
+// Frequencies are 2× the VoiceKeyboard values (half the Splash speed) — active enough
+// to feel alive inside the card without distracting from the text content.
+
+private struct GreetingCardBackground: View {
+
+    private static let blobColors: [Color] = [
+        Color(red: 1.000, green: 0.420, blue: 0.000),   // orange
+        Color(red: 0.984, green: 0.000, blue: 0.376),   // pink-red
+        Color(red: 0.820, green: 0.000, blue: 0.820),   // magenta
+        Color(red: 0.420, green: 0.000, blue: 0.900),   // purple
+        Color(red: 0.000, green: 0.780, blue: 0.820),   // teal
+        Color(red: 0.050, green: 0.300, blue: 0.980),   // electric blue
+        Color(red: 1.000, green: 0.000, blue: 0.290),   // hot pink
+    ]
+
+    private struct BlobConfig {
+        let baseX, baseY: Double
+        let ampX,  ampY:  Double
+        let freqX, freqY: Double
+        let phase:        Double
+        let radius:       Double
+    }
+
+    // 2× VoiceKeyboard frequencies — medium pace, visibly moving inside the card
+    private static let configs: [BlobConfig] = [
+        BlobConfig(baseX: 0.15, baseY: 0.85, ampX: 0.20, ampY: 0.18, freqX: 0.22, freqY: 0.18, phase: 0.0, radius: 0.90),
+        BlobConfig(baseX: 0.80, baseY: 0.85, ampX: 0.18, ampY: 0.20, freqX: 0.18, freqY: 0.24, phase: 1.2, radius: 0.88),
+        BlobConfig(baseX: 0.45, baseY: 0.50, ampX: 0.22, ampY: 0.20, freqX: 0.26, freqY: 0.20, phase: 2.4, radius: 0.95),
+        BlobConfig(baseX: 0.80, baseY: 0.25, ampX: 0.18, ampY: 0.22, freqX: 0.20, freqY: 0.26, phase: 0.8, radius: 0.88),
+        BlobConfig(baseX: 0.20, baseY: 0.22, ampX: 0.20, ampY: 0.18, freqX: 0.24, freqY: 0.22, phase: 3.6, radius: 0.92),
+        BlobConfig(baseX: 0.65, baseY: 0.10, ampX: 0.16, ampY: 0.16, freqX: 0.16, freqY: 0.18, phase: 1.8, radius: 0.86),
+        BlobConfig(baseX: 0.50, baseY: 0.70, ampX: 0.22, ampY: 0.20, freqX: 0.22, freqY: 0.24, phase: 4.8, radius: 0.90),
+    ]
+
+    @State private var startDate = Date()
+
+    var body: some View {
+        Color(red: 0.38, green: 0.00, blue: 0.55)
+            .overlay(
+                TimelineView(.animation) { timeline in
+                    Canvas { ctx, size in
+                        let t = timeline.date.timeIntervalSince(startDate)
+                        for i in Self.configs.indices {
+                            let cfg   = Self.configs[i]
+                            let color = Self.blobColors[i % Self.blobColors.count]
+                            let cx = (cfg.baseX + cfg.ampX * sin(2 * .pi * cfg.freqX * t + cfg.phase)) * size.width
+                            let cy = (cfg.baseY + cfg.ampY * cos(2 * .pi * cfg.freqY * t + cfg.phase)) * size.height
+                            let r  = cfg.radius * min(size.width, size.height)
+                            let gradient = Gradient(stops: [
+                                .init(color: color.opacity(0.72), location: 0.0),
+                                .init(color: color.opacity(0.0),  location: 1.0),
+                            ])
+                            let shading = GraphicsContext.Shading.radialGradient(
+                                gradient,
+                                center: CGPoint(x: cx, y: cy),
+                                startRadius: 0,
+                                endRadius: r
+                            )
+                            var innerCtx = ctx
+                            innerCtx.blendMode = .lighten
+                            innerCtx.fill(
+                                Path(ellipseIn: CGRect(x: cx - r, y: cy - r,
+                                                       width: r * 2, height: r * 2)),
+                                with: shading
+                            )
+                        }
+                    }
+                }
+            )
+            .onAppear { startDate = Date() }
+    }
+}
+
+// MARK: - CoachPopulatedView (continued)
+extension CoachPopulatedView {
 
     // MARK: - 2. Score Overview
 
@@ -528,7 +585,7 @@ struct CoachPopulatedView: View {
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.tsCard)
+                .fill(Color.clear)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
@@ -976,7 +1033,7 @@ struct WeeklyFullReportView: View {
         .padding(.vertical, 12)
         .background(
             RoundedRectangle(cornerRadius: 8)
-                .fill(Color.tsAccent.opacity(0.06))
+                .fill(Color.white)
         )
     }
 
