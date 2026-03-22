@@ -1151,7 +1151,7 @@ struct PracticeSessionView: View {
                 // Main message bubble
                 Text(message.text)
                     .font(.custom("HelveticaNeue", size: 14))
-                    .foregroundColor(message.role == .user ? .white : .tsLabel)
+                    .foregroundColor(.tsLabel)
                     .lineSpacing(3)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 10)
@@ -1229,7 +1229,9 @@ struct PracticeSessionView: View {
         case .sol:
             return colorScheme == .dark ? Color.tsCard : Color.tsCard
         case .user:
-            return Color.tsAccent
+            return colorScheme == .dark
+                ? Color.tsAccent.opacity(0.15)
+                : Color(hex: "#E8F0FE")  // soft muted blue — understated, elegant
         case .coaching:
             return Color(hex: "#FF9500").opacity(0.1)
         }
@@ -1261,10 +1263,16 @@ struct PracticeSessionView: View {
         recordingSeconds = 0
         withAnimation { isRecording = false }
 
-        // TODO: stop recording, send to WhisperKit/API for transcription,
-        // then add transcribed text as a user message
-        // For now, mock it:
-        messages.append(PracticeMessage(role: .user, text: "[🎤 Voice message — \(duration)s]"))
+        // Mock transcription — in production this would go through WhisperKit/API
+        let mockTranscriptions = [
+            "Eu gostaria de um cafezinho e um pão de queijo, por favor.",
+            "Sim, pode ser com cartão. Obrigado!",
+            "Eu costumo pedir coxinha quando venho aqui.",
+            "Ah, legal! Eu adoro a padaria aqui perto da minha casa.",
+            "Tem alguma coisa que você recomenda?",
+        ]
+        let transcription = mockTranscriptions[min(messageCount, mockTranscriptions.count - 1)]
+        messages.append(PracticeMessage(role: .user, text: "🎤 \(transcription)"))
         messageCount += 1
 
         // Simulate Sol's response
