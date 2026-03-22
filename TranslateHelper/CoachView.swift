@@ -1798,8 +1798,11 @@ class PracticeTTSService: NSObject, AVAudioPlayerDelegate {
 
                     self.audioPlayer = try AVAudioPlayer(data: audioData)
                     self.audioPlayer?.delegate = self
-                    self.audioPlayer?.prepareToPlay()  // pre-buffer to avoid clipping
-                    self.audioPlayer?.play()
+                    self.audioPlayer?.prepareToPlay()
+                    // Small delay to let audio hardware fully activate
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                        self.audioPlayer?.play()
+                    }
                 } catch {
                     completion()
                 }
@@ -1858,7 +1861,10 @@ class PracticeTTSService: NSObject, AVAudioPlayerDelegate {
             audioPlayer = try AVAudioPlayer(data: data)
             audioPlayer?.delegate = self
             audioPlayer?.prepareToPlay()
-            audioPlayer?.play()
+            // Small delay to let audio hardware fully activate before playing
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                self.audioPlayer?.play()
+            }
         } catch {
             NSLog("PracticeTTS: playData error: \(error)")
         }
