@@ -1118,6 +1118,12 @@ class TalkSwitchAPI {
             Make it sound like someone who's confident and smooth — not creepy or over-the-top. \
             Use natural flirty expressions that native speakers actually use. \
             Keep the core meaning intact but add warmth and playful energy. \
+            \
+            ════════════ CONTENT PRESERVATION — CRITICAL ════════════ \
+            You MUST preserve EVERY idea, topic, and detail from the original message. \
+            Do NOT drop, summarize, merge, or skip any part of what the user said. \
+            Your job is to rephrase HOW it's said — never change WHAT is said. \
+            ══════════════════════════════════════════════ \
             \(genderInstruction)\
             \(personaInstruction)\
             \(locationInstruction)\
@@ -1147,7 +1153,16 @@ class TalkSwitchAPI {
             let transferContext = transferBlock.isEmpty ? "" : "\n\n\(transferBlock)"
             return """
             You are a bilingual translation expert specializing in \(langPair). \
-            Refine the translation to sound natural with a \(toneLabel) tone. \(personaInstruction)\
+            Refine the translation to sound natural with a \(toneLabel) tone. \
+            \
+            ════════════ CONTENT PRESERVATION — CRITICAL ════════════ \
+            You MUST preserve EVERY idea, topic, and detail from the original message. \
+            Do NOT drop, summarize, merge, or skip any part of what the user said. \
+            If they mentioned yoga, yoga must appear in the output. \
+            If they asked three questions, all three questions must appear. \
+            Your job is to rephrase HOW it's said — never change WHAT is said. \
+            ══════════════════════════════════════════════ \
+            \(personaInstruction)\
             \(locationInstruction)\
             \(paragraphInstruction)\
             \(transferContext)\
@@ -1181,7 +1196,14 @@ class TalkSwitchAPI {
             You are a bilingual translation expert specializing in \(langPair) street slang and colloquial speech. \
             Your job is to refine translations using real slang, gírias, and informal expressions appropriate for the target language. \
             Use authentic street slang and colloquial expressions that native speakers actually use. \
-            Don't sanitize — keep it authentic. But don't add profanity that wasn't in the original. \(personaInstruction)\
+            Don't sanitize — keep it authentic. But don't add profanity that wasn't in the original. \
+            \
+            ════════════ CONTENT PRESERVATION — CRITICAL ════════════ \
+            You MUST preserve EVERY idea, topic, and detail from the original message. \
+            Do NOT drop, summarize, merge, or skip any part of what the user said. \
+            Your job is to rephrase HOW it's said — never change WHAT is said. \
+            ══════════════════════════════════════════════ \
+            \(personaInstruction)\
             \(locationInstruction)\
             \(paragraphInstruction)\
             \

@@ -85,10 +85,10 @@ struct CoachEmptyView: View {
                         .foregroundColor(.tsSecondary)
                         .kerning(1.2)
 
-                    howItWorksRow(icon: "pencil.and.outline", text: "Write or send audios like you normally do — in WhatsApp, Tinder, Instagram, anywhere")
-                    howItWorksRow(icon: "target", text: "I'll give you 1-2 tips per message — pronunciation, grammar, or both")
-                    howItWorksRow(icon: "chart.line.uptrend.xyaxis", text: "Over time, I'll track your patterns and show you exactly where you're improving")
-                    howItWorksRow(icon: "brain.head.profile", text: "I know your native language brain will try to trick you — I'll help you untrain those habits")
+                    howItWorksRow(icon: "pencil.and.outline", color: Color.tsAccent, text: "Write or send audios like you normally do — in WhatsApp, Tinder, Instagram, anywhere")
+                    howItWorksRow(icon: "target", color: Color(hex: "#34C759"), text: "I'll give you 1-2 tips per message — pronunciation, grammar, or both")
+                    howItWorksRow(icon: "chart.line.uptrend.xyaxis", color: Color(hex: "#FF9500"), text: "Over time, I'll track your patterns and show you exactly where you're improving")
+                    howItWorksRow(icon: "brain.head.profile", color: Color(hex: "#AF52DE"), text: "I know your native language brain will try to trick you — I'll help you untrain those habits")
                 }
                 .padding(24)
                 .background(
@@ -115,8 +115,8 @@ struct CoachEmptyView: View {
                     unlockRow(icon: "💬", label: "Fluency tracking", detail: "After 10 messages", unlocked: false)
 
                     Text("Weekly reports · Milestones · Practice sessions · and more")
-                        .font(.custom("HelveticaNeue", size: 13))
-                        .foregroundColor(.tsSecondary)
+                        .font(.custom("HelveticaNeue-Medium", size: 13))
+                        .foregroundColor(.tsLabel)
                         .padding(.top, 4)
                 }
                 .padding(24)
@@ -162,11 +162,11 @@ struct CoachEmptyView: View {
         }
     }
 
-    private func howItWorksRow(icon: String, text: String) -> some View {
+    private func howItWorksRow(icon: String, color: Color = .tsAccent, text: String) -> some View {
         HStack(alignment: .top, spacing: 16) {
             Image(systemName: icon)
                 .font(.system(size: 20, weight: .medium))
-                .foregroundColor(.tsAccent)
+                .foregroundColor(color)
                 .frame(width: 32)
             Text(text)
                 .font(.custom("HelveticaNeue", size: 14))
@@ -180,7 +180,6 @@ struct CoachEmptyView: View {
             Text(icon)
                 .font(.system(size: 20))
                 .frame(width: 32)
-                .opacity(unlocked ? 1 : 0.4)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)
@@ -294,12 +293,12 @@ struct CoachPopulatedView: View {
                 )
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("You've been killing it this week, Jeffrey. 3 mistakes graduated.")
+                Text("Your Portuguese is getting sharper every week. Grammar just hit B1 — that's a big jump.")
                     .font(.custom("HelveticaNeue-Medium", size: 14))
                     .foregroundColor(.tsLabel)
                     .lineSpacing(2)
 
-                Text("Last active: 2 hours ago")
+                Text("127 voice messages · 3 months active")
                     .font(.custom("HelveticaNeue", size: 12))
                     .foregroundColor(.tsSecondary)
             }
@@ -328,17 +327,17 @@ struct CoachPopulatedView: View {
 
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
                 scoreGauge(label: "Pronunciation", level: "B1", progress: 0.65, color: Color(hex: "#34C759"), locked: false)
-                scoreGauge(label: "Grammar", level: "A2", progress: 0.4, color: Color.tsAccent, locked: false)
-                scoreGauge(label: "Vocabulary", level: "—", progress: 0, color: .tsSecondary, locked: true)
-                scoreGauge(label: "Fluency", level: "—", progress: 0, color: .tsSecondary, locked: true)
+                scoreGauge(label: "Grammar", level: "B1", progress: 0.55, color: Color.tsAccent, locked: false)
+                scoreGauge(label: "Vocabulary", level: "B2", progress: 0.72, color: Color(hex: "#FF9500"), locked: false)
+                scoreGauge(label: "Fluency", level: "A2", progress: 0.38, color: Color(hex: "#AF52DE"), locked: false)
             }
 
-            HStack {
-                Image(systemName: "sparkles")
+            HStack(spacing: 6) {
+                Image(systemName: "chart.line.uptrend.xyaxis")
                     .font(.system(size: 12))
-                    .foregroundColor(.tsAccent)
-                Text("2 more unlock with more audio")
-                    .font(.custom("HelveticaNeue", size: 13))
+                    .foregroundColor(Color(hex: "#34C759"))
+                Text("All categories active · Based on 127 voice messages")
+                    .font(.custom("HelveticaNeue", size: 12))
                     .foregroundColor(.tsSecondary)
             }
         }
@@ -387,6 +386,8 @@ struct CoachPopulatedView: View {
 
     // MARK: - 3. Weekly Snapshot
 
+    @State private var showFullReport = false
+
     private var weeklySnapshot: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
@@ -402,13 +403,48 @@ struct CoachPopulatedView: View {
                     .foregroundColor(.tsSecondary)
             }
 
+            // ── Mini calendar (7 days) ──────────────────────
+            HStack(spacing: 0) {
+                ForEach(weekDays, id: \.day) { item in
+                    VStack(spacing: 6) {
+                        Text(item.label)
+                            .font(.custom("HelveticaNeue", size: 10))
+                            .foregroundColor(.tsSecondary)
+                        ZStack {
+                            Circle()
+                                .fill(item.active ? Color.tsAccent.opacity(0.15) : Color.clear)
+                                .frame(width: 32, height: 32)
+                            Text("\(item.day)")
+                                .font(.custom("HelveticaNeue-Bold", size: 13))
+                                .foregroundColor(item.isToday ? .tsAccent : (item.active ? .tsLabel : .tsSecondary.opacity(0.5)))
+                        }
+                        // Activity dot
+                        Circle()
+                            .fill(item.active ? Color(hex: "#34C759") : Color.clear)
+                            .frame(width: 5, height: 5)
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+            }
+            .padding(.vertical, 4)
+
+            // ── Stats row ───────────────────────────────────
+            HStack(spacing: 16) {
+                statPill(value: "23", label: "messages")
+                statPill(value: "12", label: "min audio")
+                statPill(value: "74", label: "avg score")
+            }
+
+            Divider().opacity(0.3)
+
+            // ── Summary ─────────────────────────────────────
             VStack(alignment: .leading, spacing: 12) {
                 weeklyRow(icon: "checkmark.circle.fill", color: Color(hex: "#34C759"), text: "Win: Graduated 'ser vs estar'")
                 weeklyRow(icon: "pencil.circle.fill", color: Color.tsAccent, text: "Work on: Gender agreement (72%)")
                 weeklyRow(icon: "target", color: Color(hex: "#FF9500"), text: "Challenge: Try ordering food without switching to English")
             }
 
-            Button {} label: {
+            Button { showFullReport = true } label: {
                 Text("See full report →")
                     .font(.custom("HelveticaNeue-Medium", size: 13))
                     .foregroundColor(.tsAccent)
@@ -423,6 +459,40 @@ struct CoachPopulatedView: View {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.tsBorder, lineWidth: 1)
         )
+        .sheet(isPresented: $showFullReport) {
+            WeeklyFullReportView()
+        }
+    }
+
+    private struct WeekDay {
+        let label: String
+        let day: Int
+        let active: Bool
+        let isToday: Bool
+    }
+
+    private var weekDays: [WeekDay] {
+        [
+            WeekDay(label: "Mon", day: 17, active: true, isToday: false),
+            WeekDay(label: "Tue", day: 18, active: true, isToday: false),
+            WeekDay(label: "Wed", day: 19, active: true, isToday: false),
+            WeekDay(label: "Thu", day: 20, active: false, isToday: false),
+            WeekDay(label: "Fri", day: 21, active: true, isToday: false),
+            WeekDay(label: "Sat", day: 22, active: true, isToday: true),
+            WeekDay(label: "Sun", day: 23, active: false, isToday: false),
+        ]
+    }
+
+    private func statPill(value: String, label: String) -> some View {
+        VStack(spacing: 2) {
+            Text(value)
+                .font(.custom("HelveticaNeue-Bold", size: 18))
+                .foregroundColor(.tsLabel)
+            Text(label)
+                .font(.custom("HelveticaNeue", size: 11))
+                .foregroundColor(.tsSecondary)
+        }
+        .frame(maxWidth: .infinity)
     }
 
     private func weeklyRow(icon: String, color: Color, text: String) -> some View {
