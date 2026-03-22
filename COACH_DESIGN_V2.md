@@ -14,7 +14,10 @@ This is what someone sees the very first time they tap the Coach tab. They just 
 ┌──────────────────────────────────────┐
 │                                      │
 │                                      │
-│         [Sol avatar/icon]            │
+│            ┌────┐                     │
+│            │ ○  │  ← Sol placeholder │
+│            └────┘    (Jeffrey will    │
+│                       provide design)│
 │                                      │
 │  "Hey, I'm Sol. 👋                   │
 │                                      │
@@ -147,7 +150,7 @@ One scrollable screen with cards that progressively unlock. No sub-pages or navi
 ### Default State (collapsed — shown after first message onward)
 ```
 ┌──────────────────────────────────────┐
-│  [Sol avatar/icon]                   │
+│  [○ Sol placeholder]                 │
 │                                      │
 │  "You've been killing it this week,  │
 │   Jeffrey. 3 mistakes graduated."    │
@@ -366,7 +369,9 @@ A vertical scrollable list of the most recent coaching tips (last 5-7).
 - Milestones are bigger dots with a different color
 - Feels like a journey
 
-**My recommendation:** Option B for v1 — cards with subtle background. Clean, modern, easy to scan. Option C (timeline) for v2 when there's enough history to make a timeline feel meaningful.
+**Decision: Option B** — cards with subtle background. Clean, modern, easy to scan.
+
+**RULE: Transfer Insight and Transfer Nudge can NEVER be about the same pattern in the same tips feed view.** If the full insight was just shown, the nudge doesn't appear alongside it. They are sequential over time, never simultaneous. No redundancy.
 
 ### Transfer Insight Tips (special first-time styling)
 When the coach surfaces a transfer pattern for the FIRST time, it gets special visual treatment:
@@ -584,13 +589,32 @@ Full-screen overlay with back button. Scrollable content.
 │ ⚠️ Nasal 'ão' (coração, não)        │
 │    └ Last detected: Mar 21           │
 │    └ Occurrences: 8 times            │
-│    └ [▶ Hear correct pronunciation]  │
+│    └ [▶ Hear it]  [🎤 Practice]     │
 │                                      │
 │ ⚠️ Final 's' drops in long          │
 │    sentences                         │
 │    └ Last detected: Mar 20           │
 │    └ Occurrences: 5 times            │
-│    └ [▶ Hear correct pronunciation]  │
+│    └ [▶ Hear it]  [🎤 Practice]     │
+│                                      │
+│ Tapping [🎤 Practice] opens a quick │
+│ mini-drill:                          │
+│ ┌──────────────────────────────────┐ │
+│ │ Say: "coração"                   │ │
+│ │                                  │ │
+│ │ [▶ Hear native]     [🎤 Record] │ │
+│ │                                  │ │
+│ │ Score: ── (record to see)        │ │
+│ │                                  │ │
+│ │ You get 3 attempts. Quick,       │ │
+│ │ focused, then move on.           │ │
+│ └──────────────────────────────────┘ │
+│                                      │
+│ Philosophy: we're telling them what  │
+│ to work on — we MUST give them a     │
+│ tool to work on it right here. Don't │
+│ send them to another app. Keep the   │
+│ loop closed.                         │
 │                                      │
 │ ── PACE ─────────────────────────── │
 │ Your avg: 142 words/min              │
@@ -747,6 +771,8 @@ Full-screen overlay with back button. Scrollable content.
 
 ## 9. Pop-ups & Transient UI
 
+**RULE: Every notification/pop-up must be easy to turn off.** Each one has a clear dismiss option AND can be disabled in Settings under the Custom preset. Never trap a user in notifications they don't want.
+
 ### Pronunciation Score Toast (after each voice message)
 ```
 ┌────────────────────┐
@@ -857,6 +883,20 @@ Full-screen overlay with back button. Scrollable content.
 │                                      │
 │  That's not an app talking —         │
 │  that's YOU putting in the work.     │
+│                                      │
+│  ── WHAT'S AHEAD IN MARCH ──────── │
+│                                      │
+│  🎯 Focus: Gender agreement          │
+│     You're at 72% — let's push       │
+│     for 85% this month               │
+│                                      │
+│  🔓 Coming soon: If you keep this    │
+│     pace, Vocabulary scoring          │
+│     unlocks in ~2 weeks              │
+│                                      │
+│  💡 Challenge: Try having one full   │
+│     conversation in Portuguese        │
+│     without switching to English      │
 │                                      │
 │        [ Share my progress ]         │
 │                                      │
