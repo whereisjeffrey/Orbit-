@@ -307,25 +307,207 @@ The "Keep as is" option is critical. Respect user intent.
 
 ## Practice Mode
 
+### Philosophy
+Short, contextual conversation sessions with an AI that knows your city, interests, mistakes, and progress. Not a chatbot — a coach drill disguised as a casual conversation.
+
 ### Structure
-- 5-10 exchanges per session
-- 2-hour cooldown (soft override available)
-- Session wrap-up with summary
+- **5-10 exchanges per session** (message count, not time)
+- **2-hour cooldown** before next session (soft — user can override)
+- Session wrap-up with summary + real-world challenge
+- No marathon sessions — prevents becoming "just another chatbot app"
 
-### Contextual & Personal
-- Knows city, interests, level, weak spots
-- Steers toward relevant real-world scenarios
-- Uses interests naturally
+---
 
-### Stealth Spaced Repetition
-- Hides SRS inside natural conversation
-- Intervals: 1, 3, 7, 14, 30 days
-- Occasional acknowledgment (1 in 4 times) when user gets a tested item right
+### Active SRS Items (max 5 at any time)
+
+5 active items tracked simultaneously:
+- 3 too few (repetitive), 10 too many (prompt bloat), 5 is the sweet spot
+- When an item graduates (20 clean interactions), it drops off
+- Next most frequent mistake from the broader profile slides in
+- There's always a pipeline of mistakes waiting to become active
+
+```
+ACTIVE SRS ITEMS (max 5):
+1. Possessive word order (due — last tested 3 days ago)
+2. Gender agreement on -ade words (due tomorrow)
+3. Preposition em vs a (tested today, correct, next in 7 days)
+4. Past subjunctive (new — first occurrence yesterday)
+5. [EMPTY — only 4 items so far]
+```
+
+Priority for filling new slots:
+1. Most frequent recent mistakes
+2. Highest-impact patterns (things that confuse meaning)
+3. Transfer patterns from the library that have been detected
+
+---
+
+### Session Types (4 Tiers)
+
+#### Tier 1: Real-Life Survival (priority for new users)
+- Ordering food/coffee at a local café
+- Asking for directions / taking a taxi
+- Small talk with a neighbor or coworker
+- Negotiating at a market
+- Talking to a landlord about an issue
+- Making a doctor/dentist appointment
+- Handling a delivery or service call
+
+#### Tier 2: Cultural Immersion (priority after survival is comfortable)
+The brand comes alive — "language in the wild":
+- Local etiquette: tipping, greetings, personal space, timing
+- City-specific culture: botecos of Rio, taquerías of CDMX, izakayas of Tokyo
+- Football/sports culture — how to talk about it like a local
+- Local holidays and traditions — how to participate, what to say
+- Regional food — ordering, complimenting, asking about ingredients
+- Things locals are proud of that tourists don't know
+- Dating etiquette and social norms in that culture
+- Slang specific to their city/region — introduced naturally
+
+#### Tier 3: Personal Context (requires stored user data)
+Built from their interests, life, and plans:
+- "You mentioned you like gardening — let's find a plant market in São Paulo"
+- "You're moving to Lisbon next month — let's practice apartment hunting"
+- "You work in tech — let's practice explaining your job"
+- Interest-based scenarios that feel personally relevant
+
+#### Tier 4: Weakness-Targeted (Stealth SRS) — ALWAYS ACTIVE
+The most powerful tier. Disguised as natural conversation:
+- AI designs conversation to naturally elicit active SRS items
+- "Tell me about your friend's apartment" → tests possessives
+- "What did you do last weekend?" → tests past tense
+- "If you could live anywhere?" → tests subjunctive
+
+**Tier 4 is always blended in.** Even in Tier 1/2/3 sessions, the AI weaves in 2-3 due SRS items. A food-ordering session also tests the preposition they struggle with. The tiers aren't mutually exclusive.
+
+---
+
+### Session Selection Algorithm
+
+```
+1. BRAND NEW (0-2 sessions)?
+   → Session 1: city-specific intro with local slang
+   → Session 2: survival scenario (ordering food/coffee)
+
+2. City event happening? (Carnival, holiday, festival)
+   → Cultural session about that event
+
+3. User about to travel? (new city in queue)
+   → Destination prep session
+
+4. SRS items DUE for testing?
+   → Tier 4 session with items woven into natural topic
+
+5. 3+ sessions since cultural session?
+   → Tier 2 based on their city
+
+6. Personal interests stored?
+   → Tier 3 personalized session
+
+7. Default
+   → Rotate through Tier 1 survival scenarios not yet done
+```
+
+### First Session (brand new user)
+
+The first session sets the tone for the entire relationship.
+
+**Prompt:**
+```
+FIRST PRACTICE SESSION
+City: [city], [country]
+Learning: [language] from English
+Level: [A1-C2]
+
+1. Local survival scenario specific to THIS city
+   (reference a real neighborhood, type of café/bar, or cultural spot)
+2. Drop 2-3 local slang terms naturally and explain them
+3. Reference something specific about this place a tourist
+   wouldn't know but a local would
+4. Warm and encouraging — first impression of you as their coach
+5. End with a real-world challenge: "Try ordering a [local thing]
+   at [type of place] this week"
+
+Use your knowledge of [city]. No pre-built content needed.
+Works for any city on earth.
+```
+
+### Ongoing Session Prompt (with SRS)
+
+```
+SESSION CONTEXT:
+- Session number: 7
+- City: Rio de Janeiro, Brazil
+- Level: A2
+- Interests: football, cooking, gardening
+- Previous sessions: ordering food, directions, weekend plans, Carnival
+
+ACTIVE SRS TO TEST THIS SESSION:
+1. Possessive word order — DUE (test naturally)
+2. Gender on -ade words — DUE (work cidade/saudade into convo)
+3. Past subjunctive — DUE (create a "what if" scenario)
+Items 4-5: not due, skip
+
+TRANSFER INSIGHT STATUS:
+- Possessive: shown Mar 15 (use nudge if error, don't re-explain)
+- Gender: NOT YET SHOWN (show full English comparison on first error)
+
+SESSION TYPE: Tier 2 (cultural) + Tier 4 (SRS woven in)
+Topic: Brazilian food culture — leads to possessives, city names, hypotheticals
+
+RULES:
+- 5-10 exchanges max
+- Target language with occasional English coaching inline
+- Acknowledge correct SRS items 25% of the time
+- End with wrap-up + real-world challenge
+- Vary emotional tone
+```
+
+---
+
+### Personal Context Storage
+
+Store personal facts the user shares across sessions:
+
+```json
+{
+    "interests": ["gardening", "football", "cooking"],
+    "city": "Rio de Janeiro",
+    "upcoming_city": "Lisbon",
+    "job": "software engineer",
+    "has_partner": true,
+    "partner_language": "Portuguese",
+    "personal_facts": [
+        "Has a dog named Luna",
+        "Moved to Brazil 3 months ago",
+        "Works remotely for a US company"
+    ],
+    "session_topics_completed": [
+        "ordering_food", "giving_directions", "carnival_vocab"
+    ]
+}
+```
+
+**Capture:** During sessions, AI includes hidden JSON: `{"learned_facts": ["has a dog named Luna"]}`
+**Storage:** App Group UserDefaults or small JSON file (~1-2KB per user)
+**Injection:** Added to session prompt as USER CONTEXT block
+**Privacy:**
+- Disclosed in onboarding: "Sol remembers things you share to personalize your experience"
+- "Forget everything" button in settings wipes personal facts
+- Never stores sensitive info
+- If someone therapy-dumps, Sol redirects: "That sounds tough. Let's practice talking about it in Portuguese."
+
+---
+
+### Callbacks to Previous Sessions
+- Minimum 1 week gap before referencing a past struggle
+- "Three weeks ago you couldn't order food without switching to English. Today you did the whole thing."
+- Makes the AI feel like a person with memory
 
 ### Rewards
 Human acknowledgment, not gamification:
-- "You used the subjunctive naturally for the first time today."
-- "Three sessions ago you couldn't get through a food order. Today you did."
+- "You used the subjunctive naturally for the first time today. That's a big deal."
+- "Three sessions ago you couldn't do X. Today you did."
 
 ---
 
