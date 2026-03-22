@@ -1883,7 +1883,9 @@ struct TalkDrillView: View {
     @State private var showResult = false
     @State private var currentWordIndex = 0
     @State private var cachedAudio: [String: Data] = [:]  // word → MP3 data
+    @State private var lastHeard = ""
     private let ttsService = PracticeTTSService()
+    private let scorer = PronunciationScorer()
 
     private let drillWords = [
         (word: "porta", meaning: "door", tip: "Soften the R — think of a gentle 'h' sound at the back of your throat"),
@@ -1998,9 +2000,13 @@ struct TalkDrillView: View {
 
                 Button {
                     isRecording = true
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                    scorer.scorePronounciation(
+                        targetWord: currentDrill.word,
+                        language: "pt-BR",
+                        duration: 3.0
+                    ) { score, heard, feedback in
                         isRecording = false
-                        let score = Int.random(in: 65...92)
+                        lastHeard = heard
                         scores.append(score)
                         showResult = true
                     }
@@ -2056,14 +2062,39 @@ struct TalkDrillView: View {
                 .font(.custom("HelveticaNeue-Bold", size: 24))
                 .foregroundColor(.tsLabel)
 
-            Text(score >= 80
-                 ? "Nice! Your R is getting softer. 👏"
-                 : "Almost — try relaxing your tongue more. The R should feel like a breath, not a tap.")
+            // Show what was heard vs target
+            if !lastHeard.isEmpty && lastHeard.lowercased() != currentDrill.word.lowercased() {
+                Text("I heard: \"\(lastHeard)\"")
+                    .font(.custom("HelveticaNeue", size: 14))
+                    .foregroundColor(.tsSecondary)
+                    .italic()
+            }
+
+            Text(score >= 90
+                 ? "Excellent! That sounded very natural. 👏"
+                 : score >= 75
+                 ? "Good! The sounds are coming together. Keep refining."
+                 : score >= 50
+                 ? "Almost — listen to the native version again and match each sound."
+                 : "Try listening to the native version and focus on the R sound.")
                 .font(.custom("HelveticaNeue", size: 15))
                 .foregroundColor(.tsSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
                 .lineSpacing(2)
+
+            // Replay native for comparison
+            Button {
+                playWord(currentDrill.word)
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "speaker.wave.2.fill")
+                        .font(.system(size: 13))
+                    Text("Hear native again")
+                        .font(.custom("HelveticaNeue-Medium", size: 14))
+                }
+                .foregroundColor(.tsAccent)
+            }
 
             Spacer()
 
