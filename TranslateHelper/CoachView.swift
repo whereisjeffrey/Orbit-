@@ -940,58 +940,19 @@ struct PracticeSessionView: View {
 
                 Divider().opacity(0.2)
 
-                // ── Double-tap hint card ─────────────────────
-                if showDoubleTapHint {
-                    HStack(spacing: 12) {
-                        Text("👆👆")
-                            .font(.system(size: 20))
-
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Don't understand something?")
-                                .font(.custom("HelveticaNeue-Bold", size: 13))
-                                .foregroundColor(.tsLabel)
-                            Text("Double-tap any message for the English translation. Give it a try!")
-                                .font(.custom("HelveticaNeue", size: 12))
-                                .foregroundColor(.tsSecondary)
-                                .lineSpacing(1)
-                        }
-
-                        Spacer()
-
-                        Button {
-                            withAnimation(.easeOut(duration: 0.2)) {
-                                showDoubleTapHint = false
-                                doubleTapDismissCount += 1
-                            }
-                        } label: {
-                            Image(systemName: "xmark")
-                                .font(.system(size: 12, weight: .semibold))
-                                .foregroundColor(.tsSecondary)
-                                .padding(6)
-                                .background(Circle().fill(Color.tsSecondary.opacity(0.1)))
-                        }
-                    }
-                    .padding(14)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.tsAccent.opacity(0.08))
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.tsAccent.opacity(0.15), lineWidth: 0.5)
-                    )
-                    .padding(.horizontal, 20)
-                    .padding(.top, 8)
-                    .transition(.opacity.combined(with: .move(edge: .top)))
-                }
-
                 // ── Chat messages ────────────────────────────
                 ScrollViewReader { proxy in
                     ScrollView(showsIndicators: false) {
                         VStack(spacing: 16) {
-                            ForEach(messages) { message in
+                            ForEach(Array(messages.enumerated()), id: \.element.id) { index, message in
                                 chatBubble(message: message)
                                     .id(message.id)
+
+                                // Show hint card right after Sol's first message
+                                if index == 0 && showDoubleTapHint {
+                                    doubleTapHintCard
+                                        .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                                }
                             }
                         }
                         .padding(.horizontal, 20)
@@ -1025,6 +986,19 @@ struct PracticeSessionView: View {
                                     .stroke(Color.tsBorder, lineWidth: 1)
                             )
 
+                        // Mic button for voice input
+                        Button {
+                            // TODO: integrate with voice recording (same as keyboard mic)
+                        } label: {
+                            Image(systemName: "mic.fill")
+                                .font(.system(size: 18))
+                                .foregroundColor(.tsAccent)
+                                .frame(width: 36, height: 36)
+                                .background(Color.tsAccent.opacity(0.12))
+                                .clipShape(Circle())
+                        }
+
+                        // Send button for text input
                         Button {
                             sendMessage()
                         } label: {
@@ -1047,6 +1021,49 @@ struct PracticeSessionView: View {
                 }
             }
         }
+    }
+
+    // MARK: - Double-tap Hint Card
+
+    private var doubleTapHintCard: some View {
+        HStack(spacing: 12) {
+            Text("👆👆")
+                .font(.system(size: 20))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Don't understand something?")
+                    .font(.custom("HelveticaNeue-Bold", size: 13))
+                    .foregroundColor(.tsLabel)
+                Text("Double-tap any message from Sol for the English translation. Give it a try!")
+                    .font(.custom("HelveticaNeue", size: 12))
+                    .foregroundColor(.tsSecondary)
+                    .lineSpacing(1)
+            }
+
+            Spacer()
+
+            Button {
+                withAnimation(.easeOut(duration: 0.2)) {
+                    showDoubleTapHint = false
+                    doubleTapDismissCount += 1
+                }
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.tsSecondary)
+                    .padding(6)
+                    .background(Circle().fill(Color.tsSecondary.opacity(0.1)))
+            }
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.tsAccent.opacity(0.08))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.tsAccent.opacity(0.15), lineWidth: 0.5)
+        )
     }
 
     // MARK: - Chat Bubble
