@@ -1419,13 +1419,15 @@ struct PracticeSessionView: View {
 
     // MARK: - Recording
 
+    private let conversationService = PracticeConversationService.shared
+
     private func startRecording() {
         withAnimation { isRecording = true }
         recordingSeconds = 0
         recordingTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
             recordingSeconds += 1
         }
-        // TODO: start AVAudioEngine recording (same as DictateViewController)
+        conversationService.startRecording()
     }
 
     private func cancelRecording() {
@@ -1433,62 +1435,37 @@ struct PracticeSessionView: View {
         recordingTimer = nil
         recordingSeconds = 0
         withAnimation { isRecording = false }
-        // TODO: discard audio file
+        conversationService.stopRecording()
     }
 
     private func stopAndSendRecording() {
         recordingTimer?.invalidate()
         recordingTimer = nil
-        let duration = recordingSeconds
         recordingSeconds = 0
         withAnimation { isRecording = false }
+        conversationService.stopRecording()
 
-        // Mock transcription — in production this would go through WhisperKit/API
-        let mockData: [(text: String, native: String, notes: String)] = [
-            ("Eu gostaria de um cafezinho e um pão de queijo, por favor.",
-             "Queria um cafezinho e um pão de queijo, por favor.",
-             "'Queria' is softer and more natural than 'gostaria' in casual bakery settings"),
-            ("Sim, pode ser com cartão. Obrigado!",
-             "Sim, no cartão. Valeu!",
-             "'no cartão' and 'valeu' are how Brazilians actually speak in casual spots"),
-            ("Eu costumo pedir coxinha quando venho aqui.",
-             "Sempre peço coxinha quando venho aqui.",
-             "'Sempre peço' flows more naturally than 'costumo pedir' in casual speech"),
-            ("Ah, legal! Eu adoro a padaria aqui perto da minha casa.",
-             "Ah, que legal! Adoro a padaria aqui pertinho de casa.",
-             "'pertinho' (diminutive) and dropping 'eu' makes it sound native"),
-            ("Tem alguma coisa que você recomenda?",
-             "Tem algo que cê recomenda?",
-             "'cê' is the casual spoken form of 'você' — very common in Rio"),
-        ]
-        let item = mockData[min(messageCount, mockData.count - 1)]
-        let msg = PracticeMessage(role: .user, text: "🎤 \(item.text)",
-                                  nativeVersion: item.native,
-                                  nativeNotes: item.notes)
-        messages.append(msg)
-
-        // Show native hint after first user message if not validated
-        if !nativeDoubleTapValidated && nativeDismissCount < 3 && messageCount == 0 {
-            nativeHintShownForMessage = msg.id
-            withAnimation(.easeIn(duration: 0.3).delay(0.3)) {
-                showNativeHint = true
+        // Transcribe the actual recording
+        conversationService.transcribe(language: "pt") { [self] transcription in
+            guard let text = transcription, !text.isEmpty else {
+                NSLog("🎤 [Practice] transcription failed or empty")
+                return
             }
-        }
-        messageCount += 1
 
-        // Simulate Sol's response
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
-            if messageCount >= maxMessages {
-                messages.append(PracticeMessage(role: .sol,
-                    text: "Ótimo trabalho! 🎉",
-                    translation: "Great work! 🎉"))
-                messages.append(PracticeMessage(role: .coaching,
-                    text: "✨ SESSION COMPLETE: Great speaking practice today! Your pronunciation is getting clearer."))
-            } else {
-                let response = mockResponse(for: max(0, messageCount - 1))
-                messages.append(response)
-                messageCount += 1
+            let msg = PracticeMessage(role: .user, text: "🎤 \(text)")
+            messages.append(msg)
+            messageCount += 1
+
+            // Show native hint after first user message
+            if !nativeDoubleTapValidated && nativeDismissCount < 3 && messageCount == 1 {
+                nativeHintShownForMessage = msg.id
+                withAnimation(.easeIn(duration: 0.3).delay(0.3)) {
+                    showNativeHint = true
+                }
             }
+
+            // Get Sol's real response
+            fetchSolResponse(userMessageId: msg.id)
         }
     }
 
@@ -1504,21 +1481,12 @@ struct PracticeSessionView: View {
         let text = userInput.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
 
-        // Add user message with mock native version
-        let nativeVersions: [String: (native: String, notes: String)] = [
-            "default": (
-                native: "A native speaker might phrase this slightly differently for a more natural flow.",
-                notes: "Word order and contractions can make a big difference"
-            )
-        ]
-        let msg = PracticeMessage(role: .user, text: text,
-                                  nativeVersion: "Um cafezinho e um pão de queijo, por favor. Pode ser no cartão?",
-                                  nativeNotes: "'por favor' at the end is more natural than at the beginning — and 'no cartão' instead of 'com cartão'")
+        let msg = PracticeMessage(role: .user, text: text)
         messages.append(msg)
         userInput = ""
         messageCount += 1
 
-        // Show native hint after first user message if not validated
+        // Show native hint after first user message
         if !nativeDoubleTapValidated && nativeDismissCount < 3 && messageCount == 1 {
             nativeHintShownForMessage = msg.id
             withAnimation(.easeIn(duration: 0.3).delay(0.3)) {
@@ -1526,20 +1494,50 @@ struct PracticeSessionView: View {
             }
         }
 
-        // Simulate Sol's response after a short delay
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
-            if messageCount >= maxMessages {
-                // Session wrap-up
-                messages.append(PracticeMessage(role: .sol,
-                    text: "Ótimo trabalho! 🎉 You used 'eu gostaria' naturally — that's a big improvement from last session.",
-                    translation: "Great work! 🎉"))
-                messages.append(PracticeMessage(role: .coaching,
-                    text: "✨ SESSION COMPLETE: You nailed possessives today and used past subjunctive once correctly. Challenge for the week: try ordering food at a real restaurant without switching to English."))
-            } else {
-                let response = mockResponse(for: max(0, messageCount - 1))
-                messages.append(response)
-                messageCount += 1
+        // Get Sol's real response
+        fetchSolResponse(userMessageId: msg.id)
+    }
+
+    // MARK: - Fetch Sol's Response (GPT-4o-mini)
+
+    private func fetchSolResponse(userMessageId: UUID) {
+        // Build conversation history for GPT
+        var history: [(role: String, text: String)] = []
+        for msg in messages {
+            switch msg.role {
+            case .sol:
+                history.append((role: "assistant", text: msg.text))
+            case .user:
+                let cleanText = msg.text.hasPrefix("🎤 ") ? String(msg.text.dropFirst(2)) : msg.text
+                history.append((role: "user", text: cleanText))
+            case .coaching:
+                break // don't send coaching tips to GPT
             }
+        }
+
+        conversationService.getSolResponse(conversationHistory: history, targetLanguage: "pt") { [self] response in
+            guard let sol = response else {
+                NSLog("🎤 [Practice] Sol response failed")
+                return
+            }
+
+            // Update the user's message with native correction if Sol provided one
+            if let nativeVersion = sol.nativeCorrectionForUser {
+                if let idx = messages.firstIndex(where: { $0.id == userMessageId }) {
+                    messages[idx].nativeVersion = nativeVersion
+                    messages[idx].nativeNotes = sol.nativeCorrectionNotes
+                }
+            }
+
+            // Add Sol's response
+            let solMsg = PracticeMessage(
+                role: .sol,
+                text: sol.text,
+                translation: sol.translation,
+                translationNotes: sol.translationNotes
+            )
+            messages.append(solMsg)
+            messageCount += 1
         }
     }
 
