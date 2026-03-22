@@ -904,6 +904,9 @@ struct PracticeSessionView: View {
     @State private var messageCount = 0
     @State private var revealedTranslations: Set<UUID> = []
     @State private var showDoubleTapHint = false
+    @State private var isRecording = false
+    @State private var recordingSeconds = 0
+    @State private var recordingTimer: Timer?
     @AppStorage("practice_doubletap_validated") private var doubleTapValidated = false
     @AppStorage("practice_doubletap_dismiss_count") private var doubleTapDismissCount = 0
     private let maxMessages = 10
@@ -971,47 +974,93 @@ struct PracticeSessionView: View {
                 VStack(spacing: 0) {
                     Divider().opacity(0.2)
 
-                    HStack(spacing: 12) {
-                        TextField("Type in Portuguese...", text: $userInput)
-                            .font(.custom("HelveticaNeue", size: 15))
-                            .foregroundColor(.tsLabel)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 12)
-                            .background(
-                                RoundedRectangle(cornerRadius: 20)
-                                    .fill(Color.tsInputBg)
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 20)
-                                    .stroke(Color.tsBorder, lineWidth: 1)
-                            )
+                    if isRecording {
+                        // ── Recording mode ──────────────────────
+                        HStack(spacing: 16) {
+                            // Trash (cancel)
+                            Button { cancelRecording() } label: {
+                                Image(systemName: "trash.fill")
+                                    .font(.system(size: 18))
+                                    .foregroundColor(.red.opacity(0.7))
+                                    .frame(width: 36, height: 36)
+                            }
 
-                        // Mic button for voice input
-                        Button {
-                            // TODO: integrate with voice recording (same as keyboard mic)
-                        } label: {
-                            Image(systemName: "mic.fill")
-                                .font(.system(size: 18))
-                                .foregroundColor(.tsAccent)
-                                .frame(width: 36, height: 36)
-                                .background(Color.tsAccent.opacity(0.12))
-                                .clipShape(Circle())
-                        }
+                            // Recording indicator
+                            HStack(spacing: 10) {
+                                Circle()
+                                    .fill(Color.red)
+                                    .frame(width: 8, height: 8)
+                                    .opacity(recordingSeconds % 2 == 0 ? 1 : 0.3)
 
-                        // Send button for text input
-                        Button {
-                            sendMessage()
-                        } label: {
-                            Image(systemName: "arrow.up.circle.fill")
-                                .font(.system(size: 32))
-                                .foregroundColor(userInput.isEmpty ? .tsSecondary.opacity(0.4) : .tsAccent)
+                                // Waveform placeholder
+                                HStack(spacing: 2) {
+                                    ForEach(0..<12, id: \.self) { i in
+                                        RoundedRectangle(cornerRadius: 1)
+                                            .fill(Color.tsAccent.opacity(0.5))
+                                            .frame(width: 2, height: CGFloat.random(in: 6...20))
+                                    }
+                                }
+
+                                Text(formatTime(recordingSeconds))
+                                    .font(.custom("HelveticaNeue-Medium", size: 14))
+                                    .foregroundColor(.tsLabel)
+                                    .monospacedDigit()
+                            }
+                            .frame(maxWidth: .infinity)
+
+                            // Send recording
+                            Button { stopAndSendRecording() } label: {
+                                Image(systemName: "arrow.up.circle.fill")
+                                    .font(.system(size: 32))
+                                    .foregroundColor(.tsAccent)
+                            }
                         }
-                        .disabled(userInput.isEmpty)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(colorScheme == .dark ? Color.tsCard : Color.white)
+                        .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    } else {
+                        // ── Text input mode ─────────────────────
+                        HStack(spacing: 12) {
+                            TextField("Type in Portuguese...", text: $userInput)
+                                .font(.custom("HelveticaNeue", size: 15))
+                                .foregroundColor(.tsLabel)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 20)
+                                        .fill(colorScheme == .dark ? Color.tsCard : Color.white)
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 20)
+                                        .stroke(Color.tsSecondary.opacity(0.15), lineWidth: 0.5)
+                                )
+
+                            // Mic button
+                            Button { startRecording() } label: {
+                                Image(systemName: "mic.fill")
+                                    .font(.system(size: 18))
+                                    .foregroundColor(.tsAccent)
+                                    .frame(width: 36, height: 36)
+                                    .background(Color.tsAccent.opacity(0.12))
+                                    .clipShape(Circle())
+                            }
+
+                            // Send button
+                            Button { sendMessage() } label: {
+                                Image(systemName: "arrow.up.circle.fill")
+                                    .font(.system(size: 32))
+                                    .foregroundColor(userInput.isEmpty ? .tsSecondary.opacity(0.4) : .tsAccent)
+                            }
+                            .disabled(userInput.isEmpty)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(colorScheme == .dark ? Color.tsCard : Color.white)
+                        .transition(.opacity.combined(with: .move(edge: .bottom)))
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(colorScheme == .dark ? Color.tsCard : Color.white)
                 }
+                .animation(.easeInOut(duration: 0.2), value: isRecording)
             }
         }
         .onAppear {
@@ -1184,6 +1233,60 @@ struct PracticeSessionView: View {
         case .coaching:
             return Color(hex: "#FF9500").opacity(0.1)
         }
+    }
+
+    // MARK: - Recording
+
+    private func startRecording() {
+        withAnimation { isRecording = true }
+        recordingSeconds = 0
+        recordingTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+            recordingSeconds += 1
+        }
+        // TODO: start AVAudioEngine recording (same as DictateViewController)
+    }
+
+    private func cancelRecording() {
+        recordingTimer?.invalidate()
+        recordingTimer = nil
+        recordingSeconds = 0
+        withAnimation { isRecording = false }
+        // TODO: discard audio file
+    }
+
+    private func stopAndSendRecording() {
+        recordingTimer?.invalidate()
+        recordingTimer = nil
+        let duration = recordingSeconds
+        recordingSeconds = 0
+        withAnimation { isRecording = false }
+
+        // TODO: stop recording, send to WhisperKit/API for transcription,
+        // then add transcribed text as a user message
+        // For now, mock it:
+        messages.append(PracticeMessage(role: .user, text: "[🎤 Voice message — \(duration)s]"))
+        messageCount += 1
+
+        // Simulate Sol's response
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+            if messageCount >= maxMessages {
+                messages.append(PracticeMessage(role: .sol,
+                    text: "Ótimo trabalho! 🎉",
+                    translation: "Great work! 🎉"))
+                messages.append(PracticeMessage(role: .coaching,
+                    text: "✨ SESSION COMPLETE: Great speaking practice today! Your pronunciation is getting clearer."))
+            } else {
+                let response = mockResponse(for: max(0, messageCount - 1))
+                messages.append(response)
+                messageCount += 1
+            }
+        }
+    }
+
+    private func formatTime(_ seconds: Int) -> String {
+        let m = seconds / 60
+        let s = seconds % 60
+        return String(format: "%d:%02d", m, s)
     }
 
     // MARK: - Send Message
