@@ -23,9 +23,9 @@ struct MainTabView: View {
                     .fill(Color.tsSecondary.opacity(0.25))
                     .frame(height: 0.5)
                 HStack(spacing: 0) {
-                    TabBarItem(icon: "bubble.left.and.bubble.right", label: "Learn",    tag: 0, selected: $selectedTab)
-                    TabBarItem(icon: "waveform.and.person.filled",   label: "Coach",    tag: 1, selected: $selectedTab)
-                    TabBarItem(icon: "gearshape",                    label: "Settings", tag: 2, selected: $selectedTab)
+                    TabBarItem(icon: "bubble.left.and.bubble.right",                       label: "Learn",    tag: 0, selected: $selectedTab)
+                    TabBarItem(icon: "waveform",                     selectedIcon: "waveform", label: "Coach",    tag: 1, selected: $selectedTab)
+                    TabBarItem(icon: "gearshape",                                             label: "Settings", tag: 2, selected: $selectedTab)
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 12)
@@ -39,17 +39,25 @@ struct MainTabView: View {
 
 struct TabBarItem: View {
     let icon: String
+    var selectedIcon: String? = nil   // explicit selected-state icon (for symbols without .fill)
     let label: String
     let tag: Int
     @Binding var selected: Int
 
     var isSelected: Bool { selected == tag }
 
+    private var activeIcon: String {
+        if isSelected {
+            return selectedIcon ?? (icon + ".fill")
+        }
+        return icon
+    }
+
     var body: some View {
         Button(action: { selected = tag }) {
             VStack(spacing: 4) {
-                Image(systemName: isSelected ? icon + ".fill" : icon)
-                    .font(.system(size: 22))
+                Image(systemName: activeIcon)
+                    .font(.system(size: 22, weight: isSelected ? .semibold : .regular))
 
                 Text(label)
                     .font(.system(size: 10, weight: isSelected ? .semibold : .regular))

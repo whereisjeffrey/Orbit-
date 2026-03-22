@@ -92,11 +92,11 @@ struct CoachEmptyView: View {
                 }
                 .padding(24)
                 .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(colorScheme == .dark ? Color.tsCard : Color.white)
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.tsCard)
                 )
                 .overlay(
-                    RoundedRectangle(cornerRadius: 16)
+                    RoundedRectangle(cornerRadius: 12)
                         .stroke(Color.tsBorder, lineWidth: 1)
                 )
                 .padding(.horizontal, 20)
@@ -121,11 +121,11 @@ struct CoachEmptyView: View {
                 }
                 .padding(24)
                 .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(colorScheme == .dark ? Color.tsCard : Color.white)
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.tsCard)
                 )
                 .overlay(
-                    RoundedRectangle(cornerRadius: 16)
+                    RoundedRectangle(cornerRadius: 12)
                         .stroke(Color.tsBorder, lineWidth: 1)
                 )
                 .padding(.horizontal, 20)
@@ -308,11 +308,11 @@ struct CoachPopulatedView: View {
         }
         .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(colorScheme == .dark ? Color.tsCard : Color.white)
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.tsCard)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.tsBorder, lineWidth: 1)
         )
     }
@@ -344,11 +344,11 @@ struct CoachPopulatedView: View {
         }
         .padding(20)
         .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(colorScheme == .dark ? Color.tsCard : Color.white)
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.tsCard)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.tsBorder, lineWidth: 1)
         )
     }
@@ -416,11 +416,11 @@ struct CoachPopulatedView: View {
         }
         .padding(20)
         .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(colorScheme == .dark ? Color.tsCard : Color.white)
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.tsCard)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.tsBorder, lineWidth: 1)
         )
     }
@@ -460,11 +460,11 @@ struct CoachPopulatedView: View {
         }
         .padding(20)
         .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(colorScheme == .dark ? Color.tsCard : Color.white)
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.tsCard)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.tsBorder, lineWidth: 1)
         )
     }
@@ -540,11 +540,11 @@ struct CoachPopulatedView: View {
         }
         .padding(20)
         .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(colorScheme == .dark ? Color.tsCard : Color.white)
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.tsCard)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.tsAccent.opacity(0.15), lineWidth: 1)
         )
         .shadow(
@@ -582,18 +582,23 @@ struct CoachPopulatedView: View {
         }
         .padding(20)
         .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(colorScheme == .dark ? Color.tsCard : Color.white)
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.tsCard)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.tsBorder, lineWidth: 1)
         )
     }
 
-    private enum MilestoneStatus {
+    enum MilestoneStatus {
         case graduated
         case inProgress(Int, Int)
+
+        var isGraduated: Bool {
+            if case .graduated = self { return true }
+            return false
+        }
     }
 
     private func milestoneBadge(label: String, status: MilestoneStatus, month: String?) -> some View {
@@ -644,12 +649,6 @@ struct CoachPopulatedView: View {
     }
 }
 
-private extension CoachPopulatedView.MilestoneStatus {
-    var isGraduated: Bool {
-        if case .graduated = self { return true }
-        return false
-    }
-}
 
 #Preview {
     CoachView()
