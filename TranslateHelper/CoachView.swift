@@ -311,7 +311,7 @@ struct CoachPopulatedView: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.tsCard)
+                .fill(colorScheme == .dark ? Color(hex: "#1E1E1E") : Color.white)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
@@ -510,7 +510,11 @@ struct CoachPopulatedView: View {
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(colorScheme == .dark ? Color.tsCard : Color.white)
+                .fill(Color.tsGrayCard)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(UIColor.systemGray5).opacity(colorScheme == .dark ? 0 : 0.25))
+                )
         )
     }
 
@@ -889,11 +893,17 @@ struct PracticeSessionView: View {
 
     @State private var userInput = ""
     @State private var messages: [PracticeMessage] = [
-        PracticeMessage(role: .sol, text: "Oi! 👋 Então, você mora no Rio, né? Já tentou pedir um cafezinho numa padaria sem trocar pro inglês? Vamos praticar isso. Eu vou ser o cara do balcão. Você entra na padaria..."),
-        PracticeMessage(role: .coaching, text: "💡 I'll be speaking in Portuguese. Try to respond in Portuguese too — don't worry about mistakes, that's what I'm here for."),
+        PracticeMessage(role: .sol,
+                        text: "Oi! 👋 Então, você mora no Rio, né? Já tentou pedir um cafezinho numa padaria sem trocar pro inglês? Vamos praticar isso. Eu vou ser o cara do balcão. Você entra na padaria...",
+                        translation: "Hey! 👋 So, you live in Rio, right? Have you tried ordering a coffee at a bakery without switching to English? Let's practice that. I'll be the guy behind the counter. You walk into the bakery...",
+                        translationNotes: "'trocar pro inglês' = 'switch to English' — very natural, casual phrasing"),
+        PracticeMessage(role: .coaching,
+                        text: "💡 I'll be speaking in Portuguese. Try to respond in Portuguese too — don't worry about mistakes, that's what I'm here for. Double-tap any of my messages to see the English translation."),
     ]
 
     @State private var messageCount = 0
+    @State private var revealedTranslations: Set<UUID> = []
+    @State private var hasSeenDoubleTapHint = false
     private let maxMessages = 10
 
     var body: some View {
@@ -984,7 +994,9 @@ struct PracticeSessionView: View {
     // MARK: - Chat Bubble
 
     private func chatBubble(message: PracticeMessage) -> some View {
-        HStack(alignment: .top, spacing: 10) {
+        let isRevealed = revealedTranslations.contains(message.id)
+
+        return HStack(alignment: .top, spacing: 10) {
             if message.role == .sol || message.role == .coaching {
                 // Sol avatar
                 Circle()
@@ -1012,6 +1024,7 @@ struct PracticeSessionView: View {
                         .kerning(0.8)
                 }
 
+                // Main message bubble
                 Text(message.text)
                     .font(.custom("HelveticaNeue", size: 14))
                     .foregroundColor(message.role == .user ? .white : .tsLabel)
@@ -1022,6 +1035,56 @@ struct PracticeSessionView: View {
                         RoundedRectangle(cornerRadius: 16)
                             .fill(bubbleColor(for: message.role))
                     )
+                    .onTapGesture(count: 2) {
+                        if message.role == .sol && message.translation != nil {
+                            withAnimation(.easeInOut(duration: 0.25)) {
+                                if isRevealed {
+                                    revealedTranslations.remove(message.id)
+                                } else {
+                                    revealedTranslations.insert(message.id)
+                                }
+                            }
+                        }
+                    }
+
+                // Translation card (revealed on double-tap)
+                if isRevealed, let translation = message.translation {
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack(spacing: 4) {
+                            Text("🇺🇸")
+                                .font(.system(size: 12))
+                            Text("ENGLISH")
+                                .font(.custom("HelveticaNeue-Bold", size: 9))
+                                .foregroundColor(.tsSecondary)
+                                .kerning(0.8)
+                        }
+
+                        Text(translation)
+                            .font(.custom("HelveticaNeue", size: 13))
+                            .foregroundColor(.tsLabel)
+                            .lineSpacing(2)
+
+                        if let notes = message.translationNotes {
+                            Text("💡 \(notes)")
+                                .font(.custom("HelveticaNeue", size: 12))
+                                .foregroundColor(.tsSecondary)
+                                .italic()
+                                .lineSpacing(2)
+                                .padding(.top, 2)
+                        }
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(colorScheme == .dark ? Color.tsCard : Color.white)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.tsAccent.opacity(0.1), lineWidth: 0.5)
+                    )
+                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                }
             }
 
             if message.role == .sol || message.role == .coaching {
@@ -1056,30 +1119,51 @@ struct PracticeSessionView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
             if messageCount >= maxMessages {
                 // Session wrap-up
-                messages.append(PracticeMessage(role: .sol, text: "Ótimo trabalho! 🎉 You used 'eu gostaria' naturally — that's a big improvement from last session."))
-                messages.append(PracticeMessage(role: .coaching, text: "✨ SESSION COMPLETE: You nailed possessives today and used past subjunctive once correctly. Challenge for the week: try ordering food at a real restaurant without switching to English."))
+                messages.append(PracticeMessage(role: .sol,
+                    text: "Ótimo trabalho! 🎉 You used 'eu gostaria' naturally — that's a big improvement from last session.",
+                    translation: "Great work! 🎉"))
+                messages.append(PracticeMessage(role: .coaching,
+                    text: "✨ SESSION COMPLETE: You nailed possessives today and used past subjunctive once correctly. Challenge for the week: try ordering food at a real restaurant without switching to English."))
             } else {
-                // Mock responses based on message count
-                let responses: [(PracticeMessage.Role, String)] = mockResponses()
-                let idx = min(messageCount - 1, responses.count - 1)
-                let response = responses[max(0, idx)]
-                messages.append(PracticeMessage(role: response.0, text: response.1))
+                let response = mockResponse(for: max(0, messageCount - 1))
+                messages.append(response)
                 messageCount += 1
             }
         }
     }
 
-    private func mockResponses() -> [(PracticeMessage.Role, String)] {
-        [
-            (.sol, "Bom dia! Bem-vindo à padaria. O que você gostaria de pedir?"),
-            (.sol, "Claro! Um cafezinho e um pão de queijo. Mais alguma coisa?"),
-            (.coaching, "💡 Nice! You used 'gostaria' — that's the polite conditional form. Very natural."),
-            (.sol, "São quatro e cinquenta. Vai pagar com cartão ou dinheiro?"),
-            (.sol, "Pronto! Aqui está o seu cafezinho. Bom apetite! 😊"),
-            (.coaching, "🧠 You said 'eu quero pagar com cartão' — that works! But a native might say 'vou pagar no cartão' — the preposition changes."),
-            (.sol, "Então, o que mais você costuma pedir quando vai na padaria?"),
-            (.sol, "Que legal! Eu adoro coxinha também. Aqui no Rio tem as melhores!"),
+    private func mockResponse(for index: Int) -> PracticeMessage {
+        let responses: [PracticeMessage] = [
+            PracticeMessage(role: .sol,
+                           text: "Bom dia! Bem-vindo à padaria. O que você gostaria de pedir?",
+                           translation: "Good morning! Welcome to the bakery. What would you like to order?",
+                           translationNotes: "'gostaria' = polite conditional — very natural for ordering"),
+            PracticeMessage(role: .sol,
+                           text: "Claro! Um cafezinho e um pão de queijo. Mais alguma coisa?",
+                           translation: "Sure! A little coffee and a cheese bread. Anything else?",
+                           translationNotes: "'cafezinho' — the diminutive '-inho' makes it warm and casual"),
+            PracticeMessage(role: .coaching,
+                           text: "💡 Nice! You used 'gostaria' — that's the polite conditional form. Very natural."),
+            PracticeMessage(role: .sol,
+                           text: "São quatro e cinquenta. Vai pagar com cartão ou dinheiro?",
+                           translation: "That's four fifty. Are you paying with card or cash?",
+                           translationNotes: "'vai pagar' — using 'ir + infinitive' for near future is very common in spoken Portuguese"),
+            PracticeMessage(role: .sol,
+                           text: "Pronto! Aqui está o seu cafezinho. Bom apetite! 😊",
+                           translation: "Done! Here's your coffee. Enjoy! 😊",
+                           translationNotes: "'pronto' = 'ready/done' — Brazilians use this constantly"),
+            PracticeMessage(role: .coaching,
+                           text: "🧠 You said 'eu quero pagar com cartão' — that works! But a native might say 'vou pagar no cartão' — the preposition changes."),
+            PracticeMessage(role: .sol,
+                           text: "Então, o que mais você costuma pedir quando vai na padaria?",
+                           translation: "So, what else do you usually order when you go to the bakery?",
+                           translationNotes: "'costuma' = 'usually do' — great word for habitual actions"),
+            PracticeMessage(role: .sol,
+                           text: "Que legal! Eu adoro coxinha também. Aqui no Rio tem as melhores!",
+                           translation: "How cool! I love coxinha too. Here in Rio they have the best ones!",
+                           translationNotes: "'que legal' — the most common casual way to say 'cool/awesome' in Brazil"),
         ]
+        return responses[min(index, responses.count - 1)]
     }
 }
 
@@ -1087,6 +1171,10 @@ struct PracticeMessage: Identifiable {
     let id = UUID()
     let role: Role
     let text: String
+    /// English translation for Sol's Portuguese messages (revealed on double-tap)
+    var translation: String?
+    /// Optional notes about slang, idioms, etc.
+    var translationNotes: String?
 
     enum Role {
         case sol
