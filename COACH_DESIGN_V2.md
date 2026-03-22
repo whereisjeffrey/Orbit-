@@ -4,9 +4,117 @@
 
 ---
 
-## Screen Architecture
+## Part A: Brand New User Experience (no data, no messages yet)
 
-The Coach tab is one scrollable screen with cards that progressively unlock. No sub-pages or navigation stacks — everything lives on one scroll. Tapping a card can expand it in-place or open a detail modal (full-screen overlay).
+This is what someone sees the very first time they tap the Coach tab. They just downloaded the app. They haven't sent any messages yet. They're just clicking around exploring.
+
+### What the screen looks like (empty state)
+
+```
+┌──────────────────────────────────────┐
+│                                      │
+│                                      │
+│         [Sol avatar/icon]            │
+│                                      │
+│  "Hey, I'm Sol. 👋                   │
+│                                      │
+│   I'm your language coach — and I    │
+│   live inside your keyboard.         │
+│                                      │
+│   Every time you send a voice        │
+│   message, I listen and give you     │
+│   tips to sound more natural.        │
+│                                      │
+│   The more you speak, the smarter    │
+│   I get."                            │
+│                                      │
+│                                      │
+│  ── How it works ──────────────────  │
+│                                      │
+│  🎤  Send voice messages like you    │
+│      normally do — in WhatsApp,      │
+│      Tinder, Instagram, anywhere     │
+│                                      │
+│  🎯  I'll give you 1-2 tips per     │
+│      message — pronunciation,        │
+│      grammar, or both                │
+│                                      │
+│  📊  Over time, I'll track your     │
+│      patterns and show you exactly   │
+│      where you're improving          │
+│                                      │
+│  🧠  I know your native language    │
+│      brain will try to trick you —   │
+│      I'll help you untrain those     │
+│      habits                          │
+│                                      │
+│                                      │
+│  ── What you'll unlock ────────────  │
+│                                      │
+│  After 1 message:                    │
+│  ┌─────────┐                        │
+│  │  🔓 →🗣 │ Pronunciation insights │
+│  └─────────┘                        │
+│                                      │
+│  After 3 messages:                   │
+│  ┌─────────┐                        │
+│  │  🔒  📝 │ Grammar scoring        │
+│  └─────────┘                        │
+│                                      │
+│  After 10 messages:                  │
+│  ┌─────────┐ ┌─────────┐           │
+│  │  🔒  📚 │ │  🔒  💬 │           │
+│  │  Vocab   │ │ Fluency  │           │
+│  └─────────┘ └─────────┘           │
+│                                      │
+│  Weekly reports · Milestones ·       │
+│  Practice sessions · and more        │
+│                                      │
+│                                      │
+│  ── Ready? ────────────────────────  │
+│                                      │
+│  ┌──────────────────────────────┐   │
+│  │                              │   │
+│  │   🎤  Send your first        │   │
+│  │      voice message            │   │
+│  │                              │   │
+│  └──────────────────────────────┘   │
+│                                      │
+│  Open any messaging app, switch to   │
+│  the Orbit keyboard, and tap the     │
+│  mic button. I'll be listening. 😊   │
+│                                      │
+│                                      │
+└──────────────────────────────────────┘
+```
+
+### Design notes for empty state:
+- **Single scroll, no cards** — the whole screen is one welcoming flow, not a bunch of empty cards with lock icons
+- **Warm and inviting** — this is the coach introducing itself, not a feature list
+- **Progressive unlock preview** — shows what they'll earn by sending messages, creating motivation
+- **Clear CTA** — one button, one action: go send a voice message
+- **No overwhelming UI** — no gauges, no charts, no settings. Just the introduction.
+- **Background** — same TSGradientBackground as the rest of the app, or a subtle warm gradient
+
+### What happens after they send their first voice message:
+The empty state is **permanently replaced** by the populated state (Part B below). They never see this introduction again. The coach greeting card collapses to a one-liner, and the score cards start appearing.
+
+### Transition animation:
+When they return to the Coach tab after sending their first voice message:
+1. Sol's intro text fades out (0.3s)
+2. The populated cards fade/slide in from below (0.5s, staggered)
+3. Pronunciation gauge unlocks with a small sparkle animation
+4. Toast: "🎉 Pronunciation insights unlocked!"
+
+---
+
+## Part B: Populated State (user has sent messages, has data)
+
+This is the ongoing experience. Cards progressively fill with data as the user sends more messages.
+
+### Screen Architecture
+
+One scrollable screen with cards that progressively unlock. No sub-pages or navigation stacks — everything lives on one scroll. Tapping a card opens a detail modal (full-screen overlay).
 
 ```
 ┌──────────────────────────────────┐
@@ -29,10 +137,10 @@ The Coach tab is one scrollable screen with cards that progressively unlock. No 
 
 **Always visible at the top.** This is how the coach persona lives in the UI.
 
-### Default State (collapsed)
+### Default State (collapsed — shown after first message onward)
 ```
 ┌──────────────────────────────────────┐
-│  [Coach avatar/icon]                 │
+│  [Sol avatar/icon]                   │
 │                                      │
 │  "You've been killing it this week,  │
 │   Jeffrey. 3 mistakes graduated."    │
@@ -41,44 +149,13 @@ The Coach tab is one scrollable screen with cards that progressively unlock. No 
 └──────────────────────────────────────┘
 ```
 
-- The greeting changes based on activity:
-  - Active user: progress-based message
-  - Returning after absence: "Welcome back. Here's what's new."
-  - New user: "Hey, I'm Sol. Let's get started."
+- The greeting changes dynamically based on activity:
+  - **Active user:** progress-based message ("3 mistakes graduated this week")
+  - **Returning after absence:** "Welcome back. Here's what's changed since you've been gone."
+  - **First few messages:** "You're off to a great start. Keep sending voice messages — I'm learning your patterns."
+  - **Big milestone:** "You just graduated ser vs estar. That's HUGE."
 - One-liner, warm, never generic
 - Shows "Last active" timestamp so it feels alive
-
-### First Visit (no data)
-```
-┌──────────────────────────────────────┐
-│                                      │
-│  "Hey, I'm Sol. 👋                   │
-│                                      │
-│   I listen to your voice messages    │
-│   and help you sound more natural —  │
-│   without getting in your way.       │
-│                                      │
-│   The more you speak, the smarter    │
-│   I get."                            │
-│                                      │
-│  ── How it works ──                  │
-│                                      │
-│  🎤  Send voice messages like you    │
-│      normally do                     │
-│                                      │
-│  🎯  I'll give you 1-2 tips per     │
-│      message                         │
-│                                      │
-│  📊  Over time, I'll show you       │
-│      exactly where you're improving  │
-│                                      │
-│        [ Send your first message ]   │
-│                                      │
-└──────────────────────────────────────┘
-```
-
-- CTA button deep-links to the keyboard
-- This full version only shows once — after first voice message, it collapses to the one-liner format
 
 ---
 
