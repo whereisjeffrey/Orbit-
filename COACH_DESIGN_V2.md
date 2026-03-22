@@ -31,7 +31,7 @@ This is what someone sees the very first time they tap the Coach tab. They just 
 │                                      │
 │  ── How it works ──────────────────  │
 │                                      │
-│  🎤  Send voice messages like you    │
+│  🎤  Write or send audios like you   │
 │      normally do — in WhatsApp,      │
 │      Tinder, Instagram, anywhere     │
 │                                      │
@@ -98,6 +98,13 @@ This is what someone sees the very first time they tap the Coach tab. They just 
 
 ### What happens after they send their first voice message:
 The empty state is **permanently replaced** by the populated state (Part B below). They never see this introduction again. The coach greeting card collapses to a one-liner, and the score cards start appearing.
+
+### DEV TESTING MODE (remove before shipping):
+During development, add two navigation aids:
+- **Empty state:** "Next →" button at the bottom that jumps straight to the populated state with mock data (no need to leave real voice messages every rebuild)
+- **Populated state:** "← Back to empty state" button at the bottom to switch back
+- Both buttons only visible in debug builds (#if DEBUG)
+- Mock data includes: sample scores (Pronunciation B1, Grammar A2, Vocab/Fluency locked), 5 recent tips, 2 milestones, a weekly report, and personal context (city: Rio, interests: football/cooking)
 
 ### Transition animation:
 When they return to the Coach tab after sending their first voice message:
