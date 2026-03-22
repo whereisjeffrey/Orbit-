@@ -6,6 +6,7 @@
 //  Uses TSGradientBackground, HelveticaNeue, tsCard, tsAccent from DesignSystem.
 
 import SwiftUI
+import AVFoundation
 
 struct CoachView: View {
     @Environment(\.colorScheme) private var colorScheme
@@ -907,6 +908,9 @@ struct PracticeSessionView: View {
     @State private var isRecording = false
     @State private var recordingSeconds = 0
     @State private var recordingTimer: Timer?
+    @State private var revealedText: Set<UUID> = []      // messages whose text has faded in
+    @State private var playingAudio: UUID?                // message currently playing audio
+    private let ttsService = PracticeTTSService()
     @AppStorage("practice_doubletap_validated") private var doubleTapValidated = false
     @AppStorage("practice_doubletap_dismiss_count") private var doubleTapDismissCount = 0
     @State private var showNativeHint = false
@@ -1076,6 +1080,12 @@ struct PracticeSessionView: View {
             }
         }
         .onAppear {
+            // Pre-reveal text for initial messages (they're already on screen)
+            // The audio-first experience only applies to NEW messages during the session
+            for msg in messages {
+                revealedText.insert(msg.id)
+            }
+
             if !doubleTapValidated && doubleTapDismissCount < 3 {
                 withAnimation(.easeIn(duration: 0.3).delay(0.5)) {
                     showDoubleTapHint = true
@@ -1205,17 +1215,53 @@ struct PracticeSessionView: View {
                 }
 
                 // Main message bubble
-                Text(message.text)
-                    .font(.custom("HelveticaNeue", size: 14))
-                    .foregroundColor(.tsLabel)
-                    .lineSpacing(3)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 10)
-                    .background(
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(bubbleColor(for: message.role))
-                    )
-                    .onTapGesture(count: 2) {
+                let textVisible = message.role != .sol || revealedText.contains(message.id)
+
+                HStack(alignment: .bottom, spacing: 6) {
+                    Text(message.text)
+                        .font(.custom("HelveticaNeue", size: 14))
+                        .foregroundColor(.tsLabel)
+                        .lineSpacing(3)
+                        .opacity(textVisible ? 1 : 0)
+                        .overlay(
+                            // Show listening indicator while audio plays and text is hidden
+                            !textVisible ?
+                                HStack(spacing: 6) {
+                                    Image(systemName: "waveform")
+                                        .font(.system(size: 14))
+                                        .foregroundColor(.tsAccent)
+                                    Text("Listening...")
+                                        .font(.custom("HelveticaNeue", size: 13))
+                                        .foregroundColor(.tsSecondary)
+                                }
+                            : nil
+                        )
+
+                    // Replay button (only for Sol messages, only after text is revealed)
+                    if message.role == .sol && textVisible {
+                        Button {
+                            playSolAudio(message: message)
+                        } label: {
+                            Image(systemName: "speaker.wave.2.fill")
+                                .font(.system(size: 11))
+                                .foregroundColor(playingAudio == message.id ? .tsAccent : .tsSecondary.opacity(0.5))
+                        }
+                        .padding(.bottom, 2)
+                    }
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(bubbleColor(for: message.role))
+                )
+                .onAppear {
+                    // Auto-play audio for new Sol messages
+                    if message.role == .sol && !revealedText.contains(message.id) {
+                        playSolAudioThenReveal(message: message)
+                    }
+                }
+                .onTapGesture(count: 2) {
                         if message.role == .sol && message.translation != nil {
                             withAnimation(.easeInOut(duration: 0.25)) {
                                 if isRevealed {
@@ -1342,6 +1388,32 @@ struct PracticeSessionView: View {
                 : Color(hex: "#E8F0FE")  // soft muted blue — understated, elegant
         case .coaching:
             return Color(hex: "#FF9500").opacity(0.1)
+        }
+    }
+
+    // MARK: - Sol Audio Playback
+
+    /// Play audio first, then fade text in after it completes
+    private func playSolAudioThenReveal(message: PracticeMessage) {
+        playingAudio = message.id
+        ttsService.speak(text: message.text, language: "pt-BR") { [self] in
+            // Audio finished — fade text in
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                withAnimation(.easeIn(duration: 0.8)) {
+                    revealedText.insert(message.id)
+                }
+                playingAudio = nil
+            }
+        }
+    }
+
+    /// Replay audio for a Sol message (text already visible)
+    private func playSolAudio(message: PracticeMessage) {
+        playingAudio = message.id
+        ttsService.speak(text: message.text, language: "pt-BR") {
+            DispatchQueue.main.async {
+                self.playingAudio = nil
+            }
         }
     }
 
@@ -1523,6 +1595,94 @@ struct PracticeMessage: Identifiable {
         case sol
         case user
         case coaching
+    }
+}
+
+// MARK: - Practice TTS Service (Google WaveNet for Sol's voice)
+
+class PracticeTTSService: NSObject, AVAudioPlayerDelegate {
+    private var audioPlayer: AVAudioPlayer?
+    private var onComplete: (() -> Void)?
+
+    private func googleLocale(for language: String) -> String {
+        let code = String(language.prefix(2))
+        switch code {
+        case "pt": return "pt-BR"
+        case "es": return "es-US"
+        case "fr": return "fr-FR"
+        case "de": return "de-DE"
+        case "it": return "it-IT"
+        case "ja": return "ja-JP"
+        case "ko": return "ko-KR"
+        case "zh": return "cmn-CN"
+        default: return language
+        }
+    }
+
+    func speak(text: String, language: String, completion: @escaping () -> Void) {
+        onComplete = completion
+
+        let apiKey = APIConfig.googleTTSAPIKey
+        guard let url = URL(string: "\(APIConfig.googleTTSBaseURL)/text:synthesize?key=\(apiKey)") else {
+            completion()
+            return
+        }
+
+        let locale = googleLocale(for: language)
+
+        let body: [String: Any] = [
+            "input": ["text": text],
+            "voice": [
+                "languageCode": locale,
+                "ssmlGender": "FEMALE"
+            ],
+            "audioConfig": [
+                "audioEncoding": "MP3",
+                "speakingRate": 0.92,
+                "pitch": 0.0
+            ]
+        ]
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        request.timeoutInterval = 15
+
+        URLSession.shared.dataTask(with: request) { [weak self] data, _, error in
+            guard let self = self else { return }
+
+            if error != nil {
+                DispatchQueue.main.async { completion() }
+                return
+            }
+
+            guard let data = data,
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let audioContent = json["audioContent"] as? String,
+                  let audioData = Data(base64Encoded: audioContent) else {
+                DispatchQueue.main.async { completion() }
+                return
+            }
+
+            DispatchQueue.main.async {
+                do {
+                    try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+                    try AVAudioSession.sharedInstance().setActive(true)
+
+                    self.audioPlayer = try AVAudioPlayer(data: audioData)
+                    self.audioPlayer?.delegate = self
+                    self.audioPlayer?.play()
+                } catch {
+                    completion()
+                }
+            }
+        }.resume()
+    }
+
+    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        onComplete?()
+        onComplete = nil
     }
 }
 
