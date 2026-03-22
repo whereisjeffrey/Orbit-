@@ -1093,31 +1093,53 @@ struct PracticeSessionView: View {
                         VStack(spacing: 16) {
                             ForEach(Array(messages.enumerated()), id: \.element.id) { index, message in
                                 chatBubble(message: message)
-                                    // Swipe gesture on Sol's first message to change topic
+                                    // Swipe gesture on Sol's first message — right = new topic (matches keyboard)
                                     .offset(x: (index == 0 && message.role == .sol && messageCount == 0) ? swipeOffset : 0)
+                                    .rotationEffect(
+                                        (index == 0 && message.role == .sol && messageCount == 0)
+                                        ? .degrees(Double(swipeOffset) / 25.0)
+                                        : .degrees(0)
+                                    )
+                                    .opacity((index == 0 && message.role == .sol && messageCount == 0 && abs(swipeOffset) > 200) ? 0 : 1)
                                     .gesture(
                                         (index == 0 && message.role == .sol && messageCount == 0) ?
                                         DragGesture()
                                             .onChanged { gesture in
                                                 let tx = gesture.translation.width
-                                                if tx < 0 { // left swipe only
-                                                    swipeOffset = tx * 0.6
-                                                }
+                                                swipeOffset = tx
                                             }
                                             .onEnded { gesture in
-                                                if gesture.translation.width < -80 {
-                                                    // Swipe threshold met — animate out and load new topic
-                                                    withAnimation(.easeOut(duration: 0.2)) {
-                                                        swipeOffset = -500
+                                                if gesture.translation.width > 90 {
+                                                    // Right swipe — fly off right with rotation (new topic)
+                                                    withAnimation(.easeOut(duration: 0.22)) {
+                                                        swipeOffset = 500
                                                     }
                                                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                                                        swipeOffset = 300 // position off-screen right
+                                                        swipeOffset = -400
                                                         swipeToNextTopic()
-                                                        withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                                                        withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
                                                             swipeOffset = 0
                                                         }
                                                     }
+                                                } else if gesture.translation.width < -90 {
+                                                    // Left swipe — fly off left (go back if possible)
+                                                    if currentTopicIndex > 0 {
+                                                        withAnimation(.easeOut(duration: 0.22)) {
+                                                            swipeOffset = -500
+                                                        }
+                                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                                                            swipeOffset = 400
+                                                            currentTopicIndex -= 1
+                                                            loadTopic(index: currentTopicIndex)
+                                                            withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
+                                                                swipeOffset = 0
+                                                            }
+                                                        }
+                                                    } else {
+                                                        withAnimation(.spring()) { swipeOffset = 0 }
+                                                    }
                                                 } else {
+                                                    // Snap back
                                                     withAnimation(.spring()) {
                                                         swipeOffset = 0
                                                     }
@@ -1130,15 +1152,18 @@ struct PracticeSessionView: View {
                                 // Swipe indicator on Sol's first message
                                 if index == 0 && message.role == .sol && messageCount == 0 {
                                     HStack {
-                                        Spacer()
                                         HStack(spacing: 4) {
-                                            Text("swipe for different topic")
-                                                .font(.custom("HelveticaNeue", size: 11))
-                                                .foregroundColor(.tsSecondary.opacity(0.6))
                                             Image(systemName: "chevron.left")
                                                 .font(.system(size: 9, weight: .medium))
-                                                .foregroundColor(.tsSecondary.opacity(0.6))
+                                                .foregroundColor(.tsSecondary.opacity(0.5))
+                                            Text("swipe for another topic")
+                                                .font(.custom("HelveticaNeue", size: 11))
+                                                .foregroundColor(.tsSecondary.opacity(0.5))
+                                            Image(systemName: "chevron.right")
+                                                .font(.system(size: 9, weight: .medium))
+                                                .foregroundColor(.tsSecondary.opacity(0.5))
                                         }
+                                        Spacer()
                                     }
                                     .padding(.top, -8)
                                 }
