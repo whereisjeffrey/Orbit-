@@ -1096,15 +1096,15 @@ struct PracticeSessionView: View {
                             ForEach(Array(messages.enumerated()), id: \.element.id) { index, message in
                                 chatBubble(message: message)
                                     // Swipe gesture on Sol's first message — right = new topic (matches keyboard)
-                                    .offset(x: (index == 0 && message.role == .sol && messageCount == 0) ? swipeOffset : 0)
+                                    .offset(x: (index == 0 && message.role == .sol && messageCount == 0 && !isLoadingTopic) ? swipeOffset : 0)
                                     .rotationEffect(
-                                        (index == 0 && message.role == .sol && messageCount == 0)
+                                        (index == 0 && message.role == .sol && messageCount == 0 && !isLoadingTopic)
                                         ? .degrees(Double(swipeOffset) / 25.0)
                                         : .degrees(0)
                                     )
                                     .opacity((index == 0 && message.role == .sol && messageCount == 0 && abs(swipeOffset) > 200) ? 0 : 1)
                                     .gesture(
-                                        (index == 0 && message.role == .sol && messageCount == 0) ?
+                                        (index == 0 && message.role == .sol && messageCount == 0 && !isLoadingTopic) ?
                                         DragGesture()
                                             .onChanged { gesture in
                                                 let tx = gesture.translation.width
@@ -1704,7 +1704,7 @@ struct PracticeSessionView: View {
 
         messages = [
             PracticeMessage(role: .coaching,
-                           text: "💡 Sol speaks like a local — casual, full of slang. Respond naturally. ← Swipe for a different topic."),
+                           text: "💡 Sol is thinking of something to talk about..."),
         ]
         for msg in messages { revealedText.insert(msg.id) }
         messageCount = 0
