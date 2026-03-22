@@ -336,27 +336,35 @@ enum TransferPatterns {
         ],
 
         // ═══════════════════════════════════════════════════════════
-        // REMAINING LANGUAGES (condensed — top 15 patterns each)
         // ═══════════════════════════════════════════════════════════
-
+        // POLISH
+        // ═══════════════════════════════════════════════════════════
         "pl": [
             "7 cases: English barely uses cases → Polish has 7 that change every noun, adjective, and pronoun",
             "No articles: English has a/the → Polish has none",
-            "Aspect pairs: every verb has imperfective/perfective forms → English has one",
+            "Aspect pairs: every verb has imperfective/perfective forms → English has one verb",
             "Gender in past tense: verbs change by gender of subject (robiłem/robiłam)",
             "Consonant clusters: English avoids them → Polish has 'szcz,' 'prz,' 'chrz' combinations",
             "Flexible word order: emphasis changes with position → English is fixed SVO",
-            "Diminutives everywhere: adds warmth/affection to almost any noun",
+            "Diminutives everywhere: adds warmth/affection to almost any noun (-ek, -ka, -ko suffixes)",
             "Pan/Pani formality: English 'you' → Polish uses Mr./Mrs. + third person verb for politeness",
             "Reflexive się: many verbs require reflexive particle → English uses separate words",
             "Numbers change case: different cases required after 1, 2-4, and 5+ → English doesn't change",
             "No continuous tense: 'I am reading' → expressed through imperfective aspect, not a separate form",
             "Genitive for negation: negative sentences change noun to genitive case",
             "Instrumental for identity: 'I am a teacher' → 'Jestem nauczycielem' (teacher in instrumental)",
-            "Motion verbs: distinguish one-way from round-trip travel",
-            "Nasal vowels: ą and ę have no English equivalent",
+            "Motion verbs: distinguish one-way from round-trip travel (iść vs chodzić)",
+            "Nasal vowels: ą and ę have no English equivalent — must be learned by ear",
+            "Prepositions govern specific cases: each preposition requires its noun in a particular case (w + locative, do + genitive)",
+            "Conditional by- particle: attaches to verb → English uses separate word 'would'",
+            "Adjective agreement: adjective must match noun in gender, number, AND case → English adjectives never change",
+            "Verbs of position: sitting/standing/lying are different verbs depending on orientation of object → English uses 'is'",
+            "Word-building with prefixes: one root becomes dozens of verbs (pisać → napisać/opisać/wypisać/podpisać)",
         ],
 
+        // ═══════════════════════════════════════════════════════════
+        // TURKISH
+        // ═══════════════════════════════════════════════════════════
         "tr": [
             "Agglutination: English uses separate words → Turkish adds suffixes one after another (evlerinizden = from your houses)",
             "Vowel harmony: suffixes change vowels to match the root → English doesn't do this",
@@ -365,22 +373,30 @@ enum TransferPatterns {
             "No articles (sort of): bir = 'a/one' but no 'the' equivalent",
             "Suffix-based grammar: prepositions become suffixes (in the house = evde, from the house = evden)",
             "Question particle mı/mi: English uses word order → Turkish adds mı/mi particle",
-            "Reported speech suffix -mış: English 'apparently' → Turkish has a verb suffix for hearsay",
+            "Reported speech suffix -mış: English 'apparently' → Turkish has a verb suffix for hearsay/inference",
             "Buffer consonants: y, n, s inserted between suffixes to avoid vowel collision",
             "Possessive suffixes: English 'my/your/his' → Turkish adds suffix to noun (evim = my house)",
-            "Present continuous -yor: English 'I am doing' → Turkish uses -yor suffix",
+            "Present continuous -yor: English 'I am doing' → Turkish uses -yor suffix attached to verb stem",
             "Conditional -se/-sa: English 'if' → Turkish suffix on verb",
-            "Passive with -il: English uses 'was/were + past participle' → Turkish adds suffix",
+            "Passive with -il: English uses 'was/were + past participle' → Turkish adds suffix to verb",
             "Relative clauses before noun with -en/-an: opposite of English clause order",
             "Olmak versatility: English uses be/become/happen separately → Turkish 'olmak' covers all three",
+            "Consonant mutation: final consonants change when suffix starts with vowel (kitap → kitabı) → English doesn't do this",
+            "Var/yok for existence: English 'there is/isn't' → Turkish uses var (exists) / yok (doesn't exist)",
+            "No 'to have' verb: English 'I have' → Turkish uses possessive suffix + var (benim arabam var = my car exists)",
+            "Causative suffix -tir: English uses 'make someone do' → Turkish adds suffix (yaptırmak = to make someone do)",
+            "Sen vs siz: English one 'you' → Turkish informal/formal distinction socially important",
         ],
 
+        // ═══════════════════════════════════════════════════════════
+        // SWEDISH
+        // ═══════════════════════════════════════════════════════════
         "sv": [
             "En vs ett: English 'a/the' → Swedish has two genders with different articles (en stol, ett bord)",
             "Definite suffix: English uses 'the' before noun → Swedish adds suffix (stolen = the chair, bordet = the table)",
             "V2 word order: verb must be second element → English is more flexible",
             "No continuous tense: 'I am eating' → Swedish uses simple present (jag äter)",
-            "Å/ä/ö vowels: English has no equivalent sounds",
+            "Å/ä/ö vowels: English has no equivalent sounds — must be learned by ear",
             "Compound words: English uses spaces → Swedish merges (sjukhus = sick house = hospital)",
             "False friend 'gift': English gift = present → Swedish 'gift' = married OR poison",
             "Reflexive sin/sitt/sina: English 'his/her' doesn't distinguish → Swedish reflexive possessive refers back to subject",
@@ -391,44 +407,68 @@ enum TransferPatterns {
             "Supine vs past participle: English has one form → Swedish distinguishes (har ätit vs äten)",
             "Lagom: no English equivalent — means 'just the right amount' — culturally significant concept",
             "Pronunciation doesn't match spelling: English speakers read Swedish phonetically and get it wrong",
+            "Inversion after adverbs: English 'Yesterday I went' → Swedish inverts 'Igår gick jag' (adverb-verb-subject)",
+            "Double definite: with adjective → article AND suffix needed (den stora bilen = the big car-the)",
+            "Att + infinitive vs att + clause: 'to do' vs 'that' — same word, different function → English uses different words",
+            "Sj-sound: unique Swedish sound (sjö, skjorta) → no English equivalent, varies by dialect",
+            "Deponent verbs: passive form but active meaning (hoppas = to hope) → English has nothing like this",
         ],
 
+        // ═══════════════════════════════════════════════════════════
+        // DANISH
+        // ═══════════════════════════════════════════════════════════
         "da": [
             "En vs et: two genders with different articles → English has one 'a/the'",
             "Definite suffix: 'the' attaches to end of noun (huset = the house) → English puts 'the' before",
             "Glottal stop (stød): unique to Danish → English has no equivalent, changes word meaning",
             "V2 word order: verb second → English more flexible",
             "No continuous: 'I am eating' = 'jeg spiser' → simple present covers it",
-            "Compound words without spaces",
+            "Compound words without spaces → English separates them",
             "Numbers are vigesimal: 50 = halvtreds (half-third-times-twenty) → English uses base-10",
             "False friend 'rolig': English 'roly' ≠ Danish 'rolig' (which means 'calm')",
-            "Reflexive sin/sit/sine possessives",
-            "Passive with -s or blive",
-            "Pronunciation extremely reduced compared to spelling",
+            "Reflexive sin/sit/sine possessives: distinguishes 'his own' from 'his (someone else's)' → English doesn't",
+            "Passive with -s or blive: two passive constructions → English has one",
+            "Pronunciation extremely reduced compared to spelling → reading aloud will sound wrong",
             "Soft 'd': English 'd' → Danish 'd' between vowels sounds like English 'th' or 'l'",
-            "Sentence adverbs after verb in main clause, before verb in subordinate",
+            "Sentence adverbs after verb in main clause, before verb in subordinate → English doesn't split this way",
             "Hygge: no English equivalent — cozy contentment — culturally essential concept",
             "Double definite: adjective + definite article + noun with suffix (den store hund = the big dog-the)",
+            "Modal + infinitive at end in subordinate clauses: 'I know that he must go' → verb order flips in Danish",
+            "At vs og: 'to' (before infinitive) vs 'and' → English speakers confuse when to use which",
+            "Inversion after adverbs: front an adverb and subject-verb swap → English doesn't require this",
+            "R-sound varies by dialect: uvular R in Copenhagen, trilled R elsewhere → English has one R",
+            "Implicit subject 'man': English 'one/you/people' → Danish uses 'man' as generic subject (man kan ikke = one cannot)",
         ],
 
+        // ═══════════════════════════════════════════════════════════
+        // NORWEGIAN
+        // ═══════════════════════════════════════════════════════════
         "no": [
-            "Bokmål vs Nynorsk: two written standards → English has one",
+            "Bokmål vs Nynorsk: two written standards → English has one — learners must choose",
             "Three genders: masculine, feminine, neuter → English has none",
-            "Definite suffix: huset = the house → English puts 'the' before",
-            "V2 word order: verb second in main clauses",
-            "No continuous: 'I am eating' = 'jeg spiser'",
-            "Compound words without spaces",
+            "Definite suffix: huset = the house → English puts 'the' before noun",
+            "V2 word order: verb second in main clauses → English more flexible",
+            "No continuous: 'I am eating' = 'jeg spiser' → simple present covers it",
+            "Compound words without spaces → English separates them",
             "Tonal accent: two tones distinguish word meaning → English doesn't use tone for meaning",
-            "Reflexive sin/si/sitt possessives: distinguish 'his own' from 'his (someone else's)'",
-            "Passive with -s or bli",
+            "Reflexive sin/si/sitt possessives: distinguish 'his own' from 'his (someone else's)' → English doesn't",
+            "Passive with -s or bli: two constructions → English has one",
             "False friend 'rar': English 'rare' ≠ Norwegian 'rar' (which means 'nice/sweet')",
-            "Sentence adverb placement rules differ between main and subordinate clauses",
-            "Modal + infinitive: 'I must go' = 'jeg må gå' — similar to English but infinitive goes to end in subordinate clauses",
+            "Sentence adverb placement differs between main and subordinate clauses → English doesn't split",
+            "Modal + infinitive: infinitive goes to end in subordinate clauses → English keeps it after modal",
             "Kos/koselig: similar to Danish hygge — warmth and coziness with no direct English translation",
-            "Preposition stranding accepted (like English)",
-            "Past participle agreement with subject in some dialects",
+            "Preposition stranding accepted (like English) — easier transition here",
+            "Past participle agreement with subject in some dialects → English participles don't agree",
+            "Inversion after adverbs: 'I går gikk jeg' (Yesterday went I) → English doesn't invert",
+            "Double definite: adjective requires both article AND suffix (det store huset = the big house-the)",
+            "Å vs og: 'to' (before infinitive) vs 'and' → English speakers mix these up",
+            "Dialect-heavy: spoken Norwegian varies enormously by region → no single 'correct' pronunciation",
+            "Nå/da particles: add nuance to sentences → no English equivalents",
         ],
 
+        // ═══════════════════════════════════════════════════════════
+        // FINNISH
+        // ═══════════════════════════════════════════════════════════
         "fi": [
             "15 cases: English barely uses cases → Finnish has 15 that change every noun",
             "Agglutination: suffixes stack (talossanikin = in my house too) → English uses separate words",
@@ -441,12 +481,20 @@ enum TransferPatterns {
             "Partitive case: English 'some water' → Finnish uses partitive case ending (vettä)",
             "No future tense: present tense + context → English has 'will'",
             "Long vowels and consonants change meaning: tuli (fire) vs tuuli (wind) vs tulli (customs)",
-            "Word order relatively free but default SVO",
+            "Word order relatively free but default SVO — topic-focus affects placement",
             "Possessive suffixes: kirjani = my book → English uses separate word 'my'",
             "Sisu: no English equivalent — inner determination/resilience — culturally defining concept",
             "Questions with -ko/-kö suffix: English 'Do you?' → Finnish adds suffix to verb (tiedätkö = do you know)",
+            "Object case depends on completion: partitive for incomplete action, accusative for complete → English doesn't mark this",
+            "Third infinitive: English 'to eat' → Finnish has multiple infinitive forms for different grammatical functions",
+            "Passive as impersonal: 'syödään' = 'one eats / let's eat' → English needs separate constructions",
+            "Spoken Finnish very different from written: puhekieli drops endings and shortens words → learners face two languages",
+            "No equivalent of 'please': politeness through conditional mood and tone, not a magic word",
         ],
 
+        // ═══════════════════════════════════════════════════════════
+        // GREEK
+        // ═══════════════════════════════════════════════════════════
         "el": [
             "Different alphabet: English uses Latin → Greek uses its own alphabet (some letters look similar but sound different)",
             "Three genders: masculine, feminine, neuter → English has none",
@@ -457,32 +505,48 @@ enum TransferPatterns {
             "No infinitive: English 'to go' → Greek uses να + conjugated verb (να πάω)",
             "Definite article before names: English 'Maria' → Greek 'η Μαρία' (the Maria)",
             "Double consonant letters: ντ = 'd', μπ = 'b', γκ = 'g' → English speakers read them as two sounds",
-            "Formal εσείς vs informal εσύ: English one 'you' → Greek formal/informal",
+            "Formal εσείς vs informal εσύ: English one 'you' → Greek formal/informal affects verb conjugation",
             "Clitic pronouns before verb: English 'I see him' → Greek 'τον βλέπω' (him I-see)",
             "Stress mark changes meaning: English stress is flexible → Greek requires correct stress (written with accent mark)",
             "Passive voice very common: Greek uses passive for many situations where English uses active",
             "Augment in past tense: past tense adds ε- prefix to verb → English just changes the verb",
-            "Greek has diminutives and augmentatives that change noun meaning with suffixes",
+            "Diminutives and augmentatives: suffixes change noun meaning and emotional tone → English rarely does this",
+            "Clitic doubling: pronoun appears twice (τον βλέπω τον Γιάννη) → English uses pronoun once",
+            "Perfective vs imperfective stems: different verb stems for completed vs ongoing → English uses one stem",
+            "Negation δεν/μην: different negative words for indicative vs subjunctive → English uses one 'not'",
+            "Genitive for possession: English 'John's book' → Greek uses genitive case (το βιβλίο του Γιάννη)",
+            "Cultural exclamations: ρε, μωρέ, παιδί μου — discourse particles with no English translation",
         ],
 
+        // ═══════════════════════════════════════════════════════════
+        // CZECH
+        // ═══════════════════════════════════════════════════════════
         "cs": [
             "7 cases: English barely uses cases → Czech has 7 that change nouns, adjectives, pronouns",
-            "No articles: English a/the → Czech has none",
+            "No articles: English a/the → Czech has none — context determines definiteness",
             "Flexible word order: changes emphasis → English is fixed SVO",
             "Aspect pairs: imperfective/perfective for every verb → English has one form",
             "Consonant clusters: 'strč prst skrz krk' (stick finger through throat) — no vowels needed",
-            "Háčky and čárky: ě, š, č, ř, ž — sounds English doesn't have, especially ř",
-            "Gender in past tense: verb endings show subject's gender",
-            "Reflexive se/si: many verbs require reflexive particle",
+            "Háčky and čárky: ě, š, č, ř, ž — sounds English doesn't have, especially ř (unique to Czech)",
+            "Gender in past tense: verb endings show subject's gender → English verbs don't change",
+            "Reflexive se/si: many verbs require reflexive particle → English uses separate words",
             "Motion verb pairs: going on foot vs by vehicle → English uses one 'go'",
-            "Conditional by- particle: attaches to auxiliary → English uses 'would'",
-            "Diminutives very common and affectionate",
-            "Vykání (vy) vs tykání (ty): formal/informal 'you' with social rules",
-            "Numbers govern case: different cases after different numbers",
-            "No continuous tense: aspect handles the distinction",
-            "Prepositions govern specific cases: each preposition requires its noun in a particular case",
+            "Conditional by- particle: attaches to auxiliary → English uses separate word 'would'",
+            "Diminutives very common: adds warmth/affection to almost any noun",
+            "Vykání (vy) vs tykání (ty): formal/informal 'you' with strict social rules",
+            "Numbers govern case: different cases after different numbers (1 kniha, 2 knihy, 5 knih)",
+            "No continuous tense: aspect handles the distinction → English 'I am doing' vs 'I do'",
+            "Prepositions govern specific cases: each preposition forces its noun into a particular case",
+            "Instrumental for means/tools: 'with a pen' = 'perem' (pen in instrumental) → English uses 'with'",
+            "Verbal prefixes change meaning: jít → přijít/odejít/vejít (come/leave/enter) → systematic prefix system",
+            "Genitive for negation: negative sentences require genitive case on object",
+            "Vocative for addressing: Czech has a special case for calling someone → English just uses the name",
+            "Být (to be) in past tense uses gender: byl/byla/bylo → English 'was' doesn't change",
         ],
 
+        // ═══════════════════════════════════════════════════════════
+        // ROMANIAN
+        // ═══════════════════════════════════════════════════════════
         "ro": [
             "Definite article suffix: English 'the house' → Romanian 'casa' (article attached to end)",
             "Three genders: masculine, feminine, neuter → neuter acts as masc in singular, fem in plural",
@@ -490,15 +554,20 @@ enum TransferPatterns {
             "Subjunctive with să: Romanian uses subjunctive much more than English → required after many verbs",
             "No infinitive in common use: English 'I want to go' → Romanian 'vreau să merg' (want that I-go)",
             "Reflexive verbs: se + verb for many actions English doesn't make reflexive",
-            "Preposition + article contractions",
-            "False friend 'a realiza': English 'realize' (understand) ≠ Romanian (to achieve)",
+            "Preposition + article contractions → English keeps them separate",
+            "False friend 'a realiza': English 'realize' (understand) ≠ Romanian (to achieve/accomplish)",
             "Clitic pronouns: pronoun placement before/after verb follows complex rules",
             "Vocative case: Romanian has a special form for addressing people → English doesn't",
             "Conditional with ar: different auxiliary system than English 'would'",
-            "Latin vocabulary + Slavic grammar = unique combination",
+            "Latin vocabulary + Slavic grammar = unique combination that surprises learners",
             "Double negation: 'nu am nimic' = I don't have nothing → correct in Romanian",
             "Articulated possessives: al/a/ai/ale before possessive → no English equivalent",
             "Diacritics matter: ă, â, î, ș, ț change pronunciation significantly",
+            "Clitic doubling: pronoun appears both as clitic and full form → English uses pronoun once",
+            "Adjective usually after noun: 'mașină roșie' (car red) → English puts adjective before",
+            "Pe for human direct objects: 'îl văd pe Ion' (I see PE Ion) → like Spanish 'personal a'",
+            "Hai/haide imperative: informal invitation particle → no English equivalent",
+            "Romanian is the closest living language to Latin — but English speakers who know Spanish/French get tripped up by false similarities",
         ],
 
         "hu": [
