@@ -957,9 +957,15 @@ struct PracticeSessionView: View {
                                 chatBubble(message: message)
                                     .id(message.id)
 
-                                // Show hint card right after Sol's first message
+                                // Show Sol double-tap hint after Sol's first message
                                 if index == 0 && showDoubleTapHint {
                                     doubleTapHintCard
+                                        .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                                }
+
+                                // Show native hint after the first user message
+                                if message.id == nativeHintShownForMessage && showNativeHint {
+                                    nativeHintCard
                                         .transition(.opacity.combined(with: .scale(scale: 0.95)))
                                 }
                             }
@@ -1121,10 +1127,54 @@ struct PracticeSessionView: View {
         )
     }
 
+    // MARK: - Native Hint Card
+
+    private var nativeHintCard: some View {
+        HStack(spacing: 12) {
+            Text("👆👆")
+                .font(.system(size: 20))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Want to sound more natural?")
+                    .font(.custom("HelveticaNeue-Bold", size: 13))
+                    .foregroundColor(.tsLabel)
+                Text("Double-tap your own message to see how a native speaker would say it.")
+                    .font(.custom("HelveticaNeue", size: 12))
+                    .foregroundColor(.tsSecondary)
+                    .lineSpacing(1)
+            }
+
+            Spacer()
+
+            Button {
+                withAnimation(.easeOut(duration: 0.2)) {
+                    showNativeHint = false
+                    nativeDismissCount += 1
+                }
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.tsSecondary)
+                    .padding(6)
+                    .background(Circle().fill(Color.tsSecondary.opacity(0.1)))
+            }
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(hex: "#34C759").opacity(0.08))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color(hex: "#34C759").opacity(0.15), lineWidth: 0.5)
+        )
+    }
+
     // MARK: - Chat Bubble
 
     private func chatBubble(message: PracticeMessage) -> some View {
         let isRevealed = revealedTranslations.contains(message.id)
+        let isNativeRevealed = revealedNative.contains(message.id)
 
         return HStack(alignment: .top, spacing: 10) {
             if message.role == .sol || message.role == .coaching {
@@ -1172,7 +1222,6 @@ struct PracticeSessionView: View {
                                     revealedTranslations.remove(message.id)
                                 } else {
                                     revealedTranslations.insert(message.id)
-                                    // User proved they know how it works — dismiss hint permanently
                                     if !doubleTapValidated {
                                         doubleTapValidated = true
                                         withAnimation(.easeOut(duration: 0.2)) {
@@ -1181,10 +1230,24 @@ struct PracticeSessionView: View {
                                     }
                                 }
                             }
+                        } else if message.role == .user && message.nativeVersion != nil {
+                            withAnimation(.easeInOut(duration: 0.25)) {
+                                if isNativeRevealed {
+                                    revealedNative.remove(message.id)
+                                } else {
+                                    revealedNative.insert(message.id)
+                                    if !nativeDoubleTapValidated {
+                                        nativeDoubleTapValidated = true
+                                        withAnimation(.easeOut(duration: 0.2)) {
+                                            showNativeHint = false
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
 
-                // Translation card (revealed on double-tap)
+                // Translation card — Sol's messages (English)
                 if isRevealed, let translation = message.translation {
                     VStack(alignment: .leading, spacing: 6) {
                         HStack(spacing: 4) {
@@ -1219,6 +1282,45 @@ struct PracticeSessionView: View {
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
                             .stroke(Color.tsAccent.opacity(0.1), lineWidth: 0.5)
+                    )
+                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                }
+
+                // Native version card — User's messages (how a native would say it)
+                if isNativeRevealed, let native = message.nativeVersion {
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack(spacing: 4) {
+                            Text("🇧🇷")
+                                .font(.system(size: 12))
+                            Text("NATIVE VERSION")
+                                .font(.custom("HelveticaNeue-Bold", size: 9))
+                                .foregroundColor(Color(hex: "#34C759"))
+                                .kerning(0.8)
+                        }
+
+                        Text(native)
+                            .font(.custom("HelveticaNeue", size: 13))
+                            .foregroundColor(.tsLabel)
+                            .lineSpacing(2)
+
+                        if let notes = message.nativeNotes {
+                            Text("💡 \(notes)")
+                                .font(.custom("HelveticaNeue", size: 12))
+                                .foregroundColor(.tsSecondary)
+                                .italic()
+                                .lineSpacing(2)
+                                .padding(.top, 2)
+                        }
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(hex: "#34C759").opacity(0.06))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color(hex: "#34C759").opacity(0.12), lineWidth: 0.5)
                     )
                     .transition(.opacity.combined(with: .scale(scale: 0.95)))
                 }
@@ -1270,15 +1372,36 @@ struct PracticeSessionView: View {
         withAnimation { isRecording = false }
 
         // Mock transcription — in production this would go through WhisperKit/API
-        let mockTranscriptions = [
-            "Eu gostaria de um cafezinho e um pão de queijo, por favor.",
-            "Sim, pode ser com cartão. Obrigado!",
-            "Eu costumo pedir coxinha quando venho aqui.",
-            "Ah, legal! Eu adoro a padaria aqui perto da minha casa.",
-            "Tem alguma coisa que você recomenda?",
+        let mockData: [(text: String, native: String, notes: String)] = [
+            ("Eu gostaria de um cafezinho e um pão de queijo, por favor.",
+             "Queria um cafezinho e um pão de queijo, por favor.",
+             "'Queria' is softer and more natural than 'gostaria' in casual bakery settings"),
+            ("Sim, pode ser com cartão. Obrigado!",
+             "Sim, no cartão. Valeu!",
+             "'no cartão' and 'valeu' are how Brazilians actually speak in casual spots"),
+            ("Eu costumo pedir coxinha quando venho aqui.",
+             "Sempre peço coxinha quando venho aqui.",
+             "'Sempre peço' flows more naturally than 'costumo pedir' in casual speech"),
+            ("Ah, legal! Eu adoro a padaria aqui perto da minha casa.",
+             "Ah, que legal! Adoro a padaria aqui pertinho de casa.",
+             "'pertinho' (diminutive) and dropping 'eu' makes it sound native"),
+            ("Tem alguma coisa que você recomenda?",
+             "Tem algo que cê recomenda?",
+             "'cê' is the casual spoken form of 'você' — very common in Rio"),
         ]
-        let transcription = mockTranscriptions[min(messageCount, mockTranscriptions.count - 1)]
-        messages.append(PracticeMessage(role: .user, text: "🎤 \(transcription)"))
+        let item = mockData[min(messageCount, mockData.count - 1)]
+        let msg = PracticeMessage(role: .user, text: "🎤 \(item.text)",
+                                  nativeVersion: item.native,
+                                  nativeNotes: item.notes)
+        messages.append(msg)
+
+        // Show native hint after first user message if not validated
+        if !nativeDoubleTapValidated && nativeDismissCount < 3 && messageCount == 0 {
+            nativeHintShownForMessage = msg.id
+            withAnimation(.easeIn(duration: 0.3).delay(0.3)) {
+                showNativeHint = true
+            }
+        }
         messageCount += 1
 
         // Simulate Sol's response
@@ -1309,10 +1432,27 @@ struct PracticeSessionView: View {
         let text = userInput.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
 
-        // Add user message
-        messages.append(PracticeMessage(role: .user, text: text))
+        // Add user message with mock native version
+        let nativeVersions: [String: (native: String, notes: String)] = [
+            "default": (
+                native: "A native speaker might phrase this slightly differently for a more natural flow.",
+                notes: "Word order and contractions can make a big difference"
+            )
+        ]
+        let msg = PracticeMessage(role: .user, text: text,
+                                  nativeVersion: "Um cafezinho e um pão de queijo, por favor. Pode ser no cartão?",
+                                  nativeNotes: "'por favor' at the end is more natural than at the beginning — and 'no cartão' instead of 'com cartão'")
+        messages.append(msg)
         userInput = ""
         messageCount += 1
+
+        // Show native hint after first user message if not validated
+        if !nativeDoubleTapValidated && nativeDismissCount < 3 && messageCount == 1 {
+            nativeHintShownForMessage = msg.id
+            withAnimation(.easeIn(duration: 0.3).delay(0.3)) {
+                showNativeHint = true
+            }
+        }
 
         // Simulate Sol's response after a short delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
