@@ -751,12 +751,12 @@ struct CoachPopulatedView: View {
             }
 
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
-                    milestoneBadge(label: "ser/\nestar", status: .graduated, month: "Oct")
-                    milestoneBadge(label: "gender\n-ade", status: .graduated, month: "Nov")
-                    milestoneBadge(label: "article\nusage", status: .graduated, month: "Dec")
-                    milestoneBadge(label: "prep\na/em", status: .inProgress(14, 20), month: nil)
-                    milestoneBadge(label: "past\nsubj.", status: .inProgress(6, 20), month: nil)
+                HStack(alignment: .top, spacing: 12) {
+                    milestoneBadge(label: "Ser vs\nEstar", status: .graduated, month: "Oct")
+                    milestoneBadge(label: "Gender\nAgreement", status: .graduated, month: "Nov")
+                    milestoneBadge(label: "Article\nUsage", status: .graduated, month: "Dec")
+                    milestoneBadge(label: "Preposition\nA vs Em", status: .inProgress(14, 20), month: nil)
+                    milestoneBadge(label: "Past\nSubjunctive", status: .inProgress(6, 20), month: nil)
                 }
             }
         }
@@ -818,7 +818,7 @@ struct CoachPopulatedView: View {
                 .foregroundColor(.tsLabel)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
-                .frame(width: 64)
+                .frame(width: 72)
 
             if let m = month {
                 Text(m)
@@ -1563,7 +1563,7 @@ struct PracticeSessionView: View {
                 return
             }
 
-            let msg = PracticeMessage(role: .user, text: "🎤 \(text)")
+            let msg = PracticeMessage(role: .user, text: text)
             messages.append(msg)
             messageCount += 1
 
@@ -1619,7 +1619,7 @@ struct PracticeSessionView: View {
             case .sol:
                 history.append((role: "assistant", text: msg.text))
             case .user:
-                let cleanText = msg.text.hasPrefix("🎤 ") ? String(msg.text.dropFirst(2)) : msg.text
+                let cleanText = msg.text
                 history.append((role: "user", text: cleanText))
             case .coaching:
                 break // don't send coaching tips to GPT
