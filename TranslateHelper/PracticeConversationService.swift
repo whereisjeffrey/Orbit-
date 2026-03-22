@@ -136,12 +136,19 @@ class PracticeConversationService {
 
     // MARK: - Get Sol's Response
 
+    struct SlangNote {
+        let phrase: String
+        let meaning: String
+        let context: String
+    }
+
     struct SolResponse {
         let text: String
         let translation: String?
         let translationNotes: String?
         let nativeCorrectionForUser: String?
         let nativeCorrectionNotes: String?
+        let slangNotes: [SlangNote]
     }
 
     func getSolResponse(
@@ -164,27 +171,39 @@ class PracticeConversationService {
         let transferBlock = TransferPatterns.patterns(for: targetLanguage)
 
         let systemPrompt = """
-        You are Sol, a warm and encouraging language coach having a practice conversation \
+        You are Sol, a warm and fun language coach having a casual conversation \
         in \(langName) with an English speaker who lives in \(userCity). \
         \
-        RULES: \
-        - Speak primarily in \(langName) — this is practice for them \
-        - Keep responses short (2-3 sentences max) \
-        - Be natural, warm, and conversational — like a friend, not a teacher \
+        CRITICAL — HOW YOU SPEAK: \
+        - Speak like a REAL person from \(userCity) — use actual slang, contractions, \
+          and colloquial expressions that people use on the street. \
+        - NEVER speak like a textbook. Nobody in \(userCity) talks like a textbook. \
+        - Use expressions that the user won't find in language courses — figures of speech, \
+          local idioms, casual contractions. This is the whole point. \
+        - Keep responses short and natural (2-3 sentences) \
+        - Be warm, playful, and conversational — like a friend at a bar, not a teacher \
+        \
+        CONVERSATION RULES: \
         - If they make a grammar or vocabulary mistake, don't correct them inline — \
-          just continue the conversation naturally. Corrections come separately. \
-        - Reference \(userCity) naturally when relevant \
-        - Ask follow-up questions to keep the conversation going \
+          just continue naturally. Corrections come in the JSON. \
+        - Reference \(userCity) naturally — neighborhoods, local spots, culture \
+        - Ask follow-up questions to keep the conversation flowing \
+        - Adapt to their level — if they're advanced, challenge them with complex topics \
+          and nuanced slang. If they're struggling, simplify without being patronizing. \
+        - The conversation has no fixed length — keep going as long as it's natural. \
+          When a topic wraps up naturally, suggest a new direction or wind down. \
         \
         \(transferBlock) \
         \
         Respond ONLY with valid JSON: \
         { \
-          "response": "your response in \(langName)", \
+          "response": "your response in \(langName) — speak like a real local", \
           "translation": "English translation of your response", \
-          "translation_notes": "1 brief note about an interesting word/phrase you used (optional, null if none)", \
-          "native_correction": "how a native would say what the USER just said, or null if it was fine", \
-          "native_correction_notes": "brief note about what was improved, or null" \
+          "translation_notes": "1 brief note about a word/phrase you used (optional, null if none)", \
+          "native_correction": "how a native would say what the USER just said, or null if fine", \
+          "native_correction_notes": "brief note about what was improved, or null", \
+          "slang_notes": [{"phrase": "the slang/expression", "meaning": "what it means", \
+            "context": "when/where people use this — be specific to the city/region"}] or [] if none \
         }
         """
 
@@ -205,7 +224,7 @@ class PracticeConversationService {
             "model": "gpt-4o-mini",
             "messages": gptMessages,
             "temperature": 0.8,
-            "max_tokens": 300,
+            "max_tokens": 400,
             "response_format": ["type": "json_object"]
         ]
 
@@ -229,12 +248,27 @@ class PracticeConversationService {
                 return
             }
 
+            // Parse slang notes
+            var slangNotes: [SlangNote] = []
+            if let rawNotes = parsed["slang_notes"] as? [[String: String]] {
+                for note in rawNotes {
+                    if let phrase = note["phrase"], let meaning = note["meaning"] {
+                        slangNotes.append(SlangNote(
+                            phrase: phrase,
+                            meaning: meaning,
+                            context: note["context"] ?? ""
+                        ))
+                    }
+                }
+            }
+
             let result = SolResponse(
                 text: responseText,
                 translation: parsed["translation"] as? String,
                 translationNotes: parsed["translation_notes"] as? String,
                 nativeCorrectionForUser: parsed["native_correction"] as? String,
-                nativeCorrectionNotes: parsed["native_correction_notes"] as? String
+                nativeCorrectionNotes: parsed["native_correction_notes"] as? String,
+                slangNotes: slangNotes
             )
 
             DispatchQueue.main.async { completion(result) }

@@ -219,7 +219,7 @@ struct CoachPopulatedView: View {
                 // ── Header ──────────────────────────────────────
                 HStack {
                     Text("Coach")
-                        .font(.custom("HelveticaNeue-Bold", size: 28))
+                        .font(.museoModerno(28))
                         .foregroundColor(.tsLabel)
                     Spacer()
                 }
@@ -294,22 +294,22 @@ struct CoachPopulatedView: View {
         HStack(spacing: 16) {
             // Sol placeholder
             Circle()
-                .fill(Color.tsAccent.opacity(0.12))
+                .fill(Color.white.opacity(0.20))
                 .frame(width: 48, height: 48)
                 .overlay(
                     Circle()
-                        .stroke(Color.tsAccent.opacity(0.2), lineWidth: 1)
+                        .stroke(Color.white.opacity(0.35), lineWidth: 1)
                 )
 
             VStack(alignment: .leading, spacing: 4) {
                 Text("Your Portuguese is getting sharper every week. Grammar just hit B1 — that's a big jump.")
                     .font(.custom("HelveticaNeue-Medium", size: 14))
-                    .foregroundColor(.tsLabel)
+                    .foregroundColor(.white)
                     .lineSpacing(2)
 
                 Text("127 voice messages · 3 months active")
                     .font(.custom("HelveticaNeue", size: 12))
-                    .foregroundColor(.tsSecondary)
+                    .foregroundColor(.white.opacity(0.75))
             }
 
             Spacer()
@@ -320,17 +320,17 @@ struct CoachPopulatedView: View {
                 .fill(
                     LinearGradient(
                         colors: [
-                            Color.tsAccent.opacity(colorScheme == .dark ? 0.18 : 0.08),
-                            Color.tsAccentTeal.opacity(colorScheme == .dark ? 0.10 : 0.05),
+                            Color(hex: "#FF6B35"),  // orange
+                            Color(hex: "#FF3D8B"),  // hot pink
+                            Color(hex: "#C338C3"),  // magenta
+                            Color(hex: "#7B2FBE"),  // purple
+                            Color(hex: "#2BBCD4"),  // teal
+                            Color(hex: "#3B6FE8"),  // blue
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
                 )
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.tsAccent.opacity(colorScheme == .dark ? 0.18 : 0.12), lineWidth: 1)
         )
     }
 
@@ -343,13 +343,6 @@ struct CoachPopulatedView: View {
                 .foregroundColor(.tsSecondary)
                 .kerning(1.2)
 
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-                scoreGauge(label: "Pronunciation", level: "B1", progress: 0.65, color: Color(hex: "#34C759"), locked: false)
-                scoreGauge(label: "Grammar", level: "B1", progress: 0.55, color: Color.tsAccent, locked: false)
-                scoreGauge(label: "Vocabulary", level: "B2", progress: 0.72, color: Color(hex: "#FF9500"), locked: false)
-                scoreGauge(label: "Fluency", level: "A2", progress: 0.38, color: Color(hex: "#AF52DE"), locked: false)
-            }
-
             HStack(spacing: 6) {
                 Image(systemName: "chart.line.uptrend.xyaxis")
                     .font(.system(size: 12))
@@ -357,6 +350,13 @@ struct CoachPopulatedView: View {
                 Text("All categories active · Based on 127 voice messages")
                     .font(.custom("HelveticaNeue", size: 12))
                     .foregroundColor(.tsSecondary)
+            }
+
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
+                scoreGauge(label: "Pronunciation", level: "B1", progress: 0.65, color: Color(hex: "#34C759"), locked: false)
+                scoreGauge(label: "Grammar", level: "B1", progress: 0.55, color: Color.tsAccent, locked: false)
+                scoreGauge(label: "Vocabulary", level: "B2", progress: 0.72, color: Color(hex: "#FF9500"), locked: false)
+                scoreGauge(label: "Fluency", level: "A2", progress: 0.38, color: Color(hex: "#AF52DE"), locked: false)
             }
         }
         .padding(20)
@@ -601,7 +601,7 @@ struct CoachPopulatedView: View {
                 Text("porta")
                     .font(.custom("HelveticaNeue-Bold", size: 28))
                     .foregroundColor(.tsLabel)
-                    .padding(.top, 8)
+                    .padding(.top, 12)
 
                 Text("(door)")
                     .font(.custom("HelveticaNeue", size: 13))
@@ -636,7 +636,7 @@ struct CoachPopulatedView: View {
                         .clipShape(Capsule())
                     }
                 }
-                .padding(.bottom, 8)
+                .padding(.bottom, 12)
             }
             .frame(maxWidth: .infinity)
             .background(
@@ -1006,11 +1006,11 @@ struct PracticeSessionView: View {
     @State private var userInput = ""
     @State private var messages: [PracticeMessage] = [
         PracticeMessage(role: .sol,
-                        text: "Oi! 👋 Então, você mora no Rio, né? Já tentou pedir um cafezinho numa padaria sem trocar pro inglês? Vamos praticar isso. Eu vou ser o cara do balcão. Você entra na padaria...",
-                        translation: "Hey! 👋 So, you live in Rio, right? Have you tried ordering a coffee at a bakery without switching to English? Let's practice that. I'll be the guy behind the counter. You walk into the bakery...",
-                        translationNotes: "'trocar pro inglês' = 'switch to English' — very natural, casual phrasing"),
+                        text: "E aí! 👋 Então, tô sabendo que você tá morando no Rio já faz um tempinho, né? Me conta — já rolou alguma situação zoada por causa do idioma? Tipo, você tentou falar uma coisa e saiu completamente diferente? Todo mundo tem essas histórias. 😄",
+                        translation: "Hey! 👋 So, I hear you've been living in Rio for a while now, right? Tell me — has anything awkward happened because of the language? Like, you tried to say one thing and it came out completely different? Everyone has those stories. 😄",
+                        translationNotes: "'tô sabendo' = casual 'I know/I heard' · 'rolou' = 'happened' (slang) · 'zoada' = 'awkward/embarrassing' (Rio slang, never in textbooks)"),
         PracticeMessage(role: .coaching,
-                        text: "💡 I'll be speaking in Portuguese. Try to respond in Portuguese too — don't worry about mistakes, that's what I'm here for."),
+                        text: "💡 Sol speaks like a real carioca — casual, full of slang. Respond naturally. Don't worry about mistakes."),
     ]
 
     @State private var messageCount = 0
@@ -1030,7 +1030,8 @@ struct PracticeSessionView: View {
     @AppStorage("practice_native_validated") private var nativeDoubleTapValidated = false
     @AppStorage("practice_native_dismiss_count") private var nativeDismissCount = 0
     private var hasShownFirstUserMessage = false
-    private let maxMessages = 10
+    @State private var sessionSeconds = 0
+    @State private var sessionTimer: Timer?
 
     var body: some View {
         ZStack {
@@ -1051,13 +1052,19 @@ struct PracticeSessionView: View {
 
                     Spacer()
 
-                    Text("\(messageCount)/\(maxMessages)")
-                        .font(.custom("HelveticaNeue-Bold", size: 13))
-                        .foregroundColor(.tsSecondary)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 4)
-                        .background(Color.tsCard)
-                        .clipShape(Capsule())
+                    HStack(spacing: 4) {
+                        Circle()
+                            .fill(Color(hex: "#34C759"))
+                            .frame(width: 6, height: 6)
+                        Text(formatSessionTime(sessionSeconds))
+                            .font(.custom("HelveticaNeue-Medium", size: 13))
+                            .foregroundColor(.tsSecondary)
+                            .monospacedDigit()
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 4)
+                    .background(Color.tsCard)
+                    .clipShape(Capsule())
                 }
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
@@ -1191,10 +1198,14 @@ struct PracticeSessionView: View {
             }
         }
         .onAppear {
-            // Pre-reveal text for initial messages (they're already on screen)
-            // The audio-first experience only applies to NEW messages during the session
+            // Pre-reveal text for initial messages
             for msg in messages {
                 revealedText.insert(msg.id)
+            }
+
+            // Start session timer
+            sessionTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+                sessionSeconds += 1
             }
 
             if !doubleTapValidated && doubleTapDismissCount < 3 {
@@ -1586,6 +1597,12 @@ struct PracticeSessionView: View {
         return String(format: "%d:%02d", m, s)
     }
 
+    private func formatSessionTime(_ seconds: Int) -> String {
+        let m = seconds / 60
+        let s = seconds % 60
+        return String(format: "%d:%02d", m, s)
+    }
+
     // MARK: - Send Message
 
     private func sendMessage() {
@@ -1649,6 +1666,15 @@ struct PracticeSessionView: View {
             )
             messages.append(solMsg)
             messageCount += 1
+
+            // Add slang note cards if Sol used any slang
+            for note in sol.slangNotes {
+                let noteMsg = PracticeMessage(
+                    role: .coaching,
+                    text: "📖 \"\(note.phrase)\" — \(note.meaning). \(note.context)"
+                )
+                messages.append(noteMsg)
+            }
         }
     }
 
