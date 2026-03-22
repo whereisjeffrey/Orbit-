@@ -909,6 +909,12 @@ struct PracticeSessionView: View {
     @State private var recordingTimer: Timer?
     @AppStorage("practice_doubletap_validated") private var doubleTapValidated = false
     @AppStorage("practice_doubletap_dismiss_count") private var doubleTapDismissCount = 0
+    @State private var showNativeHint = false
+    @State private var nativeHintShownForMessage: UUID?  // show hint after this specific message
+    @State private var revealedNative: Set<UUID> = []
+    @AppStorage("practice_native_validated") private var nativeDoubleTapValidated = false
+    @AppStorage("practice_native_dismiss_count") private var nativeDismissCount = 0
+    private var hasShownFirstUserMessage = false
     private let maxMessages = 10
 
     var body: some View {
@@ -1368,6 +1374,10 @@ struct PracticeMessage: Identifiable {
     var translation: String?
     /// Optional notes about slang, idioms, etc.
     var translationNotes: String?
+    /// How a native speaker would say the user's message (revealed on double-tap)
+    var nativeVersion: String?
+    /// Notes about what was improved in the native version
+    var nativeNotes: String?
 
     enum Role {
         case sol
