@@ -1032,6 +1032,8 @@ struct PracticeSessionView: View {
     @State private var messageCount = 0
     @State private var revealedTranslations: Set<UUID> = []
     @State private var showDoubleTapHint = false
+    @State private var showSwipeTutorial = false
+    @AppStorage("practice_swipe_validated") private var swipeValidated = false
     @State private var isRecording = false
     @State private var recordingSeconds = 0
     @State private var recordingTimer: Timer?
@@ -1286,6 +1288,80 @@ struct PracticeSessionView: View {
                 .animation(.easeInOut(duration: 0.2), value: isRecording)
             }
         }
+        .overlay(
+            // Swipe tutorial overlay — dims background, shows instructions
+            Group {
+                if showSwipeTutorial {
+                    ZStack {
+                        Color.black.opacity(0.55)
+                            .ignoresSafeArea()
+                            .onTapGesture {} // block taps through
+
+                        VStack(spacing: 24) {
+                            Spacer()
+
+                            Text("Sol speaks like a local —\ncasual, full of slang.\nRespond naturally.")
+                                .font(.custom("HelveticaNeue-Medium", size: 17))
+                                .foregroundColor(.white)
+                                .multilineTextAlignment(.center)
+                                .lineSpacing(4)
+
+                            Spacer().frame(height: 16)
+
+                            // Swipe right instruction
+                            HStack(spacing: 12) {
+                                Text("Swipe right for a different topic")
+                                    .font(.custom("HelveticaNeue", size: 15))
+                                    .foregroundColor(.white.opacity(0.9))
+                                Image(systemName: "arrow.right")
+                                    .font(.system(size: 18, weight: .bold))
+                                    .foregroundColor(.tsAccent)
+                            }
+
+                            // Swipe left instruction
+                            HStack(spacing: 12) {
+                                Image(systemName: "arrow.left")
+                                    .font(.system(size: 18, weight: .bold))
+                                    .foregroundColor(Color(hex: "#FF9500"))
+                                Text("Swipe left to go back")
+                                    .font(.custom("HelveticaNeue", size: 15))
+                                    .foregroundColor(.white.opacity(0.9))
+                            }
+
+                            Spacer().frame(height: 24)
+
+                            // Give it a try button
+                            Button {
+                                withAnimation(.easeOut(duration: 0.3)) {
+                                    showSwipeTutorial = false
+                                    swipeValidated = true
+                                }
+                                // Show double-tap hint after tutorial dismisses
+                                if !doubleTapValidated {
+                                    withAnimation(.easeIn(duration: 0.3).delay(0.5)) {
+                                        showDoubleTapHint = true
+                                    }
+                                }
+                            } label: {
+                                Text("Give it a try →")
+                                    .font(.custom("HelveticaNeue-Bold", size: 16))
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 32)
+                                    .padding(.vertical, 14)
+                                    .background(
+                                        LinearGradient.tsVibrant
+                                    )
+                                    .clipShape(Capsule())
+                            }
+
+                            Spacer()
+                        }
+                        .padding(.horizontal, 40)
+                    }
+                    .transition(.opacity)
+                }
+            }
+        )
         .onAppear {
             // Initialize with first topic
             loadTopic(index: 0)
@@ -1300,8 +1376,14 @@ struct PracticeSessionView: View {
             doubleTapDismissCount = 0
             nativeDoubleTapValidated = false
             nativeDismissCount = 0
+            swipeValidated = false
 
-            if !doubleTapValidated && doubleTapDismissCount < 3 {
+            // Show swipe tutorial first, then double-tap hint after tutorial is dismissed
+            if !swipeValidated {
+                withAnimation(.easeIn(duration: 0.4).delay(0.8)) {
+                    showSwipeTutorial = true
+                }
+            } else if !doubleTapValidated && doubleTapDismissCount < 3 {
                 withAnimation(.easeIn(duration: 0.3).delay(0.5)) {
                     showDoubleTapHint = true
                 }
@@ -1680,6 +1762,12 @@ struct PracticeSessionView: View {
         let swipedTag = topicPrompts[currentTopicIndex % topicPrompts.count].tag
         logInterest(topic: swipedTag, action: "swiped")
 
+        // Dismiss tutorial if still showing
+        if showSwipeTutorial {
+            withAnimation { showSwipeTutorial = false }
+            swipeValidated = true
+        }
+
         currentTopicIndex += 1
         withAnimation(.easeInOut(duration: 0.3)) {
             loadTopic(index: currentTopicIndex)
@@ -1816,7 +1904,7 @@ struct PracticeSessionView: View {
 
         // Log engagement on first message for this topic
         if messageCount == 1 {
-            let engagedTag = topicPool[currentTopicIndex % topicPool.count].tag
+            let engagedTag = topicPrompts[currentTopicIndex % topicPrompts.count].tag
             logInterest(topic: engagedTag, action: "engaged")
         }
 
