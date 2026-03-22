@@ -247,7 +247,12 @@ struct CoachPopulatedView: View {
                     .padding(.horizontal, 20)
                     .padding(.bottom, 20)
 
-                // ── 5. Practice Mode Card ────────────────────────
+                // ── 5. Talk (Pronunciation Drill) Card ──────────
+                talkCard
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 20)
+
+                // ── 6. Practice Mode Card ────────────────────────
                 practiceCard
                     .padding(.horizontal, 20)
                     .padding(.bottom, 20)
@@ -310,14 +315,6 @@ struct CoachPopulatedView: View {
             Spacer()
         }
         .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(colorScheme == .dark ? Color(hex: "#1E1E1E") : Color.white)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.tsBorder, lineWidth: 1)
-        )
     }
 
     // MARK: - 2. Score Overview
@@ -367,11 +364,13 @@ struct CoachPopulatedView: View {
                     Circle()
                         .trim(from: 0, to: progress)
                         .stroke(
-                            AngularGradient(
-                                gradient: Gradient(colors: [color.opacity(0.4), color]),
-                                center: .center,
-                                startAngle: .degrees(-90),
-                                endAngle: .degrees(-90 + 360 * Double(progress))
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    color.opacity(0.75),   // softer at top
+                                    color,                 // full saturation at bottom
+                                ]),
+                                startPoint: .top,
+                                endPoint: .bottom
                             ),
                             style: StrokeStyle(lineWidth: 6, lineCap: .round)
                         )
@@ -400,6 +399,7 @@ struct CoachPopulatedView: View {
 
     @State private var showFullReport = false
     @State private var showPracticeSession = false
+    @State private var showTalkDrill = false
 
     private var weeklySnapshot: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -511,11 +511,11 @@ struct CoachPopulatedView: View {
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.tsGrayCard)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color(UIColor.systemGray5).opacity(colorScheme == .dark ? 0 : 0.25))
-                )
+                .fill(Color.tsCard)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.tsBorder, lineWidth: 1)
         )
     }
 
@@ -560,12 +560,106 @@ struct CoachPopulatedView: View {
         )
     }
 
-    // MARK: - 5. Practice Mode Card
+    // MARK: - 5. Talk (Pronunciation Drill) Card
+
+    private var talkCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("💬")
+                    .font(.system(size: 16))
+                Text("TALK")
+                    .font(.custom("HelveticaNeue-Bold", size: 11))
+                    .foregroundColor(.tsSecondary)
+                    .kerning(1.2)
+                Spacer()
+            }
+
+            Text("Your R sound needs work. Try saying this:")
+                .font(.custom("HelveticaNeue", size: 14))
+                .foregroundColor(.tsLabel)
+                .lineSpacing(2)
+
+            // Word to practice
+            VStack(spacing: 12) {
+                Text("porta")
+                    .font(.custom("HelveticaNeue-Bold", size: 28))
+                    .foregroundColor(.tsLabel)
+                    .padding(.top, 8)
+
+                Text("(door)")
+                    .font(.custom("HelveticaNeue", size: 13))
+                    .foregroundColor(.tsSecondary)
+
+                HStack(spacing: 16) {
+                    Button { showTalkDrill = true } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "speaker.wave.2.fill")
+                                .font(.system(size: 14))
+                            Text("Hear it")
+                                .font(.custom("HelveticaNeue-Medium", size: 14))
+                        }
+                        .foregroundColor(.tsAccent)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
+                        .background(Color.tsAccent.opacity(0.1))
+                        .clipShape(Capsule())
+                    }
+
+                    Button { showTalkDrill = true } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "mic.fill")
+                                .font(.system(size: 14))
+                            Text("Try it")
+                                .font(.custom("HelveticaNeue-Medium", size: 14))
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
+                        .background(LinearGradient.tsVibrant)
+                        .clipShape(Capsule())
+                    }
+                }
+                .padding(.bottom, 8)
+            }
+            .frame(maxWidth: .infinity)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(colorScheme == .dark ? Color.tsCard.opacity(0.5) : Color.white.opacity(0.6))
+            )
+
+            HStack(spacing: 16) {
+                HStack(spacing: 4) {
+                    Image(systemName: "flame")
+                        .font(.system(size: 11))
+                    Text("3 sounds to work on")
+                        .font(.custom("HelveticaNeue", size: 11))
+                }
+                Spacer()
+                Text("Attempt 1/3")
+                    .font(.custom("HelveticaNeue-Medium", size: 11))
+            }
+            .foregroundColor(.tsSecondary)
+        }
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.tsCard)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.tsBorder, lineWidth: 1)
+        )
+        .sheet(isPresented: $showTalkDrill) {
+            TalkDrillView()
+        }
+    }
+
+    // MARK: - 6. Practice Mode Card
 
     private var practiceCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("💬")
+                Text("🎯")
                     .font(.system(size: 16))
                 Text("PRACTICE")
                     .font(.custom("HelveticaNeue-Bold", size: 11))
@@ -1098,7 +1192,7 @@ struct PracticeSessionView: View {
 
     private var doubleTapHintCard: some View {
         HStack(spacing: 12) {
-            Text("👆👆")
+            Text("👆")
                 .font(.system(size: 20))
 
             VStack(alignment: .leading, spacing: 2) {
@@ -1141,7 +1235,7 @@ struct PracticeSessionView: View {
 
     private var nativeHintCard: some View {
         HStack(spacing: 12) {
-            Text("👆👆")
+            Text("👆")
                 .font(.system(size: 20))
 
             VStack(alignment: .leading, spacing: 2) {
@@ -1681,6 +1775,261 @@ class PracticeTTSService: NSObject, AVAudioPlayerDelegate {
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         onComplete?()
         onComplete = nil
+    }
+}
+
+// MARK: - Talk Drill View (Pronunciation Practice)
+
+struct TalkDrillView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
+
+    @State private var currentAttempt = 0
+    @State private var scores: [Int] = []
+    @State private var isRecording = false
+    @State private var showResult = false
+    @State private var currentWordIndex = 0
+    private let ttsService = PracticeTTSService()
+
+    private let drillWords = [
+        (word: "porta", meaning: "door", tip: "Soften the R — think of a gentle 'h' sound at the back of your throat"),
+        (word: "carro", meaning: "car", tip: "The double R is stronger — like a soft gargle, not the English R"),
+        (word: "correr", meaning: "to run", tip: "Both Rs here — the middle one is soft, the final one fades out"),
+    ]
+
+    private var currentDrill: (word: String, meaning: String, tip: String) {
+        drillWords[currentWordIndex % drillWords.count]
+    }
+
+    var body: some View {
+        NavigationView {
+            ZStack {
+                TSGradientBackground().ignoresSafeArea()
+
+                if currentAttempt >= 3 {
+                    completedView
+                } else if showResult {
+                    resultView
+                } else {
+                    drillView
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button { dismiss() } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 14, weight: .semibold))
+                            Text("Done")
+                                .font(.custom("HelveticaNeue-Medium", size: 15))
+                        }
+                        .foregroundColor(.tsAccent)
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Text("Attempt \(min(currentAttempt + 1, 3))/3")
+                        .font(.custom("HelveticaNeue-Bold", size: 13))
+                        .foregroundColor(.tsSecondary)
+                }
+            }
+        }
+    }
+
+    private var drillView: some View {
+        VStack(spacing: 32) {
+            Spacer()
+
+            Text("YOUR R SOUND")
+                .font(.custom("HelveticaNeue-Bold", size: 11))
+                .foregroundColor(.tsSecondary)
+                .kerning(1.2)
+
+            VStack(spacing: 8) {
+                Text(currentDrill.word)
+                    .font(.custom("HelveticaNeue-Bold", size: 44))
+                    .foregroundColor(.tsLabel)
+                Text("(\(currentDrill.meaning))")
+                    .font(.custom("HelveticaNeue", size: 16))
+                    .foregroundColor(.tsSecondary)
+            }
+
+            Text("💡 \(currentDrill.tip)")
+                .font(.custom("HelveticaNeue", size: 14))
+                .foregroundColor(.tsSecondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+                .lineSpacing(2)
+
+            Spacer()
+
+            VStack(spacing: 16) {
+                Button {
+                    ttsService.speak(text: currentDrill.word, language: "pt-BR") {}
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "speaker.wave.2.fill")
+                            .font(.system(size: 16))
+                        Text("Hear native")
+                            .font(.custom("HelveticaNeue-Medium", size: 16))
+                    }
+                    .foregroundColor(.tsAccent)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(Color.tsAccent.opacity(0.1))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+
+                Button {
+                    isRecording = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        isRecording = false
+                        let score = Int.random(in: 65...92)
+                        scores.append(score)
+                        showResult = true
+                    }
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: isRecording ? "stop.circle.fill" : "mic.fill")
+                            .font(.system(size: 16))
+                        Text(isRecording ? "Recording..." : "Record yourself")
+                            .font(.custom("HelveticaNeue-Bold", size: 16))
+                    }
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(isRecording ? Color.red.opacity(0.8) : Color.tsAccent)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .disabled(isRecording)
+            }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 40)
+        }
+    }
+
+    private var resultView: some View {
+        VStack(spacing: 24) {
+            Spacer()
+
+            let score = scores.last ?? 0
+            ZStack {
+                Circle()
+                    .stroke(Color.tsSecondary.opacity(0.12), lineWidth: 8)
+                    .frame(width: 120, height: 120)
+                Circle()
+                    .trim(from: 0, to: CGFloat(score) / 100.0)
+                    .stroke(
+                        score >= 80 ? Color(hex: "#34C759") : (score >= 60 ? Color(hex: "#FF9500") : Color.red),
+                        style: StrokeStyle(lineWidth: 8, lineCap: .round)
+                    )
+                    .frame(width: 120, height: 120)
+                    .rotationEffect(.degrees(-90))
+
+                VStack(spacing: 2) {
+                    Text("\(score)")
+                        .font(.custom("HelveticaNeue-Bold", size: 36))
+                        .foregroundColor(.tsLabel)
+                    Text("/ 100")
+                        .font(.custom("HelveticaNeue", size: 13))
+                        .foregroundColor(.tsSecondary)
+                }
+            }
+
+            Text("\"\(currentDrill.word)\"")
+                .font(.custom("HelveticaNeue-Bold", size: 24))
+                .foregroundColor(.tsLabel)
+
+            Text(score >= 80
+                 ? "Nice! Your R is getting softer. 👏"
+                 : "Almost — try relaxing your tongue more. The R should feel like a breath, not a tap.")
+                .font(.custom("HelveticaNeue", size: 15))
+                .foregroundColor(.tsSecondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+                .lineSpacing(2)
+
+            Spacer()
+
+            Button {
+                showResult = false
+                currentAttempt += 1
+                if currentAttempt < 3 {
+                    currentWordIndex += 1
+                }
+            } label: {
+                Text(currentAttempt < 2 ? "Try next word →" : "See results")
+                    .font(.custom("HelveticaNeue-Bold", size: 16))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(LinearGradient.tsVibrant)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 40)
+        }
+    }
+
+    private var completedView: some View {
+        VStack(spacing: 24) {
+            Spacer()
+
+            Text("💪")
+                .font(.system(size: 56))
+
+            Text("Nice work!")
+                .font(.custom("HelveticaNeue-Bold", size: 24))
+                .foregroundColor(.tsLabel)
+
+            HStack(spacing: 20) {
+                ForEach(0..<scores.count, id: \.self) { i in
+                    VStack(spacing: 4) {
+                        Text("\(scores[i])")
+                            .font(.custom("HelveticaNeue-Bold", size: 22))
+                            .foregroundColor(scores[i] >= 80 ? Color(hex: "#34C759") : Color(hex: "#FF9500"))
+                        Text(drillWords[i % drillWords.count].word)
+                            .font(.custom("HelveticaNeue", size: 12))
+                            .foregroundColor(.tsSecondary)
+                    }
+                    if i < scores.count - 1 {
+                        Image(systemName: "arrow.right")
+                            .font(.system(size: 12))
+                            .foregroundColor(.tsSecondary)
+                    }
+                }
+            }
+
+            let improving = scores.count >= 2 && scores.last! > scores.first!
+            Text(improving
+                 ? "You're improving! Each word got a little better."
+                 : "Keep at it — the R sound takes time. You'll get there.")
+                .font(.custom("HelveticaNeue", size: 15))
+                .foregroundColor(.tsSecondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+                .lineSpacing(2)
+
+            Text("Next time we'll try different words — same R sound, fresh start.")
+                .font(.custom("HelveticaNeue", size: 13))
+                .foregroundColor(.tsSecondary)
+                .italic()
+                .padding(.horizontal, 40)
+
+            Spacer()
+
+            Button { dismiss() } label: {
+                Text("Done")
+                    .font(.custom("HelveticaNeue-Bold", size: 16))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(LinearGradient.tsVibrant)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 40)
+        }
     }
 }
 
