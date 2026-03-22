@@ -315,6 +315,23 @@ struct CoachPopulatedView: View {
             Spacer()
         }
         .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color.tsAccent.opacity(colorScheme == .dark ? 0.18 : 0.08),
+                            Color.tsAccentTeal.opacity(colorScheme == .dark ? 0.10 : 0.05),
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.tsAccent.opacity(colorScheme == .dark ? 0.18 : 0.12), lineWidth: 1)
+        )
     }
 
     // MARK: - 2. Score Overview
@@ -1695,6 +1712,19 @@ struct PracticeMessage: Identifiable {
 class PracticeTTSService: NSObject, AVAudioPlayerDelegate {
     private var audioPlayer: AVAudioPlayer?
     private var onComplete: (() -> Void)?
+    private var audioSessionReady = false
+
+    override init() {
+        super.init()
+        // Set up audio session once so playback doesn't clip the beginning
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+            try AVAudioSession.sharedInstance().setActive(true)
+            audioSessionReady = true
+        } catch {
+            NSLog("PracticeTTS: audio session setup failed: \(error)")
+        }
+    }
 
     private func googleLocale(for language: String) -> String {
         let code = String(language.prefix(2))
@@ -1759,11 +1789,16 @@ class PracticeTTSService: NSObject, AVAudioPlayerDelegate {
 
             DispatchQueue.main.async {
                 do {
-                    try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
-                    try AVAudioSession.sharedInstance().setActive(true)
+                    // Re-activate session if needed
+                    if !self.audioSessionReady {
+                        try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+                        try AVAudioSession.sharedInstance().setActive(true)
+                        self.audioSessionReady = true
+                    }
 
                     self.audioPlayer = try AVAudioPlayer(data: audioData)
                     self.audioPlayer?.delegate = self
+                    self.audioPlayer?.prepareToPlay()  // pre-buffer to avoid clipping
                     self.audioPlayer?.play()
                 } catch {
                     completion()
@@ -1775,6 +1810,58 @@ class PracticeTTSService: NSObject, AVAudioPlayerDelegate {
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         onComplete?()
         onComplete = nil
+    }
+
+    // MARK: - Fetch audio data without playing (for pre-caching)
+
+    func fetchAudio(text: String, language: String, completion: @escaping (Data?) -> Void) {
+        let apiKey = APIConfig.googleTTSAPIKey
+        guard let url = URL(string: "\(APIConfig.googleTTSBaseURL)/text:synthesize?key=\(apiKey)") else {
+            completion(nil)
+            return
+        }
+
+        let locale = googleLocale(for: language)
+        let body: [String: Any] = [
+            "input": ["text": text],
+            "voice": ["languageCode": locale, "ssmlGender": "FEMALE"],
+            "audioConfig": ["audioEncoding": "MP3", "speakingRate": 0.92, "pitch": 0.0]
+        ]
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        request.timeoutInterval = 15
+
+        URLSession.shared.dataTask(with: request) { data, _, _ in
+            guard let data = data,
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let audioContent = json["audioContent"] as? String,
+                  let audioData = Data(base64Encoded: audioContent) else {
+                DispatchQueue.main.async { completion(nil) }
+                return
+            }
+            DispatchQueue.main.async { completion(audioData) }
+        }.resume()
+    }
+
+    // MARK: - Play from cached data (instant, no network)
+
+    func playData(_ data: Data) {
+        do {
+            if !audioSessionReady {
+                try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+                try AVAudioSession.sharedInstance().setActive(true)
+                audioSessionReady = true
+            }
+            audioPlayer = try AVAudioPlayer(data: data)
+            audioPlayer?.delegate = self
+            audioPlayer?.prepareToPlay()
+            audioPlayer?.play()
+        } catch {
+            NSLog("PracticeTTS: playData error: \(error)")
+        }
     }
 }
 
@@ -1789,6 +1876,7 @@ struct TalkDrillView: View {
     @State private var isRecording = false
     @State private var showResult = false
     @State private var currentWordIndex = 0
+    @State private var cachedAudio: [String: Data] = [:]  // word → MP3 data
     private let ttsService = PracticeTTSService()
 
     private let drillWords = [
@@ -1833,6 +1921,28 @@ struct TalkDrillView: View {
                         .foregroundColor(.tsSecondary)
                 }
             }
+            .onAppear { prefetchAllAudio() }
+        }
+    }
+
+    // MARK: - Pre-fetch Audio
+
+    private func prefetchAllAudio() {
+        for drill in drillWords {
+            ttsService.fetchAudio(text: drill.word, language: "pt-BR") { data in
+                if let data = data {
+                    cachedAudio[drill.word] = data
+                    NSLog("🔊 [Drill] pre-cached: \(drill.word) (\(data.count) bytes)")
+                }
+            }
+        }
+    }
+
+    private func playWord(_ word: String) {
+        if let cached = cachedAudio[word] {
+            ttsService.playData(cached)
+        } else {
+            ttsService.speak(text: word, language: "pt-BR") {}
         }
     }
 
@@ -1865,7 +1975,7 @@ struct TalkDrillView: View {
 
             VStack(spacing: 16) {
                 Button {
-                    ttsService.speak(text: currentDrill.word, language: "pt-BR") {}
+                    playWord(currentDrill.word)
                 } label: {
                     HStack(spacing: 8) {
                         Image(systemName: "speaker.wave.2.fill")
