@@ -1093,6 +1093,7 @@ struct PracticeSessionView: View {
     @State private var recordingSeconds = 0
     @State private var recordingTimer: Timer?
     @State private var revealedText: Set<UUID> = []      // messages whose text has faded in
+    @State private var audioTriggered: Set<UUID> = []    // messages that have already started audio
     @State private var playingAudio: UUID?                // message currently playing audio
     private let ttsService = PracticeTTSService()
     @AppStorage("practice_doubletap_validated") private var doubleTapValidated = false
@@ -1544,8 +1545,9 @@ struct PracticeSessionView: View {
                         .fill(bubbleColor(for: message.role))
                 )
                 .onAppear {
-                    // Auto-play audio for new Sol messages
-                    if message.role == .sol && !revealedText.contains(message.id) {
+                    // Auto-play audio for new Sol messages — only once per message
+                    if message.role == .sol && !revealedText.contains(message.id) && !audioTriggered.contains(message.id) && message.text != "..." {
+                        audioTriggered.insert(message.id)
                         playSolAudioThenReveal(message: message)
                     }
                 }
@@ -1866,7 +1868,11 @@ struct PracticeSessionView: View {
         conversationService.stopRecording()
     }
 
+    @State private var isSendingRecording = false
+
     private func stopAndSendRecording() {
+        guard !isSendingRecording else { return }  // prevent double-fire
+        isSendingRecording = true
         recordingTimer?.invalidate()
         recordingTimer = nil
         recordingSeconds = 0
@@ -1894,6 +1900,7 @@ struct PracticeSessionView: View {
 
             // Get Sol's real response
             fetchSolResponse(userMessageId: msg.id)
+            isSendingRecording = false
         }
     }
 
