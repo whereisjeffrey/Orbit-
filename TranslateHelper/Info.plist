@@ -63,6 +63,6 @@
 		</dict>
 	</dict>
 	<key>CFBundleIdentifier</key>
-	<string>I don&apos;t see anything in the bottom of Xcode. So I do have a message inside the TranslateHelper keyboard. Error five. Couldn&apos;t start recording. Five. Return or return false. Mic may be in use by another app.</string>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 </dict>
 </plist>

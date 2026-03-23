@@ -46,6 +46,7 @@ class KeyboardViewController: UIInputViewController {
     private var wingmanOnboardingShown: Bool = false
     private var wingmanOptions: [TalkSwitchAPI.WingmanOption] = []
     private var isLoadingWingman: Bool = false
+    private var currentWingmanIndex: Int = 0
 
     // MARK: - UI Elements
 
@@ -900,12 +901,16 @@ class KeyboardViewController: UIInputViewController {
         setupNotesCard()
         contentStack.addArrangedSubview(notesCard)
 
-        // === Wingman toggle (only visible in flirty mode) ===
+        // === Tone selector ===
+        setupToneStack()
+        contentStack.addArrangedSubview(toneStack)
+
+        // === Wingman toggle (below tone tabs, only visible in flirty mode) ===
         setupWingmanToggle()
         contentStack.addArrangedSubview(wingmanToggle)
         wingmanToggle.isHidden = true
 
-        // === Wingman options cards (replaces output when in wingman mode) ===
+        // === Wingman options cards ===
         setupWingmanOptionsStack()
         contentStack.addArrangedSubview(wingmanOptionsStack)
         wingmanOptionsStack.isHidden = true
@@ -914,10 +919,6 @@ class KeyboardViewController: UIInputViewController {
         setupWingmanOnboarding()
         contentStack.addArrangedSubview(wingmanOnboardingCard)
         wingmanOnboardingCard.isHidden = true
-
-        // === Tone selector ===
-        setupToneStack()
-        contentStack.addArrangedSubview(toneStack)
 
         // === Action buttons ===
         setupActionStack()
@@ -1369,7 +1370,7 @@ class KeyboardViewController: UIInputViewController {
             guard let btn = v as? UIButton else { continue }
             let isActive = (i == 0 && !isWingmanMode) || (i == 1 && isWingmanMode)
             if isActive {
-                btn.backgroundColor = UIColor.systemOrange
+                btn.backgroundColor = UIColor(red: 1.0, green: 0.55, blue: 0.0, alpha: 0.35)
                 btn.setTitleColor(.white, for: .normal)
             } else {
                 btn.backgroundColor = cardBg
@@ -1430,10 +1431,10 @@ class KeyboardViewController: UIInputViewController {
     }
 
     private func setupWingmanOnboarding() {
-        wingmanOnboardingCard.backgroundColor = UIColor.systemOrange.withAlphaComponent(0.12)
+        wingmanOnboardingCard.backgroundColor = wingmanOrange.withAlphaComponent(0.1)
         wingmanOnboardingCard.layer.cornerRadius = 12
         wingmanOnboardingCard.layer.borderWidth = 1
-        wingmanOnboardingCard.layer.borderColor = UIColor.systemOrange.withAlphaComponent(0.25).cgColor
+        wingmanOnboardingCard.layer.borderColor = wingmanOrange.withAlphaComponent(0.2).cgColor
         wingmanOnboardingCard.translatesAutoresizingMaskIntoConstraints = false
 
         let label = UILabel()
@@ -1466,7 +1467,7 @@ class KeyboardViewController: UIInputViewController {
         dismissBtn.setTitle("Got it", for: .normal)
         dismissBtn.titleLabel?.font = UIFont.systemFont(ofSize: 13, weight: .semibold)
         dismissBtn.setTitleColor(.white, for: .normal)
-        dismissBtn.backgroundColor = UIColor.systemOrange.withAlphaComponent(0.4)
+        dismissBtn.backgroundColor = wingmanOrange.withAlphaComponent(0.3)
         dismissBtn.layer.cornerRadius = 8
         dismissBtn.translatesAutoresizingMaskIntoConstraints = false
         dismissBtn.addTarget(self, action: #selector(dismissWingmanOnboarding), for: .touchUpInside)
@@ -1545,19 +1546,22 @@ class KeyboardViewController: UIInputViewController {
         }
     }
 
+    /// Bright vivid orange for Wingman accents
+    private let wingmanOrange = UIColor(red: 1.0, green: 0.55, blue: 0.0, alpha: 1.0)
+
     private func buildWingmanOptionCard(option: TalkSwitchAPI.WingmanOption, index: Int) -> UIView {
         let card = UIView()
         card.backgroundColor = cardBg
         card.layer.cornerRadius = 12
         card.layer.borderWidth = 1
-        card.layer.borderColor = UIColor.systemOrange.withAlphaComponent(0.2).cgColor
+        card.layer.borderColor = UIColor(red: 1.0, green: 0.55, blue: 0.0, alpha: 0.25).cgColor
         card.translatesAutoresizingMaskIntoConstraints = false
 
         // Vibe tag
         let vibeLabel = UILabel()
         vibeLabel.text = option.vibe.uppercased()
         vibeLabel.font = UIFont.systemFont(ofSize: 9, weight: .bold)
-        vibeLabel.textColor = UIColor.systemOrange
+        vibeLabel.textColor = wingmanOrange
         vibeLabel.translatesAutoresizingMaskIntoConstraints = false
         card.addSubview(vibeLabel)
 
@@ -1583,7 +1587,7 @@ class KeyboardViewController: UIInputViewController {
         let copyBtn = UIButton(type: .system)
         copyBtn.setTitle("Use this", for: .normal)
         copyBtn.titleLabel?.font = UIFont.systemFont(ofSize: 11, weight: .semibold)
-        copyBtn.setTitleColor(UIColor.systemOrange, for: .normal)
+        copyBtn.setTitleColor(wingmanOrange, for: .normal)
         copyBtn.translatesAutoresizingMaskIntoConstraints = false
         copyBtn.tag = index
         copyBtn.addTarget(self, action: #selector(wingmanOptionTapped(_:)), for: .touchUpInside)
