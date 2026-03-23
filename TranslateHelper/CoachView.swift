@@ -1083,6 +1083,7 @@ struct PracticeSessionView: View {
     @State private var recordingTimer: Timer?
     @State private var revealedText: Set<UUID> = []      // messages whose text has faded in
     @State private var audioTriggered: Set<UUID> = []    // messages that have already started audio
+    @State private var isPlayingAnyAudio = false         // global lock — only one audio at a time
     @State private var playingAudio: UUID?                // message currently playing audio
     private let ttsService = PracticeTTSService()
     @AppStorage("practice_doubletap_validated") private var doubleTapValidated = false
@@ -1543,9 +1544,15 @@ struct PracticeSessionView: View {
                         .fill(bubbleColor(for: message.role))
                 )
                 .onAppear {
-                    // Auto-play audio for new Sol messages — only once per message
-                    if message.role == .sol && !revealedText.contains(message.id) && !audioTriggered.contains(message.id) && message.text != "..." {
+                    // Auto-play audio for new Sol messages — only once, with global lock
+                    if message.role == .sol
+                        && !revealedText.contains(message.id)
+                        && !audioTriggered.contains(message.id)
+                        && !isPlayingAnyAudio
+                        && message.text != "..." {
                         audioTriggered.insert(message.id)
+                        isPlayingAnyAudio = true
+                        NSLog("🔊 [Practice] triggering audio for: \(message.text.prefix(30))")
                         playSolAudioThenReveal(message: message)
                     }
                 }
@@ -1706,6 +1713,10 @@ struct PracticeSessionView: View {
 
         let recentBuffer = recentTopicTags.isEmpty ? "" : "Do NOT generate a topic related to these recent tags (avoid repeats): \(recentTopicTags.joined(separator: ", ")). "
 
+        // Load persistent topic history — never repeat a past conversation
+        let topicHistory = loadTopicHistory()
+        let historyContext = topicHistory.isEmpty ? "" : "These topics have ALREADY been discussed in past sessions — do NOT repeat any of them:\n\(topicHistory.suffix(20).joined(separator: "\n"))\n"
+
         let hintText = showSwipeRightHint
             ? "💡 Sol speaks like a local — casual, full of slang. Respond naturally. Swipe right → for a different topic."
             : showSwipeLeftHint
@@ -1729,15 +1740,19 @@ struct PracticeSessionView: View {
 
         \(interestContext)
         \(recentBuffer)
+        \(historyContext)
 
-        The user lives in \(userCity). Reference the city naturally if relevant.
+        The user lives in \(userCity). Reference the city naturally if it fits — but don't force it.
+        Not every conversation needs to be about the city.
         Speak naturally in the target language. Use local slang and contractions.
         2-3 sentences max. Ask a question they can easily answer.
 
-        Also provide a 1-word topic tag for tracking (e.g. "food", "music", "dating", "work", "culture").
+        Also provide:
+        - A 1-word topic tag (e.g. "food", "music", "dating", "work", "culture")
+        - A brief 1-line summary of what you asked (in English, for our records)
 
         Respond ONLY with JSON:
-        {"message": "your opening in target language", "translation": "English translation", "notes": "brief slang/vocab notes", "topic_tag": "one_word_tag"}
+        {"message": "your opening in target language", "translation": "English translation", "notes": "brief slang/vocab notes", "topic_tag": "one_word_tag", "summary": "brief English summary of the topic"}
         """
 
         // Show loading placeholder with Sol avatar
@@ -1767,10 +1782,14 @@ struct PracticeSessionView: View {
                 solNotes = sol.translationNotes
                 slangNotes = sol.slangNotes
 
-                // Track topic to prevent repeats — keep last 5
+                // Track topic to prevent repeats
                 let tag = sol.translationNotes?.split(separator: " ").first.map(String.init) ?? "general"
                 recentTopicTags.append(tag)
                 if recentTopicTags.count > 5 { recentTopicTags.removeFirst() }
+
+                // Save summary to persistent history — never repeat this topic
+                let summary = sol.translation ?? sol.text
+                logTopicHistory(String(summary.prefix(100)))
             } else {
                 solText = "E aí! Tudo bem? Me conta — como tá sendo o dia hoje?"
                 solTranslation = "Hey! Everything good? Tell me — how's your day going?"
@@ -1818,6 +1837,34 @@ struct PracticeSessionView: View {
         }
     }
 
+    /// Saves a one-line topic summary to persistent history — GPT uses this to never repeat topics
+    private func logTopicHistory(_ summary: String) {
+        let appGroup = "group.com.jeff.translatehelper"
+        guard let dir = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup) else { return }
+
+        let file = dir.appendingPathComponent("topic_history.json")
+        var history: [String] = []
+        if let data = try? Data(contentsOf: file),
+           let existing = try? JSONSerialization.jsonObject(with: data) as? [String] {
+            history = existing
+        }
+        history.append(summary)
+        if history.count > 50 { history = Array(history.suffix(50)) } // keep last 50
+        if let data = try? JSONSerialization.data(withJSONObject: history) {
+            try? data.write(to: file)
+        }
+    }
+
+    /// Loads topic history for the "don't repeat" prompt context
+    private func loadTopicHistory() -> [String] {
+        let appGroup = "group.com.jeff.translatehelper"
+        guard let dir = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup) else { return [] }
+        let file = dir.appendingPathComponent("topic_history.json")
+        guard let data = try? Data(contentsOf: file),
+              let history = try? JSONSerialization.jsonObject(with: data) as? [String] else { return [] }
+        return history
+    }
+
     private func logInterest(topic: String, action: String) {
         let appGroup = "group.com.jeff.translatehelper"
         guard let dir = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup) else { return }
@@ -1851,12 +1898,12 @@ struct PracticeSessionView: View {
     private func playSolAudioThenReveal(message: PracticeMessage) {
         playingAudio = message.id
         ttsService.speak(text: message.text, language: "pt-BR") { [self] in
-            // Audio finished — fade text in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 withAnimation(.easeIn(duration: 0.8)) {
                     revealedText.insert(message.id)
                 }
                 playingAudio = nil
+                isPlayingAnyAudio = false  // release global lock
             }
         }
     }
