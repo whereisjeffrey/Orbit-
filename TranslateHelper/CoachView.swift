@@ -1511,18 +1511,6 @@ struct PracticeSessionView: View {
                                 .foregroundColor(.tsLabel)
                                 .lineSpacing(3)
                                 .opacity(textVisible ? 1 : 0)
-                                .overlay(
-                                    !textVisible ?
-                                        HStack(spacing: 6) {
-                                            Image(systemName: "waveform")
-                                                .font(.system(size: 14))
-                                                .foregroundColor(.tsAccent)
-                                            Text("Listening...")
-                                                .font(.custom("HelveticaNeue", size: 13))
-                                                .foregroundColor(.tsSecondary)
-                                        }
-                                    : nil
-                                )
                         }
                     }
 

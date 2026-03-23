@@ -67,11 +67,13 @@ class DictateViewController: UIViewController {
     }
 
     // MARK: - UI elements
-    private let iconCircle      = UIView()
-    private let iconImageView   = UIImageView()
-    private let timerLabel      = UILabel()
-    private let sendButton      = UIButton(type: .custom)
-    private let cancelButton    = UIButton(type: .system)
+    private let iconCircle          = UIView()
+    private let iconImageView       = UIImageView()
+    private let timerLabel          = UILabel()
+    private let sendButton          = UIButton(type: .custom)
+    private let cancelButton        = UIButton(type: .system)
+    /// Subtle blue footer glow — visible only while actively recording.
+    private let recordingFooterView = UIView()
 
     // Toggle (SwiftUI hosted)
     private var toggleHost: UIHostingController<DictateLanguagePill>?
@@ -180,6 +182,12 @@ class DictateViewController: UIViewController {
         timerLabel.textAlignment = .center
         view.addSubview(timerLabel)
 
+        // ── Recording footer glow (behind send button, below the fold) ────
+        recordingFooterView.translatesAutoresizingMaskIntoConstraints = false
+        recordingFooterView.backgroundColor = UIColor(red: 0.0, green: 0.6, blue: 1.0, alpha: 0.10)
+        recordingFooterView.alpha = 0   // hidden until recording starts
+        view.addSubview(recordingFooterView)
+
         // ── Send to Keyboard button ───────────────────────────────────
         sendButton.translatesAutoresizingMaskIntoConstraints = false
         var config = UIButton.Configuration.filled()
@@ -229,6 +237,12 @@ class DictateViewController: UIViewController {
             sendButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             sendButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             sendButton.heightAnchor.constraint(equalToConstant: 58),
+
+            // Footer glow — spans from just above the send button to the very bottom
+            recordingFooterView.topAnchor.constraint(equalTo: sendButton.topAnchor, constant: -24),
+            recordingFooterView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            recordingFooterView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            recordingFooterView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
 
         // Show/hide based on onboarding state
@@ -505,16 +519,18 @@ class DictateViewController: UIViewController {
         stopSonarRings()
         stopElapsedTimer()
 
+        let goldYellow = UIColor(red: 1.0, green: 0.843, blue: 0.0, alpha: 1.0) // #FFD700
         let sparkCfg = UIImage.SymbolConfiguration(pointSize: 44, weight: .medium)
-            .applying(UIImage.SymbolConfiguration(paletteColors: [.systemYellow, .systemOrange]))
+            .applying(UIImage.SymbolConfiguration(hierarchicalColor: goldYellow))
         iconImageView.image = UIImage(systemName: "sparkles", withConfiguration: sparkCfg)
+        iconImageView.tintColor = goldYellow
 
-        timerLabel.font = .systemFont(ofSize: 18, weight: .medium)
-        timerLabel.text = "Processing"
-
+        // Hide the timer label — just the stars are enough
         sendButton.isEnabled = false
         UIView.animate(withDuration: 0.3) {
             self.sendButton.alpha = 0
+            self.timerLabel.alpha = 0
+            self.recordingFooterView.alpha = 0
             self.iconCircle.backgroundColor = UIColor.white.withAlphaComponent(0.12)
         }
 
@@ -613,7 +629,10 @@ class DictateViewController: UIViewController {
         isRecording = true
 
         startElapsedTimer()
-        UIView.animate(withDuration: 0.3) { self.timerLabel.alpha = 1 }
+        UIView.animate(withDuration: 0.5) {
+            self.timerLabel.alpha = 1
+            self.recordingFooterView.alpha = 1
+        }
 
         NSLog("🎤 [Dictate] recording started — speaking=\(speakingLanguage)")
     }
