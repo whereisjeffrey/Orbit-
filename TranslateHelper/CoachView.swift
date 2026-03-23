@@ -2589,9 +2589,10 @@ struct PracticeSessionView: View {
         }
 
         // No preloaded topic — generate now (first load)
+        // Show "..." placeholder but do NOT add to revealedText — it stays as the
+        // "Thinking..." indicator naturally (line 2284 checks text == "...").
         let loadingMsg = PracticeMessage(role: .sol, text: "...")
         messages.insert(loadingMsg, at: 0)
-        revealedText.insert(loadingMsg.id)
 
         conversationService.getSolResponse(
             conversationHistory: [(role: "user", text: openingPrompt)],
@@ -2601,17 +2602,18 @@ struct PracticeSessionView: View {
         ) { [self] response in
             isLoadingTopic = false
 
-            // Build the real message BEFORE modifying the array — single atomic swap
             let solMsg = buildSolMessage(from: response)
 
-            // Replace loading placeholder with real message in one pass
+            // Swap the placeholder's text in-place so SwiftUI sees ONE message change,
+            // not a remove + insert. Keep the same array slot — no layout thrash.
             if let idx = messages.firstIndex(where: { $0.id == loadingMsg.id }) {
                 messages[idx] = solMsg
             } else {
                 messages.insert(solMsg, at: 0)
             }
-            revealedText.remove(loadingMsg.id)
 
+            // Text is NOT in revealedText yet, so it starts hidden (waveform shows).
+            // playSolAudioThenReveal handles the single reveal after audio.
             playSolAudioThenReveal(message: solMsg)
 
             // Add slang notes after a delay (skip already-known phrases)
@@ -2842,14 +2844,16 @@ struct PracticeSessionView: View {
 
     // MARK: - Sol Audio Playback
 
-    /// Play audio first, then fade text in after it completes.
-    /// Guarded — will not fire if already playing.
+    /// Play audio first, then fade text in ~1.5s before audio ends.
+    /// Guarded — will not fire if already playing. Each message gets ONE reveal.
     private func playSolAudioThenReveal(message: PracticeMessage) {
+        let msgId = message.id
+
         guard !isPlayingSolAudio else {
             NSLog("🔊 [Practice] BLOCKED — already playing audio, queuing reveal for: \(message.text.prefix(30))")
-            // Queue: reveal text after current audio finishes (don't force it now)
-            let msgId = message.id
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            // Queue: reveal text after current audio finishes — but only if
+            // nothing else revealed it first.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [self] in
                 if !revealedText.contains(msgId) {
                     withAnimation(.easeIn(duration: 1.0)) {
                         _ = revealedText.insert(msgId)
@@ -2859,20 +2863,26 @@ struct PracticeSessionView: View {
             return
         }
         isPlayingSolAudio = true
-        playingAudio = message.id
+        playingAudio = msgId
         NSLog("🔊 [Practice] playing audio for: \(message.text.prefix(40))")
 
         ttsService.speak(
             text: message.text,
             language: targetLang,
             nearlyDone: { [self] in
-                // Begins 1.5s before audio ends — warm, unhurried crossfade
+                // Guard: only reveal once. If the safety timer already did it, skip.
+                guard !revealedText.contains(msgId) else { return }
                 withAnimation(.easeIn(duration: 1.5)) {
-                    _ = revealedText.insert(message.id)
+                    _ = revealedText.insert(msgId)
                 }
             },
             completion: { [self] in
-                // Audio finished — just clean up flags; text is already fading in
+                // Audio finished — ensure text is visible (safety net for very short clips)
+                if !revealedText.contains(msgId) {
+                    withAnimation(.easeIn(duration: 0.5)) {
+                        _ = revealedText.insert(msgId)
+                    }
+                }
                 playingAudio = nil
                 isPlayingSolAudio = false
             }
@@ -2924,6 +2934,8 @@ struct PracticeSessionView: View {
 
         // Transcribe the actual recording
         conversationService.transcribe(language: targetLang) { [self] transcription in
+            defer { isSendingRecording2 = false }  // Always reset, even on failure
+
             guard let text = transcription, !text.isEmpty else {
                 NSLog("🎤 [Practice] transcription failed or empty")
                 return
@@ -2944,7 +2956,6 @@ struct PracticeSessionView: View {
 
             // Get Sol's real response
             fetchSolResponse(userMessageId: msg.id)
-            isSendingRecording2 = false
         }
     }
 
@@ -3252,6 +3263,15 @@ class PracticeTTSService: NSObject, AVAudioPlayerDelegate {
     /// Speaking rate based on user level
     var speakingRate: Double = 0.95  // default B1-B2
 
+    /// Thread-safe nearlyDone firing — guarantees it only fires ONCE per speak() call.
+    private func fireNearlyDoneOnce() {
+        guard let cb = onNearlyDone else { return }
+        onNearlyDone = nil  // Clear BEFORE calling to prevent re-entry
+        nearlyDoneTimer?.invalidate()
+        nearlyDoneTimer = nil
+        cb()
+    }
+
     func speak(text: String, language: String, nearlyDone: (() -> Void)? = nil, completion: @escaping () -> Void) {
         // Cancel any in-progress audio before starting new one
         audioPlayer?.stop()
@@ -3264,7 +3284,7 @@ class PracticeTTSService: NSObject, AVAudioPlayerDelegate {
 
         let apiKey = APIConfig.googleTTSAPIKey
         guard let url = URL(string: "\(APIConfig.googleTTSBaseURL)/text:synthesize?key=\(apiKey)") else {
-            nearlyDone?()
+            fireNearlyDoneOnce()
             completion()
             return
         }
@@ -3275,7 +3295,7 @@ class PracticeTTSService: NSObject, AVAudioPlayerDelegate {
             "input": ["text": text],
             "voice": [
                 "languageCode": locale,
-                "name": "\(locale)-Neural2-A",  // Neural2 — better than WaveNet, same price
+                "name": "\(locale)-Neural2-A",
                 "ssmlGender": "FEMALE"
             ],
             "audioConfig": [
@@ -3296,7 +3316,7 @@ class PracticeTTSService: NSObject, AVAudioPlayerDelegate {
 
             if error != nil {
                 DispatchQueue.main.async {
-                    nearlyDone?()
+                    self.fireNearlyDoneOnce()
                     completion()
                 }
                 return
@@ -3307,7 +3327,7 @@ class PracticeTTSService: NSObject, AVAudioPlayerDelegate {
                   let audioContent = json["audioContent"] as? String,
                   let audioData = Data(base64Encoded: audioContent) else {
                 DispatchQueue.main.async {
-                    nearlyDone?()
+                    self.fireNearlyDoneOnce()
                     completion()
                 }
                 return
@@ -3315,7 +3335,6 @@ class PracticeTTSService: NSObject, AVAudioPlayerDelegate {
 
             DispatchQueue.main.async {
                 do {
-                    // Re-activate session if needed
                     if !self.audioSessionReady {
                         try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
                         try AVAudioSession.sharedInstance().setActive(true)
@@ -3325,27 +3344,24 @@ class PracticeTTSService: NSObject, AVAudioPlayerDelegate {
                     self.audioPlayer = try AVAudioPlayer(data: audioData)
                     self.audioPlayer?.delegate = self
                     self.audioPlayer?.prepareToPlay()
-                    // Small delay to let audio hardware fully activate
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
                         self.audioPlayer?.play()
 
-                        // Schedule nearlyDone callback 1.5 seconds before audio finishes
-                        if let duration = self.audioPlayer?.duration, let nearlyDone = self.onNearlyDone {
-                            let fadeDelay = max(0, duration - 1.5)  // fire 1.5s before end
+                        // Schedule nearlyDone 1.5s before audio ends
+                        if let duration = self.audioPlayer?.duration, self.onNearlyDone != nil {
+                            let fadeDelay = max(0, duration - 1.5)
                             self.nearlyDoneTimer = Timer.scheduledTimer(withTimeInterval: fadeDelay, repeats: false) { [weak self] _ in
                                 DispatchQueue.main.async {
-                                    nearlyDone()
-                                    self?.onNearlyDone = nil
+                                    self?.fireNearlyDoneOnce()
                                 }
                             }
                         } else {
                             // Audio too short or no callback — reveal immediately
-                            nearlyDone?()
-                            self.onNearlyDone = nil
+                            self.fireNearlyDoneOnce()
                         }
                     }
                 } catch {
-                    nearlyDone?()
+                    self.fireNearlyDoneOnce()
                     completion()
                 }
             }
@@ -3353,11 +3369,8 @@ class PracticeTTSService: NSObject, AVAudioPlayerDelegate {
     }
 
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-        nearlyDoneTimer?.invalidate()
-        nearlyDoneTimer = nil
-        // Fire nearlyDone if it hasn't fired yet (for very short clips)
-        onNearlyDone?()
-        onNearlyDone = nil
+        // Fire nearlyDone if it hasn't fired yet (very short clips where timer didn't get scheduled)
+        fireNearlyDoneOnce()
         onComplete?()
         onComplete = nil
     }

@@ -36,7 +36,10 @@ class PracticeConversationService {
         let engine = AVAudioEngine()
         let node = engine.inputNode
         let hwFmt = node.outputFormat(forBus: 0)
-        guard hwFmt.sampleRate > 0, hwFmt.channelCount > 0 else { return }
+        guard hwFmt.sampleRate > 0, hwFmt.channelCount > 0 else {
+            NSLog("🎤 [Practice] audio format invalid: sampleRate=\(hwFmt.sampleRate), channels=\(hwFmt.channelCount)")
+            return
+        }
 
         try? FileManager.default.removeItem(at: tempAudioURL)
 
@@ -65,8 +68,10 @@ class PracticeConversationService {
             audioEngine.stop()
         }
         audioFile = nil
-        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
-        NSLog("🎤 [Practice] recording stopped")
+        // Switch to playback mode so TTS can play Sol's response
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+        try? AVAudioSession.sharedInstance().setActive(true)
+        NSLog("🎤 [Practice] recording stopped, switched to playback mode")
     }
 
     // MARK: - Transcribe
