@@ -241,9 +241,11 @@ class PracticeConversationService {
             }
 
             // Parse Sol's JSON response
+            // GPT may return "response" (conversation) or "message" (topic generation) — accept both
             guard let responseData = content.data(using: .utf8),
                   let parsed = try? JSONSerialization.jsonObject(with: responseData) as? [String: Any],
-                  let responseText = parsed["response"] as? String else {
+                  let responseText = (parsed["response"] as? String) ?? (parsed["message"] as? String) else {
+                NSLog("🎤 [Practice] failed to parse Sol response: \(content.prefix(200))")
                 DispatchQueue.main.async { completion(nil) }
                 return
             }
