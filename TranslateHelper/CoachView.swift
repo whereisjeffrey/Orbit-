@@ -211,6 +211,9 @@ struct CoachEmptyView: View {
 struct CoachPopulatedView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Binding var showPopulated: Bool
+    @State private var showFullReport = false
+    @State private var showPracticeSession = false
+    @State private var showTalkDrill = false
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -247,10 +250,7 @@ struct CoachPopulatedView: View {
                     .padding(.horizontal, 20)
                     .padding(.bottom, 20)
 
-                // ── 6. Milestones ────────────────────────────────
-                milestonesCard
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 20)
+                // Milestones removed — lives in weekly/monthly reports now
 
                 // ── DEV: Back button ─────────────────────────────
                 #if DEBUG
@@ -338,15 +338,15 @@ private struct GreetingCardBackground: View {
         let radius:       Double
     }
 
-    // 2× VoiceKeyboard frequencies — medium pace, visibly moving inside the card
+    // Slow ambient drift — 20% of previous speed
     private static let configs: [BlobConfig] = [
-        BlobConfig(baseX: 0.15, baseY: 0.85, ampX: 0.20, ampY: 0.18, freqX: 0.22, freqY: 0.18, phase: 0.0, radius: 0.90),
-        BlobConfig(baseX: 0.80, baseY: 0.85, ampX: 0.18, ampY: 0.20, freqX: 0.18, freqY: 0.24, phase: 1.2, radius: 0.88),
-        BlobConfig(baseX: 0.45, baseY: 0.50, ampX: 0.22, ampY: 0.20, freqX: 0.26, freqY: 0.20, phase: 2.4, radius: 0.95),
-        BlobConfig(baseX: 0.80, baseY: 0.25, ampX: 0.18, ampY: 0.22, freqX: 0.20, freqY: 0.26, phase: 0.8, radius: 0.88),
-        BlobConfig(baseX: 0.20, baseY: 0.22, ampX: 0.20, ampY: 0.18, freqX: 0.24, freqY: 0.22, phase: 3.6, radius: 0.92),
-        BlobConfig(baseX: 0.65, baseY: 0.10, ampX: 0.16, ampY: 0.16, freqX: 0.16, freqY: 0.18, phase: 1.8, radius: 0.86),
-        BlobConfig(baseX: 0.50, baseY: 0.70, ampX: 0.22, ampY: 0.20, freqX: 0.22, freqY: 0.24, phase: 4.8, radius: 0.90),
+        BlobConfig(baseX: 0.15, baseY: 0.85, ampX: 0.20, ampY: 0.18, freqX: 0.044, freqY: 0.036, phase: 0.0, radius: 0.90),
+        BlobConfig(baseX: 0.80, baseY: 0.85, ampX: 0.18, ampY: 0.20, freqX: 0.036, freqY: 0.048, phase: 1.2, radius: 0.88),
+        BlobConfig(baseX: 0.45, baseY: 0.50, ampX: 0.22, ampY: 0.20, freqX: 0.052, freqY: 0.040, phase: 2.4, radius: 0.95),
+        BlobConfig(baseX: 0.80, baseY: 0.25, ampX: 0.18, ampY: 0.22, freqX: 0.040, freqY: 0.052, phase: 0.8, radius: 0.88),
+        BlobConfig(baseX: 0.20, baseY: 0.22, ampX: 0.20, ampY: 0.18, freqX: 0.048, freqY: 0.044, phase: 3.6, radius: 0.92),
+        BlobConfig(baseX: 0.65, baseY: 0.10, ampX: 0.16, ampY: 0.16, freqX: 0.032, freqY: 0.036, phase: 1.8, radius: 0.86),
+        BlobConfig(baseX: 0.50, baseY: 0.70, ampX: 0.22, ampY: 0.20, freqX: 0.044, freqY: 0.048, phase: 4.8, radius: 0.90),
     ]
 
     @State private var startDate = Date()
@@ -471,10 +471,6 @@ extension CoachPopulatedView {
 
     // MARK: - 3. Weekly Snapshot
 
-    @State private var showFullReport = false
-    @State private var showPracticeSession = false
-    @State private var showTalkDrill = false
-
     private var weeklySnapshot: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
@@ -503,7 +499,7 @@ extension CoachPopulatedView {
             VStack(alignment: .leading, spacing: 12) {
                 weeklyRow(emoji: "✅", text: "Win: Graduated 'ser vs estar'")
                 weeklyRow(emoji: "✏️", text: "Work on: Gender agreement (72%)")
-                weeklyRow(emoji: "🎯", text: "Challenge: Try ordering food without switching to English")
+                weeklyRow(emoji: "🎯", text: "Focus: Practice the R sound in Talk drills this week")
             }
 
             Button { showFullReport = true } label: {
@@ -952,14 +948,14 @@ struct WeeklyFullReportView: View {
                             }
                         }
 
-                        // ── Challenge ────────────────────────────
-                        reportSection(title: "THIS WEEK'S CHALLENGE", icon: "🎯") {
+                        // ── Focus ────────────────────────────────
+                        reportSection(title: "FOCUS THIS WEEK", icon: "🎯") {
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("Try ordering food at a restaurant without switching to English.")
+                                Text("Practice the R sound in Talk drills — you're close to getting it natural.")
                                     .font(.custom("HelveticaNeue", size: 14))
                                     .foregroundColor(.tsLabel)
                                     .lineSpacing(2)
-                                Text("You have the vocabulary for it — 'eu gostaria de...' is your friend.")
+                                Text("Try 2-3 drill sessions this week. Different words, same sound.")
                                     .font(.custom("HelveticaNeue", size: 13))
                                     .foregroundColor(.tsSecondary)
                                     .italic()
