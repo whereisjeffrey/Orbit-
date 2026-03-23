@@ -1287,7 +1287,7 @@ struct PracticeSessionView: View {
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 10)
-                        .background(colorScheme == .dark ? Color.tsCard : Color.white)
+                        .background(Color(red: 0.02, green: 0.48, blue: 1.0).opacity(colorScheme == .dark ? 0.08 : 0.05))
                         .transition(.opacity.combined(with: .move(edge: .bottom)))
                     } else {
                         // ── Text input mode ─────────────────────
@@ -1720,6 +1720,12 @@ struct PracticeSessionView: View {
             ? "💡 Swipe ← left to go back to any previous topic."
             : "💡 Sol speaks like a local — casual, full of slang. Respond naturally."
 
+        // Reset audio state for new topic
+        ttsService.audioPlayer?.stop()
+        isPlayingSolAudio = false
+        playingAudio = nil
+        revealedText.removeAll()
+
         messages = [
             PracticeMessage(role: .coaching, text: hintText),
         ]
@@ -1955,22 +1961,30 @@ struct PracticeSessionView: View {
         guard !isPlayingSolAudio else {
             NSLog("🔊 [Practice] BLOCKED — already playing audio, skipping: \(message.text.prefix(30))")
             // Still reveal the text so it's not stuck hidden
-            revealedText.insert(message.id)
+            withAnimation(.easeInOut(duration: 0.8)) {
+                revealedText.insert(message.id)
+            }
             return
         }
         isPlayingSolAudio = true
         playingAudio = message.id
         NSLog("🔊 [Practice] playing audio for: \(message.text.prefix(40))")
 
-        ttsService.speak(text: message.text, language: "pt-BR") { [self] in
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                withAnimation(.easeIn(duration: 0.4)) {
+        ttsService.speak(
+            text: message.text,
+            language: "pt-BR",
+            nearlyDone: { [self] in
+                // Begins 1 second before audio ends — slow, buttery crossfade
+                withAnimation(.easeInOut(duration: 1.05)) {
                     revealedText.insert(message.id)
                 }
+            },
+            completion: { [self] in
+                // Audio finished — just clean up flags; text is already fading in
                 playingAudio = nil
                 isPlayingSolAudio = false
             }
-        }
+        )
     }
 
     /// Replay audio for a Sol message (text already visible)
@@ -2201,8 +2215,10 @@ struct PracticeMessage: Identifiable {
 // MARK: - Practice TTS Service (Google WaveNet for Sol's voice)
 
 class PracticeTTSService: NSObject, AVAudioPlayerDelegate {
-    private var audioPlayer: AVAudioPlayer?
+    var audioPlayer: AVAudioPlayer?
     private var onComplete: (() -> Void)?
+    private var onNearlyDone: (() -> Void)?
+    private var nearlyDoneTimer: Timer?
     private var audioSessionReady = false
 
     override init() {
@@ -2235,15 +2251,19 @@ class PracticeTTSService: NSObject, AVAudioPlayerDelegate {
     /// Speaking rate based on user level
     var speakingRate: Double = 0.95  // default B1-B2
 
-    func speak(text: String, language: String, completion: @escaping () -> Void) {
+    func speak(text: String, language: String, nearlyDone: (() -> Void)? = nil, completion: @escaping () -> Void) {
         // Cancel any in-progress audio before starting new one
         audioPlayer?.stop()
         audioPlayer = nil
+        nearlyDoneTimer?.invalidate()
+        nearlyDoneTimer = nil
         // Don't call old onComplete — it's stale
         onComplete = completion
+        onNearlyDone = nearlyDone
 
         let apiKey = APIConfig.googleTTSAPIKey
         guard let url = URL(string: "\(APIConfig.googleTTSBaseURL)/text:synthesize?key=\(apiKey)") else {
+            nearlyDone?()
             completion()
             return
         }
@@ -2274,7 +2294,10 @@ class PracticeTTSService: NSObject, AVAudioPlayerDelegate {
             guard let self = self else { return }
 
             if error != nil {
-                DispatchQueue.main.async { completion() }
+                DispatchQueue.main.async {
+                    nearlyDone?()
+                    completion()
+                }
                 return
             }
 
@@ -2282,7 +2305,10 @@ class PracticeTTSService: NSObject, AVAudioPlayerDelegate {
                   let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                   let audioContent = json["audioContent"] as? String,
                   let audioData = Data(base64Encoded: audioContent) else {
-                DispatchQueue.main.async { completion() }
+                DispatchQueue.main.async {
+                    nearlyDone?()
+                    completion()
+                }
                 return
             }
 
@@ -2301,8 +2327,24 @@ class PracticeTTSService: NSObject, AVAudioPlayerDelegate {
                     // Small delay to let audio hardware fully activate
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
                         self.audioPlayer?.play()
+
+                        // Schedule nearlyDone callback 1 second before audio finishes
+                        if let duration = self.audioPlayer?.duration, let nearlyDone = self.onNearlyDone {
+                            let fadeDelay = max(0, duration - 1.0)  // fire 1s before end
+                            self.nearlyDoneTimer = Timer.scheduledTimer(withTimeInterval: fadeDelay, repeats: false) { [weak self] _ in
+                                DispatchQueue.main.async {
+                                    nearlyDone()
+                                    self?.onNearlyDone = nil
+                                }
+                            }
+                        } else {
+                            // Audio too short or no callback — reveal immediately
+                            nearlyDone?()
+                            self.onNearlyDone = nil
+                        }
                     }
                 } catch {
+                    nearlyDone?()
                     completion()
                 }
             }
@@ -2310,6 +2352,11 @@ class PracticeTTSService: NSObject, AVAudioPlayerDelegate {
     }
 
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        nearlyDoneTimer?.invalidate()
+        nearlyDoneTimer = nil
+        // Fire nearlyDone if it hasn't fired yet (for very short clips)
+        onNearlyDone?()
+        onNearlyDone = nil
         onComplete?()
         onComplete = nil
     }
