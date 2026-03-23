@@ -1337,18 +1337,23 @@ class KeyboardViewController: UIInputViewController {
 
     // MARK: - Wingman UI Setup
 
+    // Warm gradient colors for Wingman accents
+    private let wingmanWarm = UIColor(red: 1.0, green: 0.4, blue: 0.3, alpha: 1.0)  // warm coral
+    private let wingmanHot  = UIColor(red: 1.0, green: 0.2, blue: 0.4, alpha: 1.0)  // hot pink-red
+
     private func setupWingmanToggle() {
         wingmanToggle.axis = .horizontal
         wingmanToggle.distribution = .fillEqually
-        wingmanToggle.spacing = 6
+        wingmanToggle.spacing = 0
         wingmanToggle.translatesAutoresizingMaskIntoConstraints = false
-        wingmanToggle.heightAnchor.constraint(equalToConstant: 32).isActive = true
+        wingmanToggle.heightAnchor.constraint(equalToConstant: 36).isActive = true
+        wingmanToggle.backgroundColor = UIColor(white: 0.08, alpha: 1.0)
+        wingmanToggle.layer.cornerRadius = 18
+        wingmanToggle.clipsToBounds = true
 
         let translateBtn = UIButton(type: .system)
-        translateBtn.setTitle("💬 Translate", for: .normal)
-        translateBtn.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
-        translateBtn.layer.cornerRadius = 16
-        translateBtn.clipsToBounds = true
+        translateBtn.setTitle("Translate", for: .normal)
+        translateBtn.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .medium)
         translateBtn.tag = 0
         translateBtn.addTarget(self, action: #selector(wingmanToggleTapped(_:)), for: .touchUpInside)
         wingmanToggle.addArrangedSubview(translateBtn)
@@ -1356,8 +1361,6 @@ class KeyboardViewController: UIInputViewController {
         let wingmanBtn = UIButton(type: .system)
         wingmanBtn.setTitle("🔥 Wingman", for: .normal)
         wingmanBtn.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
-        wingmanBtn.layer.cornerRadius = 16
-        wingmanBtn.clipsToBounds = true
         wingmanBtn.tag = 1
         wingmanBtn.addTarget(self, action: #selector(wingmanToggleTapped(_:)), for: .touchUpInside)
         wingmanToggle.addArrangedSubview(wingmanBtn)
@@ -1369,12 +1372,35 @@ class KeyboardViewController: UIInputViewController {
         for (i, v) in wingmanToggle.arrangedSubviews.enumerated() {
             guard let btn = v as? UIButton else { continue }
             let isActive = (i == 0 && !isWingmanMode) || (i == 1 && isWingmanMode)
-            if isActive {
-                btn.backgroundColor = UIColor(red: 1.0, green: 0.55, blue: 0.0, alpha: 0.35)
+
+            // Remove any existing gradient layers
+            btn.layer.sublayers?.removeAll(where: { $0 is CAGradientLayer })
+
+            if isActive && i == 1 {
+                // Wingman active — warm gradient pill
+                let grad = CAGradientLayer()
+                grad.colors = [wingmanWarm.cgColor, wingmanHot.cgColor]
+                grad.startPoint = CGPoint(x: 0, y: 0.5)
+                grad.endPoint = CGPoint(x: 1, y: 0.5)
+                grad.frame = btn.bounds
+                grad.cornerRadius = 16
+                // Defer frame setting to layout
+                btn.layer.insertSublayer(grad, at: 0)
                 btn.setTitleColor(.white, for: .normal)
+                btn.backgroundColor = .clear
+                // Update gradient frame after layout
+                DispatchQueue.main.async {
+                    grad.frame = btn.bounds
+                    grad.cornerRadius = 16
+                }
+            } else if isActive && i == 0 {
+                // Translate active — subtle white
+                btn.backgroundColor = UIColor.white.withAlphaComponent(0.1)
+                btn.setTitleColor(.white, for: .normal)
+                btn.layer.cornerRadius = 16
             } else {
-                btn.backgroundColor = cardBg
-                btn.setTitleColor(textPrimary, for: .normal)
+                btn.backgroundColor = .clear
+                btn.setTitleColor(UIColor.white.withAlphaComponent(0.35), for: .normal)
             }
         }
     }
@@ -1499,9 +1525,10 @@ class KeyboardViewController: UIInputViewController {
 
     private func fetchWingmanOptions(situation: String) {
         isLoadingWingman = true
+        currentWingmanIndex = 0
         wingmanOptionsStack.isHidden = false
 
-        // Clear existing option cards
+        // Clear existing
         wingmanOptionsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
 
         // Show loading
@@ -1539,98 +1566,256 @@ class KeyboardViewController: UIInputViewController {
                 return
             }
 
-            for (i, option) in options.enumerated() {
-                let card = self.buildWingmanOptionCard(option: option, index: i)
-                self.wingmanOptionsStack.addArrangedSubview(card)
-            }
+            // Show the first card
+            self.showWingmanCard(at: 0)
+
+            // Set the output text to the current option so Replace button works
+            self.updateOutputForWingman()
         }
     }
 
     /// Bright vivid orange for Wingman accents
     private let wingmanOrange = UIColor(red: 1.0, green: 0.55, blue: 0.0, alpha: 1.0)
 
-    private func buildWingmanOptionCard(option: TalkSwitchAPI.WingmanOption, index: Int) -> UIView {
+    /// Shows a single Wingman option card — swipe right for next, left for previous.
+    /// When the user reaches the last card, fetches 3 more automatically (infinite scroll).
+    private func showWingmanCard(at index: Int) {
+        guard index >= 0, index < wingmanOptions.count else { return }
+        currentWingmanIndex = index
+        let option = wingmanOptions[index]
+
+        // Clear previous card
+        wingmanOptionsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+
         let card = UIView()
-        card.backgroundColor = cardBg
-        card.layer.cornerRadius = 12
-        card.layer.borderWidth = 1
-        card.layer.borderColor = UIColor(red: 1.0, green: 0.55, blue: 0.0, alpha: 0.25).cgColor
+        card.backgroundColor = UIColor(white: 0.09, alpha: 1.0)
+        card.layer.cornerRadius = 14
+        card.clipsToBounds = true
         card.translatesAutoresizingMaskIntoConstraints = false
 
-        // Vibe tag
+        // Warm gradient accent bar — left edge, coral → hot pink
+        let accentBar = UIView()
+        accentBar.translatesAutoresizingMaskIntoConstraints = false
+        card.addSubview(accentBar)
+        let grad = CAGradientLayer()
+        grad.colors = [wingmanWarm.cgColor, wingmanHot.cgColor]
+        grad.startPoint = CGPoint(x: 0.5, y: 0)
+        grad.endPoint = CGPoint(x: 0.5, y: 1)
+        accentBar.layer.addSublayer(grad)
+        DispatchQueue.main.async { grad.frame = accentBar.bounds }
+
+        // Pan gesture — same mechanic as translation swipe
+        let pan = UIPanGestureRecognizer(target: self, action: #selector(wingmanCardPanned(_:)))
+        card.addGestureRecognizer(pan)
+        card.isUserInteractionEnabled = true
+
+        // Vibe tag in a tinted pill
+        let vibePill = UIView()
+        vibePill.backgroundColor = wingmanWarm.withAlphaComponent(0.1)
+        vibePill.layer.cornerRadius = 8
+        vibePill.translatesAutoresizingMaskIntoConstraints = false
+        card.addSubview(vibePill)
+
         let vibeLabel = UILabel()
         vibeLabel.text = option.vibe.uppercased()
         vibeLabel.font = UIFont.systemFont(ofSize: 9, weight: .bold)
         vibeLabel.textColor = wingmanOrange
         vibeLabel.translatesAutoresizingMaskIntoConstraints = false
-        card.addSubview(vibeLabel)
+        vibePill.addSubview(vibeLabel)
 
-        // Target language text (bold, main)
+        // Counter
+        let counterLabel = UILabel()
+        counterLabel.text = "#\(index + 1)"
+        counterLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 10, weight: .medium)
+        counterLabel.textColor = UIColor.white.withAlphaComponent(0.2)
+        counterLabel.translatesAutoresizingMaskIntoConstraints = false
+        card.addSubview(counterLabel)
+
+        // Target language text — quoted, the star of the card
         let textLabel = UILabel()
-        textLabel.text = option.text
+        textLabel.text = "\"\(option.text)\""
         textLabel.font = UIFont.systemFont(ofSize: 15, weight: .medium)
-        textLabel.textColor = textPrimary
+        textLabel.textColor = .white
         textLabel.numberOfLines = 0
         textLabel.translatesAutoresizingMaskIntoConstraints = false
         card.addSubview(textLabel)
 
-        // English translation (smaller, dimmer)
+        // Thin separator
+        let sep = UIView()
+        sep.backgroundColor = UIColor.white.withAlphaComponent(0.06)
+        sep.translatesAutoresizingMaskIntoConstraints = false
+        card.addSubview(sep)
+
+        // English translation — italic
         let translationLabel = UILabel()
         translationLabel.text = option.translation
-        translationLabel.font = UIFont.systemFont(ofSize: 12)
-        translationLabel.textColor = textSecondary
+        translationLabel.font = UIFont.italicSystemFont(ofSize: 12)
+        translationLabel.textColor = UIColor.white.withAlphaComponent(0.4)
         translationLabel.numberOfLines = 0
         translationLabel.translatesAutoresizingMaskIntoConstraints = false
         card.addSubview(translationLabel)
 
-        // Copy button
-        let copyBtn = UIButton(type: .system)
-        copyBtn.setTitle("Use this", for: .normal)
-        copyBtn.titleLabel?.font = UIFont.systemFont(ofSize: 11, weight: .semibold)
-        copyBtn.setTitleColor(wingmanOrange, for: .normal)
-        copyBtn.translatesAutoresizingMaskIntoConstraints = false
-        copyBtn.tag = index
-        copyBtn.addTarget(self, action: #selector(wingmanOptionTapped(_:)), for: .touchUpInside)
-        card.addSubview(copyBtn)
+        // Swipe hint — minimal
+        let hintLabel = UILabel()
+        hintLabel.text = "swipe →"
+        hintLabel.font = UIFont.systemFont(ofSize: 9, weight: .medium)
+        hintLabel.textColor = UIColor.white.withAlphaComponent(0.15)
+        hintLabel.translatesAutoresizingMaskIntoConstraints = false
+        card.addSubview(hintLabel)
+
+        let contentLeading: CGFloat = 18  // offset for accent bar + padding
 
         NSLayoutConstraint.activate([
-            card.heightAnchor.constraint(greaterThanOrEqualToConstant: 80),
-            vibeLabel.topAnchor.constraint(equalTo: card.topAnchor, constant: 10),
-            vibeLabel.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 14),
-            textLabel.topAnchor.constraint(equalTo: vibeLabel.bottomAnchor, constant: 6),
-            textLabel.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 14),
-            textLabel.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -70),
-            translationLabel.topAnchor.constraint(equalTo: textLabel.bottomAnchor, constant: 4),
-            translationLabel.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 14),
-            translationLabel.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -70),
-            translationLabel.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -10),
-            copyBtn.centerYAnchor.constraint(equalTo: card.centerYAnchor),
-            copyBtn.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -12),
+            card.heightAnchor.constraint(greaterThanOrEqualToConstant: 100),
+
+            // Accent bar
+            accentBar.leadingAnchor.constraint(equalTo: card.leadingAnchor),
+            accentBar.topAnchor.constraint(equalTo: card.topAnchor),
+            accentBar.bottomAnchor.constraint(equalTo: card.bottomAnchor),
+            accentBar.widthAnchor.constraint(equalToConstant: 3),
+
+            // Vibe pill
+            vibePill.topAnchor.constraint(equalTo: card.topAnchor, constant: 12),
+            vibePill.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: contentLeading),
+            vibeLabel.topAnchor.constraint(equalTo: vibePill.topAnchor, constant: 4),
+            vibeLabel.bottomAnchor.constraint(equalTo: vibePill.bottomAnchor, constant: -4),
+            vibeLabel.leadingAnchor.constraint(equalTo: vibePill.leadingAnchor, constant: 8),
+            vibeLabel.trailingAnchor.constraint(equalTo: vibePill.trailingAnchor, constant: -8),
+
+            counterLabel.centerYAnchor.constraint(equalTo: vibePill.centerYAnchor),
+            counterLabel.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -14),
+
+            // Main text
+            textLabel.topAnchor.constraint(equalTo: vibePill.bottomAnchor, constant: 10),
+            textLabel.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: contentLeading),
+            textLabel.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -14),
+
+            // Separator
+            sep.topAnchor.constraint(equalTo: textLabel.bottomAnchor, constant: 8),
+            sep.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: contentLeading),
+            sep.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -14),
+            sep.heightAnchor.constraint(equalToConstant: 0.5),
+
+            // Translation
+            translationLabel.topAnchor.constraint(equalTo: sep.bottomAnchor, constant: 8),
+            translationLabel.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: contentLeading),
+            translationLabel.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -14),
+
+            // Swipe hint
+            hintLabel.topAnchor.constraint(equalTo: translationLabel.bottomAnchor, constant: 6),
+            hintLabel.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -14),
+            hintLabel.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -10),
         ])
 
-        return card
+        wingmanOptionsStack.addArrangedSubview(card)
+        updateOutputForWingman()
     }
 
-    @objc private func wingmanOptionTapped(_ sender: UIButton) {
-        guard sender.tag < wingmanOptions.count else { return }
-        let option = wingmanOptions[sender.tag]
+    /// Sets the output card text to the current Wingman option so Replace inserts it
+    private func updateOutputForWingman() {
+        guard currentWingmanIndex < wingmanOptions.count else { return }
+        let option = wingmanOptions[currentWingmanIndex]
+        outputTextLabel.text = option.text
+    }
 
-        // Insert the target language text into the text field
-        if let before = textDocumentProxy.documentContextBeforeInput {
-            for _ in 0..<before.count { textDocumentProxy.deleteBackward() }
+    /// Pan gesture on Wingman card — same mechanic as translation swipe
+    @objc private func wingmanCardPanned(_ gesture: UIPanGestureRecognizer) {
+        guard let card = gesture.view else { return }
+        let translation = gesture.translation(in: card.superview)
+
+        switch gesture.state {
+        case .changed:
+            // Drag right → next, drag left → previous
+            card.transform = CGAffineTransform(translationX: translation.x, y: 0)
+                .rotated(by: translation.x / 800)
+            card.alpha = 1.0 - abs(translation.x) / 400
+
+        case .ended:
+            let velocity = gesture.velocity(in: card.superview)
+
+            if translation.x > 80 || velocity.x > 500 {
+                // Swipe right — go to next (or fetch more)
+                UIView.animate(withDuration: 0.22, animations: {
+                    card.transform = CGAffineTransform(translationX: 400, y: 0).rotated(by: 0.15)
+                    card.alpha = 0
+                }) { _ in
+                    if self.currentWingmanIndex + 1 < self.wingmanOptions.count {
+                        self.showWingmanCard(at: self.currentWingmanIndex + 1)
+                    } else {
+                        // Fetch more options — infinite scroll
+                        self.fetchMoreWingmanOptions()
+                    }
+                }
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+
+            } else if translation.x < -80 || velocity.x < -500 {
+                // Swipe left — go back
+                if currentWingmanIndex > 0 {
+                    UIView.animate(withDuration: 0.22, animations: {
+                        card.transform = CGAffineTransform(translationX: -400, y: 0).rotated(by: -0.15)
+                        card.alpha = 0
+                    }) { _ in
+                        self.showWingmanCard(at: self.currentWingmanIndex - 1)
+                    }
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                } else {
+                    // Bounce back — at the start
+                    UIView.animate(withDuration: 0.25, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0) {
+                        card.transform = .identity
+                        card.alpha = 1
+                    }
+                }
+
+            } else {
+                // Not enough — snap back
+                UIView.animate(withDuration: 0.25, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0) {
+                    card.transform = .identity
+                    card.alpha = 1
+                }
+            }
+
+        default:
+            break
         }
-        textDocumentProxy.insertText(option.text)
+    }
 
-        // Flash the button
-        sender.setTitle("Copied! ✅", for: .normal)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            sender.setTitle("Use this", for: .normal)
+    /// Fetches 3 more Wingman options and appends them (infinite scroll)
+    private func fetchMoreWingmanOptions() {
+        guard !isLoadingWingman else { return }
+        isLoadingWingman = true
+
+        // Show loading in the card area
+        wingmanOptionsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        let loadingLabel = UILabel()
+        loadingLabel.text = "🔥 Getting more..."
+        loadingLabel.font = UIFont.systemFont(ofSize: 13)
+        loadingLabel.textColor = textSecondary
+        loadingLabel.textAlignment = .center
+        loadingLabel.translatesAutoresizingMaskIntoConstraints = false
+        loadingLabel.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        wingmanOptionsStack.addArrangedSubview(loadingLabel)
+
+        let targetCode = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
+
+        TalkSwitchAPI.shared.getWingmanOptions(
+            situation: inputText,
+            sourceLang: "en",
+            targetLang: targetCode
+        ) { [weak self] options in
+            guard let self = self else { return }
+            self.isLoadingWingman = false
+
+            if options.isEmpty {
+                // Show the last card again
+                self.showWingmanCard(at: self.currentWingmanIndex)
+                return
+            }
+
+            // Append new options
+            let startIndex = self.wingmanOptions.count
+            self.wingmanOptions.append(contentsOf: options)
+            self.showWingmanCard(at: startIndex)
         }
-
-        let generator = UIImpactFeedbackGenerator(style: .medium)
-        generator.impactOccurred()
-
-        NSLog("TSKBD_WINGMAN: used option \(sender.tag) — \(option.vibe)")
     }
 
     // MARK: - Show States
