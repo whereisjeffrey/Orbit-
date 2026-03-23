@@ -246,6 +246,15 @@ struct CoachPopulatedView: View {
                 targetAreas
                     .padding(.horizontal, 20)
                     .padding(.bottom, 20)
+                    .onAppear {
+                        #if DEBUG
+                        // Seed test mistakes if profile is empty so we can see the full UI
+                        if MistakeProfileStore.shared.categoryBreakdown.isEmpty {
+                            let lang = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "pt"
+                            MistakeProfileStore.shared.seedTestData(language: lang)
+                        }
+                        #endif
+                    }
 
                 // Milestones removed — lives in weekly/monthly reports now
                 // Talk card removed — pronunciation drills covered by Lightning Round
@@ -739,35 +748,35 @@ extension CoachPopulatedView {
                             .padding(14)
                         }
 
-                        // Expanded content — individual mistakes
+                        // Expanded content — clean, scannable list
                         if isExpanded {
-                            VStack(alignment: .leading, spacing: 8) {
+                            VStack(alignment: .leading, spacing: 10) {
                                 ForEach(mistakes.prefix(5)) { mistake in
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        HStack(alignment: .top, spacing: 6) {
-                                            Text("•")
-                                                .font(.custom("HelveticaNeue-Bold", size: 12))
-                                                .foregroundColor(color)
-                                                .padding(.top, 1)
-                                            VStack(alignment: .leading, spacing: 2) {
-                                                HStack(spacing: 4) {
-                                                    Text(mistake.userSaid)
-                                                        .font(.custom("HelveticaNeue", size: 13))
-                                                        .foregroundColor(.tsSecondary)
-                                                        .strikethrough(true, color: color.opacity(0.5))
-                                                    Image(systemName: "arrow.right")
-                                                        .font(.system(size: 9))
-                                                        .foregroundColor(.tsSecondary)
-                                                    Text(mistake.correctForm)
-                                                        .font(.custom("HelveticaNeue-Medium", size: 13))
-                                                        .foregroundColor(.tsLabel)
-                                                }
-                                                Text(mistake.explanation)
-                                                    .font(.custom("HelveticaNeue", size: 11))
+                                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                                        Circle()
+                                            .fill(color)
+                                            .frame(width: 5, height: 5)
+                                            .padding(.top, 5)
+
+                                        VStack(alignment: .leading, spacing: 3) {
+                                            // Correction: wrong → right
+                                            HStack(spacing: 0) {
+                                                Text(mistake.userSaid)
+                                                    .font(.custom("HelveticaNeue", size: 13))
                                                     .foregroundColor(.tsSecondary)
-                                                    .lineSpacing(2)
-                                                    .fixedSize(horizontal: false, vertical: true)
+                                                    .strikethrough(true, color: color.opacity(0.4))
+                                                Text("  →  ")
+                                                    .font(.custom("HelveticaNeue", size: 12))
+                                                    .foregroundColor(.tsSecondary.opacity(0.5))
+                                                Text(mistake.correctForm)
+                                                    .font(.custom("HelveticaNeue-Medium", size: 13))
+                                                    .foregroundColor(.tsLabel)
                                             }
+                                            // One-line explanation
+                                            Text(capToOneSentence(mistake.explanation))
+                                                .font(.custom("HelveticaNeue", size: 11))
+                                                .foregroundColor(.tsSecondary)
+                                                .lineLimit(2)
                                         }
                                     }
                                 }
@@ -775,7 +784,6 @@ extension CoachPopulatedView {
                                     Text("+ \(mistakes.count - 5) more")
                                         .font(.custom("HelveticaNeue", size: 11))
                                         .foregroundColor(color)
-                                        .padding(.top, 2)
                                 }
                             }
                             .padding(.horizontal, 14)
@@ -856,6 +864,25 @@ extension CoachPopulatedView {
                 .foregroundColor(.tsSecondary)
         }
         .padding(.vertical, 4)
+    }
+
+    /// Trims explanation to one sentence for the condensed view.
+    private func capToOneSentence(_ text: String) -> String {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let dotRange = trimmed.range(of: ". ", range: trimmed.startIndex..<trimmed.endIndex) {
+            return String(trimmed[trimmed.startIndex...dotRange.lowerBound])
+        }
+        if let dotEnd = trimmed.range(of: ".", options: .backwards) {
+            // If there's only one sentence ending with a period, return it
+            let firstSentence = String(trimmed[trimmed.startIndex...dotEnd.lowerBound])
+            if firstSentence.count <= 80 { return firstSentence }
+        }
+        // Truncate if too long
+        if trimmed.count > 70 {
+            let idx = trimmed.index(trimmed.startIndex, offsetBy: 67)
+            return String(trimmed[trimmed.startIndex..<idx]) + "..."
+        }
+        return trimmed
     }
 
     private func categoryColor(_ category: MistakeCategory) -> Color {

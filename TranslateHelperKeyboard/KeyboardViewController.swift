@@ -48,6 +48,15 @@ class KeyboardViewController: UIInputViewController {
     private var isLoadingWingman: Bool = false
     private var currentWingmanIndex: Int = 0
 
+    // MARK: - Paste Detection
+    private var previousTextLength: Int = 0
+    private var translationsSent: Int = 0
+    #if DEBUG
+    private var pasteHintShown: Bool = false  // resets each session in debug
+    #else
+    private var pasteHintShown: Bool = false
+    #endif
+
     // MARK: - UI Elements
 
     private let emptyBar = UIView()
@@ -490,6 +499,14 @@ class KeyboardViewController: UIInputViewController {
                                     NSLog("TSKBD_REFINED: \(text) → \(refined.output)")
                                     // Queue TTS cache for main app to pre-generate Neural2 audio
                                     self.queueTTSCache(text: refined.output, language: targetCode)
+                                    // After first successful translation, teach paste-to-translate
+                                    self.translationsSent += 1
+                                    if self.translationsSent == 1 {
+                                        // Delay so it doesn't compete with the translation result
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                                            self.showPasteHint()
+                                        }
+                                    }
                                 case .failure:
                                     // Refinement failed — show DeepL translation as final
                                     self.translationHistory = [translation]
@@ -1394,7 +1411,11 @@ class KeyboardViewController: UIInputViewController {
             correctionCard.isHidden = true
             coachCard.isHidden = true
 
-            // Show onboarding on first use
+            // Show onboarding every time in DEBUG so we can review the copy.
+            // TODO: Before shipping, restore the ts_wingman_onboarded persistence check.
+            #if DEBUG
+            wingmanOnboardingCard.isHidden = false
+            #else
             if !wingmanOnboardingShown {
                 let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper")
                 if !(defaults?.bool(forKey: "ts_wingman_onboarded") ?? false) {
@@ -1404,6 +1425,7 @@ class KeyboardViewController: UIInputViewController {
                     defaults?.synchronize()
                 }
             }
+            #endif
 
             // If there's already text, auto-trigger Wingman
             if !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -1446,15 +1468,15 @@ class KeyboardViewController: UIInputViewController {
 
         let text = NSMutableAttributedString()
         text.append(NSAttributedString(
-            string: "Welcome to Wingman 🔥\n",
+            string: "Meet your Orbit Wingman 🪩\n",
             attributes: [.font: UIFont.systemFont(ofSize: 14, weight: .bold), .foregroundColor: UIColor.white]
         ))
         text.append(NSAttributedString(
-            string: "Describe your situation and we'll give you smooth response options.\n\n",
+            string: "Just describe what's going on and we'll set you up with something smooth.\n\n",
             attributes: [.font: UIFont.systemFont(ofSize: 13), .foregroundColor: UIColor.white.withAlphaComponent(0.8)]
         ))
         text.append(NSAttributedString(
-            string: "\"She just said she loves coffee — what's a smooth response?\"\n\"We matched on Tinder, what's a fun opener?\"",
+            string: "\"She just said she loves coffee — what do I say?\"\n\"We matched on Tinder, give me a fun opener\"",
             attributes: [
                 .font: UIFont.italicSystemFont(ofSize: 12),
                 .foregroundColor: UIColor.white.withAlphaComponent(0.6)
@@ -1465,7 +1487,7 @@ class KeyboardViewController: UIInputViewController {
         wingmanOnboardingCard.addSubview(label)
 
         let dismissBtn = UIButton(type: .system)
-        dismissBtn.setTitle("Got it", for: .normal)
+        dismissBtn.setTitle("Got it 🔥", for: .normal)
         dismissBtn.titleLabel?.font = UIFont.systemFont(ofSize: 13, weight: .semibold)
         dismissBtn.setTitleColor(.white, for: .normal)
         dismissBtn.backgroundColor = wingmanOrange.withAlphaComponent(0.3)
@@ -1563,123 +1585,67 @@ class KeyboardViewController: UIInputViewController {
         wingmanOptionsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
 
         let card = UIView()
-        card.backgroundColor = UIColor(white: 0.09, alpha: 1.0)
-        card.layer.cornerRadius = 14
-        card.clipsToBounds = true
+        // Same card style as output card — matches the keyboard's design language
+        card.backgroundColor = cardBg
+        card.layer.cornerRadius = 10
         card.translatesAutoresizingMaskIntoConstraints = false
 
-        // Warm gradient accent bar — left edge, coral → hot pink
-        let accentBar = UIView()
-        accentBar.translatesAutoresizingMaskIntoConstraints = false
-        card.addSubview(accentBar)
-        let grad = CAGradientLayer()
-        grad.colors = [wingmanWarm.cgColor, wingmanHot.cgColor]
-        grad.startPoint = CGPoint(x: 0.5, y: 0)
-        grad.endPoint = CGPoint(x: 0.5, y: 1)
-        accentBar.layer.addSublayer(grad)
-        DispatchQueue.main.async { grad.frame = accentBar.bounds }
-
-        // Pan gesture — same mechanic as translation swipe
+        // Pan gesture — same as translation output swipe
         let pan = UIPanGestureRecognizer(target: self, action: #selector(wingmanCardPanned(_:)))
         card.addGestureRecognizer(pan)
         card.isUserInteractionEnabled = true
 
-        // Vibe tag in a tinted pill
-        let vibePill = UIView()
-        vibePill.backgroundColor = wingmanWarm.withAlphaComponent(0.1)
-        vibePill.layer.cornerRadius = 8
-        vibePill.translatesAutoresizingMaskIntoConstraints = false
-        card.addSubview(vibePill)
-
+        // Vibe tag — orange accent, distinct from the blue UI
         let vibeLabel = UILabel()
-        vibeLabel.text = option.vibe.uppercased()
-        vibeLabel.font = UIFont.systemFont(ofSize: 9, weight: .bold)
+        vibeLabel.text = "🔥 \(option.vibe.uppercased())"
+        vibeLabel.font = UIFont.systemFont(ofSize: 10, weight: .bold)
         vibeLabel.textColor = wingmanOrange
         vibeLabel.translatesAutoresizingMaskIntoConstraints = false
-        vibePill.addSubview(vibeLabel)
+        card.addSubview(vibeLabel)
 
-        // Counter
-        let counterLabel = UILabel()
-        counterLabel.text = "#\(index + 1)"
-        counterLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 10, weight: .medium)
-        counterLabel.textColor = UIColor.white.withAlphaComponent(0.2)
-        counterLabel.translatesAutoresizingMaskIntoConstraints = false
-        card.addSubview(counterLabel)
+        // Swipe hint — same style as translation output card
+        let hintLabel = UILabel()
+        hintLabel.text = "swipe for another →"
+        hintLabel.font = UIFont.systemFont(ofSize: 10)
+        hintLabel.textColor = textSecondary.withAlphaComponent(0.4)
+        hintLabel.translatesAutoresizingMaskIntoConstraints = false
+        card.addSubview(hintLabel)
 
-        // Target language text — quoted, the star of the card
+        // Target language text — same font as outputTextLabel
         let textLabel = UILabel()
-        textLabel.text = "\"\(option.text)\""
-        textLabel.font = UIFont.systemFont(ofSize: 15, weight: .medium)
-        textLabel.textColor = .white
+        textLabel.text = option.text
+        textLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        textLabel.textColor = textPrimary
         textLabel.numberOfLines = 0
         textLabel.translatesAutoresizingMaskIntoConstraints = false
         card.addSubview(textLabel)
 
-        // Thin separator
-        let sep = UIView()
-        sep.backgroundColor = UIColor.white.withAlphaComponent(0.06)
-        sep.translatesAutoresizingMaskIntoConstraints = false
-        card.addSubview(sep)
-
-        // English translation — italic
+        // English translation — dimmer, below
         let translationLabel = UILabel()
         translationLabel.text = option.translation
-        translationLabel.font = UIFont.italicSystemFont(ofSize: 12)
-        translationLabel.textColor = UIColor.white.withAlphaComponent(0.4)
+        translationLabel.font = UIFont.systemFont(ofSize: 12)
+        translationLabel.textColor = textSecondary
         translationLabel.numberOfLines = 0
         translationLabel.translatesAutoresizingMaskIntoConstraints = false
         card.addSubview(translationLabel)
 
-        // Swipe hint — minimal
-        let hintLabel = UILabel()
-        hintLabel.text = "swipe →"
-        hintLabel.font = UIFont.systemFont(ofSize: 9, weight: .medium)
-        hintLabel.textColor = UIColor.white.withAlphaComponent(0.15)
-        hintLabel.translatesAutoresizingMaskIntoConstraints = false
-        card.addSubview(hintLabel)
-
-        let contentLeading: CGFloat = 18  // offset for accent bar + padding
-
         NSLayoutConstraint.activate([
-            card.heightAnchor.constraint(greaterThanOrEqualToConstant: 100),
+            card.heightAnchor.constraint(greaterThanOrEqualToConstant: 80),
 
-            // Accent bar
-            accentBar.leadingAnchor.constraint(equalTo: card.leadingAnchor),
-            accentBar.topAnchor.constraint(equalTo: card.topAnchor),
-            accentBar.bottomAnchor.constraint(equalTo: card.bottomAnchor),
-            accentBar.widthAnchor.constraint(equalToConstant: 3),
+            vibeLabel.topAnchor.constraint(equalTo: card.topAnchor, constant: 8),
+            vibeLabel.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 12),
 
-            // Vibe pill
-            vibePill.topAnchor.constraint(equalTo: card.topAnchor, constant: 12),
-            vibePill.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: contentLeading),
-            vibeLabel.topAnchor.constraint(equalTo: vibePill.topAnchor, constant: 4),
-            vibeLabel.bottomAnchor.constraint(equalTo: vibePill.bottomAnchor, constant: -4),
-            vibeLabel.leadingAnchor.constraint(equalTo: vibePill.leadingAnchor, constant: 8),
-            vibeLabel.trailingAnchor.constraint(equalTo: vibePill.trailingAnchor, constant: -8),
+            hintLabel.centerYAnchor.constraint(equalTo: vibeLabel.centerYAnchor),
+            hintLabel.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -12),
 
-            counterLabel.centerYAnchor.constraint(equalTo: vibePill.centerYAnchor),
-            counterLabel.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -14),
+            textLabel.topAnchor.constraint(equalTo: vibeLabel.bottomAnchor, constant: 6),
+            textLabel.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 12),
+            textLabel.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -12),
 
-            // Main text
-            textLabel.topAnchor.constraint(equalTo: vibePill.bottomAnchor, constant: 10),
-            textLabel.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: contentLeading),
-            textLabel.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -14),
-
-            // Separator
-            sep.topAnchor.constraint(equalTo: textLabel.bottomAnchor, constant: 8),
-            sep.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: contentLeading),
-            sep.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -14),
-            sep.heightAnchor.constraint(equalToConstant: 0.5),
-
-            // Translation
-            translationLabel.topAnchor.constraint(equalTo: sep.bottomAnchor, constant: 8),
-            translationLabel.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: contentLeading),
-            translationLabel.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -14),
-
-            // Swipe hint
-            hintLabel.topAnchor.constraint(equalTo: translationLabel.bottomAnchor, constant: 6),
-            hintLabel.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -14),
-            hintLabel.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -10),
+            translationLabel.topAnchor.constraint(equalTo: textLabel.bottomAnchor, constant: 4),
+            translationLabel.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 12),
+            translationLabel.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -12),
+            translationLabel.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -10),
         ])
 
         wingmanOptionsStack.addArrangedSubview(card)
@@ -1804,7 +1770,25 @@ class KeyboardViewController: UIInputViewController {
         let before = textDocumentProxy.documentContextBeforeInput ?? ""
         let after  = textDocumentProxy.documentContextAfterInput  ?? ""
         let text   = (before + after).trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !text.isEmpty else { showEmpty(); return }
+        guard !text.isEmpty else { previousTextLength = 0; showEmpty(); return }
+
+        // ── Paste detection: text jumped by 15+ chars at once ──
+        let currentLen = text.count
+        let isPaste = currentLen - previousTextLength >= 15
+        previousTextLength = currentLen
+
+        if isPaste {
+            let detected = detectLanguage(text)
+            let targetCode = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
+
+            // If pasted text is in the target language, auto-translate to English
+            if detected.code == targetCode || (detected.code != "en" && detected.code != "und") {
+                NSLog("TSKBD_PASTE: detected \(detected.code) paste, translating to English")
+                performPasteTranslation(text: text, detectedLang: detected.code)
+                return
+            }
+        }
+
         // Debounce: wait 1.8s after last keystroke then auto-translate (or Wingman)
         autoTranslateTimer = Timer.scheduledTimer(withTimeInterval: 1.8, repeats: false) { [weak self] _ in
             guard let self = self else { return }
@@ -1843,6 +1827,85 @@ class KeyboardViewController: UIInputViewController {
 
             self.performTranslation(text: t, source: "field")
         }
+    }
+
+    // MARK: - Paste Translation (incoming messages)
+
+    /// When user pastes text in the target language, translate it to English so they can understand it.
+    private func performPasteTranslation(text: String, detectedLang: String) {
+        inputText = text
+
+        let targetCode = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
+        let inProf = TSProfiles[targetCode] ?? TSProfiles["es"]!
+        let outProf = TSProfiles["en"]!
+
+        directionLabel.text = "\(inProf.flag) → \(outProf.flag)"
+        inputLangLabel.text = "📋 PASTED — \(inProf.name.uppercased())"
+        outputLangLabel.text = "\(outProf.flag) \(outProf.name)"
+        inputTextLabel.text = text
+        outputTextLabel.text = "Translating..."
+
+        showPanel()
+        inputCard.isHidden = false
+        outputCard.isHidden = false
+        correctionCard.isHidden = true
+        coachCard.isHidden = true
+        notesCard.isHidden = true
+        loadingSpinner.startAnimating()
+
+        // Translate to English via DeepL
+        TranslationService.shared.translate(
+            text: text,
+            from: inProf.deepL,
+            to: outProf.deepL,
+            style: .natural
+        ) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                self.loadingSpinner.stopAnimating()
+
+                switch result {
+                case .success(let translation):
+                    self.translationHistory = [translation]
+                    self.currentHistoryIndex = 0
+                    self.outputTextLabel.text = translation
+                    self.updateSwipeHint()
+
+                    // Show reply hint — tell them the mic will overwrite the pasted text
+                    self.notesCard.isHidden = false
+                    self.notesIcon.text = "🎤"
+                    self.notesTextLabel.text = "Ready to reply? Just hit 🎤 Speak — your response will replace this text automatically."
+
+                    NSLog("TSKBD_PASTE_TRANSLATED: \(text.prefix(40)) → \(translation.prefix(40))")
+
+                case .failure:
+                    self.outputTextLabel.text = "⚠️ Translation failed"
+                    NSLog("TSKBD_PASTE_FAIL: could not translate pasted text")
+                }
+            }
+        }
+    }
+
+    /// Shows a hint after the user's first outgoing translation, teaching them about paste-to-translate.
+    private func showPasteHint() {
+        // TODO: Before shipping, restore the ts_paste_hint_shown persistence check.
+        #if DEBUG
+        // Always show in debug so we can review the copy
+        #else
+        guard !pasteHintShown else { return }
+        let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper")
+        guard !(defaults?.bool(forKey: "ts_paste_hint_shown") ?? false) else { return }
+        pasteHintShown = true
+        defaults?.set(true, forKey: "ts_paste_hint_shown")
+        defaults?.synchronize()
+        #endif
+
+        // Show a brief hint in the notes card
+        notesCard.isHidden = false
+        notesIcon.text = "📋"
+        notesTextLabel.text = "💡 Got a message you can't read? Just copy and paste it here — we'll translate it to English automatically."
+
+        NSLog("TSKBD_PASTE_HINT: shown after first translation")
     }
 
     private func startDictationPolling() {
@@ -1952,6 +2015,17 @@ class KeyboardViewController: UIInputViewController {
     @objc private func micTapped() {
         // Don't double-fire if we're already waiting for a result
         guard dictationPollTimer == nil else { return }
+
+        // Clear any existing text (e.g. pasted message) so the audio reply replaces it
+        if let existing = textDocumentProxy.documentContextBeforeInput {
+            for _ in 0..<existing.count { textDocumentProxy.deleteBackward() }
+        }
+        if let after = textDocumentProxy.documentContextAfterInput, !after.isEmpty {
+            // Move cursor to end, then delete
+            textDocumentProxy.adjustTextPosition(byCharacterOffset: after.count)
+            for _ in 0..<after.count { textDocumentProxy.deleteBackward() }
+        }
+        previousTextLength = 0
 
         // Write a request timestamp so checkForPendingDictation ignores stale results
         // from any previous recording session.
