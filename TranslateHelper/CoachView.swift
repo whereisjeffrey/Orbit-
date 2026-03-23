@@ -1099,6 +1099,11 @@ struct PracticeSessionView: View {
     @AppStorage("practice_native_validated") private var nativeDoubleTapValidated = false
     @AppStorage("practice_native_dismiss_count") private var nativeDismissCount = 0
     private var hasShownFirstUserMessage = false
+    @State private var savedPhrases: Set<String> = []       // phrases already saved this session
+    @State private var showSaveHint = false
+    @State private var saveHintShownForMessage: UUID?
+    @AppStorage("practice_save_validated") private var saveValidated = false
+    @State private var totalMessagesThisSession = 0
     @State private var sessionSeconds = 0
     @State private var sessionTimer: Timer?
 
@@ -1564,6 +1569,9 @@ struct PracticeSessionView: View {
                                     }
                                 }
                             }
+                        } else if message.role == .coaching && message.saveablePhrase != nil {
+                            // Save coaching tip phrase to library
+                            saveCoachingPhrase(message: message)
                         } else if message.role == .user && message.nativeVersion != nil {
                             withAnimation(.easeInOut(duration: 0.25)) {
                                 if isNativeRevealed {
@@ -1773,7 +1781,9 @@ struct PracticeSessionView: View {
                     for note in notes {
                         messages.append(PracticeMessage(
                             role: .coaching,
-                            text: "📖 \"\(note.phrase)\" — \(note.meaning). \(note.context)"
+                            text: "📖 \"\(note.phrase)\" — \(note.meaning). \(note.context)",
+                            saveablePhrase: note.phrase,
+                            saveableMeaning: note.meaning
                         ))
                     }
                 }
@@ -1809,7 +1819,9 @@ struct PracticeSessionView: View {
                     for note in notes {
                         messages.append(PracticeMessage(
                             role: .coaching,
-                            text: "📖 \"\(note.phrase)\" — \(note.meaning). \(note.context)"
+                            text: "📖 \"\(note.phrase)\" — \(note.meaning). \(note.context)",
+                            saveablePhrase: note.phrase,
+                            saveableMeaning: note.meaning
                         ))
                     }
                 }
@@ -1951,6 +1963,70 @@ struct PracticeSessionView: View {
             try? data.write(to: file)
         }
         NSLog("🎯 [Practice] interest logged: \(action) → \(topic)")
+    }
+
+    // MARK: - Save Coaching Phrase
+
+    private func saveCoachingPhrase(message: PracticeMessage) {
+        guard let phrase = message.saveablePhrase,
+              let meaning = message.saveableMeaning else { return }
+
+        // Check if already saved this session
+        guard !savedPhrases.contains(phrase.lowercased()) else { return }
+
+        let appGroup = "group.com.jeff.translatehelper"
+        guard let defaults = UserDefaults(suiteName: appGroup) else { return }
+
+        let targetLang = defaults.string(forKey: "talkswitch_target_lang") ?? "pt"
+        let key = "talkswitch_saved_phrases"
+
+        // Check for duplicates in existing saved phrases
+        let existing = defaults.array(forKey: key) as? [[String: String]] ?? []
+        let isDuplicate = existing.contains { entry in
+            entry["sourceText"]?.lowercased() == phrase.lowercased() ||
+            entry["translation"]?.lowercased() == phrase.lowercased()
+        }
+        guard !isDuplicate else {
+            NSLog("🎯 [Practice] phrase already saved, skipping: \(phrase)")
+            return
+        }
+
+        // Save to App Group (same format as keyboard save)
+        var newEntry: [String: String] = [
+            "id":          UUID().uuidString,
+            "sourceText":  phrase,
+            "translation": meaning,
+            "sourceLang":  targetLang,
+            "targetLang":  "en",
+            "savedAt":     ISO8601DateFormatter().string(from: Date()),
+            "notes":       "Learned from Sol in practice session"
+        ]
+
+        var allPhrases = existing
+        allPhrases.append(newEntry)
+        defaults.set(allPhrases, forKey: key)
+        defaults.synchronize()
+
+        savedPhrases.insert(phrase.lowercased())
+
+        // Validate the save hint
+        if !saveValidated {
+            saveValidated = true
+            withAnimation { showSaveHint = false }
+        }
+
+        NSLog("🎯 [Practice] saved phrase: \(phrase) → \(meaning)")
+    }
+
+    /// Checks if a phrase is already in the user's library (saved or graduated)
+    private func isPhraseAlreadyKnown(_ phrase: String) -> Bool {
+        let appGroup = "group.com.jeff.translatehelper"
+        guard let defaults = UserDefaults(suiteName: appGroup) else { return false }
+        let existing = defaults.array(forKey: "talkswitch_saved_phrases") as? [[String: String]] ?? []
+        return existing.contains { entry in
+            entry["sourceText"]?.lowercased() == phrase.lowercased() ||
+            entry["translation"]?.lowercased() == phrase.lowercased()
+        }
     }
 
     // MARK: - Sol Audio Playback
@@ -2204,6 +2280,10 @@ struct PracticeMessage: Identifiable {
     var nativeVersion: String?
     /// Notes about what was improved in the native version
     var nativeNotes: String?
+    /// For coaching tips: the isolated phrase to save (e.g. "tá ligado")
+    var saveablePhrase: String?
+    /// For coaching tips: the meaning of the phrase
+    var saveableMeaning: String?
 
     enum Role {
         case sol
