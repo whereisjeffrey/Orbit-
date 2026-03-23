@@ -1515,10 +1515,8 @@ struct PracticeSessionView: View {
 
                                 // Waveform indicator — shown while audio plays, fades out when text reveals
                                 if message.role == .sol {
-                                    HStack(spacing: 6) {
-                                        Image(systemName: "waveform")
-                                            .font(.system(size: 14))
-                                            .foregroundColor(.tsAccent)
+                                    HStack(spacing: 8) {
+                                        PulsatingWaveformView(isAnimating: !textVisible)
                                         Text("Listening...")
                                             .font(.custom("HelveticaNeue", size: 13))
                                             .foregroundColor(.tsSecondary)
@@ -2676,6 +2674,80 @@ struct TalkDrillView: View {
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 40)
+        }
+    }
+}
+
+// MARK: - Pulsating Waveform
+
+struct PulsatingWaveformView: View {
+    var isAnimating: Bool
+    var color: Color = .tsAccent
+    var barCount: Int = 5
+
+    // Each bar gets a phase offset so they animate out-of-sync
+    private let phases: [Double] = [0.0, 0.15, 0.3, 0.15, 0.0]
+    private let minHeight: CGFloat = 3
+    private let maxHeight: CGFloat = 18
+
+    @State private var heights: [CGFloat] = [3, 3, 3, 3, 3]
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 3) {
+            ForEach(0..<barCount, id: \.self) { i in
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(color)
+                    .frame(width: 3, height: heights[i])
+                    .animation(
+                        isAnimating
+                            ? Animation
+                                .easeInOut(duration: 0.55)
+                                .repeatForever(autoreverses: true)
+                                .delay(phases[i])
+                            : .easeOut(duration: 0.25),
+                        value: heights[i]
+                    )
+            }
+        }
+        .frame(height: maxHeight)
+        .onChange(of: isAnimating) { animating in
+            updateHeights(animating: animating)
+        }
+        .onAppear {
+            updateHeights(animating: isAnimating)
+        }
+    }
+
+    private func updateHeights(animating: Bool) {
+        if animating {
+            // Kick off staggered animations by setting different target heights
+            for i in 0..<barCount {
+                let delay = phases[i]
+                DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                    heights[i] = CGFloat.random(in: 10...maxHeight)
+                    // Keep re-randomizing to maintain organic feel
+                    scheduleRandomHeight(for: i)
+                }
+            }
+        } else {
+            for i in 0..<barCount {
+                heights[i] = minHeight
+            }
+        }
+    }
+
+    private func scheduleRandomHeight(for index: Int) {
+        guard isAnimating else { return }
+        let interval = Double.random(in: 0.4...0.7)
+        DispatchQueue.main.asyncAfter(deadline: .now() + interval) {
+            guard isAnimating else {
+                heights[index] = minHeight
+                return
+            }
+            withAnimation(.easeInOut(duration: interval)) {
+                heights[index] = CGFloat.random(in: minHeight...maxHeight)
+            }
+            scheduleRandomHeight(for: index)
         }
     }
 }
