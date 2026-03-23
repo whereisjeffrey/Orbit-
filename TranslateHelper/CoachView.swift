@@ -1066,18 +1066,7 @@ struct PracticeSessionView: View {
     // Topic prompts sent to GPT — Sol generates the actual message
     // in the right language, dialect, and city context automatically.
     // These are just topic DIRECTIONS, not hardcoded messages.
-    private let topicPrompts: [(prompt: String, tag: String)] = [
-        ("Ask about their neighborhood — what's the vibe, favorite spots, daily routine there", "neighborhood"),
-        ("Ask about food — last amazing meal, favorite local dish, where they eat", "food"),
-        ("Ask what they'd show a visiting friend — one perfect day in their city", "travel"),
-        ("Ask about cultural habits they've picked up — things they do now that they wouldn't have done before", "culture"),
-        ("Ask about local music, entertainment, or nightlife — what they're into", "music"),
-        ("Ask about their work life abroad — what it's like working in another language/culture", "work"),
-        ("Ask about dating or friendships — making connections in another language", "social"),
-        ("Ask about something they miss from home vs something they'd never go back to", "identity"),
-    ]
-
-    @State private var generatedTopics: [PracticeMessage] = []
+    @State private var recentTopicTags: [String] = []  // last 5 topic tags — prevents repeats
     @State private var isLoadingTopic = true
 
     @State private var messages: [PracticeMessage] = []
@@ -1339,6 +1328,11 @@ struct PracticeSessionView: View {
             }
         }
         .onAppear {
+            // Set speaking rate based on user level
+            // TODO: read actual level from scoring system
+            // For now: C-level = native speed
+            ttsService.speakingRate = 1.05  // C-level: native speed
+
             // Initialize with first topic
             loadTopic(index: 0)
 
@@ -1506,11 +1500,27 @@ struct PracticeSessionView: View {
                                     .foregroundColor(.tsSecondary)
                             }
                         } else {
-                            Text(message.text)
-                                .font(.custom("HelveticaNeue", size: 14))
-                                .foregroundColor(.tsLabel)
-                                .lineSpacing(3)
-                                .opacity(textVisible ? 1 : 0)
+                            ZStack(alignment: .leading) {
+                                // Actual message text — always occupies full layout space
+                                Text(message.text)
+                                    .font(.custom("HelveticaNeue", size: 14))
+                                    .foregroundColor(.tsLabel)
+                                    .lineSpacing(3)
+                                    .opacity(textVisible ? 1 : 0)
+
+                                // Waveform indicator — shown while audio plays, fades out when text reveals
+                                if message.role == .sol {
+                                    HStack(spacing: 6) {
+                                        Image(systemName: "waveform")
+                                            .font(.system(size: 14))
+                                            .foregroundColor(.tsAccent)
+                                        Text("Listening...")
+                                            .font(.custom("HelveticaNeue", size: 13))
+                                            .foregroundColor(.tsSecondary)
+                                    }
+                                    .opacity(textVisible ? 0 : 1)
+                                }
+                            }
                         }
                     }
 
@@ -1673,15 +1683,28 @@ struct PracticeSessionView: View {
 
     private func loadTopic(index: Int) {
         isLoadingTopic = true
-        let topicDirection = topicPrompts[index % topicPrompts.count]
 
-        // Read user's city from settings
+        // Read user's city and interests from settings
         let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper")
         let cityId = defaults?.string(forKey: "selected_city_id") ?? ""
         let targetLang = defaults?.string(forKey: "talkswitch_target_lang") ?? "pt"
-
-        // Map city ID to display name (or use generic)
         let userCity = cityId.isEmpty ? "their city" : cityId.replacingOccurrences(of: "_", with: " ").replacingOccurrences(of: "mx ", with: "").capitalized
+
+        // Load interest profile for personalization
+        let appGroup = "group.com.jeff.translatehelper"
+        var interestContext = ""
+        if let dir = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup) {
+            let file = dir.appendingPathComponent("interest_profile.json")
+            if let data = try? Data(contentsOf: file),
+               let entries = try? JSONSerialization.jsonObject(with: data) as? [[String: String]] {
+                let engaged = entries.filter { $0["action"] == "engaged" }.compactMap { $0["topic"] }
+                let swiped = entries.filter { $0["action"] == "swiped" }.compactMap { $0["topic"] }
+                if !engaged.isEmpty { interestContext += "User enjoys talking about: \(Set(engaged).joined(separator: ", ")). " }
+                if !swiped.isEmpty { interestContext += "User has swiped past: \(Set(swiped).joined(separator: ", ")). " }
+            }
+        }
+
+        let recentBuffer = recentTopicTags.isEmpty ? "" : "Do NOT generate a topic related to these recent tags (avoid repeats): \(recentTopicTags.joined(separator: ", ")). "
 
         let hintText = showSwipeRightHint
             ? "💡 Sol speaks like a local — casual, full of slang. Respond naturally. Swipe right → for a different topic."
@@ -1690,23 +1713,31 @@ struct PracticeSessionView: View {
             : "💡 Sol speaks like a local — casual, full of slang. Respond naturally."
 
         messages = [
-            PracticeMessage(role: .coaching,
-                           text: hintText),
+            PracticeMessage(role: .coaching, text: hintText),
         ]
         for msg in messages { revealedText.insert(msg.id) }
         messageCount = 0
 
-        // Generate Sol's opening via GPT
+        // Fully generative topic — GPT invents a fresh conversation starter
         let openingPrompt = """
         Generate a casual, warm opening message for a practice conversation.
-        Topic direction: \(topicDirection.prompt)
 
-        Speak naturally in the target language as someone from \(userCity).
-        Use local slang and contractions. 2-3 sentences max.
-        Make it a question they can easily answer — nothing too specific.
+        Be CREATIVE — invent a unique, interesting topic. Think about things like:
+        daily life, hobbies, funny observations, local culture, food, music, travel stories,
+        work life, friendships, dating, city life, weekend plans, childhood memories,
+        unpopular opinions, hypothetical questions, or anything else that sparks conversation.
+
+        \(interestContext)
+        \(recentBuffer)
+
+        The user lives in \(userCity). Reference the city naturally if relevant.
+        Speak naturally in the target language. Use local slang and contractions.
+        2-3 sentences max. Ask a question they can easily answer.
+
+        Also provide a 1-word topic tag for tracking (e.g. "food", "music", "dating", "work", "culture").
 
         Respond ONLY with JSON:
-        {"message": "your opening in target language", "translation": "English translation", "notes": "brief slang/vocab notes"}
+        {"message": "your opening in target language", "translation": "English translation", "notes": "brief slang/vocab notes", "topic_tag": "one_word_tag"}
         """
 
         // Show loading placeholder with Sol avatar
@@ -1735,6 +1766,11 @@ struct PracticeSessionView: View {
                 solTranslation = sol.translation
                 solNotes = sol.translationNotes
                 slangNotes = sol.slangNotes
+
+                // Track topic to prevent repeats — keep last 5
+                let tag = sol.translationNotes?.split(separator: " ").first.map(String.init) ?? "general"
+                recentTopicTags.append(tag)
+                if recentTopicTags.count > 5 { recentTopicTags.removeFirst() }
             } else {
                 solText = "E aí! Tudo bem? Me conta — como tá sendo o dia hoje?"
                 solTranslation = "Hey! Everything good? Tell me — how's your day going?"
@@ -1766,7 +1802,7 @@ struct PracticeSessionView: View {
     }
 
     private func swipeToNextTopic() {
-        let swipedTag = topicPrompts[currentTopicIndex % topicPrompts.count].tag
+        let swipedTag = recentTopicTags.last ?? "unknown"
         logInterest(topic: swipedTag, action: "swiped")
 
         // First right swipe — dismiss right hint, show left hint
@@ -1917,7 +1953,7 @@ struct PracticeSessionView: View {
 
         // Log engagement on first message for this topic
         if messageCount == 1 {
-            let engagedTag = topicPrompts[currentTopicIndex % topicPrompts.count].tag
+            let engagedTag = recentTopicTags.last ?? "unknown"
             logInterest(topic: engagedTag, action: "engaged")
         }
 
@@ -2074,6 +2110,9 @@ class PracticeTTSService: NSObject, AVAudioPlayerDelegate {
         }
     }
 
+    /// Speaking rate based on user level
+    var speakingRate: Double = 0.95  // default B1-B2
+
     func speak(text: String, language: String, completion: @escaping () -> Void) {
         onComplete = completion
 
@@ -2089,11 +2128,12 @@ class PracticeTTSService: NSObject, AVAudioPlayerDelegate {
             "input": ["text": text],
             "voice": [
                 "languageCode": locale,
+                "name": "\(locale)-Neural2-A",  // Neural2 — better than WaveNet, same price
                 "ssmlGender": "FEMALE"
             ],
             "audioConfig": [
                 "audioEncoding": "MP3",
-                "speakingRate": 0.92,
+                "speakingRate": speakingRate,
                 "pitch": 0.0
             ]
         ]
@@ -2160,8 +2200,8 @@ class PracticeTTSService: NSObject, AVAudioPlayerDelegate {
         let locale = googleLocale(for: language)
         let body: [String: Any] = [
             "input": ["text": text],
-            "voice": ["languageCode": locale, "ssmlGender": "FEMALE"],
-            "audioConfig": ["audioEncoding": "MP3", "speakingRate": 0.92, "pitch": 0.0]
+            "voice": ["languageCode": locale, "name": "\(locale)-Neural2-A", "ssmlGender": "FEMALE"],
+            "audioConfig": ["audioEncoding": "MP3", "speakingRate": speakingRate, "pitch": 0.0]
         ]
 
         var request = URLRequest(url: url)
