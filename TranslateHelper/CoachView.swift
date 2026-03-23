@@ -1067,7 +1067,7 @@ struct PracticeSessionView: View {
     // in the right language, dialect, and city context automatically.
     // These are just topic DIRECTIONS, not hardcoded messages.
     @State private var recentTopicTags: [String] = []  // last 5 topic tags — prevents repeats
-    @State private var isLoadingTopic = true
+    @State private var isLoadingTopic = false
 
     @State private var messages: [PracticeMessage] = []
 
