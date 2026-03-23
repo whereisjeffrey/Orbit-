@@ -41,6 +41,12 @@ class KeyboardViewController: UIInputViewController {
     private var lastSourceWasSpeech: Bool = false
     private var lastSpeechDetectedLang: String = ""  // WhisperKit's language detection (more reliable than text detection)
 
+    // MARK: - Wingman State
+    private var isWingmanMode: Bool = false
+    private var wingmanOnboardingShown: Bool = false
+    private var wingmanOptions: [TalkSwitchAPI.WingmanOption] = []
+    private var isLoadingWingman: Bool = false
+
     // MARK: - UI Elements
 
     private let emptyBar = UIView()
@@ -88,6 +94,11 @@ class KeyboardViewController: UIInputViewController {
     private let coachTextLabel = UILabel()
     private let toneStack = UIStackView()
     private let actionStack = UIStackView()
+
+    // Wingman UI
+    private let wingmanToggle = UIStackView()
+    private let wingmanOptionsStack = UIStackView()
+    private let wingmanOnboardingCard = UIView()
     private let loadingSpinner: UIActivityIndicatorView = {
         let s = UIActivityIndicatorView(style: .medium)
         s.translatesAutoresizingMaskIntoConstraints = false
@@ -889,6 +900,21 @@ class KeyboardViewController: UIInputViewController {
         setupNotesCard()
         contentStack.addArrangedSubview(notesCard)
 
+        // === Wingman toggle (only visible in flirty mode) ===
+        setupWingmanToggle()
+        contentStack.addArrangedSubview(wingmanToggle)
+        wingmanToggle.isHidden = true
+
+        // === Wingman options cards (replaces output when in wingman mode) ===
+        setupWingmanOptionsStack()
+        contentStack.addArrangedSubview(wingmanOptionsStack)
+        wingmanOptionsStack.isHidden = true
+
+        // === Wingman onboarding card ===
+        setupWingmanOnboarding()
+        contentStack.addArrangedSubview(wingmanOnboardingCard)
+        wingmanOnboardingCard.isHidden = true
+
         // === Tone selector ===
         setupToneStack()
         contentStack.addArrangedSubview(toneStack)
@@ -1308,6 +1334,301 @@ class KeyboardViewController: UIInputViewController {
         }
     }
 
+    // MARK: - Wingman UI Setup
+
+    private func setupWingmanToggle() {
+        wingmanToggle.axis = .horizontal
+        wingmanToggle.distribution = .fillEqually
+        wingmanToggle.spacing = 6
+        wingmanToggle.translatesAutoresizingMaskIntoConstraints = false
+        wingmanToggle.heightAnchor.constraint(equalToConstant: 32).isActive = true
+
+        let translateBtn = UIButton(type: .system)
+        translateBtn.setTitle("💬 Translate", for: .normal)
+        translateBtn.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
+        translateBtn.layer.cornerRadius = 16
+        translateBtn.clipsToBounds = true
+        translateBtn.tag = 0
+        translateBtn.addTarget(self, action: #selector(wingmanToggleTapped(_:)), for: .touchUpInside)
+        wingmanToggle.addArrangedSubview(translateBtn)
+
+        let wingmanBtn = UIButton(type: .system)
+        wingmanBtn.setTitle("🔥 Wingman", for: .normal)
+        wingmanBtn.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
+        wingmanBtn.layer.cornerRadius = 16
+        wingmanBtn.clipsToBounds = true
+        wingmanBtn.tag = 1
+        wingmanBtn.addTarget(self, action: #selector(wingmanToggleTapped(_:)), for: .touchUpInside)
+        wingmanToggle.addArrangedSubview(wingmanBtn)
+
+        updateWingmanToggleUI()
+    }
+
+    private func updateWingmanToggleUI() {
+        for (i, v) in wingmanToggle.arrangedSubviews.enumerated() {
+            guard let btn = v as? UIButton else { continue }
+            let isActive = (i == 0 && !isWingmanMode) || (i == 1 && isWingmanMode)
+            if isActive {
+                btn.backgroundColor = UIColor.systemOrange
+                btn.setTitleColor(.white, for: .normal)
+            } else {
+                btn.backgroundColor = cardBg
+                btn.setTitleColor(textPrimary, for: .normal)
+            }
+        }
+    }
+
+    @objc private func wingmanToggleTapped(_ sender: UIButton) {
+        isWingmanMode = sender.tag == 1
+        updateWingmanToggleUI()
+
+        let generator = UIImpactFeedbackGenerator(style: .light)
+        generator.impactOccurred()
+
+        if isWingmanMode {
+            // Show wingman UI, hide normal output
+            outputCard.isHidden = true
+            notesCard.isHidden = true
+            correctionCard.isHidden = true
+            coachCard.isHidden = true
+
+            // Show onboarding on first use
+            if !wingmanOnboardingShown {
+                let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper")
+                if !(defaults?.bool(forKey: "ts_wingman_onboarded") ?? false) {
+                    wingmanOnboardingCard.isHidden = false
+                    wingmanOnboardingShown = true
+                    defaults?.set(true, forKey: "ts_wingman_onboarded")
+                    defaults?.synchronize()
+                }
+            }
+
+            // If there's already text, auto-trigger Wingman
+            if !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                fetchWingmanOptions(situation: inputText)
+            }
+        } else {
+            // Back to translate mode
+            wingmanOptionsStack.isHidden = true
+            wingmanOnboardingCard.isHidden = true
+            outputCard.isHidden = false
+            notesCard.isHidden = false
+
+            // Re-translate if we have text
+            if !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                performTranslation(text: inputText, source: "wingman-off")
+            }
+        }
+
+        NSLog("TSKBD_WINGMAN: mode=\(isWingmanMode ? "on" : "off")")
+    }
+
+    private func setupWingmanOptionsStack() {
+        wingmanOptionsStack.axis = .vertical
+        wingmanOptionsStack.spacing = 8
+        wingmanOptionsStack.translatesAutoresizingMaskIntoConstraints = false
+    }
+
+    private func setupWingmanOnboarding() {
+        wingmanOnboardingCard.backgroundColor = UIColor.systemOrange.withAlphaComponent(0.12)
+        wingmanOnboardingCard.layer.cornerRadius = 12
+        wingmanOnboardingCard.layer.borderWidth = 1
+        wingmanOnboardingCard.layer.borderColor = UIColor.systemOrange.withAlphaComponent(0.25).cgColor
+        wingmanOnboardingCard.translatesAutoresizingMaskIntoConstraints = false
+
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.numberOfLines = 0
+        label.font = UIFont.systemFont(ofSize: 13)
+        label.textColor = textPrimary
+
+        let text = NSMutableAttributedString()
+        text.append(NSAttributedString(
+            string: "Welcome to Wingman 🔥\n",
+            attributes: [.font: UIFont.systemFont(ofSize: 14, weight: .bold), .foregroundColor: UIColor.white]
+        ))
+        text.append(NSAttributedString(
+            string: "Describe your situation and we'll give you smooth response options.\n\n",
+            attributes: [.font: UIFont.systemFont(ofSize: 13), .foregroundColor: UIColor.white.withAlphaComponent(0.8)]
+        ))
+        text.append(NSAttributedString(
+            string: "\"She just said she loves coffee — what's a smooth response?\"\n\"We matched on Tinder, what's a fun opener?\"",
+            attributes: [
+                .font: UIFont.italicSystemFont(ofSize: 12),
+                .foregroundColor: UIColor.white.withAlphaComponent(0.6)
+            ]
+        ))
+        label.attributedText = text
+
+        wingmanOnboardingCard.addSubview(label)
+
+        let dismissBtn = UIButton(type: .system)
+        dismissBtn.setTitle("Got it", for: .normal)
+        dismissBtn.titleLabel?.font = UIFont.systemFont(ofSize: 13, weight: .semibold)
+        dismissBtn.setTitleColor(.white, for: .normal)
+        dismissBtn.backgroundColor = UIColor.systemOrange.withAlphaComponent(0.4)
+        dismissBtn.layer.cornerRadius = 8
+        dismissBtn.translatesAutoresizingMaskIntoConstraints = false
+        dismissBtn.addTarget(self, action: #selector(dismissWingmanOnboarding), for: .touchUpInside)
+        wingmanOnboardingCard.addSubview(dismissBtn)
+
+        NSLayoutConstraint.activate([
+            wingmanOnboardingCard.heightAnchor.constraint(greaterThanOrEqualToConstant: 120),
+            label.topAnchor.constraint(equalTo: wingmanOnboardingCard.topAnchor, constant: 12),
+            label.leadingAnchor.constraint(equalTo: wingmanOnboardingCard.leadingAnchor, constant: 14),
+            label.trailingAnchor.constraint(equalTo: wingmanOnboardingCard.trailingAnchor, constant: -14),
+            dismissBtn.topAnchor.constraint(equalTo: label.bottomAnchor, constant: 10),
+            dismissBtn.trailingAnchor.constraint(equalTo: wingmanOnboardingCard.trailingAnchor, constant: -14),
+            dismissBtn.bottomAnchor.constraint(equalTo: wingmanOnboardingCard.bottomAnchor, constant: -12),
+            dismissBtn.widthAnchor.constraint(equalToConstant: 60),
+            dismissBtn.heightAnchor.constraint(equalToConstant: 30),
+        ])
+    }
+
+    @objc private func dismissWingmanOnboarding() {
+        UIView.animate(withDuration: 0.2) {
+            self.wingmanOnboardingCard.alpha = 0
+        } completion: { _ in
+            self.wingmanOnboardingCard.isHidden = true
+            self.wingmanOnboardingCard.alpha = 1
+        }
+    }
+
+    // MARK: - Wingman Logic
+
+    private func fetchWingmanOptions(situation: String) {
+        isLoadingWingman = true
+        wingmanOptionsStack.isHidden = false
+
+        // Clear existing option cards
+        wingmanOptionsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+
+        // Show loading
+        let loadingLabel = UILabel()
+        loadingLabel.text = "🔥 Finding your moves..."
+        loadingLabel.font = UIFont.systemFont(ofSize: 13)
+        loadingLabel.textColor = textSecondary
+        loadingLabel.textAlignment = .center
+        loadingLabel.translatesAutoresizingMaskIntoConstraints = false
+        loadingLabel.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        wingmanOptionsStack.addArrangedSubview(loadingLabel)
+
+        let targetCode = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
+
+        TalkSwitchAPI.shared.getWingmanOptions(
+            situation: situation,
+            sourceLang: "en",
+            targetLang: targetCode
+        ) { [weak self] options in
+            guard let self = self else { return }
+            self.isLoadingWingman = false
+            self.wingmanOptions = options
+
+            // Clear loading
+            self.wingmanOptionsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+
+            if options.isEmpty {
+                let errorLabel = UILabel()
+                errorLabel.text = "Couldn't generate options. Try again?"
+                errorLabel.font = UIFont.systemFont(ofSize: 13)
+                errorLabel.textColor = self.textSecondary
+                errorLabel.textAlignment = .center
+                errorLabel.heightAnchor.constraint(equalToConstant: 40).isActive = true
+                self.wingmanOptionsStack.addArrangedSubview(errorLabel)
+                return
+            }
+
+            for (i, option) in options.enumerated() {
+                let card = self.buildWingmanOptionCard(option: option, index: i)
+                self.wingmanOptionsStack.addArrangedSubview(card)
+            }
+        }
+    }
+
+    private func buildWingmanOptionCard(option: TalkSwitchAPI.WingmanOption, index: Int) -> UIView {
+        let card = UIView()
+        card.backgroundColor = cardBg
+        card.layer.cornerRadius = 12
+        card.layer.borderWidth = 1
+        card.layer.borderColor = UIColor.systemOrange.withAlphaComponent(0.2).cgColor
+        card.translatesAutoresizingMaskIntoConstraints = false
+
+        // Vibe tag
+        let vibeLabel = UILabel()
+        vibeLabel.text = option.vibe.uppercased()
+        vibeLabel.font = UIFont.systemFont(ofSize: 9, weight: .bold)
+        vibeLabel.textColor = UIColor.systemOrange
+        vibeLabel.translatesAutoresizingMaskIntoConstraints = false
+        card.addSubview(vibeLabel)
+
+        // Target language text (bold, main)
+        let textLabel = UILabel()
+        textLabel.text = option.text
+        textLabel.font = UIFont.systemFont(ofSize: 15, weight: .medium)
+        textLabel.textColor = textPrimary
+        textLabel.numberOfLines = 0
+        textLabel.translatesAutoresizingMaskIntoConstraints = false
+        card.addSubview(textLabel)
+
+        // English translation (smaller, dimmer)
+        let translationLabel = UILabel()
+        translationLabel.text = option.translation
+        translationLabel.font = UIFont.systemFont(ofSize: 12)
+        translationLabel.textColor = textSecondary
+        translationLabel.numberOfLines = 0
+        translationLabel.translatesAutoresizingMaskIntoConstraints = false
+        card.addSubview(translationLabel)
+
+        // Copy button
+        let copyBtn = UIButton(type: .system)
+        copyBtn.setTitle("Use this", for: .normal)
+        copyBtn.titleLabel?.font = UIFont.systemFont(ofSize: 11, weight: .semibold)
+        copyBtn.setTitleColor(UIColor.systemOrange, for: .normal)
+        copyBtn.translatesAutoresizingMaskIntoConstraints = false
+        copyBtn.tag = index
+        copyBtn.addTarget(self, action: #selector(wingmanOptionTapped(_:)), for: .touchUpInside)
+        card.addSubview(copyBtn)
+
+        NSLayoutConstraint.activate([
+            card.heightAnchor.constraint(greaterThanOrEqualToConstant: 80),
+            vibeLabel.topAnchor.constraint(equalTo: card.topAnchor, constant: 10),
+            vibeLabel.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 14),
+            textLabel.topAnchor.constraint(equalTo: vibeLabel.bottomAnchor, constant: 6),
+            textLabel.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 14),
+            textLabel.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -70),
+            translationLabel.topAnchor.constraint(equalTo: textLabel.bottomAnchor, constant: 4),
+            translationLabel.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 14),
+            translationLabel.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -70),
+            translationLabel.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -10),
+            copyBtn.centerYAnchor.constraint(equalTo: card.centerYAnchor),
+            copyBtn.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -12),
+        ])
+
+        return card
+    }
+
+    @objc private func wingmanOptionTapped(_ sender: UIButton) {
+        guard sender.tag < wingmanOptions.count else { return }
+        let option = wingmanOptions[sender.tag]
+
+        // Insert the target language text into the text field
+        if let before = textDocumentProxy.documentContextBeforeInput {
+            for _ in 0..<before.count { textDocumentProxy.deleteBackward() }
+        }
+        textDocumentProxy.insertText(option.text)
+
+        // Flash the button
+        sender.setTitle("Copied! ✅", for: .normal)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            sender.setTitle("Use this", for: .normal)
+        }
+
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
+
+        NSLog("TSKBD_WINGMAN: used option \(sender.tag) — \(option.vibe)")
+    }
+
     // MARK: - Show States
 
     private var autoTranslateTimer: Timer?
@@ -1320,13 +1641,42 @@ class KeyboardViewController: UIInputViewController {
         let after  = textDocumentProxy.documentContextAfterInput  ?? ""
         let text   = (before + after).trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { showEmpty(); return }
-        // Debounce: wait 1.8s after last keystroke then auto-translate
+        // Debounce: wait 1.8s after last keystroke then auto-translate (or Wingman)
         autoTranslateTimer = Timer.scheduledTimer(withTimeInterval: 1.8, repeats: false) { [weak self] _ in
             guard let self = self else { return }
             let b = self.textDocumentProxy.documentContextBeforeInput ?? ""
             let a = self.textDocumentProxy.documentContextAfterInput  ?? ""
             let t = (b + a).trimmingCharacters(in: .whitespacesAndNewlines)
             guard !t.isEmpty else { return }
+
+            // Wingman mode: route to situation handler
+            if self.isWingmanMode && self.currentTone == "flirty" {
+                self.fetchWingmanOptions(situation: t)
+                // Still show the input card so they see what they typed
+                self.inputText = t
+                self.showPanel()
+                self.inputTextLabel.text = t
+                self.inputLangLabel.text = "YOUR SITUATION"
+                return
+            }
+
+            // Auto-detect: if in flirty mode and text looks like a situation,
+            // switch to Wingman automatically
+            if self.currentTone == "flirty" && !self.isWingmanMode &&
+               TalkSwitchAPI.shared.looksLikeSituation(t) {
+                self.isWingmanMode = true
+                self.updateWingmanToggleUI()
+                self.outputCard.isHidden = true
+                self.notesCard.isHidden = true
+                self.wingmanToggle.isHidden = false
+                self.fetchWingmanOptions(situation: t)
+                self.inputText = t
+                self.showPanel()
+                self.inputTextLabel.text = t
+                self.inputLangLabel.text = "YOUR SITUATION"
+                return
+            }
+
             self.performTranslation(text: t, source: "field")
         }
     }
@@ -1707,9 +2057,26 @@ class KeyboardViewController: UIInputViewController {
         updateToneSelection()
         NSLog("TSKBD_TONE: \(currentTone)")
 
+        // Show/hide Wingman toggle based on tone
+        let isFlirty = currentTone == "flirty"
+        wingmanToggle.isHidden = !isFlirty
+        if !isFlirty && isWingmanMode {
+            // Leaving flirty mode — reset wingman
+            isWingmanMode = false
+            updateWingmanToggleUI()
+            wingmanOptionsStack.isHidden = true
+            wingmanOnboardingCard.isHidden = true
+            outputCard.isHidden = false
+            notesCard.isHidden = false
+        }
+
         // Re-translate with new tone if we have text
         if !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            performTranslation(text: inputText, source: "tone-change")
+            if isWingmanMode {
+                fetchWingmanOptions(situation: inputText)
+            } else {
+                performTranslation(text: inputText, source: "tone-change")
+            }
         }
     }
 

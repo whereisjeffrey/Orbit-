@@ -1531,4 +1531,125 @@ class TalkSwitchAPI {
             NSLog("TSKBD_PERSONA_UPDATED: \(updatedPersona)")
         }.resume()
     }
+
+    // MARK: - Wingman (Flirt Coach)
+
+    struct WingmanOption {
+        let text: String         // Response in target language
+        let translation: String  // English translation
+        let vibe: String         // e.g. "playful tease", "confident callback"
+    }
+
+    /// Given a situational description, returns 3 flirty response options in the target language.
+    func getWingmanOptions(
+        situation: String,
+        sourceLang: String,
+        targetLang: String,
+        completion: @escaping ([WingmanOption]) -> Void
+    ) {
+        let apiKey = APIConfig.openAIAPIKey
+        guard let url = URL(string: "https://api.openai.com/v1/chat/completions") else {
+            completion([])
+            return
+        }
+
+        let targetName = languageName(for: targetLang)
+        let genderInstruction = buildFlirtyGenderInstruction()
+        let locationInstruction = buildLocationInstruction()
+
+        let systemPrompt = """
+        You are Wingman — a bilingual flirt coach who helps people sound smooth in \(targetName). \
+        The user will describe a situation (e.g. "she just said X", "we met at Y", "I want to bring up Z"). \
+        Your job is to give them 3 response options they could actually say, each with a different energy. \
+        \
+        Rules: \
+        - Each option must be in \(targetName), natural and native-sounding. \
+        - Each option should have a completely different approach/angle. \
+        - Keep responses short — 1-2 sentences max per option. Real texting length. \
+        - Make them sound confident, not desperate. Smooth, not try-hard. \
+        - Include cultural context — how would a local actually flirt? \
+        \(genderInstruction) \
+        \(locationInstruction) \
+        \
+        Respond ONLY with valid JSON: \
+        {"options": [ \
+          {"text": "response in \(targetName)", "translation": "English translation", "vibe": "2-3 word vibe tag"}, \
+          {"text": "...", "translation": "...", "vibe": "..."}, \
+          {"text": "...", "translation": "...", "vibe": "..."} \
+        ]} \
+        \
+        Vibe tag examples: "playful tease", "confident callback", "sweet and genuine", \
+        "bold move", "witty charm", "casual smooth", "romantic heat". \
+        Keep vibe tags lowercase, 2-3 words.
+        """
+
+        var req = URLRequest(url: url)
+        req.httpMethod = "POST"
+        req.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.timeoutInterval = 15
+
+        let body: [String: Any] = [
+            "model": "gpt-4o-mini",
+            "temperature": 1.0,
+            "max_tokens": 600,
+            "response_format": ["type": "json_object"],
+            "messages": [
+                ["role": "system", "content": systemPrompt],
+                ["role": "user", "content": situation]
+            ]
+        ]
+
+        req.httpBody = try? JSONSerialization.data(withJSONObject: body)
+
+        urlSession.dataTask(with: req) { data, _, error in
+            guard let data = data,
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let choices = json["choices"] as? [[String: Any]],
+                  let message = choices.first?["message"] as? [String: Any],
+                  let content = message["content"] as? String,
+                  let contentData = content.data(using: .utf8),
+                  let parsed = try? JSONSerialization.jsonObject(with: contentData) as? [String: Any],
+                  let options = parsed["options"] as? [[String: Any]]
+            else {
+                NSLog("TSKBD_WINGMAN: parse failed")
+                DispatchQueue.main.async { completion([]) }
+                return
+            }
+
+            let results = options.compactMap { opt -> WingmanOption? in
+                guard let text = opt["text"] as? String,
+                      let translation = opt["translation"] as? String,
+                      let vibe = opt["vibe"] as? String
+                else { return nil }
+                return WingmanOption(text: text, translation: translation, vibe: vibe)
+            }
+
+            NSLog("TSKBD_WINGMAN: got \(results.count) options")
+            DispatchQueue.main.async { completion(results) }
+        }.resume()
+    }
+
+    /// Auto-detects whether the user's input is a situation description (Wingman)
+    /// vs text to translate. Returns true if it looks like a situation.
+    func looksLikeSituation(_ text: String) -> Bool {
+        let lower = text.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        let situationSignals = [
+            "she said", "he said", "they said",
+            "she just", "he just", "they just",
+            "what should i", "what would be", "what can i",
+            "how do i", "how should i", "how would",
+            "give me", "help me",
+            "we met", "i met", "we matched", "i matched",
+            "she told me", "he told me",
+            "i want to", "i need to",
+            "what's a good", "what's a cool", "what's a funny",
+            "this girl", "this guy", "this person",
+            "on tinder", "on hinge", "on bumble",
+            "bring up", "callback", "call back",
+            "the situation", "the context", "here's what happened",
+            "respond to", "reply to",
+        ]
+        return situationSignals.contains { lower.contains($0) }
+    }
 }
