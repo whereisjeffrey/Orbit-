@@ -278,18 +278,60 @@ struct CoachPopulatedView: View {
             LightningRoundView()
         }
         .onAppear {
-            // One-time cleanup: clear any stale seed data from dev testing
+            #if DEBUG
+            // DEV ONLY: seed mistake profile for testing if empty
             let profile = MistakeProfileStore.shared
-            if !profile.entries.isEmpty {
-                let lang = UserDefaults(suiteName: "group.com.jeff.translatehelper")?
-                    .string(forKey: "talkswitch_target_lang") ?? "es"
-                let wrongLang = profile.entries.contains { $0.language != lang }
-                if wrongLang {
-                    #if DEBUG
-                    profile.clearAll()
-                    NSLog("⚡ [Coach] Cleared stale seed data (wrong language)")
-                    #endif
+            if profile.entries.isEmpty {
+                let lang = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
+                let mistakes: [(MistakeCategory, String, String, String, MistakeSource)] = [
+                    (.gender, lang == "pt" ? "o viagem" : "la problema",
+                     lang == "pt" ? "a viagem" : "el problema",
+                     lang == "pt" ? "'Viagem' is feminine — 'a viagem', not 'o viagem'" : "'Problema' is masculine — Greek-origin '-ma' words are masculine", .keyboard),
+                    (.gender, lang == "pt" ? "a problema" : "el costumbre",
+                     lang == "pt" ? "o problema" : "la costumbre",
+                     lang == "pt" ? "'Problema' is masculine in Portuguese" : "'Costumbre' is feminine despite not ending in '-a'", .solCoaching),
+                    (.conjugation, lang == "pt" ? "se eu seria" : "si yo tendría",
+                     lang == "pt" ? "se eu fosse" : "si yo tuviera",
+                     lang == "pt" ? "After 'se' (if), use subjunctive 'fosse', not conditional 'seria'" : "After 'si' (if), use subjunctive 'tuviera', not conditional 'tendría'", .solCoaching),
+                    (.conjugation, lang == "pt" ? "eu tenho ido ontem" : "yo he ido ayer",
+                     lang == "pt" ? "eu fui ontem" : "yo fui ayer",
+                     lang == "pt" ? "Use preterite 'fui' for completed past actions with 'ontem'" : "Use preterite 'fui' for completed past actions with 'ayer'", .keyboard),
+                    (.preposition, lang == "pt" ? "pensar sobre" : "pensar sobre",
+                     lang == "pt" ? "pensar em" : "pensar en",
+                     lang == "pt" ? "'Pensar' takes 'em' in Portuguese, not 'sobre'" : "'Pensar' takes 'en' in Spanish, not 'sobre'", .keyboard),
+                    (.preposition, lang == "pt" ? "sonhar sobre" : "soñar sobre",
+                     lang == "pt" ? "sonhar com" : "soñar con",
+                     lang == "pt" ? "'Sonhar' takes 'com' (dream with), not 'sobre'" : "'Soñar' takes 'con' (dream with), not 'sobre'", .solCoaching),
+                    (.vocabulary, lang == "pt" ? "estou excitado" : "estoy excitado",
+                     lang == "pt" ? "estou empolgado" : "estoy emocionado",
+                     lang == "pt" ? "'Excitado' means sexually aroused — use 'empolgado' for excited" : "'Excitado' means sexually aroused — use 'emocionado' for excited", .keyboard),
+                    (.vocabulary, lang == "pt" ? "realizar que" : "realizar que",
+                     lang == "pt" ? "perceber que" : "darse cuenta de que",
+                     lang == "pt" ? "'Realizar' means 'to accomplish' — 'perceber' means 'to realize'" : "'Realizar' means 'to accomplish' — 'darse cuenta' means 'to realize'", .solCoaching),
+                    (.wordOrder, lang == "pt" ? "um muito bom lugar" : "una muy buena idea",
+                     lang == "pt" ? "um lugar muito bom" : "una idea muy buena",
+                     lang == "pt" ? "Adjectives follow the noun: 'um lugar muito bom'" : "Adjectives follow the noun: 'una idea muy buena'", .keyboard),
+                    (.pronunciation, lang == "pt" ? "coração" : "desarrollar",
+                     lang == "pt" ? "coração" : "desarrollar",
+                     lang == "pt" ? "The 'ão' nasal diphthong — tongue back, air through the nose" : "The double 'rr' needs a rolled trill", .pronunciationDrill),
+                    (.pronunciation, lang == "pt" ? "desenvolvimento" : "vergüenza",
+                     lang == "pt" ? "desenvolvimento" : "vergüenza",
+                     lang == "pt" ? "The 'lv' cluster — don't swallow the 'v'" : "The 'gü' is pronounced 'gw'", .pronunciationDrill),
+                    (.idiom, lang == "pt" ? "pagar o pato" : "hacer sentido",
+                     lang == "pt" ? "pagar o pato" : "tener sentido",
+                     lang == "pt" ? "'Pagar o pato' = 'to take the blame' — literally 'pay the duck'" : "'Tener sentido' = 'to make sense' — not 'hacer sentido'", .solCoaching),
+                ]
+                for (cat, userSaid, correct, explanation, source) in mistakes {
+                    profile.record(category: cat, language: lang, userSaid: userSaid, correctForm: correct, explanation: explanation, source: source)
                 }
+                NSLog("⚡ [DEBUG] Seeded \(mistakes.count) \(lang) mistakes")
+            }
+            #endif
+
+            // Pre-generate Lightning Round in background so it's ready instantly
+            let roundLang = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
+            DispatchQueue.global(qos: .background).async {
+                LightningRoundEngine.preGenerate(language: roundLang)
             }
         }
     }

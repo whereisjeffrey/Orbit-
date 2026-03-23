@@ -37,6 +37,12 @@ struct LightningRoundView: View {
     @State private var correctCount = 0
     @State private var totalAnswered = 0
 
+    // Intro animations
+    @State private var boltOpacity: Double = 0
+    @State private var circleBounce: CGFloat = 0.6
+    @State private var rainBolts: [RainBolt] = []
+    @State private var rainStarted = false
+
     private let ttsService = PracticeTTSService()
     private let engine = LightningRoundEngine.shared
     private let conversationService = PracticeConversationService.shared
@@ -78,63 +84,90 @@ struct LightningRoundView: View {
     // MARK: - Intro
 
     private var introView: some View {
-        VStack(spacing: 24) {
-            Spacer()
-
-            // Lightning bolt circle
-            ZStack {
-                Circle()
-                    .fill(Color.white)
-                    .frame(width: 80, height: 80)
-                    .shadow(color: .white.opacity(0.3), radius: 20)
-
+        ZStack {
+            // Raining lightning bolts — uniform diagonal fall
+            ForEach(rainBolts) { bolt in
                 Image(systemName: "bolt.fill")
-                    .font(.system(size: 36))
-                    .foregroundColor(Color.tsAccent)
+                    .font(.system(size: bolt.size))
+                    .foregroundColor(Color(hex: "#FFD60A").opacity(bolt.opacity))
+                    .position(x: bolt.x, y: bolt.y)
             }
 
-            Text("Lightning Round")
-                .font(.custom("HelveticaNeue-Bold", size: 28))
-                .foregroundColor(.white)
+            VStack(spacing: 24) {
+                Spacer()
 
-            Text("6 quick exercises based on your real mistakes.\nTap, speak, listen — 60 seconds.")
-                .font(.custom("HelveticaNeue", size: 15))
-                .foregroundColor(.white.opacity(0.7))
-                .multilineTextAlignment(.center)
-                .lineSpacing(3)
-                .padding(.horizontal, 40)
+                // Lightning bolt circle — matches Let's Go button style, glow outside only
+                ZStack {
+                    // Frosted glass circle (same treatment as the button)
+                    Circle()
+                        .fill(Color.white.opacity(0.15))
+                        .frame(width: 80, height: 80)
+                        .overlay(
+                            Circle()
+                                .stroke(Color.white.opacity(0.25), lineWidth: 1)
+                        )
+                        // Yellow glow on the outside edge
+                        .shadow(color: Color(hex: "#FFD60A").opacity(0.4), radius: 16)
+                        .shadow(color: Color(hex: "#FFD60A").opacity(0.15), radius: 32)
 
-            Spacer()
-
-            Button {
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    phase = .loading
-                }
-                generateRound()
-            } label: {
-                HStack(spacing: 8) {
                     Image(systemName: "bolt.fill")
-                        .font(.system(size: 16))
-                    Text("Let's Go")
-                        .font(.custom("HelveticaNeue-Bold", size: 17))
+                        .font(.system(size: 36))
+                        .foregroundColor(Color(hex: "#FFD60A"))
+                        .opacity(boltOpacity)
+                        .shadow(color: Color(hex: "#FFD60A").opacity(0.5), radius: 6)
                 }
-                .foregroundColor(.white)
-                .padding(.horizontal, 48)
-                .padding(.vertical, 16)
-                .background(
-                    Capsule()
-                        .fill(Color.tsAccent)
-                )
-            }
+                .scaleEffect(circleBounce)
 
-            Button { dismiss() } label: {
-                Text("Not now")
-                    .font(.custom("HelveticaNeue", size: 14))
-                    .foregroundColor(.white.opacity(0.5))
+                Text("Lightning Round")
+                    .font(.custom("HelveticaNeue-Bold", size: 28))
+                    .foregroundColor(.white)
+
+                Text("6 quick exercises based on your real mistakes.\nTap, speak, listen — 60 seconds.")
+                    .font(.custom("HelveticaNeue", size: 15))
+                    .foregroundColor(.white.opacity(0.7))
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(3)
+                    .padding(.horizontal, 40)
+
+                Spacer()
+
+                Button {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        phase = .loading
+                    }
+                    generateRound()
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "bolt.fill")
+                            .font(.system(size: 16))
+                            .foregroundColor(Color(hex: "#FFD60A"))
+                            .shadow(color: Color(hex: "#FFD60A").opacity(0.5), radius: 4)
+                        Text("Let's Go")
+                            .font(.custom("HelveticaNeue-Bold", size: 17))
+                            .foregroundColor(.white)
+                    }
+                    .padding(.horizontal, 48)
+                    .padding(.vertical, 16)
+                    .background(
+                        Capsule()
+                            .fill(Color.white.opacity(0.15))
+                            .overlay(
+                                Capsule()
+                                    .stroke(Color.white.opacity(0.25), lineWidth: 1)
+                            )
+                    )
+                }
+
+                Button { dismiss() } label: {
+                    Text("Not now")
+                        .font(.custom("HelveticaNeue", size: 14))
+                        .foregroundColor(.white.opacity(0.5))
+                }
+                .padding(.top, 8)
+                .padding(.bottom, 40)
             }
-            .padding(.top, 8)
-            .padding(.bottom, 40)
         }
+        .onAppear { startIntroAnimations() }
     }
 
     // MARK: - Loading
@@ -160,22 +193,14 @@ struct LightningRoundView: View {
         return VStack(spacing: 0) {
             // Top bar: progress + close
             HStack {
-                // Progress dots
                 HStack(spacing: 6) {
                     ForEach(0..<cards.count, id: \.self) { i in
-                        Circle()
+                        RoundedRectangle(cornerRadius: 2)
                             .fill(dotColor(for: i))
-                            .frame(width: 8, height: 8)
+                            .frame(width: i == currentIndex ? 20 : 8, height: 4)
+                            .animation(.easeInOut(duration: 0.2), value: currentIndex)
                     }
                 }
-
-                Spacer()
-
-                // Card type label
-                Text(card.type.displayName.uppercased())
-                    .font(.custom("HelveticaNeue-Bold", size: 10))
-                    .foregroundColor(.white.opacity(0.5))
-                    .kerning(1.0)
 
                 Spacer()
 
@@ -188,94 +213,202 @@ struct LightningRoundView: View {
             .padding(.horizontal, 20)
             .padding(.top, 16)
 
-            Spacer()
+            Spacer().frame(height: 32)
 
-            // Card content
-            VStack(spacing: 24) {
-                // Prompt
-                Text(card.prompt)
-                    .font(.custom("HelveticaNeue-Medium", size: 18))
-                    .foregroundColor(.white)
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(4)
-                    .padding(.horizontal, 24)
-                    .fixedSize(horizontal: false, vertical: true)
+            // White card container
+            VStack(spacing: 0) {
+                // Card type header
+                HStack {
+                    Text(card.type.displayName.uppercased())
+                        .font(.custom("HelveticaNeue-Bold", size: 10))
+                        .foregroundColor(.tsSecondary)
+                        .kerning(1.0)
+                    Spacer()
+                    Text("\(currentIndex + 1) of \(cards.count)")
+                        .font(.custom("HelveticaNeue", size: 11))
+                        .foregroundColor(.tsSecondary)
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
+                .padding(.bottom, 16)
+
+                // Prompt — split into instruction + content
+                promptBlock(card: card)
+                    .padding(.bottom, 20)
 
                 // Card-type-specific content
                 if card.type.isVoiceCard && !showCorrection {
                     voiceInputArea(card: card)
+                        .padding(.bottom, 24)
                 } else if card.type.isListenCard && card.type != .echo && !showCorrection {
                     listenArea(card: card)
+                        .padding(.bottom, 24)
                 } else if !showCorrection {
                     optionsArea(card: card)
+                        .padding(.bottom, 24)
                 }
-            }
 
-            Spacer()
-
-            // Correction card (slides up from bottom when wrong)
-            if showCorrection {
-                correctionCard(card: card)
-                    .offset(y: correctionOffset)
-                    .gesture(
-                        DragGesture()
-                            .onChanged { gesture in
-                                // Only allow right swipe
-                                if gesture.translation.width > 0 {
-                                    correctionOffset = -gesture.translation.width * 0.3
-                                }
-                            }
-                            .onEnded { gesture in
-                                if gesture.translation.width > 80 {
-                                    advanceToNext()
-                                } else {
-                                    withAnimation(.spring(response: 0.3)) {
-                                        correctionOffset = 0
+                // Correction section (inline, below the options)
+                if showCorrection {
+                    correctionCard(card: card)
+                        .offset(x: correctionOffset)
+                        .gesture(
+                            DragGesture()
+                                .onChanged { gesture in
+                                    if gesture.translation.width > 0 {
+                                        correctionOffset = gesture.translation.width
                                     }
                                 }
-                            }
-                    )
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                                .onEnded { gesture in
+                                    if gesture.translation.width > 80 {
+                                        advanceToNext()
+                                    } else {
+                                        withAnimation(.spring(response: 0.3)) {
+                                            correctionOffset = 0
+                                        }
+                                    }
+                                }
+                        )
+                        .transition(.opacity.combined(with: .move(edge: .bottom)))
+                        .padding(.bottom, 20)
+                }
+            }
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color.white.opacity(0.87))
+                    .shadow(color: .black.opacity(0.08), radius: 20, y: 6)
+            )
+            .padding(.horizontal, 16)
+
+            Spacer()
+        }
+    }
+
+    // MARK: - Prompt Block
+
+    /// Splits the prompt into context (dialogue/statement) + question, displayed on separate lines.
+    private func promptBlock(card: LightningCard) -> some View {
+        let parts = splitPrompt(card.prompt)
+
+        return VStack(alignment: .leading, spacing: 14) {
+            // Context / dialogue — bold, larger
+            Text(parts.context)
+                .font(.custom("HelveticaNeue-Bold", size: 18))
+                .foregroundColor(.tsLabel)
+                .lineSpacing(4)
+                .fixedSize(horizontal: false, vertical: true)
+
+            // Question — regular weight, softer
+            if let question = parts.question {
+                Text(question)
+                    .font(.custom("HelveticaNeue", size: 15))
+                    .foregroundColor(.tsSecondary)
+                    .lineSpacing(3)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
+        .padding(.horizontal, 20)
+    }
+
+    /// Splits prompt into context (top) + question (bottom).
+    private func splitPrompt(_ prompt: String) -> (context: String, question: String?) {
+        // Try newline split first
+        if prompt.contains("\n") {
+            let lines = prompt.split(separator: "\n", maxSplits: 1)
+            if lines.count == 2 {
+                return (String(lines[0]).trimmingCharacters(in: .whitespacesAndNewlines),
+                        String(lines[1]).trimmingCharacters(in: .whitespacesAndNewlines))
+            }
+        }
+
+        // Try splitting on question mark — everything before is context, the question + rest is the question
+        if let qRange = prompt.range(of: "? ") {
+            let before = String(prompt[prompt.startIndex...qRange.lowerBound])
+            let after = String(prompt[qRange.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
+            // If "after" looks like options (a/b/c), put the question mark part as the question
+            if !after.isEmpty {
+                return (after, before + "?")
+            }
+        }
+
+        // Try colon split
+        if let colonRange = prompt.range(of: ": ") {
+            let instruction = String(prompt[prompt.startIndex..<colonRange.lowerBound])
+            let content = String(prompt[colonRange.upperBound...])
+            if !content.isEmpty {
+                return (content, instruction)
+            }
+        }
+
+        return (prompt, nil)
     }
 
     // MARK: - Options (Tap Cards)
 
+    private let optionLetters = ["A", "B", "C", "D"]
+
     private func optionsArea(card: LightningCard) -> some View {
         VStack(spacing: 12) {
             if let options = card.options {
-                ForEach(options, id: \.self) { option in
+                ForEach(Array(options.enumerated()), id: \.element) { index, option in
                     Button {
                         handleAnswer(option, card: card)
                     } label: {
-                        HStack {
+                        HStack(spacing: 12) {
+                            // Letter label
+                            Text(index < optionLetters.count ? optionLetters[index] : "\(index + 1)")
+                                .font(.custom("HelveticaNeue-Bold", size: 13))
+                                .foregroundColor(optionLetterColor(option, card: card))
+                                .frame(width: 28, height: 28)
+                                .background(
+                                    Circle()
+                                        .fill(optionLetterBg(option, card: card))
+                                )
+
                             Text(option)
-                                .font(.custom("HelveticaNeue-Medium", size: 16))
-                                .foregroundColor(optionTextColor(option, card: card))
+                                .font(.custom("HelveticaNeue", size: 15))
+                                .foregroundColor(optionTextColorWhite(option, card: card))
                                 .multilineTextAlignment(.leading)
+                                .fixedSize(horizontal: false, vertical: true)
+
                             Spacer()
+
                             if selectedOption == option {
                                 Image(systemName: option == card.correctAnswer ? "checkmark.circle.fill" : "xmark.circle.fill")
+                                    .font(.system(size: 18))
                                     .foregroundColor(option == card.correctAnswer ? Color(hex: "#34C759") : Color(hex: "#FF3B30"))
                             }
                         }
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, 16)
                         .padding(.vertical, 14)
                         .background(
                             RoundedRectangle(cornerRadius: 12)
-                                .fill(optionBgColor(option, card: card))
+                                .fill(Color.white)
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 12)
-                                .stroke(optionBorderColor(option, card: card), lineWidth: 1)
+                                .stroke(optionBorderColorWhite(option, card: card), lineWidth: 1)
                         )
                     }
                     .disabled(selectedOption != nil)
                 }
             }
         }
-        .padding(.horizontal, 24)
+        .padding(.horizontal, 20)
+    }
+
+    private func optionLetterColor(_ option: String, card: LightningCard) -> Color {
+        guard selectedOption != nil else { return .tsSecondary }
+        if option == card.correctAnswer { return Color(hex: "#34C759") }
+        if option == selectedOption { return Color(hex: "#FF3B30") }
+        return .tsSecondary.opacity(0.4)
+    }
+
+    private func optionLetterBg(_ option: String, card: LightningCard) -> Color {
+        guard selectedOption != nil else { return Color(hex: "#F2F2F7") }
+        if option == card.correctAnswer { return Color(hex: "#34C759").opacity(0.1) }
+        if option == selectedOption && option != card.correctAnswer { return Color(hex: "#FF3B30").opacity(0.1) }
+        return Color(hex: "#F2F2F7").opacity(0.5)
     }
 
     // MARK: - Voice Input Area
@@ -283,7 +416,6 @@ struct LightningRoundView: View {
     private func voiceInputArea(card: LightningCard) -> some View {
         VStack(spacing: 16) {
             if card.type == .echo {
-                // Play button for echo cards
                 Button {
                     if let audioText = card.audioText {
                         ttsService.speak(text: audioText, language: targetLang) {}
@@ -291,21 +423,20 @@ struct LightningRoundView: View {
                 } label: {
                     HStack(spacing: 8) {
                         Image(systemName: "speaker.wave.2.fill")
-                            .font(.system(size: 16))
-                        Text("Listen")
-                            .font(.custom("HelveticaNeue-Medium", size: 15))
+                            .font(.system(size: 14))
+                        Text("Listen first")
+                            .font(.custom("HelveticaNeue-Medium", size: 14))
                     }
                     .foregroundColor(.tsAccent)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 12)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
                     .background(
                         Capsule()
-                            .fill(Color.white.opacity(0.15))
+                            .fill(Color.tsAccent.opacity(0.08))
                     )
                 }
             }
 
-            // Record button
             Button {
                 if isRecording {
                     stopRecordingAndScore(card: card)
@@ -315,39 +446,32 @@ struct LightningRoundView: View {
             } label: {
                 ZStack {
                     Circle()
-                        .fill(isRecording ? Color(hex: "#FF3B30") : Color.white)
-                        .frame(width: 72, height: 72)
-                        .shadow(color: isRecording ? Color(hex: "#FF3B30").opacity(0.4) : .white.opacity(0.3), radius: 12)
+                        .fill(isRecording ? Color(hex: "#FF3B30") : Color.tsAccent)
+                        .frame(width: 64, height: 64)
+                        .shadow(color: isRecording ? Color(hex: "#FF3B30").opacity(0.3) : Color.tsAccent.opacity(0.3), radius: 10)
 
                     if isRecording {
                         RoundedRectangle(cornerRadius: 4)
                             .fill(Color.white)
-                            .frame(width: 24, height: 24)
+                            .frame(width: 22, height: 22)
                     } else {
                         Image(systemName: "mic.fill")
-                            .font(.system(size: 28))
-                            .foregroundColor(Color.tsAccent)
+                            .font(.system(size: 24))
+                            .foregroundColor(.white)
                     }
                 }
             }
 
-            if isRecording {
-                Text(formatTime(recordingSeconds))
-                    .font(.custom("HelveticaNeue-Bold", size: 14))
-                    .foregroundColor(.white.opacity(0.6))
-            } else {
-                Text("Tap to record")
-                    .font(.custom("HelveticaNeue", size: 13))
-                    .foregroundColor(.white.opacity(0.4))
-            }
+            Text(isRecording ? formatTime(recordingSeconds) : "Tap to record")
+                .font(.custom(isRecording ? "HelveticaNeue-Bold" : "HelveticaNeue", size: 13))
+                .foregroundColor(.tsSecondary)
         }
     }
 
     // MARK: - Listen Area
 
     private func listenArea(card: LightningCard) -> some View {
-        VStack(spacing: 20) {
-            // Auto-play on appear
+        VStack(spacing: 16) {
             Button {
                 if let audioText = card.audioText {
                     ttsService.speak(text: audioText, language: targetLang) {}
@@ -355,56 +479,61 @@ struct LightningRoundView: View {
             } label: {
                 ZStack {
                     Circle()
-                        .fill(Color.white.opacity(0.15))
-                        .frame(width: 64, height: 64)
+                        .fill(Color.tsAccent.opacity(0.08))
+                        .frame(width: 56, height: 56)
 
                     Image(systemName: "speaker.wave.3.fill")
-                        .font(.system(size: 28))
-                        .foregroundColor(.white)
+                        .font(.system(size: 22))
+                        .foregroundColor(.tsAccent)
                 }
             }
 
             Text("Tap to replay")
-                .font(.custom("HelveticaNeue", size: 12))
-                .foregroundColor(.white.opacity(0.4))
+                .font(.custom("HelveticaNeue", size: 11))
+                .foregroundColor(.tsSecondary)
 
-            // Options below the play button
             if let options = card.options {
-                VStack(spacing: 10) {
-                    ForEach(options, id: \.self) { option in
+                VStack(spacing: 12) {
+                    ForEach(Array(options.enumerated()), id: \.element) { index, option in
                         Button {
                             handleAnswer(option, card: card)
                         } label: {
-                            HStack {
+                            HStack(spacing: 12) {
+                                Text(index < optionLetters.count ? optionLetters[index] : "\(index + 1)")
+                                    .font(.custom("HelveticaNeue-Bold", size: 13))
+                                    .foregroundColor(optionLetterColor(option, card: card))
+                                    .frame(width: 28, height: 28)
+                                    .background(Circle().fill(optionLetterBg(option, card: card)))
                                 Text(option)
-                                    .font(.custom("HelveticaNeue-Medium", size: 15))
-                                    .foregroundColor(optionTextColor(option, card: card))
+                                    .font(.custom("HelveticaNeue", size: 15))
+                                    .foregroundColor(optionTextColorWhite(option, card: card))
                                     .multilineTextAlignment(.leading)
+                                    .fixedSize(horizontal: false, vertical: true)
                                 Spacer()
                                 if selectedOption == option {
                                     Image(systemName: option == card.correctAnswer ? "checkmark.circle.fill" : "xmark.circle.fill")
+                                        .font(.system(size: 18))
                                         .foregroundColor(option == card.correctAnswer ? Color(hex: "#34C759") : Color(hex: "#FF3B30"))
                                 }
                             }
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 12)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 14)
                             .background(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .fill(optionBgColor(option, card: card))
+                                    .fill(Color.white)
                             )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .stroke(optionBorderColor(option, card: card), lineWidth: 1)
+                                    .stroke(optionBorderColorWhite(option, card: card), lineWidth: 1)
                             )
                         }
                         .disabled(selectedOption != nil)
                     }
                 }
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 20)
             }
         }
         .onAppear {
-            // Auto-play audio for listen cards
             if let audioText = card.audioText {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     ttsService.speak(text: audioText, language: targetLang) {}
@@ -416,129 +545,146 @@ struct LightningRoundView: View {
     // MARK: - Correction Card
 
     private func correctionCard(card: LightningCard) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
+        let isRight = card.isCorrect == true
+        let accentColor = isRight ? Color(hex: "#34C759") : Color(hex: "#FF3B30")
+
+        return VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
-                Text("💡")
-                    .font(.system(size: 16))
-                Text(card.isCorrect == true ? "Correct!" : "Not quite")
-                    .font(.custom("HelveticaNeue-Bold", size: 16))
-                    .foregroundColor(card.isCorrect == true ? Color(hex: "#34C759") : Color(hex: "#FF3B30"))
+                Image(systemName: isRight ? "checkmark.circle.fill" : "xmark.circle.fill")
+                    .font(.system(size: 18))
+                    .foregroundColor(accentColor)
+                Text(isRight ? "Correct!" : "Not quite")
+                    .font(.custom("HelveticaNeue-Bold", size: 15))
+                    .foregroundColor(accentColor)
                 Spacer()
             }
 
-            if card.isCorrect != true {
-                // Show correct answer
+            if !isRight {
+                Divider().opacity(0.3)
+
                 HStack(spacing: 6) {
                     Text("Answer:")
-                        .font(.custom("HelveticaNeue", size: 14))
+                        .font(.custom("HelveticaNeue", size: 13))
                         .foregroundColor(.tsSecondary)
                     Text(card.correctAnswer)
-                        .font(.custom("HelveticaNeue-Bold", size: 14))
+                        .font(.custom("HelveticaNeue-Bold", size: 13))
                         .foregroundColor(.tsLabel)
                 }
 
-                // Explanation
-                Text(card.explanation)
-                    .font(.custom("HelveticaNeue", size: 14))
-                    .foregroundColor(.tsLabel)
+                Text("💡 \(card.explanation)")
+                    .font(.custom("HelveticaNeue", size: 13))
+                    .foregroundColor(.tsSecondary)
                     .lineSpacing(3)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            // Swipe hint
             HStack {
                 Spacer()
                 HStack(spacing: 4) {
                     Text("Swipe to continue")
-                        .font(.custom("HelveticaNeue", size: 12))
-                        .foregroundColor(.tsSecondary)
+                        .font(.custom("HelveticaNeue", size: 11))
+                        .foregroundColor(.tsSecondary.opacity(0.6))
                     Image(systemName: "arrow.right")
-                        .font(.system(size: 11))
-                        .foregroundColor(.tsSecondary)
+                        .font(.system(size: 10))
+                        .foregroundColor(.tsSecondary.opacity(0.6))
                 }
             }
         }
-        .padding(20)
+        .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(colorScheme == .dark ? Color.tsCard : Color.white)
-                .shadow(color: .black.opacity(0.15), radius: 12, y: -4)
+            RoundedRectangle(cornerRadius: 14)
+                .fill(accentColor.opacity(0.05))
         )
-        .padding(.horizontal, 16)
-        .padding(.bottom, 32)
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(accentColor.opacity(0.15), lineWidth: 0.5)
+        )
+        .padding(.horizontal, 20)
     }
 
     // MARK: - Summary
 
     private var summaryView: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 0) {
+            Spacer().frame(height: 60)
+
+            // White summary card
+            VStack(spacing: 20) {
+                // Score circle
+                ZStack {
+                    Circle()
+                        .stroke(Color.tsSecondary.opacity(0.1), lineWidth: 8)
+                        .frame(width: 100, height: 100)
+
+                    Circle()
+                        .trim(from: 0, to: CGFloat(correctCount) / max(CGFloat(totalAnswered), 1))
+                        .stroke(
+                            scoreColor,
+                            style: StrokeStyle(lineWidth: 8, lineCap: .round)
+                        )
+                        .frame(width: 100, height: 100)
+                        .rotationEffect(.degrees(-90))
+
+                    VStack(spacing: 2) {
+                        Text("\(correctCount)/\(totalAnswered)")
+                            .font(.custom("HelveticaNeue-Bold", size: 24))
+                            .foregroundColor(.tsLabel)
+                        Text("correct")
+                            .font(.custom("HelveticaNeue", size: 12))
+                            .foregroundColor(.tsSecondary)
+                    }
+                }
+                .padding(.top, 8)
+
+                Text(summaryMessage)
+                    .font(.custom("HelveticaNeue-Medium", size: 17))
+                    .foregroundColor(.tsLabel)
+                    .multilineTextAlignment(.center)
+
+                Text(summarySubtext)
+                    .font(.custom("HelveticaNeue", size: 13))
+                    .foregroundColor(.tsSecondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 16)
+
+                // Go Again button
+                Button {
+                    resetRound()
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        phase = .loading
+                    }
+                    generateRound()
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "bolt.fill")
+                            .font(.system(size: 14))
+                        Text("Go Again")
+                            .font(.custom("HelveticaNeue-Medium", size: 16))
+                    }
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 48)
+                    .background(Color.tsAccent)
+                    .cornerRadius(14)
+                }
+                .padding(.horizontal, 20)
+
+                Button { dismiss() } label: {
+                    Text("Done")
+                        .font(.custom("HelveticaNeue", size: 14))
+                        .foregroundColor(.tsSecondary)
+                }
+                .padding(.bottom, 4)
+            }
+            .padding(24)
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color.white.opacity(0.87))
+                    .shadow(color: .black.opacity(0.08), radius: 20, y: 6)
+            )
+            .padding(.horizontal, 16)
+
             Spacer()
-
-            // Score circle
-            ZStack {
-                Circle()
-                    .stroke(Color.white.opacity(0.15), lineWidth: 8)
-                    .frame(width: 120, height: 120)
-
-                Circle()
-                    .trim(from: 0, to: CGFloat(correctCount) / max(CGFloat(totalAnswered), 1))
-                    .stroke(
-                        scoreColor,
-                        style: StrokeStyle(lineWidth: 8, lineCap: .round)
-                    )
-                    .frame(width: 120, height: 120)
-                    .rotationEffect(.degrees(-90))
-
-                VStack(spacing: 2) {
-                    Text("\(correctCount)/\(totalAnswered)")
-                        .font(.custom("HelveticaNeue-Bold", size: 28))
-                        .foregroundColor(.white)
-                    Text("correct")
-                        .font(.custom("HelveticaNeue", size: 13))
-                        .foregroundColor(.white.opacity(0.6))
-                }
-            }
-
-            Text(summaryMessage)
-                .font(.custom("HelveticaNeue-Medium", size: 18))
-                .foregroundColor(.white)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
-
-            Text(summarySubtext)
-                .font(.custom("HelveticaNeue", size: 14))
-                .foregroundColor(.white.opacity(0.6))
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
-
-            Spacer()
-
-            Button {
-                // Reset and do another round
-                resetRound()
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    phase = .loading
-                }
-                generateRound()
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "bolt.fill")
-                        .font(.system(size: 15))
-                    Text("Go Again")
-                        .font(.custom("HelveticaNeue-Bold", size: 16))
-                }
-                .foregroundColor(.white)
-                .padding(.horizontal, 40)
-                .padding(.vertical, 14)
-                .background(Capsule().fill(Color.tsAccent))
-            }
-
-            Button { dismiss() } label: {
-                Text("Done")
-                    .font(.custom("HelveticaNeue", size: 14))
-                    .foregroundColor(.white.opacity(0.5))
-            }
-            .padding(.bottom, 40)
         }
     }
 
@@ -546,25 +692,41 @@ struct LightningRoundView: View {
 
     private func generateRound() {
         isGenerating = true
+
+        // Check for pre-cached round first — instant start
+        if let cached = engine.cachedCards, !cached.isEmpty {
+            engine.cachedCards = nil
+            self.cards = cached
+            startRound()
+            // Pre-generate the NEXT round in background
+            preGenerateNextRound()
+            return
+        }
+
         let profile = MistakeProfileStore.shared
         let mistakes = engine.selectMistakesForRound(count: 6, language: targetLang)
 
         guard !mistakes.isEmpty else {
-            // No mistakes recorded yet — can't generate a round
             withAnimation { phase = .intro }
             return
         }
-        let effectiveMistakes = mistakes
 
         let cardTypes = engine.buildRoundCardTypes()
         let prompt = engine.generateCardsPrompt(
             cardTypes: cardTypes,
-            mistakes: effectiveMistakes,
+            mistakes: mistakes,
             language: targetLang
         )
 
-        // Call GPT to generate cards
-        generateCardsViaGPT(prompt: prompt, cardTypes: cardTypes, mistakes: effectiveMistakes)
+        generateCardsViaGPT(prompt: prompt, cardTypes: cardTypes, mistakes: mistakes)
+    }
+
+    /// Pre-generates the next round in the background so it's ready instantly
+    private func preGenerateNextRound() {
+        let lang = targetLang
+        DispatchQueue.global(qos: .background).async {
+            LightningRoundEngine.preGenerate(language: lang)
+        }
     }
 
     private func generateCardsViaGPT(
@@ -883,6 +1045,28 @@ struct LightningRoundView: View {
         return Color.white.opacity(0.05)
     }
 
+    // White-card variants (dark text on white bg)
+    private func optionTextColorWhite(_ option: String, card: LightningCard) -> Color {
+        guard selectedOption != nil else { return .tsLabel }
+        if option == card.correctAnswer { return Color(hex: "#34C759") }
+        if option == selectedOption { return Color(hex: "#FF3B30") }
+        return .tsSecondary.opacity(0.5)
+    }
+
+    private func optionBgColorWhite(_ option: String, card: LightningCard) -> Color {
+        guard selectedOption != nil else { return Color(hex: "#F2F2F7") }
+        if option == card.correctAnswer { return Color(hex: "#34C759").opacity(0.08) }
+        if option == selectedOption && option != card.correctAnswer { return Color(hex: "#FF3B30").opacity(0.08) }
+        return Color(hex: "#F2F2F7").opacity(0.5)
+    }
+
+    private func optionBorderColorWhite(_ option: String, card: LightningCard) -> Color {
+        guard selectedOption != nil else { return Color(hex: "#E5E5EA") }
+        if option == card.correctAnswer { return Color(hex: "#34C759").opacity(0.3) }
+        if option == selectedOption && option != card.correctAnswer { return Color(hex: "#FF3B30").opacity(0.3) }
+        return Color(hex: "#E5E5EA").opacity(0.3)
+    }
+
     private var scoreColor: Color {
         let pct = Double(correctCount) / max(Double(totalAnswered), 1)
         if pct >= 0.8 { return Color(hex: "#34C759") }
@@ -909,4 +1093,79 @@ struct LightningRoundView: View {
     private func formatTime(_ seconds: Int) -> String {
         String(format: "%d:%02d", seconds / 60, seconds % 60)
     }
+
+    // MARK: - Intro Animations
+
+    private func startIntroAnimations() {
+        guard !rainStarted else { return }
+        rainStarted = true
+
+        // 1. Circle bounces in
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.6)) {
+            circleBounce = 1.0
+        }
+
+        // 2. Bolt fades in after circle lands
+        withAnimation(.easeIn(duration: 0.8).delay(0.4)) {
+            boltOpacity = 1.0
+        }
+
+        // 3. Rain — uniform diagonal fall, all at the same speed
+        let screenWidth = UIScreen.main.bounds.width
+        let screenHeight = UIScreen.main.bounds.height
+        let fallDuration = 1.2  // Same speed for all bolts
+        let driftX: CGFloat = -60  // Diagonal drift (slightly left)
+        let totalBolts = 20
+
+        for i in 0..<totalBolts {
+            let delay = Double(i) * 0.07  // Staggered start, but same fall speed
+            let startX = CGFloat.random(in: 40...(screenWidth + 30))
+            let startY: CGFloat = CGFloat.random(in: -60 ... -10)
+            let endY = screenHeight + 40
+            let size = CGFloat.random(in: 14...22)
+            let opacity = Double.random(in: 0.15...0.35)
+            let id = UUID()
+
+            let bolt = RainBolt(id: id, x: startX, y: startY, size: size, opacity: 0)
+            rainBolts.append(bolt)
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                if let idx = rainBolts.firstIndex(where: { $0.id == id }) {
+                    // Fade in instantly
+                    withAnimation(.easeIn(duration: 0.1)) {
+                        rainBolts[idx].opacity = opacity
+                    }
+                    // Fall diagonally — same duration for all
+                    withAnimation(.linear(duration: fallDuration)) {
+                        rainBolts[idx].y = endY
+                        rainBolts[idx].x = startX + driftX
+                    }
+                }
+            }
+
+            // Fade out near the end
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay + fallDuration - 0.2) {
+                if let idx = rainBolts.firstIndex(where: { $0.id == id }) {
+                    withAnimation(.easeOut(duration: 0.2)) {
+                        rainBolts[idx].opacity = 0
+                    }
+                }
+            }
+        }
+
+        // Clean up
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+            rainBolts.removeAll()
+        }
+    }
+}
+
+// MARK: - Rain Bolt Model
+
+struct RainBolt: Identifiable {
+    let id: UUID
+    var x: CGFloat
+    var y: CGFloat
+    let size: CGFloat
+    var opacity: Double
 }

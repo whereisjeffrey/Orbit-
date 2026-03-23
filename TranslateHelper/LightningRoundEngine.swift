@@ -136,6 +136,10 @@ final class LightningRoundEngine {
 
     private let profile = MistakeProfileStore.shared
 
+    /// Pre-cached round — built in background, consumed when user taps Lightning Round
+    var cachedCards: [LightningCard]?
+    var isCaching = false
+
     /// Number of cards per round
     static let cardsPerRound = 6
 
@@ -310,6 +314,96 @@ final class LightningRoundEngine {
           }
         ]
         """
+    }
+
+    // MARK: - Background Pre-Generation
+
+    /// Pre-generates a Lightning Round in the background so it's ready instantly.
+    /// Called from Coach tab onAppear and after each completed round.
+    static func preGenerate(language: String) {
+        let engine = LightningRoundEngine.shared
+        guard !engine.isCaching, engine.cachedCards == nil else { return }
+        engine.isCaching = true
+
+        let mistakes = engine.selectMistakesForRound(count: cardsPerRound, language: language)
+        guard !mistakes.isEmpty else {
+            engine.isCaching = false
+            return
+        }
+
+        let cardTypes = engine.buildRoundCardTypes()
+        let prompt = engine.generateCardsPrompt(cardTypes: cardTypes, mistakes: mistakes, language: language)
+
+        let apiKey = APIConfig.openAIAPIKey
+        guard let url = URL(string: "https://api.openai.com/v1/chat/completions") else {
+            engine.isCaching = false
+            return
+        }
+
+        let body: [String: Any] = [
+            "model": "gpt-4o-mini",
+            "messages": [
+                ["role": "system", "content": "You generate quiz cards for language learners. Respond ONLY with a valid JSON array."],
+                ["role": "user", "content": prompt],
+            ],
+            "temperature": 0.9,
+            "max_tokens": 1500,
+            "response_format": ["type": "json_object"],
+        ]
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        request.timeoutInterval = 30
+
+        URLSession.shared.dataTask(with: request) { data, _, _ in
+            defer { engine.isCaching = false }
+
+            guard let data = data,
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let choices = json["choices"] as? [[String: Any]],
+                  let message = choices.first?["message"] as? [String: Any],
+                  let content = message["content"] as? String,
+                  let contentData = content.data(using: .utf8),
+                  let parsed = try? JSONSerialization.jsonObject(with: contentData) as? [String: Any]
+            else {
+                NSLog("⚡ [LightningRound] pre-gen failed — will generate on demand")
+                return
+            }
+
+            let cardsArray: [[String: Any]]
+            if let arr = parsed["cards"] as? [[String: Any]] {
+                cardsArray = arr
+            } else {
+                cardsArray = parsed.values.compactMap { $0 as? [[String: Any]] }.first ?? []
+            }
+
+            var generatedCards: [LightningCard] = []
+            for (i, cardJSON) in cardsArray.enumerated() where i < cardTypes.count {
+                let type = cardTypes[i]
+                let mistakeIdx = (cardJSON["mistake_index"] as? Int) ?? (i % mistakes.count)
+                let mistake = mistakes[min(mistakeIdx, mistakes.count - 1)]
+
+                generatedCards.append(LightningCard(
+                    type: type,
+                    mistakeId: mistake.id,
+                    language: language,
+                    prompt: cardJSON["prompt"] as? String ?? "What's the correct form?",
+                    correctAnswer: cardJSON["correct_answer"] as? String ?? mistake.correctForm,
+                    options: cardJSON["options"] as? [String],
+                    explanation: cardJSON["explanation"] as? String ?? mistake.explanation,
+                    audioText: cardJSON["audio_text"] as? String,
+                    targetWord: cardJSON["target_word"] as? String
+                ))
+            }
+
+            if !generatedCards.isEmpty {
+                engine.cachedCards = generatedCards
+                NSLog("⚡ [LightningRound] pre-generated \(generatedCards.count) cards — ready to go")
+            }
+        }.resume()
     }
 
     // MARK: - Process Round Results
