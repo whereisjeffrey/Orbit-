@@ -72,8 +72,7 @@ class DictateViewController: UIViewController {
     private let timerLabel          = UILabel()
     private let sendButton          = UIButton(type: .custom)
     private let cancelButton        = UIButton(type: .system)
-    /// Subtle blue footer glow — visible only while actively recording.
-    private let recordingFooterView = UIView()
+
 
     // Toggle (SwiftUI hosted)
     private var toggleHost: UIHostingController<DictateLanguagePill>?
@@ -182,11 +181,7 @@ class DictateViewController: UIViewController {
         timerLabel.textAlignment = .center
         view.addSubview(timerLabel)
 
-        // ── Recording footer glow (behind send button, below the fold) ────
-        recordingFooterView.translatesAutoresizingMaskIntoConstraints = false
-        recordingFooterView.backgroundColor = UIColor(red: 0.0, green: 0.6, blue: 1.0, alpha: 0.10)
-        recordingFooterView.alpha = 0   // hidden until recording starts
-        view.addSubview(recordingFooterView)
+
 
         // ── Send to Keyboard button ───────────────────────────────────
         sendButton.translatesAutoresizingMaskIntoConstraints = false
@@ -238,11 +233,7 @@ class DictateViewController: UIViewController {
             sendButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             sendButton.heightAnchor.constraint(equalToConstant: 58),
 
-            // Footer glow — spans from just above the send button to the very bottom
-            recordingFooterView.topAnchor.constraint(equalTo: sendButton.topAnchor, constant: -24),
-            recordingFooterView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            recordingFooterView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            recordingFooterView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+
         ])
 
         // Show/hide based on onboarding state
@@ -530,7 +521,6 @@ class DictateViewController: UIViewController {
         UIView.animate(withDuration: 0.3) {
             self.sendButton.alpha = 0
             self.timerLabel.alpha = 0
-            self.recordingFooterView.alpha = 0
             self.iconCircle.backgroundColor = UIColor.white.withAlphaComponent(0.12)
         }
 
@@ -631,7 +621,6 @@ class DictateViewController: UIViewController {
         startElapsedTimer()
         UIView.animate(withDuration: 0.5) {
             self.timerLabel.alpha = 1
-            self.recordingFooterView.alpha = 1
         }
 
         NSLog("🎤 [Dictate] recording started — speaking=\(speakingLanguage)")

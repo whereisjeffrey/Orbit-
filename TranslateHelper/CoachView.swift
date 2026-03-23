@@ -1962,7 +1962,7 @@ struct PracticeSessionView: View {
             NSLog("🔊 [Practice] BLOCKED — already playing audio, skipping: \(message.text.prefix(30))")
             // Still reveal the text so it's not stuck hidden
             withAnimation(.easeInOut(duration: 0.8)) {
-                revealedText.insert(message.id)
+                _ = revealedText.insert(message.id)
             }
             return
         }
@@ -1976,7 +1976,7 @@ struct PracticeSessionView: View {
             nearlyDone: { [self] in
                 // Begins 1 second before audio ends — slow, buttery crossfade
                 withAnimation(.easeInOut(duration: 1.05)) {
-                    revealedText.insert(message.id)
+                    _ = revealedText.insert(message.id)
                 }
             },
             completion: { [self] in
