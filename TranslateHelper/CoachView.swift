@@ -1082,9 +1082,11 @@ struct PracticeSessionView: View {
     @State private var recordingSeconds = 0
     @State private var recordingTimer: Timer?
     @State private var revealedText: Set<UUID> = []      // messages whose text has faded in
-    @State private var audioTriggered: Set<UUID> = []    // messages that have already started audio
-    @State private var isPlayingAnyAudio = false         // global lock — only one audio at a time
+    @State private var hasInitialized = false             // prevents onAppear from double-firing
+    @State private var isPlayingSolAudio = false          // global lock — only one Sol audio at a time
     @State private var playingAudio: UUID?                // message currently playing audio
+    @State private var isSendingRecording2 = false        // guard for stopAndSendRecording
+    @State private var isFetchingSolResponse2 = false     // guard for fetchSolResponse
     private let ttsService = PracticeTTSService()
     @AppStorage("practice_doubletap_validated") private var doubleTapValidated = false
     @AppStorage("practice_doubletap_dismiss_count") private var doubleTapDismissCount = 0
@@ -1329,15 +1331,14 @@ struct PracticeSessionView: View {
             }
         }
         .onAppear {
-            // Set speaking rate based on user level
-            // TODO: read actual level from scoring system
-            // For now: C-level = native speed
+            // CRITICAL: only initialize once — SwiftUI can call onAppear multiple times
+            guard !hasInitialized else { return }
+            hasInitialized = true
+
             ttsService.speakingRate = 1.05  // C-level: native speed
 
-            // Initialize with first topic
             loadTopic(index: 0)
 
-            // Start session timer
             sessionTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
                 sessionSeconds += 1
             }
@@ -1680,6 +1681,10 @@ struct PracticeSessionView: View {
     // MARK: - Topic Loading & Swiping
 
     private func loadTopic(index: Int) {
+        guard !isLoadingTopic else {
+            NSLog("🔊 [Practice] BLOCKED loadTopic — already loading")
+            return
+        }
         isLoadingTopic = true
 
         // Read user's city and interests from settings
@@ -1885,26 +1890,40 @@ struct PracticeSessionView: View {
 
     // MARK: - Sol Audio Playback
 
-    /// Play audio first, then fade text in after it completes
+    /// Play audio first, then fade text in after it completes.
+    /// Guarded — will not fire if already playing.
     private func playSolAudioThenReveal(message: PracticeMessage) {
+        guard !isPlayingSolAudio else {
+            NSLog("🔊 [Practice] BLOCKED — already playing audio, skipping: \(message.text.prefix(30))")
+            // Still reveal the text so it's not stuck hidden
+            revealedText.insert(message.id)
+            return
+        }
+        isPlayingSolAudio = true
         playingAudio = message.id
+        NSLog("🔊 [Practice] playing audio for: \(message.text.prefix(40))")
+
         ttsService.speak(text: message.text, language: "pt-BR") { [self] in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 withAnimation(.easeIn(duration: 0.8)) {
                     revealedText.insert(message.id)
                 }
                 playingAudio = nil
-                isPlayingAnyAudio = false  // release global lock
+                isPlayingSolAudio = false
+                NSLog("🔊 [Practice] audio complete, lock released")
             }
         }
     }
 
     /// Replay audio for a Sol message (text already visible)
     private func playSolAudio(message: PracticeMessage) {
+        guard !isPlayingSolAudio else { return }
+        isPlayingSolAudio = true
         playingAudio = message.id
         ttsService.speak(text: message.text, language: "pt-BR") {
             DispatchQueue.main.async {
                 self.playingAudio = nil
+                self.isPlayingSolAudio = false
             }
         }
     }
@@ -1930,11 +1949,9 @@ struct PracticeSessionView: View {
         conversationService.stopRecording()
     }
 
-    @State private var isSendingRecording = false
-
     private func stopAndSendRecording() {
-        guard !isSendingRecording else { return }  // prevent double-fire
-        isSendingRecording = true
+        guard !isSendingRecording2 else { return }
+        isSendingRecording2 = true
         recordingTimer?.invalidate()
         recordingTimer = nil
         recordingSeconds = 0
@@ -1962,7 +1979,7 @@ struct PracticeSessionView: View {
 
             // Get Sol's real response
             fetchSolResponse(userMessageId: msg.id)
-            isSendingRecording = false
+            isSendingRecording2 = false
         }
     }
 
@@ -2010,6 +2027,11 @@ struct PracticeSessionView: View {
     // MARK: - Fetch Sol's Response (GPT-4o-mini)
 
     private func fetchSolResponse(userMessageId: UUID) {
+        guard !isFetchingSolResponse2 else {
+            NSLog("🔊 [Practice] BLOCKED fetchSolResponse — already fetching")
+            return
+        }
+        isFetchingSolResponse2 = true
         // Build conversation history for GPT
         var history: [(role: String, text: String)] = []
         for msg in messages {
@@ -2025,6 +2047,7 @@ struct PracticeSessionView: View {
         }
 
         conversationService.getSolResponse(conversationHistory: history, targetLanguage: "pt") { [self] response in
+            isFetchingSolResponse2 = false
             guard let sol = response else {
                 NSLog("🎤 [Practice] Sol response failed")
                 return
@@ -2155,6 +2178,10 @@ class PracticeTTSService: NSObject, AVAudioPlayerDelegate {
     var speakingRate: Double = 0.95  // default B1-B2
 
     func speak(text: String, language: String, completion: @escaping () -> Void) {
+        // Cancel any in-progress audio before starting new one
+        audioPlayer?.stop()
+        audioPlayer = nil
+        // Don't call old onComplete — it's stale
         onComplete = completion
 
         let apiKey = APIConfig.googleTTSAPIKey
