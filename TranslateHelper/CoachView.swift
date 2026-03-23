@@ -1495,8 +1495,8 @@ struct PracticeSessionView: View {
                             HStack(spacing: 4) {
                                 Image(systemName: "sparkles")
                                     .font(.system(size: 14))
-                                    .foregroundColor(.tsAccent)
-                                Text("Sol is thinking...")
+                                    .foregroundColor(Color(hex: "#FFD60A"))
+                                Text("Thinking...")
                                     .font(.custom("HelveticaNeue", size: 13))
                                     .foregroundColor(.tsSecondary)
                             }
@@ -1544,17 +1544,8 @@ struct PracticeSessionView: View {
                         .fill(bubbleColor(for: message.role))
                 )
                 .onAppear {
-                    // Auto-play audio for new Sol messages — only once, with global lock
-                    if message.role == .sol
-                        && !revealedText.contains(message.id)
-                        && !audioTriggered.contains(message.id)
-                        && !isPlayingAnyAudio
-                        && message.text != "..." {
-                        audioTriggered.insert(message.id)
-                        isPlayingAnyAudio = true
-                        NSLog("🔊 [Practice] triggering audio for: \(message.text.prefix(30))")
-                        playSolAudioThenReveal(message: message)
-                    }
+                    // Audio is triggered explicitly from loadTopic and fetchSolResponse
+                    // NOT from onAppear — onAppear caused infinite loops from re-renders
                 }
                 .onTapGesture(count: 2) {
                         if message.role == .sol && message.translation != nil {
@@ -1803,8 +1794,8 @@ struct PracticeSessionView: View {
                 translationNotes: solNotes
             )
             messages.insert(solMsg, at: 0)
-            // DON'T pre-reveal — let audio play first, then text fades in
-            // The onAppear in chatBubble handles this via playSolAudioThenReveal
+            // Play audio explicitly — NOT from onAppear (which caused loops)
+            playSolAudioThenReveal(message: solMsg)
 
             // Add slang notes after a delay so they appear after audio finishes
             if !slangNotes.isEmpty {
@@ -2056,6 +2047,9 @@ struct PracticeSessionView: View {
             )
             messages.append(solMsg)
             messageCount += 1
+
+            // Play audio explicitly for Sol's response
+            playSolAudioThenReveal(message: solMsg)
 
             // Add slang note cards if Sol used any slang
             for note in sol.slangNotes {
