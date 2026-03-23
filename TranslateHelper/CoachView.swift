@@ -1149,6 +1149,7 @@ struct PracticeSessionView: View {
                     ScrollView(showsIndicators: false) {
                         VStack(spacing: 16) {
                             ForEach(Array(messages.enumerated()), id: \.element.id) { index, message in
+                                // No implicit animation on message insertion
                                 chatBubble(message: message)
                                     // Swipe gesture on Sol's first message — right = new topic (matches keyboard)
                                     .offset(x: (index == 0 && message.role == .sol && messageCount == 0 && !isLoadingTopic) ? swipeOffset : 0)
@@ -1492,24 +1493,37 @@ struct PracticeSessionView: View {
                 let textVisible = message.role != .sol || revealedText.contains(message.id)
 
                 HStack(alignment: .bottom, spacing: 6) {
-                    Text(message.text)
-                        .font(.custom("HelveticaNeue", size: 14))
-                        .foregroundColor(.tsLabel)
-                        .lineSpacing(3)
-                        .opacity(textVisible ? 1 : 0)
-                        .overlay(
-                            // Show listening indicator while audio plays and text is hidden
-                            !textVisible ?
-                                HStack(spacing: 6) {
-                                    Image(systemName: "waveform")
-                                        .font(.system(size: 14))
-                                        .foregroundColor(.tsAccent)
-                                    Text("Listening...")
-                                        .font(.custom("HelveticaNeue", size: 13))
-                                        .foregroundColor(.tsSecondary)
-                                }
-                            : nil
-                        )
+                    Group {
+                        if message.text == "..." {
+                            // Typing indicator
+                            HStack(spacing: 4) {
+                                Image(systemName: "sparkles")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.tsAccent)
+                                Text("Sol is thinking...")
+                                    .font(.custom("HelveticaNeue", size: 13))
+                                    .foregroundColor(.tsSecondary)
+                            }
+                        } else {
+                            Text(message.text)
+                                .font(.custom("HelveticaNeue", size: 14))
+                                .foregroundColor(.tsLabel)
+                                .lineSpacing(3)
+                                .opacity(textVisible ? 1 : 0)
+                                .overlay(
+                                    !textVisible ?
+                                        HStack(spacing: 6) {
+                                            Image(systemName: "waveform")
+                                                .font(.system(size: 14))
+                                                .foregroundColor(.tsAccent)
+                                            Text("Listening...")
+                                                .font(.custom("HelveticaNeue", size: 13))
+                                                .foregroundColor(.tsSecondary)
+                                        }
+                                    : nil
+                                )
+                        }
+                    }
 
                     // Replay button (only for Sol messages, only after text is revealed)
                     if message.role == .sol && textVisible {
@@ -1705,38 +1719,58 @@ struct PracticeSessionView: View {
         {"message": "your opening in target language", "translation": "English translation", "notes": "brief slang/vocab notes"}
         """
 
+        // Show loading placeholder with Sol avatar
+        let loadingMsg = PracticeMessage(role: .sol, text: "...")
+        messages.insert(loadingMsg, at: 0)
+        revealedText.insert(loadingMsg.id)  // show "..." immediately
+
         conversationService.getSolResponse(
             conversationHistory: [(role: "user", text: openingPrompt)],
             userCity: userCity,
             targetLanguage: targetLang
         ) { [self] response in
             isLoadingTopic = false
-            if let sol = response {
-                let solMsg = PracticeMessage(
-                    role: .sol,
-                    text: sol.text,
-                    translation: sol.translation,
-                    translationNotes: sol.translationNotes
-                )
-                messages.insert(solMsg, at: 0)
-                revealedText.insert(solMsg.id)
 
-                // Add slang notes
-                for note in sol.slangNotes {
-                    messages.append(PracticeMessage(
-                        role: .coaching,
-                        text: "📖 \"\(note.phrase)\" — \(note.meaning). \(note.context)"
-                    ))
-                }
+            // Remove the loading placeholder
+            messages.removeAll { $0.id == loadingMsg.id }
+            revealedText.remove(loadingMsg.id)
+
+            let solText: String
+            let solTranslation: String?
+            let solNotes: String?
+            var slangNotes: [PracticeConversationService.SlangNote] = []
+
+            if let sol = response {
+                solText = sol.text
+                solTranslation = sol.translation
+                solNotes = sol.translationNotes
+                slangNotes = sol.slangNotes
             } else {
-                // Fallback — generic opening
-                let fallback = PracticeMessage(
-                    role: .sol,
-                    text: "E aí! Tudo bem? Me conta — como tá sendo o dia hoje?",
-                    translation: "Hey! Everything good? Tell me — how's your day going?",
-                    translationNotes: "'tudo bem' = 'everything good?' · 'como tá sendo' = 'how's it going' (casual)")
-                messages.insert(fallback, at: 0)
-                revealedText.insert(fallback.id)
+                solText = "E aí! Tudo bem? Me conta — como tá sendo o dia hoje?"
+                solTranslation = "Hey! Everything good? Tell me — how's your day going?"
+                solNotes = "'tudo bem' = 'everything good?' · 'como tá sendo' = 'how's it going' (casual)"
+            }
+
+            let solMsg = PracticeMessage(
+                role: .sol,
+                text: solText,
+                translation: solTranslation,
+                translationNotes: solNotes
+            )
+            messages.insert(solMsg, at: 0)
+            // DON'T pre-reveal — let audio play first, then text fades in
+            // The onAppear in chatBubble handles this via playSolAudioThenReveal
+
+            // Add slang notes after a delay so they appear after audio finishes
+            if !slangNotes.isEmpty {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) {
+                    for note in slangNotes {
+                        messages.append(PracticeMessage(
+                            role: .coaching,
+                            text: "📖 \"\(note.phrase)\" — \(note.meaning). \(note.context)"
+                        ))
+                    }
+                }
             }
         }
     }
