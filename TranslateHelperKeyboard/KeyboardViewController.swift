@@ -352,7 +352,7 @@ class KeyboardViewController: UIInputViewController {
                             self.correctionCard.isHidden = false
                             self.correctionIcon.text = "💬"
                             self.correctionHeader.text = "NATIVE"
-                            self.correctionTextLabel.text = "💡 \(notes)"
+                            self.correctionTextLabel.text = "💡 \(self.capToTwoSentences(notes))"
                         }
 
                         // Fire smart notes after correction is ready
@@ -380,21 +380,13 @@ class KeyboardViewController: UIInputViewController {
                     switch result {
                     case .success(let correction):
                         if correction.severity != "natural" {
-                            let existing = self?.correctionTextLabel.text ?? ""
-                            let tip = "Instead of \"\(correction.userSaid)\", try \"\(correction.nativeSay)\".\n💡 \(correction.explanation)"
-                            // Append to existing correction text if refinement already populated it
-                            if existing.isEmpty || existing.contains("Analyzing") {
-                                self?.correctionTextLabel.text = tip
-                            } else {
-                                self?.correctionTextLabel.text = existing + "\n\n" + tip
-                            }
+                            // Single concise tip — don't stack with existing text
+                            let tip = "Instead of \"\(correction.userSaid)\", try \"\(correction.nativeSay)\".\n\n💡 \(correction.explanation)"
+                            self?.correctionTextLabel.text = tip
                         } else {
-                            let existing = self?.correctionTextLabel.text ?? ""
-                            if existing.contains("Analyzing") {
-                                self?.correctionIcon.text = "👌"
-                                self?.correctionHeader.text = "SOUNDS NATIVE"
-                                self?.correctionTextLabel.text = "Your \(targetName) sounds natural here.\n\"\(correction.nativeSay)\""
-                            }
+                            self?.correctionIcon.text = "👌"
+                            self?.correctionHeader.text = "SOUNDS NATIVE"
+                            self?.correctionTextLabel.text = "Your \(targetName) sounds natural here."
                         }
                     case .failure:
                         break // Refinement handles the fallback
@@ -591,17 +583,15 @@ class KeyboardViewController: UIInputViewController {
                 case .success(let tips):
                     var tipLines: [String] = []
                     if let pron = tips.pronunciationTip {
-                        tipLines.append("🗣 \(pron)")
+                        tipLines.append("🗣 \(self.capToTwoSentences(pron))")
                     }
                     if let gram = tips.grammarTip {
-                        tipLines.append("💡 \(gram)")
+                        tipLines.append("💡 \(self.capToTwoSentences(gram))")
                     }
                     guard !tipLines.isEmpty else { return }
 
-                    // Append coaching tips below whatever is already in the correction card
-                    let existing = self.correctionTextLabel.text ?? ""
-                    let separator = existing.isEmpty ? "" : "\n\n"
-                    self.correctionTextLabel.text = existing + separator + tipLines.joined(separator: "\n\n")
+                    // Replace correction text with coaching tips (don't stack)
+                    self.correctionTextLabel.text = tipLines.joined(separator: "\n\n")
                     NSLog("TSKBD_COACH: pron=\(tips.pronunciationTip ?? "none") gram=\(tips.grammarTip ?? "none")")
                 case .failure(let error):
                     NSLog("TSKBD_COACH_ERROR: \(error.localizedDescription)")
