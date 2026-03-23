@@ -32,6 +32,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Process pending TTS cache requests from the keyboard
         TTSCacheProcessor.processPendingRequests()
 
+        // Process queued keyboard corrections into mistake profile
+        MistakeIngestion.processKeyboardQueue()
+
         if let ctx = connectionOptions.urlContexts.first {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
                 self.handle(url: ctx.url)

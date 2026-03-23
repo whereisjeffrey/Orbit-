@@ -2583,6 +2583,14 @@ struct PracticeSessionView: View {
                 if let idx = messages.firstIndex(where: { $0.id == userMessageId }) {
                     messages[idx].nativeVersion = nativeVersion
                     messages[idx].nativeNotes = sol.nativeCorrectionNotes
+
+                    // Ingest into mistake profile for Lightning Round
+                    MistakeIngestion.ingestFromSol(
+                        userSaid: messages[idx].text,
+                        nativeCorrection: nativeVersion,
+                        notes: sol.nativeCorrectionNotes,
+                        language: targetLang
+                    )
                 }
             }
 

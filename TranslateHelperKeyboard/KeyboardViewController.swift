@@ -383,6 +383,15 @@ class KeyboardViewController: UIInputViewController {
                             // Single concise tip — don't stack with existing text
                             let tip = "Instead of \"\(correction.userSaid)\", try \"\(correction.nativeSay)\".\n\n💡 \(correction.explanation)"
                             self?.correctionTextLabel.text = tip
+
+                            // Queue mistake for Lightning Round
+                            self?.queueMistakeForProfile(
+                                userSaid: correction.userSaid,
+                                nativeSay: correction.nativeSay,
+                                explanation: correction.explanation,
+                                category: correction.category,
+                                language: targetCode
+                            )
                         } else {
                             self?.correctionIcon.text = "👌"
                             self?.correctionHeader.text = "SOUNDS NATIVE"
@@ -1602,8 +1611,47 @@ class KeyboardViewController: UIInputViewController {
         }
     }
 
+    // MARK: - Mistake Profile Queue
+
+    /// Writes a correction to the App Group queue for the main app to ingest.
+    private func queueMistakeForProfile(
+        userSaid: String,
+        nativeSay: String,
+        explanation: String,
+        category: String?,
+        language: String
+    ) {
+        let appGroup = "group.com.jeff.translatehelper"
+        guard let defaults = UserDefaults(suiteName: appGroup) else { return }
+
+        let queueKey = "ts_mistake_queue"
+        var queue = defaults.array(forKey: queueKey) as? [[String: String]] ?? []
+
+        let entry: [String: String] = [
+            "userSaid": userSaid,
+            "correctForm": nativeSay,
+            "explanation": explanation,
+            "category": category ?? "grammar",
+            "language": language,
+            "source": "keyboard",
+            "timestamp": ISO8601DateFormatter().string(from: Date()),
+        ]
+
+        // Dedup
+        let isDuplicate = queue.contains { existing in
+            existing["correctForm"]?.lowercased() == nativeSay.lowercased() &&
+            existing["language"] == language
+        }
+        guard !isDuplicate else { return }
+
+        queue.append(entry)
+        if queue.count > 50 { queue = Array(queue.suffix(50)) }
+        defaults.set(queue, forKey: queueKey)
+        defaults.synchronize()
+    }
+
     // MARK: - Play Translation Aloud
-    
+
     @objc private func playTapped() {
         guard let text = outputTextLabel.text,
               !text.isEmpty,
