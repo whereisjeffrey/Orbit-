@@ -1068,6 +1068,9 @@ struct PracticeSessionView: View {
     // These are just topic DIRECTIONS, not hardcoded messages.
     @State private var recentTopicTags: [String] = []  // last 5 topic tags — prevents repeats
     @State private var isLoadingTopic = false
+    @State private var preloadedSolMessage: PracticeMessage?  // next topic pre-generated in background
+    @State private var preloadedSlangNotes: [PracticeConversationService.SlangNote] = []
+    @State private var isPreloading = false
 
     @State private var messages: [PracticeMessage] = []
 
@@ -1145,15 +1148,15 @@ struct PracticeSessionView: View {
                                 // No implicit animation on message insertion
                                 chatBubble(message: message)
                                     // Swipe gesture on Sol's first message — right = new topic (matches keyboard)
-                                    .offset(x: (index == 0 && message.role == .sol && messageCount == 0 && !isLoadingTopic) ? swipeOffset : 0)
+                                    .offset(x: (index == 0 && message.role == .sol && !isLoadingTopic) ? swipeOffset : 0)
                                     .rotationEffect(
-                                        (index == 0 && message.role == .sol && messageCount == 0 && !isLoadingTopic)
+                                        (index == 0 && message.role == .sol && !isLoadingTopic)
                                         ? .degrees(Double(swipeOffset) / 25.0)
                                         : .degrees(0)
                                     )
                                     .opacity((index == 0 && message.role == .sol && messageCount == 0 && abs(swipeOffset) > 200) ? 0 : 1)
                                     .gesture(
-                                        (index == 0 && message.role == .sol && messageCount == 0 && !isLoadingTopic) ?
+                                        (index == 0 && message.role == .sol && !isLoadingTopic) ?
                                         DragGesture()
                                             .onChanged { gesture in
                                                 let tx = gesture.translation.width
@@ -1751,10 +1754,36 @@ struct PracticeSessionView: View {
         {"message": "your opening in target language", "translation": "English translation", "notes": "brief slang/vocab notes", "topic_tag": "one_word_tag", "summary": "brief English summary of the topic"}
         """
 
-        // Show loading placeholder with Sol avatar
+        // Check if we have a preloaded topic ready (instant!)
+        if let preloaded = preloadedSolMessage {
+            isLoadingTopic = false
+            messages.insert(preloaded, at: 0)
+            preloadedSolMessage = nil
+            playSolAudioThenReveal(message: preloaded)
+
+            // Add preloaded slang notes
+            let notes = preloadedSlangNotes
+            preloadedSlangNotes = []
+            if !notes.isEmpty {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                    for note in notes {
+                        messages.append(PracticeMessage(
+                            role: .coaching,
+                            text: "📖 \"\(note.phrase)\" — \(note.meaning). \(note.context)"
+                        ))
+                    }
+                }
+            }
+
+            // Pre-generate the NEXT topic in background
+            preGenerateNextTopic()
+            return
+        }
+
+        // No preloaded topic — generate now (first load)
         let loadingMsg = PracticeMessage(role: .sol, text: "...")
         messages.insert(loadingMsg, at: 0)
-        revealedText.insert(loadingMsg.id)  // show "..." immediately
+        revealedText.insert(loadingMsg.id)
 
         conversationService.getSolResponse(
             conversationHistory: [(role: "user", text: openingPrompt)],
@@ -1762,56 +1791,88 @@ struct PracticeSessionView: View {
             targetLanguage: targetLang
         ) { [self] response in
             isLoadingTopic = false
-
-            // Remove the loading placeholder
             messages.removeAll { $0.id == loadingMsg.id }
             revealedText.remove(loadingMsg.id)
 
-            let solText: String
-            let solTranslation: String?
-            let solNotes: String?
-            var slangNotes: [PracticeConversationService.SlangNote] = []
-
-            if let sol = response {
-                solText = sol.text
-                solTranslation = sol.translation
-                solNotes = sol.translationNotes
-                slangNotes = sol.slangNotes
-
-                // Track topic to prevent repeats
-                let tag = sol.translationNotes?.split(separator: " ").first.map(String.init) ?? "general"
-                recentTopicTags.append(tag)
-                if recentTopicTags.count > 5 { recentTopicTags.removeFirst() }
-
-                // Save summary to persistent history — never repeat this topic
-                let summary = sol.translation ?? sol.text
-                logTopicHistory(String(summary.prefix(100)))
-            } else {
-                solText = "E aí! Tudo bem? Me conta — como tá sendo o dia hoje?"
-                solTranslation = "Hey! Everything good? Tell me — how's your day going?"
-                solNotes = "'tudo bem' = 'everything good?' · 'como tá sendo' = 'how's it going' (casual)"
-            }
-
-            let solMsg = PracticeMessage(
-                role: .sol,
-                text: solText,
-                translation: solTranslation,
-                translationNotes: solNotes
-            )
+            let solMsg = buildSolMessage(from: response)
             messages.insert(solMsg, at: 0)
-            // Play audio explicitly — NOT from onAppear (which caused loops)
             playSolAudioThenReveal(message: solMsg)
 
-            // Add slang notes after a delay so they appear after audio finishes
-            if !slangNotes.isEmpty {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) {
-                    for note in slangNotes {
+            // Add slang notes after a delay
+            if let sol = response, !sol.slangNotes.isEmpty {
+                let notes = sol.slangNotes
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                    for note in notes {
                         messages.append(PracticeMessage(
                             role: .coaching,
                             text: "📖 \"\(note.phrase)\" — \(note.meaning). \(note.context)"
                         ))
                     }
                 }
+            }
+
+            // Pre-generate the next topic in background
+            preGenerateNextTopic()
+        }
+    }
+
+    private func buildSolMessage(from response: PracticeConversationService.SolResponse?) -> PracticeMessage {
+        if let sol = response {
+            let tag = sol.translationNotes?.split(separator: " ").first.map(String.init) ?? "general"
+            recentTopicTags.append(tag)
+            if recentTopicTags.count > 5 { recentTopicTags.removeFirst() }
+            let summary = sol.translation ?? sol.text
+            logTopicHistory(String(summary.prefix(100)))
+
+            return PracticeMessage(
+                role: .sol,
+                text: sol.text,
+                translation: sol.translation,
+                translationNotes: sol.translationNotes
+            )
+        } else {
+            return PracticeMessage(
+                role: .sol,
+                text: "E aí! Tudo bem? Me conta — como tá sendo o dia hoje?",
+                translation: "Hey! Everything good? Tell me — how's your day going?",
+                translationNotes: "'tudo bem' = 'everything good?' · 'como tá sendo' = 'how's it going' (casual)"
+            )
+        }
+    }
+
+    /// Pre-generate the next topic in the background so swiping feels instant
+    private func preGenerateNextTopic() {
+        guard !isPreloading else { return }
+        isPreloading = true
+
+        let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper")
+        let cityId = defaults?.string(forKey: "selected_city_id") ?? ""
+        let targetLang = defaults?.string(forKey: "talkswitch_target_lang") ?? "pt"
+        let userCity = cityId.isEmpty ? "their city" : cityId.replacingOccurrences(of: "_", with: " ").capitalized
+
+        let prompt = """
+        Generate a casual, warm opening message for a practice conversation.
+        Be CREATIVE — invent a unique topic. The user lives in \(userCity).
+        Speak naturally in the target language. Use local slang. 2-3 sentences max.
+        Respond ONLY with JSON:
+        {"message": "opening in target language", "translation": "English", "notes": "slang notes", "topic_tag": "tag", "summary": "English summary"}
+        """
+
+        conversationService.getSolResponse(
+            conversationHistory: [(role: "user", text: prompt)],
+            userCity: userCity,
+            targetLanguage: targetLang
+        ) { [self] response in
+            isPreloading = false
+            if let sol = response {
+                preloadedSolMessage = PracticeMessage(
+                    role: .sol,
+                    text: sol.text,
+                    translation: sol.translation,
+                    translationNotes: sol.translationNotes
+                )
+                preloadedSlangNotes = sol.slangNotes
+                NSLog("🎯 [Practice] next topic pre-generated: \(sol.text.prefix(40))")
             }
         }
     }
@@ -1904,13 +1965,12 @@ struct PracticeSessionView: View {
         NSLog("🔊 [Practice] playing audio for: \(message.text.prefix(40))")
 
         ttsService.speak(text: message.text, language: "pt-BR") { [self] in
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                withAnimation(.easeIn(duration: 0.8)) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                withAnimation(.easeIn(duration: 0.4)) {
                     revealedText.insert(message.id)
                 }
                 playingAudio = nil
                 isPlayingSolAudio = false
-                NSLog("🔊 [Practice] audio complete, lock released")
             }
         }
     }
