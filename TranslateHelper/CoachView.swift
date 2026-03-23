@@ -6,6 +6,7 @@
 //  Uses TSGradientBackground, HelveticaNeue, tsCard, tsAccent from DesignSystem.
 
 import SwiftUI
+import UIKit
 import AVFoundation
 
 struct CoachView: View {
@@ -64,7 +65,7 @@ struct CoachEmptyView: View {
                     .foregroundColor(.tsLabel)
                     .padding(.bottom, 8)
 
-                Text("I'm your language coach — and I live inside your keyboard.")
+                Text("Your language coach.\nI live inside your keyboard.")
                     .font(.custom("HelveticaNeue", size: 15))
                     .foregroundColor(.tsSecondary)
                     .multilineTextAlignment(.center)
@@ -86,7 +87,7 @@ struct CoachEmptyView: View {
                         .foregroundColor(.tsSecondary)
                         .kerning(1.2)
 
-                    howItWorksRow(icon: "pencil.and.outline", color: Color.tsAccent, text: "Write or send audios like you normally do — in WhatsApp, Tinder, Instagram, anywhere")
+                    howItWorksRow(icon: "keyboard", color: Color.tsAccent, text: "Write or send audios like you normally do — in WhatsApp, Tinder, Instagram, anywhere")
                     howItWorksRow(icon: "target", color: Color(hex: "#34C759"), text: "I'll give you 1-2 tips per message — pronunciation, grammar, or both")
                     howItWorksRow(icon: "chart.line.uptrend.xyaxis", color: Color(hex: "#FF9500"), text: "Over time, I'll track your patterns and show you exactly where you're improving")
                     howItWorksRow(icon: "brain.head.profile", color: Color(hex: "#AF52DE"), text: "I know your native language brain will try to trick you — I'll help you untrain those habits")
@@ -214,19 +215,21 @@ struct CoachPopulatedView: View {
     @State private var showFullReport = false
     @State private var showPracticeSession = false
     @State private var showTalkDrill = false
+    @State private var showLevelDetail = false
 
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 0) {
 
-                // ── 1. Coach Greeting Card ───────────────────────
-                greetingCard
+                // ── 1. Score Overview (4 gauges) ─────────────────
+                scoreOverview
                     .padding(.horizontal, 20)
                     .padding(.top, 16)
                     .padding(.bottom, 20)
+                    .onTapGesture { showLevelDetail = true }
 
-                // ── 2. Score Overview (4 gauges) ─────────────────
-                scoreOverview
+                // ── 2. Practice Mode Card ────────────────────────
+                practiceCard
                     .padding(.horizontal, 20)
                     .padding(.bottom, 20)
 
@@ -242,11 +245,6 @@ struct CoachPopulatedView: View {
 
                 // ── 5. Talk (Pronunciation Drill) Card ──────────
                 talkCard
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 20)
-
-                // ── 6. Practice Mode Card ────────────────────────
-                practiceCard
                     .padding(.horizontal, 20)
                     .padding(.bottom, 20)
 
@@ -278,38 +276,6 @@ struct CoachPopulatedView: View {
         }
     }
 
-    // MARK: - 1. Greeting Card
-
-    private var greetingCard: some View {
-        HStack(spacing: 16) {
-            // Sol placeholder
-            Circle()
-                .fill(Color.white.opacity(0.20))
-                .frame(width: 48, height: 48)
-                .overlay(
-                    Circle()
-                        .stroke(Color.white.opacity(0.35), lineWidth: 1)
-                )
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Your Portuguese is getting sharper every week. Grammar just hit B1 — that's a big jump.")
-                    .font(.custom("HelveticaNeue-Medium", size: 14))
-                    .foregroundColor(.white)
-                    .lineSpacing(2)
-
-                Text("127 voice messages · 3 months active")
-                    .font(.custom("HelveticaNeue", size: 12))
-                    .foregroundColor(.white.opacity(0.75))
-            }
-
-            Spacer()
-        }
-        .padding(16)
-        .background(
-            GreetingCardBackground()
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-        )
-    }
 }
 
 // MARK: - Animated blob gradient (card-sized version of splash / recorder background)
@@ -425,6 +391,9 @@ extension CoachPopulatedView {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.tsBorder, lineWidth: 1)
         )
+        .sheet(isPresented: $showLevelDetail) {
+            LevelDetailView()
+        }
     }
 
     private func scoreGauge(label: String, level: String, progress: CGFloat, color: Color, locked: Bool) -> some View {
@@ -1053,11 +1022,336 @@ struct WeeklyFullReportView: View {
     }
 }
 
+// MARK: - Level Detail View
+
+struct LevelDetailView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
+
+    private struct SkillLevel {
+        let label: String
+        let level: String
+        let progress: CGFloat
+        let color: Color
+    }
+
+    private let skills: [SkillLevel] = [
+        SkillLevel(label: "Pronunciation", level: "B1", progress: 0.65, color: Color(hex: "#34C759")),
+        SkillLevel(label: "Grammar", level: "B1", progress: 0.55, color: Color(hex: "#007AFF")),
+        SkillLevel(label: "Vocabulary", level: "B2", progress: 0.72, color: Color(hex: "#FF9500")),
+        SkillLevel(label: "Fluency", level: "A2", progress: 0.38, color: Color(hex: "#AF52DE")),
+    ]
+
+    private let cefrDescriptions: [String: (title: String, meaning: String)] = [
+        "A1": ("Beginner", "You can understand and use basic phrases — greetings, introductions, simple questions. Enough to survive, not enough to connect."),
+        "A2": ("Elementary", "You can handle short, routine exchanges — ordering food, asking directions, basic small talk. You get the gist but miss the nuance."),
+        "B1": ("Intermediate", "You can deal with most situations while traveling or living abroad. You can describe experiences, give opinions, and follow the main point of conversations."),
+        "B2": ("Upper Intermediate", "You can interact with native speakers fluently enough that it's not a strain for either side. You understand complex texts and can argue a viewpoint."),
+        "C1": ("Advanced", "You can express yourself fluently and spontaneously. You use language flexibly for social, academic, and professional purposes."),
+        "C2": ("Mastery", "You can understand virtually everything heard or read. You can summarize, reconstruct, and express yourself spontaneously with precision."),
+    ]
+
+    private func bridgingTips(for skill: SkillLevel) -> [String] {
+        guard skill.progress > 0.5 else { return [] }
+
+        switch skill.label {
+        case "Pronunciation":
+            if skill.level == "B1" {
+                return [
+                    "Focus on word stress patterns — misplaced stress is the #1 giveaway",
+                    "Practice connected speech: how words blend together naturally",
+                    "Record yourself and compare with native audio from your practice sessions",
+                ]
+            } else {
+                return [
+                    "Work on intonation patterns for questions vs. statements",
+                    "Practice minimal pairs — sounds that are similar but change meaning",
+                ]
+            }
+        case "Grammar":
+            if skill.level == "B1" {
+                return [
+                    "Subjunctive mood — it's the bridge between sounding competent and sounding natural",
+                    "Practice complex sentence structures: relative clauses, conditionals",
+                    "Pay attention to preposition choices — they rarely translate 1:1",
+                ]
+            } else {
+                return [
+                    "Master verb conjugations for the tenses you use most",
+                    "Focus on gender/number agreement in longer sentences",
+                ]
+            }
+        case "Vocabulary":
+            if skill.level == "B2" {
+                return [
+                    "You're close to C1 — start incorporating idiomatic expressions",
+                    "Learn synonyms to avoid repeating the same words",
+                    "Pick up register awareness: when to use formal vs. casual alternatives",
+                ]
+            } else {
+                return [
+                    "Build topic-specific vocabulary for your daily life",
+                    "Learn collocations — words that naturally go together",
+                ]
+            }
+        case "Fluency":
+            if skill.level == "A2" {
+                return [
+                    "Increase your response speed — practice thinking in the target language",
+                    "Use filler words and discourse markers that native speakers use",
+                    "Don't translate in your head first — try to form thoughts directly",
+                ]
+            } else {
+                return [
+                    "Practice longer stretches of speech without pausing",
+                    "Work on transitioning between topics smoothly",
+                ]
+            }
+        default:
+            return []
+        }
+    }
+
+    var body: some View {
+        NavigationView {
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 24) {
+
+                    // ── Overall level ──────────────────────────
+                    VStack(spacing: 8) {
+                        Text("B1")
+                            .font(.custom("HelveticaNeue-Bold", size: 48))
+                            .foregroundColor(.tsAccent)
+                        Text("Intermediate")
+                            .font(.custom("HelveticaNeue-Medium", size: 16))
+                            .foregroundColor(.tsLabel)
+                        Text("Your overall level across all categories")
+                            .font(.custom("HelveticaNeue", size: 13))
+                            .foregroundColor(.tsSecondary)
+                    }
+                    .padding(.top, 8)
+
+                    // ── What this means ────────────────────────
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("WHAT B1 MEANS")
+                            .font(.custom("HelveticaNeue-Bold", size: 11))
+                            .foregroundColor(.tsSecondary)
+                            .kerning(1.2)
+
+                        Text(cefrDescriptions["B1"]?.meaning ?? "")
+                            .font(.custom("HelveticaNeue", size: 14))
+                            .foregroundColor(.tsLabel)
+                            .lineSpacing(4)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(20)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.tsCard)
+                    )
+
+                    // ── Category breakdown ─────────────────────
+                    ForEach(skills, id: \.label) { skill in
+                        let desc = cefrDescriptions[skill.level]
+                        let tips = bridgingTips(for: skill)
+
+                        VStack(alignment: .leading, spacing: 12) {
+                            // Header row
+                            HStack {
+                                Circle()
+                                    .fill(skill.color)
+                                    .frame(width: 10, height: 10)
+                                Text(skill.label)
+                                    .font(.custom("HelveticaNeue-Bold", size: 16))
+                                    .foregroundColor(.tsLabel)
+                                Spacer()
+                                Text(skill.level)
+                                    .font(.custom("HelveticaNeue-Bold", size: 20))
+                                    .foregroundColor(skill.color)
+                            }
+
+                            // Progress bar
+                            GeometryReader { geo in
+                                ZStack(alignment: .leading) {
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .fill(skill.color.opacity(0.12))
+                                        .frame(height: 8)
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .fill(
+                                            LinearGradient(
+                                                colors: [skill.color.opacity(0.7), skill.color],
+                                                startPoint: .leading,
+                                                endPoint: .trailing
+                                            )
+                                        )
+                                        .frame(width: geo.size.width * skill.progress, height: 8)
+                                }
+                            }
+                            .frame(height: 8)
+
+                            // Level description
+                            HStack(spacing: 4) {
+                                Text(skill.level)
+                                    .font(.custom("HelveticaNeue-Bold", size: 12))
+                                    .foregroundColor(skill.color)
+                                Text("— \(desc?.title ?? "")")
+                                    .font(.custom("HelveticaNeue-Medium", size: 12))
+                                    .foregroundColor(.tsSecondary)
+                                Spacer()
+                                Text("\(Int(skill.progress * 100))% to next level")
+                                    .font(.custom("HelveticaNeue", size: 11))
+                                    .foregroundColor(.tsSecondary)
+                            }
+
+                            // Bridging tips (only if >50% progress)
+                            if !tips.isEmpty {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("TO REACH THE NEXT LEVEL")
+                                        .font(.custom("HelveticaNeue-Bold", size: 10))
+                                        .foregroundColor(skill.color)
+                                        .kerning(0.8)
+
+                                    ForEach(tips, id: \.self) { tip in
+                                        HStack(alignment: .top, spacing: 8) {
+                                            Image(systemName: "arrow.right.circle.fill")
+                                                .font(.system(size: 11))
+                                                .foregroundColor(skill.color.opacity(0.6))
+                                                .padding(.top, 2)
+                                            Text(tip)
+                                                .font(.custom("HelveticaNeue", size: 13))
+                                                .foregroundColor(.tsLabel)
+                                                .lineSpacing(2)
+                                                .fixedSize(horizontal: false, vertical: true)
+                                        }
+                                    }
+                                }
+                                .padding(12)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(skill.color.opacity(0.04))
+                                )
+                            }
+                        }
+                        .padding(20)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.tsCard)
+                        )
+                    }
+
+                    // ── CEFR scale reference ──────────────────
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("CEFR SCALE")
+                            .font(.custom("HelveticaNeue-Bold", size: 11))
+                            .foregroundColor(.tsSecondary)
+                            .kerning(1.2)
+
+                        ForEach(["A1", "A2", "B1", "B2", "C1", "C2"], id: \.self) { level in
+                            let desc = cefrDescriptions[level]
+                            HStack(alignment: .top, spacing: 12) {
+                                Text(level)
+                                    .font(.custom("HelveticaNeue-Bold", size: 14))
+                                    .foregroundColor(level == "B1" ? .tsAccent : .tsSecondary)
+                                    .frame(width: 28, alignment: .leading)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(desc?.title ?? "")
+                                        .font(.custom("HelveticaNeue-Medium", size: 13))
+                                        .foregroundColor(level == "B1" ? .tsLabel : .tsSecondary)
+                                    Text(desc?.meaning ?? "")
+                                        .font(.custom("HelveticaNeue", size: 12))
+                                        .foregroundColor(.tsSecondary)
+                                        .lineSpacing(2)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                            }
+                            .padding(.vertical, 4)
+                            if level != "C2" {
+                                Divider()
+                            }
+                        }
+                    }
+                    .padding(20)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.tsCard)
+                    )
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 32)
+            }
+            .background(TSGradientBackground().ignoresSafeArea())
+            .navigationTitle("Your Level")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.tsSecondary)
+                    }
+                }
+            }
+        }
+    }
+}
+
 // MARK: - Practice Session (full-screen chat)
 
 struct PracticeSessionView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
+    @AppStorage("talkswitch_target_lang",
+                store: UserDefaults(suiteName: "group.com.jeff.translatehelper"))
+    private var targetLang = "es"
+
+    // Flag + accent color derived from target language
+    private var langFlag: String {
+        let flags: [String: String] = [
+            "es": "🇪🇸", "pt": "🇧🇷", "fr": "🇫🇷", "de": "🇩🇪", "it": "🇮🇹",
+            "ja": "🇯🇵", "ko": "🇰🇷", "zh": "🇨🇳", "ar": "🇦🇪", "en": "🇺🇸",
+            "nl": "🇳🇱", "ru": "🇷🇺", "pl": "🇵🇱", "tr": "🇹🇷", "sv": "🇸🇪",
+            "da": "🇩🇰", "fi": "🇫🇮", "el": "🇬🇷", "cs": "🇨🇿", "ro": "🇷🇴",
+            "hu": "🇭🇺", "uk": "🇺🇦", "id": "🇮🇩", "ms": "🇲🇾", "th": "🇹🇭",
+            "vi": "🇻🇳", "hi": "🇮🇳", "bn": "🇧🇩", "ta": "🇱🇰", "he": "🇮🇱",
+            "no": "🇳🇴", "sk": "🇸🇰", "bg": "🇧🇬", "hr": "🇭🇷", "lt": "🇱🇹",
+            "lv": "🇱🇻", "et": "🇪🇪", "sl": "🇸🇮", "sw": "🇰🇪",
+        ]
+        return flags[targetLang] ?? "🌐"
+    }
+
+    /// Accent color inspired by the target language's flag
+    private var langAccentColor: Color {
+        let colors: [String: String] = [
+            "es": "#C60B1E",  // Spanish red
+            "pt": "#009739",  // Brazilian green
+            "fr": "#002395",  // French blue
+            "de": "#DD0000",  // German red
+            "it": "#008C45",  // Italian green
+            "ja": "#BC002D",  // Japanese red
+            "ko": "#003478",  // Korean blue
+            "zh": "#DE2910",  // Chinese red
+            "ar": "#007A3D",  // UAE/Arabic green
+            "nl": "#FF4F00",  // Dutch orange
+            "ru": "#0039A6",  // Russian blue
+            "pl": "#DC143C",  // Polish red
+            "tr": "#E30A17",  // Turkish red
+            "sv": "#006AA7",  // Swedish blue
+        ]
+        return Color(hex: colors[targetLang] ?? "#34C759")
+    }
+
+    private var langName: String {
+        let map: [String: String] = [
+            "es": "Spanish", "pt": "Portuguese", "fr": "French", "de": "German",
+            "it": "Italian", "ja": "Japanese", "ko": "Korean", "zh": "Chinese",
+            "ar": "Arabic", "nl": "Dutch", "ru": "Russian", "pl": "Polish",
+            "tr": "Turkish", "sv": "Swedish", "da": "Danish", "fi": "Finnish",
+            "el": "Greek", "cs": "Czech", "ro": "Romanian", "hu": "Hungarian",
+            "uk": "Ukrainian", "id": "Indonesian", "ms": "Malay", "th": "Thai",
+            "vi": "Vietnamese", "hi": "Hindi", "bn": "Bengali", "ta": "Tamil",
+            "he": "Hebrew", "no": "Norwegian", "en": "English",
+        ]
+        return map[targetLang] ?? "Spanish"
+    }
 
     @State private var userInput = ""
     @State private var currentTopicIndex = 0
@@ -1100,6 +1394,7 @@ struct PracticeSessionView: View {
     @AppStorage("practice_native_dismiss_count") private var nativeDismissCount = 0
     private var hasShownFirstUserMessage = false
     @State private var savedPhrases: Set<String> = []       // phrases already saved this session
+    @State private var savedMessageIds: Set<UUID> = []     // message IDs saved (for visual feedback)
     @State private var showSaveHint = false
     @State private var saveHintShownForMessage: UUID?
     @AppStorage("practice_save_validated") private var saveValidated = false
@@ -1229,6 +1524,12 @@ struct PracticeSessionView: View {
                                 // Show native hint after the first user message
                                 if message.id == nativeHintShownForMessage && showNativeHint {
                                     nativeHintCard
+                                        .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                                }
+
+                                // Show save hint after first coaching tip (once 5+ messages in)
+                                if message.id == saveHintShownForMessage && showSaveHint {
+                                    saveHintCard
                                         .transition(.opacity.combined(with: .scale(scale: 0.95)))
                                 }
                             }
@@ -1460,6 +1761,48 @@ struct PracticeSessionView: View {
         )
     }
 
+    // MARK: - Save Hint Card
+
+    private var saveHintCard: some View {
+        HStack(spacing: 12) {
+            Text("💾")
+                .font(.system(size: 20))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Want to remember this?")
+                    .font(.custom("HelveticaNeue-Bold", size: 13))
+                    .foregroundColor(.tsLabel)
+                Text("Double-tap any coaching tip to save it to your notes for later study.")
+                    .font(.custom("HelveticaNeue", size: 12))
+                    .foregroundColor(.tsSecondary)
+                    .lineSpacing(1)
+            }
+
+            Spacer()
+
+            Button {
+                withAnimation(.easeOut(duration: 0.2)) {
+                    showSaveHint = false
+                }
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.tsSecondary)
+                    .padding(6)
+                    .background(Circle().fill(Color.tsSecondary.opacity(0.1)))
+            }
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(hex: "#FF9500").opacity(0.08))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color(hex: "#FF9500").opacity(0.15), lineWidth: 0.5)
+        )
+    }
+
     // MARK: - Chat Bubble
 
     private func chatBubble(message: PracticeMessage) -> some View {
@@ -1488,60 +1831,71 @@ struct PracticeSessionView: View {
                         .font(.custom("HelveticaNeue-Bold", size: 11))
                         .foregroundColor(.tsSecondary)
                 } else if message.role == .coaching {
-                    Text("COACHING TIP")
-                        .font(.custom("HelveticaNeue-Bold", size: 9))
-                        .foregroundColor(Color(hex: "#FF9500"))
-                        .kerning(0.8)
+                    HStack(spacing: 6) {
+                        Text("COACHING TIP")
+                            .font(.custom("HelveticaNeue-Bold", size: 9))
+                            .foregroundColor(Color(hex: "#FF9500"))
+                            .kerning(0.8)
+
+                        if savedMessageIds.contains(message.id) {
+                            HStack(spacing: 3) {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.system(size: 10))
+                                Text("SAVED")
+                                    .font(.custom("HelveticaNeue-Bold", size: 9))
+                                    .kerning(0.8)
+                            }
+                            .foregroundColor(Color(hex: "#34C759"))
+                            .transition(.opacity.combined(with: .scale(scale: 0.8)))
+                        }
+                    }
                 }
 
                 // Main message bubble
                 let textVisible = message.role != .sol || revealedText.contains(message.id)
+                let isSolPlaying = message.role == .sol && playingAudio == message.id
 
                 HStack(alignment: .bottom, spacing: 6) {
-                    Group {
-                        if message.text == "..." {
-                            // Typing indicator
-                            HStack(spacing: 4) {
-                                Image(systemName: "sparkles")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(Color(hex: "#FFD60A"))
-                                Text("Thinking...")
-                                    .font(.custom("HelveticaNeue", size: 13))
-                                    .foregroundColor(.tsSecondary)
-                            }
-                        } else {
-                            ZStack(alignment: .leading) {
-                                // Actual message text — always occupies full layout space
-                                Text(message.text)
-                                    .font(.custom("HelveticaNeue", size: 14))
-                                    .foregroundColor(.tsLabel)
-                                    .lineSpacing(3)
-                                    .opacity(textVisible ? 1 : 0)
+                    if message.text == "..." {
+                        // Typing indicator
+                        HStack(spacing: 4) {
+                            Image(systemName: "sparkles")
+                                .font(.system(size: 14))
+                                .foregroundColor(Color(hex: "#FFD60A"))
+                            Text("Thinking...")
+                                .font(.custom("HelveticaNeue", size: 13))
+                                .foregroundColor(.tsSecondary)
+                        }
+                    } else {
+                        ZStack(alignment: .leading) {
+                            // Text — always laid out at full size so the bubble never resizes.
+                            // .drawingGroup() rasterizes it as a single bitmap so the entire
+                            // block fades in uniformly — no per-line stagger.
+                            Text(message.text)
+                                .font(.custom("HelveticaNeue", size: 14))
+                                .foregroundColor(.tsLabel)
+                                .lineSpacing(3)
+                                .drawingGroup()
+                                .opacity(textVisible ? 1 : 0)
 
-                                // Waveform indicator — shown while audio plays, fades out when text reveals
-                                if message.role == .sol {
-                                    HStack(spacing: 8) {
-                                        PulsatingWaveformView(isAnimating: !textVisible)
-                                        Text("Listening...")
-                                            .font(.custom("HelveticaNeue", size: 13))
-                                            .foregroundColor(.tsSecondary)
-                                    }
+                            // Waveform — ALWAYS in the tree (no if/else), just opacity-swapped.
+                            // This prevents layout recalc that causes the staggered text reveal.
+                            if message.role == .sol {
+                                PulsatingWaveformView(isAnimating: !textVisible)
+                                    .frame(maxWidth: .infinity, alignment: .center)
                                     .opacity(textVisible ? 0 : 1)
-                                }
+                                    .allowsHitTesting(false)
                             }
                         }
-                    }
 
-                    // Replay button (only for Sol messages, only after text is revealed)
-                    if message.role == .sol && textVisible {
-                        Button {
-                            playSolAudio(message: message)
-                        } label: {
-                            Image(systemName: "speaker.wave.2.fill")
-                                .font(.system(size: 11))
-                                .foregroundColor(playingAudio == message.id ? .tsAccent : .tsSecondary.opacity(0.5))
+                        // Speaker icon — fades in after text appears
+                        if message.role == .sol {
+                            Image(systemName: isSolPlaying ? "speaker.wave.3.fill" : "speaker.wave.2")
+                                .font(.system(size: 10))
+                                .foregroundColor(Color.tsAccent.opacity(isSolPlaying ? 0.6 : 0.2))
+                                .opacity(textVisible ? 1 : 0)
+                                .padding(.bottom, 2)
                         }
-                        .padding(.bottom, 2)
                     }
                 }
                 .padding(.horizontal, 14)
@@ -1588,6 +1942,12 @@ struct PracticeSessionView: View {
                             }
                         }
                     }
+                .onTapGesture(count: 1) {
+                    // Single tap on Sol's message → replay audio
+                    if message.role == .sol && textVisible && message.text != "..." {
+                        playSolAudio(message: message)
+                    }
+                }
 
                 // Translation card — Sol's messages (English)
                 if isRevealed, let translation = message.translation {
@@ -1605,6 +1965,7 @@ struct PracticeSessionView: View {
                             .font(.custom("HelveticaNeue", size: 13))
                             .foregroundColor(.tsLabel)
                             .lineSpacing(2)
+                            .fixedSize(horizontal: false, vertical: true)
 
                         if let notes = message.translationNotes {
                             Text("💡 \(notes)")
@@ -1629,14 +1990,15 @@ struct PracticeSessionView: View {
                 }
 
                 // Native version card — User's messages (how a native would say it)
+                // Uses the target language's flag color as card accent
                 if isNativeRevealed, let native = message.nativeVersion {
                     VStack(alignment: .leading, spacing: 6) {
                         HStack(spacing: 4) {
-                            Text("🇧🇷")
+                            Text(langFlag)
                                 .font(.system(size: 12))
-                            Text("NATIVE VERSION")
+                            Text("NATIVE \(langName.uppercased())")
                                 .font(.custom("HelveticaNeue-Bold", size: 9))
-                                .foregroundColor(Color(hex: "#34C759"))
+                                .foregroundColor(langAccentColor)
                                 .kerning(0.8)
                         }
 
@@ -1644,6 +2006,7 @@ struct PracticeSessionView: View {
                             .font(.custom("HelveticaNeue", size: 13))
                             .foregroundColor(.tsLabel)
                             .lineSpacing(2)
+                            .fixedSize(horizontal: false, vertical: true)
 
                         if let notes = message.nativeNotes {
                             Text("💡 \(notes)")
@@ -1658,11 +2021,11 @@ struct PracticeSessionView: View {
                     .padding(.vertical, 10)
                     .background(
                         RoundedRectangle(cornerRadius: 12)
-                            .fill(Color(hex: "#34C759").opacity(0.06))
+                            .fill(langAccentColor.opacity(0.06))
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color(hex: "#34C759").opacity(0.12), lineWidth: 0.5)
+                            .stroke(langAccentColor.opacity(0.12), lineWidth: 0.5)
                     )
                     .transition(.opacity.combined(with: .scale(scale: 0.95)))
                 }
@@ -1762,8 +2125,11 @@ struct PracticeSessionView: View {
         - A 1-word topic tag (e.g. "food", "music", "dating", "work", "culture")
         - A brief 1-line summary of what you asked (in English, for our records)
 
+        All notes must be in English, with target-language words kept inline for context
+        (e.g. "'dale' is casual slang for 'go ahead' or 'let's do it'").
+
         Respond ONLY with JSON:
-        {"message": "your opening in target language", "translation": "English translation", "notes": "brief slang/vocab notes", "topic_tag": "one_word_tag", "summary": "brief English summary of the topic"}
+        {"message": "your opening in target language", "translation": "English translation", "notes": "brief English note with target-language words inline", "topic_tag": "one_word_tag", "summary": "brief English summary of the topic"}
         """
 
         // Check if we have a preloaded topic ready (instant!)
@@ -1773,12 +2139,13 @@ struct PracticeSessionView: View {
             preloadedSolMessage = nil
             playSolAudioThenReveal(message: preloaded)
 
-            // Add preloaded slang notes
+            // Add preloaded slang notes (skip already-known phrases)
             let notes = preloadedSlangNotes
             preloadedSlangNotes = []
             if !notes.isEmpty {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
                     for note in notes {
+                        guard !isPhraseAlreadyKnown(note.phrase) else { continue }
                         messages.append(PracticeMessage(
                             role: .coaching,
                             text: "📖 \"\(note.phrase)\" — \(note.meaning). \(note.context)",
@@ -1812,11 +2179,12 @@ struct PracticeSessionView: View {
             messages.insert(solMsg, at: 0)
             playSolAudioThenReveal(message: solMsg)
 
-            // Add slang notes after a delay
+            // Add slang notes after a delay (skip already-known phrases)
             if let sol = response, !sol.slangNotes.isEmpty {
                 let notes = sol.slangNotes
                 DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
                     for note in notes {
+                        guard !isPhraseAlreadyKnown(note.phrase) else { continue }
                         messages.append(PracticeMessage(
                             role: .coaching,
                             text: "📖 \"\(note.phrase)\" — \(note.meaning). \(note.context)",
@@ -2008,6 +2376,13 @@ struct PracticeSessionView: View {
         defaults.synchronize()
 
         savedPhrases.insert(phrase.lowercased())
+        withAnimation(.easeInOut(duration: 0.25)) {
+            savedMessageIds.insert(message.id)
+        }
+
+        // Haptic feedback
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
 
         // Validate the save hint
         if !saveValidated {
@@ -2048,10 +2423,10 @@ struct PracticeSessionView: View {
 
         ttsService.speak(
             text: message.text,
-            language: "pt-BR",
+            language: targetLang,
             nearlyDone: { [self] in
-                // Begins 1 second before audio ends — slow, buttery crossfade
-                withAnimation(.easeInOut(duration: 1.05)) {
+                // Begins 1.5s before audio ends — warm, unhurried crossfade
+                withAnimation(.easeIn(duration: 1.5)) {
                     _ = revealedText.insert(message.id)
                 }
             },
@@ -2068,7 +2443,7 @@ struct PracticeSessionView: View {
         guard !isPlayingSolAudio else { return }
         isPlayingSolAudio = true
         playingAudio = message.id
-        ttsService.speak(text: message.text, language: "pt-BR") {
+        ttsService.speak(text: message.text, language: targetLang) {
             DispatchQueue.main.async {
                 self.playingAudio = nil
                 self.isPlayingSolAudio = false
@@ -2107,7 +2482,7 @@ struct PracticeSessionView: View {
         conversationService.stopRecording()
 
         // Transcribe the actual recording
-        conversationService.transcribe(language: "pt") { [self] transcription in
+        conversationService.transcribe(language: targetLang) { [self] transcription in
             guard let text = transcription, !text.isEmpty else {
                 NSLog("🎤 [Practice] transcription failed or empty")
                 return
@@ -2116,6 +2491,7 @@ struct PracticeSessionView: View {
             let msg = PracticeMessage(role: .user, text: text)
             messages.append(msg)
             messageCount += 1
+            totalMessagesThisSession += 1
 
             // Show native hint after first user message
             if !nativeDoubleTapValidated && nativeDismissCount < 3 && messageCount == 1 {
@@ -2153,6 +2529,7 @@ struct PracticeSessionView: View {
         messages.append(msg)
         userInput = ""
         messageCount += 1
+        totalMessagesThisSession += 1
 
         // Log engagement on first message for this topic
         if messageCount == 1 {
@@ -2194,7 +2571,7 @@ struct PracticeSessionView: View {
             }
         }
 
-        conversationService.getSolResponse(conversationHistory: history, targetLanguage: "pt") { [self] response in
+        conversationService.getSolResponse(conversationHistory: history, targetLanguage: targetLang) { [self] response in
             isFetchingSolResponse2 = false
             guard let sol = response else {
                 NSLog("🎤 [Practice] Sol response failed")
@@ -2218,17 +2595,30 @@ struct PracticeSessionView: View {
             )
             messages.append(solMsg)
             messageCount += 1
+            totalMessagesThisSession += 1
 
             // Play audio explicitly for Sol's response
             playSolAudioThenReveal(message: solMsg)
 
-            // Add slang note cards if Sol used any slang
+            // Add slang note cards if Sol used any slang (skip already-known phrases)
             for note in sol.slangNotes {
+                guard !isPhraseAlreadyKnown(note.phrase) else { continue }
+
                 let noteMsg = PracticeMessage(
                     role: .coaching,
-                    text: "📖 \"\(note.phrase)\" — \(note.meaning). \(note.context)"
+                    text: "📖 \"\(note.phrase)\" — \(note.meaning). \(note.context)",
+                    saveablePhrase: note.phrase,
+                    saveableMeaning: note.meaning
                 )
                 messages.append(noteMsg)
+
+                // Show save hint after 5+ messages, on first coaching tip
+                if totalMessagesThisSession >= 5 && !saveValidated && saveHintShownForMessage == nil {
+                    saveHintShownForMessage = noteMsg.id
+                    withAnimation(.easeIn(duration: 0.3).delay(0.3)) {
+                        showSaveHint = true
+                    }
+                }
             }
         }
     }
@@ -2408,9 +2798,9 @@ class PracticeTTSService: NSObject, AVAudioPlayerDelegate {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
                         self.audioPlayer?.play()
 
-                        // Schedule nearlyDone callback 1 second before audio finishes
+                        // Schedule nearlyDone callback 1.5 seconds before audio finishes
                         if let duration = self.audioPlayer?.duration, let nearlyDone = self.onNearlyDone {
-                            let fadeDelay = max(0, duration - 1.0)  // fire 1s before end
+                            let fadeDelay = max(0, duration - 1.5)  // fire 1.5s before end
                             self.nearlyDoneTimer = Timer.scheduledTimer(withTimeInterval: fadeDelay, repeats: false) { [weak self] _ in
                                 DispatchQueue.main.async {
                                     nearlyDone()

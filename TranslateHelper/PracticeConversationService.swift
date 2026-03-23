@@ -195,15 +195,21 @@ class PracticeConversationService {
         \
         \(transferBlock) \
         \
+        NOTES LANGUAGE RULE: \
+        All notes fields (translation_notes, native_correction_notes, slang meaning/context) \
+        MUST be written in English. When referencing \(langName) words or phrases inline, \
+        keep them in \(langName) — e.g. "Use 'cara' instead of 'pessoa' — it sounds more casual." \
+        The user reads English. The \(langName) words teach them vocabulary in context. \
+        \
         Respond ONLY with valid JSON: \
         { \
           "response": "your response in \(langName) — speak like a real local", \
           "translation": "English translation of your response", \
-          "translation_notes": "1 brief note about a word/phrase you used (optional, null if none)", \
+          "translation_notes": "1 brief English note about a word/phrase you used (optional, null if none)", \
           "native_correction": "how a native would say what the USER just said, or null if fine", \
-          "native_correction_notes": "brief note about what was improved, or null", \
-          "slang_notes": [{"phrase": "the slang/expression", "meaning": "what it means", \
-            "context": "when/where people use this — be specific to the city/region"}] or [] if none \
+          "native_correction_notes": "brief English note about what was improved, with \(langName) words inline, or null", \
+          "slang_notes": [{"phrase": "the \(langName) slang/expression", "meaning": "English meaning", \
+            "context": "English explanation of when/where people use this — be specific to the city/region"}] or [] if none \
         }
         """
 
@@ -224,7 +230,7 @@ class PracticeConversationService {
             "model": "gpt-4o-mini",
             "messages": gptMessages,
             "temperature": 0.8,
-            "max_tokens": 400,
+            "max_tokens": 800,
             "response_format": ["type": "json_object"]
         ]
 
