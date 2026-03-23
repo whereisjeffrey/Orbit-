@@ -29,6 +29,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Pre-warm WhisperKit so it's ready when user taps mic
         DictateViewController.preloadWhisperKit()
 
+        // Process pending TTS cache requests from the keyboard
+        TTSCacheProcessor.processPendingRequests()
+
         if let ctx = connectionOptions.urlContexts.first {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
                 self.handle(url: ctx.url)

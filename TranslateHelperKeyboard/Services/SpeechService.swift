@@ -332,9 +332,20 @@ class SpeechService {
         }
     }
 
-    // MARK: - Audio player for WaveNet
+    // MARK: - Audio player for Neural2
     private var audioPlayer: AVAudioPlayer?
-    private var cachedAudio: [String: Data] = [:]  // cache keyed by "text|language"
+    private var cachedAudio: [String: Data] = [:]  // in-memory cache (max 5 to save memory)
+
+    /// App Group cache directory (main app writes Neural2 audio here)
+    private static var appGroupCacheDir: URL? {
+        FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.com.jeff.translatehelper")?
+            .appendingPathComponent("tts_cache", isDirectory: true)
+    }
+
+    private func appGroupCacheKey(text: String, language: String) -> String {
+        let raw = "\(text)|\(language)"
+        return "\(abs(raw.hashValue).description).mp3"
+    }
 
     func speak(_ text: String, language: String = "es-MX") {
         synthesizer.stopSpeaking(at: .immediate)
@@ -342,15 +353,28 @@ class SpeechService {
 
         let cacheKey = "\(text)|\(language)"
 
-        // Check cache first — instant playback on repeat taps
+        // 1. Check in-memory cache (instant replay)
         if let cached = cachedAudio[cacheKey] {
+            NSLog("TSKBD_TTS: playing from memory cache")
             playAudioData(cached)
             return
         }
 
-        // Try Google WaveNet first
-        NSLog("TSKBD_TTS: requesting WaveNet for language=\(language)")
-        speakWithWaveNet(text: text, language: language, cacheKey: cacheKey)
+        // 2. Check App Group file cache (main app may have pre-generated this)
+        if let cacheDir = Self.appGroupCacheDir {
+            let fileKey = appGroupCacheKey(text: text, language: language)
+            let cacheFile = cacheDir.appendingPathComponent(fileKey)
+            if let audioData = try? Data(contentsOf: cacheFile) {
+                NSLog("TSKBD_TTS: playing from App Group cache")
+                cachedAudio[cacheKey] = audioData
+                playAudioData(audioData)
+                return
+            }
+        }
+
+        // 3. Lightweight Neural2 API call from keyboard
+        NSLog("TSKBD_TTS: requesting Neural2 for language=\(language)")
+        speakWithNeural2(text: text, language: language, cacheKey: cacheKey)
     }
 
     func stopSpeaking() {
@@ -392,12 +416,12 @@ class SpeechService {
         }
     }
 
-    private func speakWithWaveNet(text: String, language: String, cacheKey: String) {
+    /// Lightweight Neural2 call — minimal memory footprint for keyboard extension
+    private func speakWithNeural2(text: String, language: String, cacheKey: String) {
         let apiKey = APIConfig.googleTTSAPIKey
         let baseURL = APIConfig.googleTTSBaseURL
 
         guard let url = URL(string: "\(baseURL)/text:synthesize?key=\(apiKey)") else {
-            NSLog("TSKBD_TTS: invalid Google TTS URL — falling back to Apple")
             speakWithApple(text: text, language: language)
             return
         }
@@ -408,11 +432,12 @@ class SpeechService {
             "input": ["text": text],
             "voice": [
                 "languageCode": locale,
+                "name": "\(locale)-Neural2-A",
                 "ssmlGender": "FEMALE"
             ],
             "audioConfig": [
                 "audioEncoding": "MP3",
-                "speakingRate": 0.92,
+                "speakingRate": 0.95,
                 "pitch": 0.0
             ]
         ]
@@ -421,13 +446,12 @@ class SpeechService {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
-        request.timeoutInterval = 10
+        request.timeoutInterval = 8
 
         URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
             guard let self = self else { return }
 
-            if let error = error {
-                NSLog("TSKBD_TTS: WaveNet error: \(error.localizedDescription) — falling back to Apple")
+            if error != nil {
                 DispatchQueue.main.async { self.speakWithApple(text: text, language: language) }
                 return
             }
@@ -436,18 +460,15 @@ class SpeechService {
                   let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                   let audioContent = json["audioContent"] as? String,
                   let audioData = Data(base64Encoded: audioContent) else {
-                NSLog("TSKBD_TTS: WaveNet response invalid — falling back to Apple")
                 DispatchQueue.main.async { self.speakWithApple(text: text, language: language) }
                 return
             }
 
-            // Cache the audio for instant replay
+            // Small in-memory cache — max 5 entries to stay within keyboard memory limits
             self.cachedAudio[cacheKey] = audioData
-
-            // Keep cache reasonable — max 20 entries
-            if self.cachedAudio.count > 20 {
-                self.cachedAudio.removeAll()
-                self.cachedAudio[cacheKey] = audioData
+            if self.cachedAudio.count > 5 {
+                let oldest = self.cachedAudio.keys.first!
+                self.cachedAudio.removeValue(forKey: oldest)
             }
 
             DispatchQueue.main.async {

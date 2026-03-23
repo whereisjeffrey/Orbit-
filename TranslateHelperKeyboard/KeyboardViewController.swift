@@ -475,6 +475,8 @@ class KeyboardViewController: UIInputViewController {
                                     self.updateNotes(original: text, translated: refined.output)
                                     TalkSwitchAPI.shared.recordTranslationForPersona(original: text, translated: refined.output, tone: tone)
                                     NSLog("TSKBD_REFINED: \(text) → \(refined.output)")
+                                    // Queue TTS cache for main app to pre-generate Neural2 audio
+                                    self.queueTTSCache(text: refined.output, language: targetCode)
                                 case .failure:
                                     // Refinement failed — show DeepL translation as final
                                     self.translationHistory = [translation]
@@ -495,6 +497,7 @@ class KeyboardViewController: UIInputViewController {
                         self.updateSwipeHint()
                         self.updateNotes(original: text, translated: translation)
                         TalkSwitchAPI.shared.recordTranslationForPersona(original: text, translated: translation, tone: tone)
+                        self.queueTTSCache(text: translation, language: targetCode)
                     }
 
                 case .failure(let error):
@@ -1582,6 +1585,33 @@ class KeyboardViewController: UIInputViewController {
         }
     }
     
+    // MARK: - TTS Cache Queue (writes request for main app to process)
+
+    private func queueTTSCache(text: String, language: String) {
+        let appGroup = "group.com.jeff.translatehelper"
+        guard let dir = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup)?
+                .appendingPathComponent("tts_cache", isDirectory: true) else { return }
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+
+        let hash = String(abs("\(text)|\(language)".hashValue))
+        let cacheFile = dir.appendingPathComponent("\(hash).mp3")
+        if FileManager.default.fileExists(atPath: cacheFile.path) { return }
+
+        let requestsFile = dir.appendingPathComponent("_pending.json")
+        var requests: [[String: String]] = []
+        if let data = try? Data(contentsOf: requestsFile),
+           let existing = try? JSONSerialization.jsonObject(with: data) as? [[String: String]] {
+            requests = existing
+        }
+        let entry = ["text": text, "language": language]
+        guard !requests.contains(where: { $0["text"] == text && $0["language"] == language }) else { return }
+        requests.append(entry)
+        if requests.count > 30 { requests = Array(requests.suffix(30)) }
+        if let data = try? JSONSerialization.data(withJSONObject: requests) {
+            try? data.write(to: requestsFile)
+        }
+    }
+
     // MARK: - Play Translation Aloud
     
     @objc private func playTapped() {
