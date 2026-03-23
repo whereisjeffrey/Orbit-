@@ -34,7 +34,9 @@ struct CoachEmptyView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Binding var showPopulated: Bool
 
-    @AppStorage("talkswitch_target_lang") private var targetLang = "es"
+    @AppStorage("talkswitch_target_lang",
+                store: UserDefaults(suiteName: "group.com.jeff.translatehelper"))
+    private var targetLang = "es"
 
     private var targetFlag: String {
         let flags: [String: String] = [
@@ -217,6 +219,7 @@ struct CoachPopulatedView: View {
     @State private var showTalkDrill = false
     @State private var showLevelDetail = false
     @State private var showLightningRound = false
+    @State private var expandedCategories: Set<MistakeCategory> = []
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -275,70 +278,23 @@ struct CoachPopulatedView: View {
             LightningRoundView()
         }
         .onAppear {
-            #if DEBUG
-            // Seed mistake profile for testing if empty
+            // One-time cleanup: clear any stale seed data from dev testing
             let profile = MistakeProfileStore.shared
-            if profile.entries.isEmpty {
-                seedMistakeProfile()
+            if !profile.entries.isEmpty {
+                let lang = UserDefaults(suiteName: "group.com.jeff.translatehelper")?
+                    .string(forKey: "talkswitch_target_lang") ?? "es"
+                let wrongLang = profile.entries.contains { $0.language != lang }
+                if wrongLang {
+                    #if DEBUG
+                    profile.clearAll()
+                    NSLog("⚡ [Coach] Cleared stale seed data (wrong language)")
+                    #endif
+                }
             }
-            #endif
         }
     }
 
-    #if DEBUG
-    private func seedMistakeProfile() {
-        let profile = MistakeProfileStore.shared
-        let lang = UserDefaults(suiteName: "group.com.jeff.translatehelper")?
-            .string(forKey: "talkswitch_target_lang") ?? "es"
-
-        // High-B / low-C level mistakes — subtle patterns, not beginner errors
-        let mistakes: [(MistakeCategory, String, String, String, MistakeSource)] = [
-            // Gender
-            (.gender, "el agua fría", "el agua fría", "'Agua' is feminine but uses 'el' because it starts with stressed 'a' — adjectives stay feminine: 'fría' not 'frío'", .keyboard),
-            (.gender, "la problema", "el problema", "'Problema' looks feminine but it's masculine — Greek-origin words ending in '-ma' are masculine", .keyboard),
-            (.gender, "el costumbre", "la costumbre", "'Costumbre' is feminine despite not ending in '-a'", .solCoaching),
-
-            // Conjugation
-            (.conjugation, "si yo tendría", "si yo tuviera", "After 'si' (if), use the subjunctive 'tuviera', not the conditional 'tendría'", .solCoaching),
-            (.conjugation, "yo he ido ayer", "yo fui ayer", "Use preterite 'fui' for completed past actions with specific time markers like 'ayer'", .keyboard),
-            (.conjugation, "él ha dicho que viene", "él dijo que vendría", "Reported speech in past: 'dijo' + conditional 'vendría', not present 'viene'", .solCoaching),
-
-            // Prepositions
-            (.preposition, "pensar sobre", "pensar en", "'Pensar' takes 'en' not 'sobre' — English 'think about' doesn't translate directly", .keyboard),
-            (.preposition, "soñar sobre", "soñar con", "'Soñar' takes 'con' (dream with), not 'sobre' (about)", .solCoaching),
-
-            // Word order
-            (.wordOrder, "el solo problema", "el único problema", "'Solo' means 'alone' — 'único' means 'only' when before a noun", .keyboard),
-            (.wordOrder, "una muy buena idea", "una idea muy buena", "In Spanish, adjectives usually go after the noun: 'una idea muy buena'", .solCoaching),
-
-            // Vocabulary
-            (.vocabulary, "estoy excitado", "estoy emocionado", "'Excitado' means sexually aroused in Spanish — use 'emocionado' for excited", .keyboard),
-            (.vocabulary, "realizar que", "darse cuenta de que", "'Realizar' means 'to carry out/accomplish' — 'darse cuenta' means 'to realize'", .solCoaching),
-            (.vocabulary, "actualmente", "en realidad", "'Actualmente' means 'currently' — 'en realidad' means 'actually'", .keyboard),
-
-            // Pronunciation
-            (.pronunciation, "desarrollar", "desarrollar", "The double 'rr' needs a rolled trill — tongue tip vibrating against the ridge behind your teeth", .pronunciationDrill),
-            (.pronunciation, "vergüenza", "vergüenza", "The 'gü' is pronounced 'gw' — the diaeresis means you pronounce the 'u'", .pronunciationDrill),
-
-            // Idioms
-            (.idiom, "tener sentido", "tener sentido", "'Tener sentido' = 'to make sense' — not 'hacer sentido' (calque from English)", .solCoaching),
-            (.idiom, "tomar una decisión", "tomar una decisión", "Spanish 'takes' decisions, doesn't 'make' them — 'tomar' not 'hacer'", .keyboard),
-        ]
-
-        for (cat, userSaid, correct, explanation, source) in mistakes {
-            profile.record(
-                category: cat,
-                language: lang,
-                userSaid: userSaid,
-                correctForm: correct,
-                explanation: explanation,
-                source: source
-            )
-        }
-
-        NSLog("⚡ [DEBUG] Seeded \(mistakes.count) mistakes for Lightning Round testing")
-    }
-    #endif
+    // No seed data — mistake profile populates organically from real usage.
 }
 
 // MARK: - Animated blob gradient (card-sized version of splash / recorder background)
@@ -707,12 +663,91 @@ extension CoachPopulatedView {
                         .fill(Color(hex: "#34C759").opacity(0.06))
                 )
             } else {
-                // Show category breakdown
+                // Expandable category sub-cards
                 ForEach(breakdown, id: \.category) { item in
-                    targetAreaRow(
-                        category: item.category,
-                        count: item.count,
-                        color: categoryColor(item.category)
+                    let color = categoryColor(item.category)
+                    let isExpanded = expandedCategories.contains(item.category)
+                    let mistakes = profile.active(category: item.category)
+
+                    VStack(alignment: .leading, spacing: 0) {
+                        // Header row — tap to expand/collapse
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.25)) {
+                                if isExpanded {
+                                    expandedCategories.remove(item.category)
+                                } else {
+                                    expandedCategories.insert(item.category)
+                                }
+                            }
+                        } label: {
+                            HStack(spacing: 10) {
+                                Text(item.category.icon)
+                                    .font(.system(size: 14))
+                                Text(item.category.displayName)
+                                    .font(.custom("HelveticaNeue-Medium", size: 14))
+                                    .foregroundColor(.tsLabel)
+                                Spacer()
+                                Text("\(item.count) active")
+                                    .font(.custom("HelveticaNeue", size: 12))
+                                    .foregroundColor(.tsSecondary)
+                                Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundColor(.tsSecondary)
+                            }
+                            .padding(14)
+                        }
+
+                        // Expanded content — individual mistakes
+                        if isExpanded {
+                            VStack(alignment: .leading, spacing: 8) {
+                                ForEach(mistakes.prefix(5)) { mistake in
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        HStack(alignment: .top, spacing: 6) {
+                                            Text("•")
+                                                .font(.custom("HelveticaNeue-Bold", size: 12))
+                                                .foregroundColor(color)
+                                                .padding(.top, 1)
+                                            VStack(alignment: .leading, spacing: 2) {
+                                                HStack(spacing: 4) {
+                                                    Text(mistake.userSaid)
+                                                        .font(.custom("HelveticaNeue", size: 13))
+                                                        .foregroundColor(.tsSecondary)
+                                                        .strikethrough(true, color: color.opacity(0.5))
+                                                    Image(systemName: "arrow.right")
+                                                        .font(.system(size: 9))
+                                                        .foregroundColor(.tsSecondary)
+                                                    Text(mistake.correctForm)
+                                                        .font(.custom("HelveticaNeue-Medium", size: 13))
+                                                        .foregroundColor(.tsLabel)
+                                                }
+                                                Text(mistake.explanation)
+                                                    .font(.custom("HelveticaNeue", size: 11))
+                                                    .foregroundColor(.tsSecondary)
+                                                    .lineSpacing(2)
+                                                    .fixedSize(horizontal: false, vertical: true)
+                                            }
+                                        }
+                                    }
+                                }
+                                if mistakes.count > 5 {
+                                    Text("+ \(mistakes.count - 5) more")
+                                        .font(.custom("HelveticaNeue", size: 11))
+                                        .foregroundColor(color)
+                                        .padding(.top, 2)
+                                }
+                            }
+                            .padding(.horizontal, 14)
+                            .padding(.bottom, 14)
+                            .transition(.opacity.combined(with: .move(edge: .top)))
+                        }
+                    }
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(color.opacity(0.05))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(color.opacity(0.12), lineWidth: 0.5)
                     )
                 }
 
@@ -729,11 +764,10 @@ extension CoachPopulatedView {
                             .font(.custom("HelveticaNeue-Medium", size: 12))
                             .foregroundColor(.tsSecondary)
                         Spacer()
-                        Text("\(profile.dueForReview.count) due for review")
+                        Text("\(profile.dueForReview.count) due")
                             .font(.custom("HelveticaNeue", size: 12))
                             .foregroundColor(.tsAccent)
                     }
-                    .padding(.top, 4)
                 }
             }
 
@@ -1593,6 +1627,11 @@ struct PracticeSessionView: View {
     @State private var sessionSeconds = 0
     @State private var sessionTimer: Timer?
 
+    // Session settings
+    @AppStorage("practice_tone") private var practiceTone = "casual"
+    @AppStorage("practice_who_starts") private var solStarts = true
+    @State private var showSettings = false
+
     var body: some View {
         ZStack {
             TSGradientBackground().ignoresSafeArea()
@@ -1611,6 +1650,16 @@ struct PracticeSessionView: View {
                     }
 
                     Spacer()
+
+                    // Settings gear
+                    Button { showSettings = true } label: {
+                        Image(systemName: "gearshape.fill")
+                            .font(.system(size: 15))
+                            .foregroundColor(.tsSecondary)
+                            .padding(6)
+                            .background(Color.tsCard)
+                            .clipShape(Circle())
+                    }
 
                     HStack(spacing: 4) {
                         Circle()
@@ -1728,7 +1777,7 @@ struct PracticeSessionView: View {
                         .padding(.horizontal, 20)
                         .padding(.vertical, 16)
                     }
-                    .onChange(of: messages.count) { _ in
+                    .onChange(of: messages.count) {
                         if let last = messages.last {
                             withAnimation {
                                 proxy.scrollTo(last.id, anchor: .bottom)
@@ -1837,7 +1886,15 @@ struct PracticeSessionView: View {
 
             ttsService.speakingRate = 1.05  // C-level: native speed
 
-            loadTopic(index: 0)
+            if solStarts {
+                loadTopic(index: 0)
+            } else {
+                // User starts — show empty chat with a hint
+                messages = [
+                    PracticeMessage(role: .coaching, text: "💡 You're up first — say whatever you want. Sol will respond naturally."),
+                ]
+                for msg in messages { revealedText.insert(msg.id) }
+            }
 
             sessionTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
                 sessionSeconds += 1
@@ -1860,6 +1917,141 @@ struct PracticeSessionView: View {
                 if !doubleTapValidated && doubleTapDismissCount < 3 {
                     withAnimation(.easeIn(duration: 0.3).delay(0.5)) {
                         showDoubleTapHint = true
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $showSettings) {
+            practiceSettingsSheet
+        }
+    }
+
+    // MARK: - Practice Settings Sheet
+
+    private var practiceSettingsSheet: some View {
+        NavigationView {
+            VStack(spacing: 24) {
+                // Tone picker
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("CONVERSATION STYLE")
+                        .font(.custom("HelveticaNeue-Bold", size: 11))
+                        .foregroundColor(.tsSecondary)
+                        .kerning(1.2)
+
+                    let tones: [(id: String, label: String, icon: String, desc: String)] = [
+                        ("casual",  "Casual",  "😊", "Friends hanging out — relaxed and natural"),
+                        ("slang",   "Slang",   "🗣️", "Heavy street talk — local expressions only"),
+                        ("flirty",  "Flirty",  "🔥", "Playful and teasing — bar vibes"),
+                        ("work",    "Work",    "💼", "Professional — meetings, interviews, emails"),
+                    ]
+
+                    ForEach(tones, id: \.id) { tone in
+                        Button {
+                            practiceTone = tone.id
+                        } label: {
+                            HStack(spacing: 12) {
+                                Text(tone.icon)
+                                    .font(.system(size: 20))
+                                    .frame(width: 32)
+
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(tone.label)
+                                        .font(.custom("HelveticaNeue-Medium", size: 15))
+                                        .foregroundColor(.tsLabel)
+                                    Text(tone.desc)
+                                        .font(.custom("HelveticaNeue", size: 12))
+                                        .foregroundColor(.tsSecondary)
+                                }
+
+                                Spacer()
+
+                                if practiceTone == tone.id {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .font(.system(size: 20))
+                                        .foregroundColor(.tsAccent)
+                                } else {
+                                    Circle()
+                                        .stroke(Color.tsSecondary.opacity(0.3), lineWidth: 1.5)
+                                        .frame(width: 20, height: 20)
+                                }
+                            }
+                            .padding(14)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(practiceTone == tone.id ? Color.tsAccent.opacity(0.06) : Color.tsCard)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(practiceTone == tone.id ? Color.tsAccent.opacity(0.2) : Color.clear, lineWidth: 1)
+                            )
+                        }
+                    }
+                }
+
+                // Who starts
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("WHO STARTS")
+                        .font(.custom("HelveticaNeue-Bold", size: 11))
+                        .foregroundColor(.tsSecondary)
+                        .kerning(1.2)
+
+                    HStack(spacing: 8) {
+                        Button {
+                            solStarts = true
+                        } label: {
+                            HStack(spacing: 6) {
+                                Text("Sol starts")
+                                    .font(.custom("HelveticaNeue-Medium", size: 14))
+                            }
+                            .foregroundColor(solStarts ? .white : .tsLabel)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(solStarts ? Color.tsAccent : Color.tsCard)
+                            )
+                        }
+
+                        Button {
+                            solStarts = false
+                        } label: {
+                            HStack(spacing: 6) {
+                                Text("I'll start")
+                                    .font(.custom("HelveticaNeue-Medium", size: 14))
+                            }
+                            .foregroundColor(!solStarts ? .white : .tsLabel)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(!solStarts ? Color.tsAccent : Color.tsCard)
+                            )
+                        }
+                    }
+
+                    Text(solStarts
+                         ? "Sol picks a topic and opens the conversation."
+                         : "You start — say whatever you want and Sol responds naturally.")
+                        .font(.custom("HelveticaNeue", size: 12))
+                        .foregroundColor(.tsSecondary)
+                        .lineSpacing(2)
+                }
+
+                Spacer()
+
+                Text("Changes take effect on the next topic.")
+                    .font(.custom("HelveticaNeue", size: 12))
+                    .foregroundColor(.tsSecondary)
+            }
+            .padding(20)
+            .background(TSGradientBackground().ignoresSafeArea())
+            .navigationTitle("Session Settings")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button { showSettings = false } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.tsSecondary)
                     }
                 }
             }
@@ -2253,10 +2445,10 @@ struct PracticeSessionView: View {
         isLoadingTopic = true
 
         // Read user's city and interests from settings
+        // targetLang comes from @AppStorage — single source of truth
         let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper")
         let cityId = defaults?.string(forKey: "selected_city_id") ?? ""
-        let targetLang = defaults?.string(forKey: "talkswitch_target_lang") ?? "pt"
-        let userCity = cityId.isEmpty ? "their city" : cityId.replacingOccurrences(of: "_", with: " ").replacingOccurrences(of: "mx ", with: "").capitalized
+        let userCity = Self.resolveCityName(cityId)
 
         // Load interest profile for personalization
         let appGroup = "group.com.jeff.translatehelper"
@@ -2362,7 +2554,8 @@ struct PracticeSessionView: View {
         conversationService.getSolResponse(
             conversationHistory: [(role: "user", text: openingPrompt)],
             userCity: userCity,
-            targetLanguage: targetLang
+            targetLanguage: targetLang,
+            tone: practiceTone
         ) { [self] response in
             isLoadingTopic = false
 
@@ -2431,8 +2624,8 @@ struct PracticeSessionView: View {
 
         let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper")
         let cityId = defaults?.string(forKey: "selected_city_id") ?? ""
-        let targetLang = defaults?.string(forKey: "talkswitch_target_lang") ?? "pt"
-        let userCity = cityId.isEmpty ? "their city" : cityId.replacingOccurrences(of: "_", with: " ").capitalized
+        // targetLang comes from @AppStorage — single source of truth
+        let userCity = Self.resolveCityName(cityId)
 
         let prompt = """
         Generate a casual, warm opening message for a practice conversation.
@@ -2445,7 +2638,8 @@ struct PracticeSessionView: View {
         conversationService.getSolResponse(
             conversationHistory: [(role: "user", text: prompt)],
             userCity: userCity,
-            targetLanguage: targetLang
+            targetLanguage: targetLang,
+            tone: practiceTone
         ) { [self] response in
             isPreloading = false
             if let sol = response {
@@ -2545,7 +2739,7 @@ struct PracticeSessionView: View {
         let appGroup = "group.com.jeff.translatehelper"
         guard let defaults = UserDefaults(suiteName: appGroup) else { return }
 
-        let targetLang = defaults.string(forKey: "talkswitch_target_lang") ?? "pt"
+        // Use self.targetLang from @AppStorage
         let key = "talkswitch_saved_phrases"
 
         // Check for duplicates in existing saved phrases
@@ -2560,7 +2754,7 @@ struct PracticeSessionView: View {
         }
 
         // Save to App Group (same format as keyboard save)
-        var newEntry: [String: String] = [
+        let newEntry: [String: String] = [
             "id":          UUID().uuidString,
             "sourceText":  phrase,
             "translation": meaning,
@@ -2724,6 +2918,75 @@ struct PracticeSessionView: View {
         return String(format: "%d:%02d", m, s)
     }
 
+    // MARK: - City Resolution
+
+    /// Resolves a city ID, display name, or country name into context for Sol's prompts.
+    /// Handles: "mx_cdmx" → "Mexico City", "br_belo_horizonte" → "Belo Horizonte",
+    /// "Brazil" → "Brazil" (country-wide), or raw display names passed through unchanged.
+    static func resolveCityName(_ cityId: String) -> String {
+        let trimmed = cityId.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return "their city" }
+
+        // Known city ID mappings
+        let knownCities: [String: String] = [
+            "mx_cdmx": "Mexico City",
+            "mx_guadalajara": "Guadalajara",
+            "mx_monterrey": "Monterrey",
+            "mx_oaxaca": "Oaxaca",
+            "mx_cancun": "Cancún",
+            "mx_tulum": "Tulum",
+            "mx_playa": "Playa del Carmen",
+            "mx_merida": "Mérida",
+            "br_sao_paulo": "São Paulo",
+            "br_rio": "Rio de Janeiro",
+            "br_belo_horizonte": "Belo Horizonte",
+            "br_brasilia": "Brasília",
+            "br_curitiba": "Curitiba",
+            "br_florianopolis": "Florianópolis",
+            "br_salvador": "Salvador",
+            "br_recife": "Recife",
+            "br_porto_alegre": "Porto Alegre",
+            "br_fortaleza": "Fortaleza",
+        ]
+
+        // Known countries → use country-wide context (no specific city)
+        let knownCountries: [String: String] = [
+            "brazil": "Brazil", "brasil": "Brazil",
+            "mexico": "Mexico", "méxico": "Mexico",
+            "spain": "Spain", "españa": "Spain",
+            "france": "France", "deutschland": "Germany", "germany": "Germany",
+            "italy": "Italy", "italia": "Italy",
+            "japan": "Japan", "korea": "South Korea",
+            "china": "China", "portugal": "Portugal",
+            "colombia": "Colombia", "argentina": "Argentina",
+            "chile": "Chile", "peru": "Peru", "perú": "Peru",
+        ]
+
+        let lower = trimmed.lowercased()
+
+        // Direct match on city ID
+        if let name = knownCities[lower] {
+            return name
+        }
+
+        // Country match — return as-is, Sol will use country-wide slang
+        if let country = knownCountries[lower] {
+            return country
+        }
+
+        // If it looks like an ID with underscores and a country prefix, clean it up
+        if trimmed.contains("_") {
+            let parts = trimmed.split(separator: "_")
+            if parts.count >= 2 {
+                let cityParts = parts.dropFirst()
+                return cityParts.map { $0.capitalized }.joined(separator: " ")
+            }
+        }
+
+        // Already a display name (city or country) — return as-is
+        return trimmed
+    }
+
     // MARK: - Send Message
 
     private func sendMessage() {
@@ -2776,7 +3039,11 @@ struct PracticeSessionView: View {
             }
         }
 
-        conversationService.getSolResponse(conversationHistory: history, targetLanguage: targetLang) { [self] response in
+        // Resolve city for every Sol response — not just the first topic
+        let fetchCityId = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "selected_city_id") ?? ""
+        let fetchCity = Self.resolveCityName(fetchCityId)
+
+        conversationService.getSolResponse(conversationHistory: history, userCity: fetchCity, targetLanguage: targetLang, tone: practiceTone) { [self] response in
             isFetchingSolResponse2 = false
             guard let sol = response else {
                 NSLog("🎤 [Practice] Sol response failed")
@@ -3449,8 +3716,8 @@ struct PulsatingWaveformView: View {
             }
         }
         .frame(height: maxHeight)
-        .onChange(of: isAnimating) { animating in
-            updateHeights(animating: animating)
+        .onChange(of: isAnimating) {
+            updateHeights(animating: isAnimating)
         }
         .onAppear {
             updateHeights(animating: isAnimating)

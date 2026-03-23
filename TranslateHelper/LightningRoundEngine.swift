@@ -249,7 +249,6 @@ final class LightningRoundEngine {
 
         var cardInstructions = ""
         for (i, type) in cardTypes.enumerated() {
-            let mistake = i < mistakes.count ? mistakes[i] : mistakes[i % max(mistakes.count, 1)]
             cardInstructions += "Card \(i + 1): type=\"\(type.rawValue)\", test mistake \(min(i, mistakes.count - 1) + 1)\n"
 
             switch type {

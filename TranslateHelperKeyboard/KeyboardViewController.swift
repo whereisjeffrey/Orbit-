@@ -203,6 +203,10 @@ class KeyboardViewController: UIInputViewController {
         #endif
 
 
+        // Force dark appearance — all system colors resolve to dark variants,
+        // so alpha-blended cards look correct regardless of host app theme.
+        overrideUserInterfaceStyle = .dark
+
         heightConstraint = view.heightAnchor.constraint(equalToConstant: emptyHeight)
         heightConstraint.priority = .required
         heightConstraint.isActive = true

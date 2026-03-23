@@ -114,7 +114,9 @@ final class PronunciationMistakeStore: ObservableObject {
 
     #if DEBUG
     func seedTestData(language: String = "es") {
-        let words = ["desarrollar", "murciélago", "ferrocarril", "extraordinario", "pronunciación"]
+        let words = language == "pt"
+            ? ["desenvolvimento", "coração", "trabalho", "consciência", "comunicação"]
+            : ["desarrollar", "murciélago", "ferrocarril", "extraordinario", "pronunciación"]
         for (i, w) in words.enumerated() {
             var m = PronunciationMistake(word: w, language: language)
             m.missCount = i + 2   // 2–6 misses

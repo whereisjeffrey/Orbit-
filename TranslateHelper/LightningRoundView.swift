@@ -549,24 +549,12 @@ struct LightningRoundView: View {
         let profile = MistakeProfileStore.shared
         let mistakes = engine.selectMistakesForRound(count: 6, language: targetLang)
 
-        // If no mistakes recorded yet, use seed data for demo
-        let effectiveMistakes: [MistakeEntry]
-        if mistakes.isEmpty {
-            #if DEBUG
-            profile.seedTestData(language: targetLang)
-            effectiveMistakes = engine.selectMistakesForRound(count: 6, language: targetLang)
-            #else
-            effectiveMistakes = []
-            #endif
-        } else {
-            effectiveMistakes = mistakes
-        }
-
-        guard !effectiveMistakes.isEmpty else {
-            // No mistakes — can't generate a round
+        guard !mistakes.isEmpty else {
+            // No mistakes recorded yet — can't generate a round
             withAnimation { phase = .intro }
             return
         }
+        let effectiveMistakes = mistakes
 
         let cardTypes = engine.buildRoundCardTypes()
         let prompt = engine.generateCardsPrompt(

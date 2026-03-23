@@ -93,6 +93,19 @@ enum MistakeCategory: String, Codable, CaseIterable {
         case .idiom:         return "Idioms & Slang"
         }
     }
+
+    var icon: String {
+        switch self {
+        case .grammar:       return "📐"
+        case .pronunciation: return "🗣"
+        case .vocabulary:    return "📖"
+        case .gender:        return "⚥"
+        case .conjugation:   return "🔄"
+        case .wordOrder:     return "🔀"
+        case .preposition:   return "📍"
+        case .idiom:         return "💬"
+        }
+    }
 }
 
 enum MistakeSource: String, Codable {
@@ -275,16 +288,31 @@ final class MistakeProfileStore: ObservableObject {
 
     #if DEBUG
     func seedTestData(language: String = "es") {
-        let testMistakes: [(MistakeCategory, String, String, String)] = [
-            (.gender, "el casa", "la casa", "'Casa' is feminine — use 'la' not 'el'"),
-            (.conjugation, "yo soy 25 años", "yo tengo 25 años", "Age uses 'tener' (to have), not 'ser' (to be) in Spanish"),
-            (.preposition, "estoy en el autobús", "estoy en el autobús", "Correct! But watch — 'en' vs 'a' for direction vs location"),
-            (.grammar, "me gusta los tacos", "me gustan los tacos", "'Gustar' agrees with what you like (los tacos = plural → gustan)"),
-            (.pronunciation, "desarrollar", "desarrollar", "The double 'rr' needs a rolled trill, not a flap"),
-            (.vocabulary, "estoy caliente", "tengo calor", "'Estoy caliente' means aroused — use 'tengo calor' for feeling hot"),
-            (.wordOrder, "es muy un buen restaurante", "es un muy buen restaurante", "Adjective order: 'un muy buen' not 'muy un buen'"),
-            (.idiom, "no tiene pelos en la lengua", "no tiene pelos en la lengua", "Means 'speaks their mind' — literally 'no hairs on the tongue'"),
-        ]
+        let testMistakes: [(MistakeCategory, String, String, String)]
+
+        if language == "pt" {
+            testMistakes = [
+                (.gender, "o viagem", "a viagem", "'Viagem' is feminine — use 'a viagem'"),
+                (.conjugation, "eu sou 25 anos", "eu tenho 25 anos", "Age uses 'ter' (to have), not 'ser' (to be) in Portuguese"),
+                (.preposition, "pensar sobre", "pensar em", "'Pensar' takes 'em', not 'sobre'"),
+                (.grammar, "eu gosto tacos", "eu gosto de tacos", "'Gostar' requires 'de' — 'gosto de tacos'"),
+                (.pronunciation, "coração", "coração", "The 'ão' needs a nasal diphthong — air through the nose"),
+                (.vocabulary, "estou excitado", "estou empolgado", "'Excitado' means aroused — use 'empolgado' for excited"),
+                (.wordOrder, "um muito bom lugar", "um lugar muito bom", "Adjectives follow the noun: 'um lugar muito bom'"),
+                (.idiom, "pagar o pato", "pagar o pato", "Means 'to take the blame' — literally 'pay the duck'"),
+            ]
+        } else {
+            testMistakes = [
+                (.gender, "el casa", "la casa", "'Casa' is feminine — use 'la' not 'el'"),
+                (.conjugation, "yo soy 25 años", "yo tengo 25 años", "Age uses 'tener' (to have), not 'ser' (to be)"),
+                (.preposition, "pensar sobre", "pensar en", "'Pensar' takes 'en', not 'sobre'"),
+                (.grammar, "me gusta los tacos", "me gustan los tacos", "'Gustar' agrees with what you like (plural → gustan)"),
+                (.pronunciation, "desarrollar", "desarrollar", "The double 'rr' needs a rolled trill"),
+                (.vocabulary, "estoy caliente", "tengo calor", "'Estoy caliente' means aroused — use 'tengo calor'"),
+                (.wordOrder, "es muy un buen restaurante", "es un muy buen restaurante", "Adjective order: 'un muy buen' not 'muy un buen'"),
+                (.idiom, "hacer sentido", "tener sentido", "'Tener sentido' = 'to make sense' — not 'hacer'"),
+            ]
+        }
 
         for (cat, userSaid, correct, explanation) in testMistakes {
             record(

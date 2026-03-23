@@ -624,7 +624,6 @@ class TalkSwitchAPI {
             return
         }
 
-        let sourceName = languageName(for: sourceLang)
         let targetName = languageName(for: targetLang)
         let toneDesc = tone.displayName.lowercased()
 
