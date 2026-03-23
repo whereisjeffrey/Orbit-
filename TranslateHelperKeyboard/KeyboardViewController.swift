@@ -103,23 +103,19 @@ class KeyboardViewController: UIInputViewController {
         ("flirty",  "Flirty",  "🔥")
     ]
 
-    // MARK: - Colors
+    // MARK: - Colors (always dark — consistent premium feel regardless of system theme)
 
     private var panelBg: UIColor {
-        traitCollection.userInterfaceStyle == .dark
-            ? UIColor(red: 0.13, green: 0.13, blue: 0.14, alpha: 1.0)
-            : UIColor(red: 0.82, green: 0.84, blue: 0.86, alpha: 1.0)
+        UIColor(red: 0.13, green: 0.13, blue: 0.14, alpha: 1.0)
     }
     private var cardBg: UIColor {
-        traitCollection.userInterfaceStyle == .dark
-            ? UIColor(white: 0.18, alpha: 1.0) : .white
+        UIColor(white: 0.18, alpha: 1.0)
     }
     private var textPrimary: UIColor {
-        traitCollection.userInterfaceStyle == .dark ? .white : .black
+        .white
     }
     private var textSecondary: UIColor {
-        traitCollection.userInterfaceStyle == .dark
-            ? UIColor(white: 0.6, alpha: 1.0) : UIColor(white: 0.4, alpha: 1.0)
+        UIColor(white: 0.6, alpha: 1.0)
     }
 
 

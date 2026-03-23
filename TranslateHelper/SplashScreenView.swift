@@ -24,7 +24,7 @@ struct SplashScreenView: View {
     var body: some View {
         ZStack {
             // The same liquid-gradient background as the Voice Translate screen
-            SplashFinisherBackground()
+            VoiceKeyboardBackground()
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {

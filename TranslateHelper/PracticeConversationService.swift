@@ -206,8 +206,8 @@ class PracticeConversationService {
           "response": "your response in \(langName) — speak like a real local", \
           "translation": "English translation of your response", \
           "translation_notes": "1 brief English note about a word/phrase you used (optional, null if none)", \
-          "native_correction": "how a native would say what the USER just said, or null if fine", \
-          "native_correction_notes": "brief English note about what was improved, with \(langName) words inline, or null", \
+          "native_correction": "ONLY the specific part the user got wrong — format: 'Instead of [what they said], try [correct version]'. Do NOT repeat the entire sentence. If multiple errors, list each one separately. null if their \(langName) was fine.", \
+          "native_correction_notes": "English explanation of WHY — the grammar rule, the pattern, the nuance. Can be multiple sentences. Use \(langName) words inline. null if no correction.", \
           "slang_notes": [{"phrase": "the \(langName) slang/expression", "meaning": "English meaning", \
             "context": "English explanation of when/where people use this — be specific to the city/region"}] or [] if none \
         }

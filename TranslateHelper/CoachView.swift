@@ -216,6 +216,7 @@ struct CoachPopulatedView: View {
     @State private var showPracticeSession = false
     @State private var showTalkDrill = false
     @State private var showLevelDetail = false
+    @State private var showLightningRound = false
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -238,17 +239,13 @@ struct CoachPopulatedView: View {
                     .padding(.horizontal, 20)
                     .padding(.bottom, 20)
 
-                // ── 4. Recent Tips Feed ───────────────────────────
-                recentTips
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 20)
-
-                // ── 5. Talk (Pronunciation Drill) Card ──────────
-                talkCard
+                // ── 4. Target Areas + Lightning Round ───────────────
+                targetAreas
                     .padding(.horizontal, 20)
                     .padding(.bottom, 20)
 
                 // Milestones removed — lives in weekly/monthly reports now
+                // Talk card removed — pronunciation drills covered by Lightning Round
 
                 // ── DEV: Back button ─────────────────────────────
                 #if DEBUG
@@ -274,8 +271,74 @@ struct CoachPopulatedView: View {
         .fullScreenCover(isPresented: $showPracticeSession) {
             PracticeSessionView()
         }
+        .fullScreenCover(isPresented: $showLightningRound) {
+            LightningRoundView()
+        }
+        .onAppear {
+            #if DEBUG
+            // Seed mistake profile for testing if empty
+            let profile = MistakeProfileStore.shared
+            if profile.entries.isEmpty {
+                seedMistakeProfile()
+            }
+            #endif
+        }
     }
 
+    #if DEBUG
+    private func seedMistakeProfile() {
+        let profile = MistakeProfileStore.shared
+        let lang = UserDefaults(suiteName: "group.com.jeff.translatehelper")?
+            .string(forKey: "talkswitch_target_lang") ?? "es"
+
+        // High-B / low-C level mistakes — subtle patterns, not beginner errors
+        let mistakes: [(MistakeCategory, String, String, String, MistakeSource)] = [
+            // Gender
+            (.gender, "el agua fría", "el agua fría", "'Agua' is feminine but uses 'el' because it starts with stressed 'a' — adjectives stay feminine: 'fría' not 'frío'", .keyboard),
+            (.gender, "la problema", "el problema", "'Problema' looks feminine but it's masculine — Greek-origin words ending in '-ma' are masculine", .keyboard),
+            (.gender, "el costumbre", "la costumbre", "'Costumbre' is feminine despite not ending in '-a'", .solCoaching),
+
+            // Conjugation
+            (.conjugation, "si yo tendría", "si yo tuviera", "After 'si' (if), use the subjunctive 'tuviera', not the conditional 'tendría'", .solCoaching),
+            (.conjugation, "yo he ido ayer", "yo fui ayer", "Use preterite 'fui' for completed past actions with specific time markers like 'ayer'", .keyboard),
+            (.conjugation, "él ha dicho que viene", "él dijo que vendría", "Reported speech in past: 'dijo' + conditional 'vendría', not present 'viene'", .solCoaching),
+
+            // Prepositions
+            (.preposition, "pensar sobre", "pensar en", "'Pensar' takes 'en' not 'sobre' — English 'think about' doesn't translate directly", .keyboard),
+            (.preposition, "soñar sobre", "soñar con", "'Soñar' takes 'con' (dream with), not 'sobre' (about)", .solCoaching),
+
+            // Word order
+            (.wordOrder, "el solo problema", "el único problema", "'Solo' means 'alone' — 'único' means 'only' when before a noun", .keyboard),
+            (.wordOrder, "una muy buena idea", "una idea muy buena", "In Spanish, adjectives usually go after the noun: 'una idea muy buena'", .solCoaching),
+
+            // Vocabulary
+            (.vocabulary, "estoy excitado", "estoy emocionado", "'Excitado' means sexually aroused in Spanish — use 'emocionado' for excited", .keyboard),
+            (.vocabulary, "realizar que", "darse cuenta de que", "'Realizar' means 'to carry out/accomplish' — 'darse cuenta' means 'to realize'", .solCoaching),
+            (.vocabulary, "actualmente", "en realidad", "'Actualmente' means 'currently' — 'en realidad' means 'actually'", .keyboard),
+
+            // Pronunciation
+            (.pronunciation, "desarrollar", "desarrollar", "The double 'rr' needs a rolled trill — tongue tip vibrating against the ridge behind your teeth", .pronunciationDrill),
+            (.pronunciation, "vergüenza", "vergüenza", "The 'gü' is pronounced 'gw' — the diaeresis means you pronounce the 'u'", .pronunciationDrill),
+
+            // Idioms
+            (.idiom, "tener sentido", "tener sentido", "'Tener sentido' = 'to make sense' — not 'hacer sentido' (calque from English)", .solCoaching),
+            (.idiom, "tomar una decisión", "tomar una decisión", "Spanish 'takes' decisions, doesn't 'make' them — 'tomar' not 'hacer'", .keyboard),
+        ]
+
+        for (cat, userSaid, correct, explanation, source) in mistakes {
+            profile.record(
+                category: cat,
+                language: lang,
+                userSaid: userSaid,
+                correctForm: correct,
+                explanation: explanation,
+                source: source
+            )
+        }
+
+        NSLog("⚡ [DEBUG] Seeded \(mistakes.count) mistakes for Lightning Round testing")
+    }
+    #endif
 }
 
 // MARK: - Animated blob gradient (card-sized version of splash / recorder background)
@@ -361,9 +424,15 @@ extension CoachPopulatedView {
 
     private var scoreOverview: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("YOUR LEVEL")
-                .font(.custom("HelveticaNeue-Bold", size: 11))
-                .foregroundColor(.tsSecondary)
+            HStack {
+                Text("📊")
+                    .font(.system(size: 16))
+                Text("YOUR LEVEL")
+                    .font(.custom("HelveticaNeue-Bold", size: 11))
+                    .foregroundColor(.tsSecondary)
+                    .kerning(1.2)
+                Spacer()
+            }
                 .kerning(1.2)
 
             HStack(spacing: 6) {
@@ -599,6 +668,133 @@ extension CoachPopulatedView {
         )
     }
 
+    // MARK: - 4b. Target Areas + Lightning Round
+
+    private var targetAreas: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("🎯")
+                    .font(.system(size: 16))
+                Text("TARGET AREAS")
+                    .font(.custom("HelveticaNeue-Bold", size: 11))
+                    .foregroundColor(.tsSecondary)
+                    .kerning(1.2)
+                Spacer()
+            }
+
+            let profile = MistakeProfileStore.shared
+            let breakdown = profile.categoryBreakdown
+
+            if breakdown.isEmpty {
+                // No mistakes yet
+                HStack(spacing: 12) {
+                    Image(systemName: "checkmark.circle")
+                        .font(.system(size: 20))
+                        .foregroundColor(Color(hex: "#34C759"))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("No patterns flagged yet")
+                            .font(.custom("HelveticaNeue-Medium", size: 14))
+                            .foregroundColor(.tsLabel)
+                        Text("Keep using the keyboard and practicing with Sol — I'll track your mistakes automatically.")
+                            .font(.custom("HelveticaNeue", size: 13))
+                            .foregroundColor(.tsSecondary)
+                            .lineSpacing(2)
+                    }
+                }
+                .padding(16)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(hex: "#34C759").opacity(0.06))
+                )
+            } else {
+                // Show category breakdown
+                ForEach(breakdown, id: \.category) { item in
+                    targetAreaRow(
+                        category: item.category,
+                        count: item.count,
+                        color: categoryColor(item.category)
+                    )
+                }
+
+                // Progress summary
+                let summary = profile.progressSummary
+                if summary.total > 0 {
+                    HStack {
+                        Text("\(summary.mastered) mastered")
+                            .font(.custom("HelveticaNeue-Medium", size: 12))
+                            .foregroundColor(Color(hex: "#34C759"))
+                        Text("·")
+                            .foregroundColor(.tsSecondary)
+                        Text("\(summary.total - summary.mastered) active")
+                            .font(.custom("HelveticaNeue-Medium", size: 12))
+                            .foregroundColor(.tsSecondary)
+                        Spacer()
+                        Text("\(profile.dueForReview.count) due for review")
+                            .font(.custom("HelveticaNeue", size: 12))
+                            .foregroundColor(.tsAccent)
+                    }
+                    .padding(.top, 4)
+                }
+            }
+
+            // Lightning Round button
+            Button {
+                showLightningRound = true
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "bolt.fill")
+                        .font(.system(size: 15))
+                    Text("Lightning Round")
+                        .font(.custom("HelveticaNeue-Medium", size: 16))
+                }
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 52)
+                .background(Color.tsAccent)
+                .cornerRadius(14)
+            }
+            .padding(.top, 4)
+        }
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(colorScheme == .dark ? Color.tsCard : Color.white)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.tsBorder, lineWidth: 1)
+        )
+    }
+
+    private func targetAreaRow(category: MistakeCategory, count: Int, color: Color) -> some View {
+        HStack(spacing: 12) {
+            Circle()
+                .fill(color)
+                .frame(width: 8, height: 8)
+            Text(category.displayName)
+                .font(.custom("HelveticaNeue-Medium", size: 14))
+                .foregroundColor(.tsLabel)
+            Spacer()
+            Text("\(count) active")
+                .font(.custom("HelveticaNeue", size: 12))
+                .foregroundColor(.tsSecondary)
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func categoryColor(_ category: MistakeCategory) -> Color {
+        switch category {
+        case .grammar:       return Color.tsAccent
+        case .pronunciation: return Color(hex: "#34C759")
+        case .vocabulary:    return Color(hex: "#FF9500")
+        case .gender:        return Color(hex: "#AF52DE")
+        case .conjugation:   return Color(hex: "#FF2D55")
+        case .wordOrder:     return Color(hex: "#5AC8FA")
+        case .preposition:   return Color(hex: "#FF9500")
+        case .idiom:         return Color(hex: "#FFD60A")
+        }
+    }
+
     // MARK: - 5. Talk (Pronunciation Drill) Card
 
     private var talkCard: some View {
@@ -698,9 +894,10 @@ extension CoachPopulatedView {
     private var practiceCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("🎯")
-                    .font(.system(size: 16))
-                Text("PRACTICE")
+                Image(systemName: "bubble.left.and.bubble.right.fill")
+                    .font(.system(size: 14))
+                    .foregroundColor(.tsAccent)
+                Text("CONVERSATION")
                     .font(.custom("HelveticaNeue-Bold", size: 11))
                     .foregroundColor(.tsSecondary)
                     .kerning(1.2)
@@ -714,14 +911,12 @@ extension CoachPopulatedView {
 
             Button { showPracticeSession = true } label: {
                 Text("Start Session")
-                    .font(.custom("HelveticaNeue-Bold", size: 15))
+                    .font(.custom("HelveticaNeue-Medium", size: 16))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(
-                        LinearGradient.tsVibrant
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .frame(height: 52)
+                    .background(Color.tsAccent)
+                    .cornerRadius(14)
             }
 
             HStack(spacing: 16) {
@@ -743,15 +938,11 @@ extension CoachPopulatedView {
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.tsCard)
+                .fill(colorScheme == .dark ? Color.tsCard : Color.white)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.tsAccent.opacity(0.15), lineWidth: 1)
-        )
-        .shadow(
-            color: Color.tsAccent.opacity(colorScheme == .dark ? 0.06 : 0.08),
-            radius: 12, x: 0, y: 4
+                .stroke(Color.tsBorder, lineWidth: 1)
         )
     }
 
@@ -1972,7 +2163,8 @@ struct PracticeSessionView: View {
                                 .font(.custom("HelveticaNeue", size: 12))
                                 .foregroundColor(.tsSecondary)
                                 .italic()
-                                .lineSpacing(2)
+                                .lineSpacing(3)
+                                .fixedSize(horizontal: false, vertical: true)
                                 .padding(.top, 2)
                         }
                     }
@@ -1996,7 +2188,7 @@ struct PracticeSessionView: View {
                         HStack(spacing: 4) {
                             Text(langFlag)
                                 .font(.system(size: 12))
-                            Text("NATIVE \(langName.uppercased())")
+                            Text("CORRECTION")
                                 .font(.custom("HelveticaNeue-Bold", size: 9))
                                 .foregroundColor(langAccentColor)
                                 .kerning(0.8)
@@ -2013,7 +2205,8 @@ struct PracticeSessionView: View {
                                 .font(.custom("HelveticaNeue", size: 12))
                                 .foregroundColor(.tsSecondary)
                                 .italic()
-                                .lineSpacing(2)
+                                .lineSpacing(3)
+                                .fixedSize(horizontal: false, vertical: true)
                                 .padding(.top, 2)
                         }
                     }
@@ -2172,11 +2365,18 @@ struct PracticeSessionView: View {
             targetLanguage: targetLang
         ) { [self] response in
             isLoadingTopic = false
-            messages.removeAll { $0.id == loadingMsg.id }
+
+            // Build the real message BEFORE modifying the array — single atomic swap
+            let solMsg = buildSolMessage(from: response)
+
+            // Replace loading placeholder with real message in one pass
+            if let idx = messages.firstIndex(where: { $0.id == loadingMsg.id }) {
+                messages[idx] = solMsg
+            } else {
+                messages.insert(solMsg, at: 0)
+            }
             revealedText.remove(loadingMsg.id)
 
-            let solMsg = buildSolMessage(from: response)
-            messages.insert(solMsg, at: 0)
             playSolAudioThenReveal(message: solMsg)
 
             // Add slang notes after a delay (skip already-known phrases)
@@ -2410,10 +2610,15 @@ struct PracticeSessionView: View {
     /// Guarded — will not fire if already playing.
     private func playSolAudioThenReveal(message: PracticeMessage) {
         guard !isPlayingSolAudio else {
-            NSLog("🔊 [Practice] BLOCKED — already playing audio, skipping: \(message.text.prefix(30))")
-            // Still reveal the text so it's not stuck hidden
-            withAnimation(.easeInOut(duration: 0.8)) {
-                _ = revealedText.insert(message.id)
+            NSLog("🔊 [Practice] BLOCKED — already playing audio, queuing reveal for: \(message.text.prefix(30))")
+            // Queue: reveal text after current audio finishes (don't force it now)
+            let msgId = message.id
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                if !revealedText.contains(msgId) {
+                    withAnimation(.easeIn(duration: 1.0)) {
+                        _ = revealedText.insert(msgId)
+                    }
+                }
             }
             return
         }
@@ -2578,53 +2783,62 @@ struct PracticeSessionView: View {
                 return
             }
 
-            // Update the user's message with native correction if Sol provided one
-            if let nativeVersion = sol.nativeCorrectionForUser {
-                if let idx = messages.firstIndex(where: { $0.id == userMessageId }) {
-                    messages[idx].nativeVersion = nativeVersion
-                    messages[idx].nativeNotes = sol.nativeCorrectionNotes
-
-                    // Ingest into mistake profile for Lightning Round
-                    MistakeIngestion.ingestFromSol(
-                        userSaid: messages[idx].text,
-                        nativeCorrection: nativeVersion,
-                        notes: sol.nativeCorrectionNotes,
-                        language: targetLang
-                    )
-                }
-            }
-
-            // Add Sol's response
+            // Build Sol's response message
             let solMsg = PracticeMessage(
                 role: .sol,
                 text: sol.text,
                 translation: sol.translation,
                 translationNotes: sol.translationNotes
             )
+
+            // Batch all array mutations into one pass to avoid mid-render flashes.
+            // Native correction on user's message + Sol's new message = single SwiftUI update.
+            var userText = ""
+            if let nativeVersion = sol.nativeCorrectionForUser,
+               let idx = messages.firstIndex(where: { $0.id == userMessageId }) {
+                userText = messages[idx].text
+                messages[idx].nativeVersion = nativeVersion
+                messages[idx].nativeNotes = sol.nativeCorrectionNotes
+            }
             messages.append(solMsg)
             messageCount += 1
             totalMessagesThisSession += 1
 
+            // Ingest correction into mistake profile (outside the array mutation)
+            if let nativeVersion = sol.nativeCorrectionForUser, !userText.isEmpty {
+                MistakeIngestion.ingestFromSol(
+                    userSaid: userText,
+                    nativeCorrection: nativeVersion,
+                    notes: sol.nativeCorrectionNotes,
+                    language: targetLang
+                )
+            }
+
             // Play audio explicitly for Sol's response
             playSolAudioThenReveal(message: solMsg)
 
-            // Add slang note cards if Sol used any slang (skip already-known phrases)
-            for note in sol.slangNotes {
-                guard !isPhraseAlreadyKnown(note.phrase) else { continue }
+            // Add slang note cards after audio finishes (skip already-known phrases)
+            let slangNotes = sol.slangNotes
+            if !slangNotes.isEmpty {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                    for note in slangNotes {
+                        guard !isPhraseAlreadyKnown(note.phrase) else { continue }
 
-                let noteMsg = PracticeMessage(
-                    role: .coaching,
-                    text: "📖 \"\(note.phrase)\" — \(note.meaning). \(note.context)",
-                    saveablePhrase: note.phrase,
-                    saveableMeaning: note.meaning
-                )
-                messages.append(noteMsg)
+                        let noteMsg = PracticeMessage(
+                            role: .coaching,
+                            text: "📖 \"\(note.phrase)\" — \(note.meaning). \(note.context)",
+                            saveablePhrase: note.phrase,
+                            saveableMeaning: note.meaning
+                        )
+                        messages.append(noteMsg)
 
-                // Show save hint after 5+ messages, on first coaching tip
-                if totalMessagesThisSession >= 5 && !saveValidated && saveHintShownForMessage == nil {
-                    saveHintShownForMessage = noteMsg.id
-                    withAnimation(.easeIn(duration: 0.3).delay(0.3)) {
-                        showSaveHint = true
+                        // Show save hint after 5+ messages, on first coaching tip
+                        if totalMessagesThisSession >= 5 && !saveValidated && saveHintShownForMessage == nil {
+                            saveHintShownForMessage = noteMsg.id
+                            withAnimation(.easeIn(duration: 0.3).delay(0.3)) {
+                                showSaveHint = true
+                            }
+                        }
                     }
                 }
             }
