@@ -1337,23 +1337,18 @@ class KeyboardViewController: UIInputViewController {
 
     // MARK: - Wingman UI Setup
 
-    // Warm gradient colors for Wingman accents
-    private let wingmanWarm = UIColor(red: 1.0, green: 0.4, blue: 0.3, alpha: 1.0)  // warm coral
-    private let wingmanHot  = UIColor(red: 1.0, green: 0.2, blue: 0.4, alpha: 1.0)  // hot pink-red
-
     private func setupWingmanToggle() {
         wingmanToggle.axis = .horizontal
         wingmanToggle.distribution = .fillEqually
-        wingmanToggle.spacing = 0
+        wingmanToggle.spacing = 6
         wingmanToggle.translatesAutoresizingMaskIntoConstraints = false
-        wingmanToggle.heightAnchor.constraint(equalToConstant: 36).isActive = true
-        wingmanToggle.backgroundColor = UIColor(white: 0.08, alpha: 1.0)
-        wingmanToggle.layer.cornerRadius = 18
-        wingmanToggle.clipsToBounds = true
+        wingmanToggle.heightAnchor.constraint(equalToConstant: 32).isActive = true
 
         let translateBtn = UIButton(type: .system)
-        translateBtn.setTitle("Translate", for: .normal)
-        translateBtn.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .medium)
+        translateBtn.setTitle("💬 Translate", for: .normal)
+        translateBtn.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
+        translateBtn.layer.cornerRadius = 16
+        translateBtn.clipsToBounds = true
         translateBtn.tag = 0
         translateBtn.addTarget(self, action: #selector(wingmanToggleTapped(_:)), for: .touchUpInside)
         wingmanToggle.addArrangedSubview(translateBtn)
@@ -1361,6 +1356,8 @@ class KeyboardViewController: UIInputViewController {
         let wingmanBtn = UIButton(type: .system)
         wingmanBtn.setTitle("🔥 Wingman", for: .normal)
         wingmanBtn.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
+        wingmanBtn.layer.cornerRadius = 16
+        wingmanBtn.clipsToBounds = true
         wingmanBtn.tag = 1
         wingmanBtn.addTarget(self, action: #selector(wingmanToggleTapped(_:)), for: .touchUpInside)
         wingmanToggle.addArrangedSubview(wingmanBtn)
@@ -1372,35 +1369,13 @@ class KeyboardViewController: UIInputViewController {
         for (i, v) in wingmanToggle.arrangedSubviews.enumerated() {
             guard let btn = v as? UIButton else { continue }
             let isActive = (i == 0 && !isWingmanMode) || (i == 1 && isWingmanMode)
-
-            // Remove any existing gradient layers
-            btn.layer.sublayers?.removeAll(where: { $0 is CAGradientLayer })
-
-            if isActive && i == 1 {
-                // Wingman active — warm gradient pill
-                let grad = CAGradientLayer()
-                grad.colors = [wingmanWarm.cgColor, wingmanHot.cgColor]
-                grad.startPoint = CGPoint(x: 0, y: 0.5)
-                grad.endPoint = CGPoint(x: 1, y: 0.5)
-                grad.frame = btn.bounds
-                grad.cornerRadius = 16
-                // Defer frame setting to layout
-                btn.layer.insertSublayer(grad, at: 0)
+            if isActive {
+                // Same style as the tone tabs — blue fill, white text
+                btn.backgroundColor = UIColor.systemBlue
                 btn.setTitleColor(.white, for: .normal)
-                btn.backgroundColor = .clear
-                // Update gradient frame after layout
-                DispatchQueue.main.async {
-                    grad.frame = btn.bounds
-                    grad.cornerRadius = 16
-                }
-            } else if isActive && i == 0 {
-                // Translate active — subtle white
-                btn.backgroundColor = UIColor.white.withAlphaComponent(0.1)
-                btn.setTitleColor(.white, for: .normal)
-                btn.layer.cornerRadius = 16
             } else {
-                btn.backgroundColor = .clear
-                btn.setTitleColor(UIColor.white.withAlphaComponent(0.35), for: .normal)
+                btn.backgroundColor = cardBg
+                btn.setTitleColor(textPrimary, for: .normal)
             }
         }
     }
