@@ -1778,13 +1778,18 @@ class KeyboardViewController: UIInputViewController {
         previousTextLength = currentLen
 
         if isPaste {
-            let detected = detectLanguage(text)
+            // Read full text from clipboard — textDocumentProxy truncates long messages.
+            // UIPasteboard has the complete content with no cap.
+            let fullText = UIPasteboard.general.string ?? text
+            let textToTranslate = fullText.trimmingCharacters(in: .whitespacesAndNewlines)
+
+            let detected = detectLanguage(textToTranslate)
             let targetCode = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
 
             // If pasted text is in the target language, auto-translate to English
             if detected.code == targetCode || (detected.code != "en" && detected.code != "und") {
-                NSLog("TSKBD_PASTE: detected \(detected.code) paste, translating to English")
-                performPasteTranslation(text: text, detectedLang: detected.code)
+                NSLog("TSKBD_PASTE: detected \(detected.code) paste (\(textToTranslate.count) chars), translating to English")
+                performPasteTranslation(text: textToTranslate, detectedLang: detected.code)
                 return
             }
         }
