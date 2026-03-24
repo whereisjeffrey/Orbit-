@@ -221,12 +221,12 @@ struct LightningRoundView: View {
                 HStack {
                     Text(card.type.displayName.uppercased())
                         .font(.custom("HelveticaNeue-Bold", size: 10))
-                        .foregroundColor(.white.opacity(0.5))
+                        .foregroundColor(.black.opacity(0.4))
                         .kerning(1.0)
                     Spacer()
                     Text("\(currentIndex + 1) of \(cards.count)")
                         .font(.custom("HelveticaNeue", size: 11))
-                        .foregroundColor(.white.opacity(0.5))
+                        .foregroundColor(.black.opacity(0.4))
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 20)
@@ -275,12 +275,8 @@ struct LightningRoundView: View {
             }
             .background(
                 RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.white.opacity(0.12))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                    )
-                    .shadow(color: .black.opacity(0.15), radius: 20, y: 6)
+                    .fill(Color(hex: "#F3F9FB"))
+                    .shadow(color: .black.opacity(0.1), radius: 16, y: 4)
             )
             .padding(.horizontal, 16)
 
@@ -295,10 +291,10 @@ struct LightningRoundView: View {
         let parts = splitPrompt(card.prompt)
 
         return VStack(alignment: .leading, spacing: 14) {
-            // Context / dialogue — bold, larger, white on glass
+            // Context / dialogue — bold, dark text on light card
             Text(parts.context)
                 .font(.custom("HelveticaNeue-Bold", size: 18))
-                .foregroundColor(.white)
+                .foregroundColor(.black)
                 .lineSpacing(4)
                 .fixedSize(horizontal: false, vertical: true)
 
@@ -306,7 +302,7 @@ struct LightningRoundView: View {
             if let question = parts.question {
                 Text(question)
                     .font(.custom("HelveticaNeue", size: 15))
-                    .foregroundColor(.white.opacity(0.6))
+                    .foregroundColor(.black.opacity(0.5))
                     .lineSpacing(3)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -387,7 +383,7 @@ struct LightningRoundView: View {
                         .padding(.vertical, 14)
                         .background(
                             RoundedRectangle(cornerRadius: 12)
-                                .fill(Color.white.opacity(0.08))
+                                .fill(Color.white)
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 12)
@@ -402,32 +398,25 @@ struct LightningRoundView: View {
     }
 
     private func optionLetterColor(_ option: String, card: LightningCard) -> Color {
-        guard selectedOption != nil else { return .white.opacity(0.7) }
+        guard selectedOption != nil else { return .black.opacity(0.5) }
         if option == card.correctAnswer { return Color(hex: "#34C759") }
         if option == selectedOption { return Color(hex: "#FF3B30") }
-        return .white.opacity(0.3)
+        return .black.opacity(0.2)
     }
 
     private func optionLetterBg(_ option: String, card: LightningCard) -> Color {
-        guard selectedOption != nil else { return Color.white.opacity(0.1) }
-        if option == card.correctAnswer { return Color(hex: "#34C759").opacity(0.15) }
-        if option == selectedOption && option != card.correctAnswer { return Color(hex: "#FF3B30").opacity(0.15) }
-        return Color.white.opacity(0.05)
+        guard selectedOption != nil else { return Color(hex: "#F3F9FB") }
+        if option == card.correctAnswer { return Color(hex: "#34C759").opacity(0.12) }
+        if option == selectedOption && option != card.correctAnswer { return Color(hex: "#FF3B30").opacity(0.12) }
+        return Color(hex: "#F3F9FB").opacity(0.5)
     }
 
-    // Glass-specific letter helpers
     private func optionLetterColorGlass(_ option: String, card: LightningCard) -> Color {
-        guard selectedOption != nil else { return .white.opacity(0.8) }
-        if option == card.correctAnswer { return Color(hex: "#34C759") }
-        if option == selectedOption { return Color(hex: "#FF3B30") }
-        return .white.opacity(0.3)
+        optionLetterColor(option, card: card)
     }
 
     private func optionLetterBgGlass(_ option: String, card: LightningCard) -> Color {
-        guard selectedOption != nil else { return Color.white.opacity(0.12) }
-        if option == card.correctAnswer { return Color(hex: "#34C759").opacity(0.2) }
-        if option == selectedOption && option != card.correctAnswer { return Color(hex: "#FF3B30").opacity(0.2) }
-        return Color.white.opacity(0.05)
+        optionLetterBg(option, card: card)
     }
 
     // MARK: - Voice Input Area
@@ -446,16 +435,12 @@ struct LightningRoundView: View {
                         Text("Listen first")
                             .font(.custom("HelveticaNeue-Medium", size: 14))
                     }
-                    .foregroundColor(.white.opacity(0.8))
+                    .foregroundColor(.tsAccent)
                     .padding(.horizontal, 20)
                     .padding(.vertical, 10)
                     .background(
                         Capsule()
-                            .fill(Color.white.opacity(0.1))
-                            .overlay(
-                                Capsule()
-                                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                            )
+                            .fill(Color.tsAccent.opacity(0.08))
                     )
                 }
             }
@@ -487,7 +472,7 @@ struct LightningRoundView: View {
 
             Text(isRecording ? formatTime(recordingSeconds) : "Tap to record")
                 .font(.custom(isRecording ? "HelveticaNeue-Bold" : "HelveticaNeue", size: 13))
-                .foregroundColor(.white.opacity(0.6))
+                .foregroundColor(.black.opacity(0.4))
         }
     }
 
@@ -502,22 +487,18 @@ struct LightningRoundView: View {
             } label: {
                 ZStack {
                     Circle()
-                        .fill(Color.white.opacity(0.1))
+                        .fill(Color.tsAccent.opacity(0.08))
                         .frame(width: 56, height: 56)
-                        .overlay(
-                            Circle()
-                                .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                        )
 
                     Image(systemName: "speaker.wave.3.fill")
                         .font(.system(size: 22))
-                        .foregroundColor(.white.opacity(0.8))
+                        .foregroundColor(.tsAccent)
                 }
             }
 
             Text("Tap to replay")
                 .font(.custom("HelveticaNeue", size: 11))
-                .foregroundColor(.white.opacity(0.5))
+                .foregroundColor(.black.opacity(0.4))
 
             if let options = card.options {
                 VStack(spacing: 12) {
@@ -547,7 +528,7 @@ struct LightningRoundView: View {
                             .padding(.vertical, 14)
                             .background(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .fill(Color.white.opacity(0.08))
+                                    .fill(Color.white)
                             )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
@@ -587,20 +568,20 @@ struct LightningRoundView: View {
             }
 
             if !isRight {
-                Divider().background(Color.white.opacity(0.15))
+                Divider()
 
                 HStack(spacing: 6) {
                     Text("Answer:")
                         .font(.custom("HelveticaNeue", size: 13))
-                        .foregroundColor(.white.opacity(0.5))
+                        .foregroundColor(.black.opacity(0.4))
                     Text(card.correctAnswer)
                         .font(.custom("HelveticaNeue-Bold", size: 13))
-                        .foregroundColor(.white)
+                        .foregroundColor(.black)
                 }
 
                 Text("💡 \(card.explanation)")
                     .font(.custom("HelveticaNeue", size: 13))
-                    .foregroundColor(.white.opacity(0.6))
+                    .foregroundColor(.black.opacity(0.5))
                     .lineSpacing(3)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -610,10 +591,10 @@ struct LightningRoundView: View {
                 HStack(spacing: 4) {
                     Text("Swipe to continue")
                         .font(.custom("HelveticaNeue", size: 11))
-                        .foregroundColor(.white.opacity(0.35))
+                        .foregroundColor(.black.opacity(0.25))
                     Image(systemName: "arrow.right")
                         .font(.system(size: 10))
-                        .foregroundColor(.white.opacity(0.35))
+                        .foregroundColor(.black.opacity(0.25))
                 }
             }
         }
@@ -635,12 +616,12 @@ struct LightningRoundView: View {
         VStack(spacing: 0) {
             Spacer().frame(height: 60)
 
-            // Frosted glass summary card
+            // Summary card — light bluish like the active card
             VStack(spacing: 20) {
                 // Score circle
                 ZStack {
                     Circle()
-                        .stroke(Color.white.opacity(0.1), lineWidth: 8)
+                        .stroke(Color.black.opacity(0.06), lineWidth: 8)
                         .frame(width: 100, height: 100)
 
                     Circle()
@@ -655,26 +636,26 @@ struct LightningRoundView: View {
                     VStack(spacing: 2) {
                         Text("\(correctCount)/\(totalAnswered)")
                             .font(.custom("HelveticaNeue-Bold", size: 24))
-                            .foregroundColor(.white)
+                            .foregroundColor(.black)
                         Text("correct")
                             .font(.custom("HelveticaNeue", size: 12))
-                            .foregroundColor(.white.opacity(0.5))
+                            .foregroundColor(.black.opacity(0.4))
                     }
                 }
                 .padding(.top, 8)
 
                 Text(summaryMessage)
                     .font(.custom("HelveticaNeue-Medium", size: 17))
-                    .foregroundColor(.white)
+                    .foregroundColor(.black)
                     .multilineTextAlignment(.center)
 
                 Text(summarySubtext)
                     .font(.custom("HelveticaNeue", size: 13))
-                    .foregroundColor(.white.opacity(0.6))
+                    .foregroundColor(.black.opacity(0.5))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 16)
 
-                // Go Again button — frosted glass like Let's Go
+                // Go Again button
                 Button {
                     resetRound()
                     withAnimation(.easeInOut(duration: 0.3)) {
@@ -685,40 +666,29 @@ struct LightningRoundView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "bolt.fill")
                             .font(.system(size: 14))
-                            .foregroundColor(Color(hex: "#FFD60A"))
                         Text("Go Again")
                             .font(.custom("HelveticaNeue-Medium", size: 16))
-                            .foregroundColor(.white)
                     }
+                    .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 48)
-                    .background(
-                        RoundedRectangle(cornerRadius: 14)
-                            .fill(Color.white.opacity(0.15))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 14)
-                                    .stroke(Color.white.opacity(0.25), lineWidth: 1)
-                            )
-                    )
+                    .background(Color.tsAccent)
+                    .cornerRadius(14)
                 }
                 .padding(.horizontal, 20)
 
                 Button { dismiss() } label: {
                     Text("Done")
                         .font(.custom("HelveticaNeue", size: 14))
-                        .foregroundColor(.white.opacity(0.5))
+                        .foregroundColor(.black.opacity(0.4))
                 }
                 .padding(.bottom, 4)
             }
             .padding(24)
             .background(
                 RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.white.opacity(0.12))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                    )
-                    .shadow(color: .black.opacity(0.15), radius: 20, y: 6)
+                    .fill(Color(hex: "#F3F9FB"))
+                    .shadow(color: .black.opacity(0.1), radius: 16, y: 4)
             )
             .padding(.horizontal, 16)
 
@@ -1063,24 +1033,24 @@ struct LightningRoundView: View {
     }
 
     private func optionTextColor(_ option: String, card: LightningCard) -> Color {
-        guard selectedOption != nil else { return .white }
+        guard selectedOption != nil else { return .black }
         if option == card.correctAnswer { return Color(hex: "#34C759") }
         if option == selectedOption { return Color(hex: "#FF3B30") }
-        return .white.opacity(0.4)
+        return .black.opacity(0.3)
     }
 
     private func optionBgColor(_ option: String, card: LightningCard) -> Color {
-        guard selectedOption != nil else { return Color.white.opacity(0.1) }
-        if option == card.correctAnswer { return Color(hex: "#34C759").opacity(0.15) }
-        if option == selectedOption && option != card.correctAnswer { return Color(hex: "#FF3B30").opacity(0.15) }
-        return Color.white.opacity(0.05)
+        guard selectedOption != nil else { return Color.white }
+        if option == card.correctAnswer { return Color(hex: "#34C759").opacity(0.1) }
+        if option == selectedOption && option != card.correctAnswer { return Color(hex: "#FF3B30").opacity(0.1) }
+        return Color.white.opacity(0.5)
     }
 
     private func optionBorderColor(_ option: String, card: LightningCard) -> Color {
-        guard selectedOption != nil else { return Color.white.opacity(0.15) }
+        guard selectedOption != nil else { return Color.black.opacity(0.08) }
         if option == card.correctAnswer { return Color(hex: "#34C759").opacity(0.4) }
         if option == selectedOption && option != card.correctAnswer { return Color(hex: "#FF3B30").opacity(0.4) }
-        return Color.white.opacity(0.05)
+        return Color.black.opacity(0.04)
     }
 
 
