@@ -27,6 +27,13 @@
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>whatsapp</string>
+		<string>instagram</string>
+		<string>tinder</string>
+		<string>bumble</string>
+		<string>fb-messenger</string>
+		<string>telegram</string>
+		<string>signal</string>
+		<string>viber</string>
 	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>

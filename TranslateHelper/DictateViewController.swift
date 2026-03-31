@@ -891,9 +891,37 @@ class DictateViewController: UIViewController {
         defaults?.set(Date().timeIntervalSince1970, forKey: "dictate_result_timestamp")
         defaults?.synchronize()
 
-        // Dismiss back to wherever the user came from — iOS returns to the
-        // previous app automatically (WhatsApp, Instagram, Tinder, etc.)
+        // Dismiss dictation and return to the messaging app
         dismiss(animated: true)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            self.returnToPreviousApp()
+        }
+    }
+
+    /// Returns the user to the messaging app they came from.
+    /// Tries known app URL schemes in priority order — the first installed one opens.
+    /// WhatsApp is first since it's the most common use case.
+    private func returnToPreviousApp() {
+        let schemes = [
+            "whatsapp://",
+            "instagram://",
+            "fb-messenger://",
+            "tinder://",
+            "bumble://",
+            "tg://",
+            "signal://",
+            "viber://",
+        ]
+
+        for scheme in schemes {
+            if let url = URL(string: scheme),
+               UIApplication.shared.canOpenURL(url) {
+                UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                NSLog("🎤 [Dictate] returning via \(scheme)")
+                return
+            }
+        }
+        NSLog("🎤 [Dictate] no known messaging app found — user must switch manually")
     }
 
     // MARK: - Actions
@@ -909,6 +937,9 @@ class DictateViewController: UIViewController {
     @objc private func cancelTapped() {
         stopAll()
         dismiss(animated: true)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            self.returnToPreviousApp()
+        }
     }
 }
 
