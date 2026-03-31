@@ -168,15 +168,20 @@ class SubscriptionManager: ObservableObject {
     // MARK: - Transaction Listener
 
     private func listenForTransactions() -> Task<Void, Error> {
-        Task.detached {
+        Task.detached { [weak self] in
             for await result in Transaction.updates {
-                do {
-                    let transaction = try self.checkVerified(result)
-                    await self.refreshSubscriptionStatus()
-                    await transaction.finish()
-                    NSLog("💰 [Store] transaction update: \(transaction.productID)")
-                } catch {
-                    NSLog("💰 [Store] transaction update failed verification")
+                await MainActor.run {
+                    guard let self = self else { return }
+                    do {
+                        let transaction = try self.checkVerified(result)
+                        Task {
+                            await self.refreshSubscriptionStatus()
+                            await transaction.finish()
+                        }
+                        NSLog("💰 [Store] transaction update: \(transaction.productID)")
+                    } catch {
+                        NSLog("💰 [Store] transaction update failed verification")
+                    }
                 }
             }
         }

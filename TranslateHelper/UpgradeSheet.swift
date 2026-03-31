@@ -70,7 +70,7 @@ struct UpgradeSheet: View {
                             HStack(spacing: 8) {
                                 Image(systemName: "star.fill")
                                     .font(.system(size: 14))
-                                Text("Go Pro — $7.99 / month")
+                                Text("Go Pro — \(sub.priceString(for: .standardMonthly)) / month")
                                     .font(.custom("HelveticaNeue-Bold", size: 17))
                             }
                             .foregroundColor(.white)
