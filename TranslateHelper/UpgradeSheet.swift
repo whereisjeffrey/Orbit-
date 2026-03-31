@@ -62,9 +62,10 @@ struct UpgradeSheet: View {
                     // CTA
                     VStack(spacing: 12) {
                         Button {
-                            // TODO: wire StoreKit purchase
-                            sub.isPro = true
-                            dismiss()
+                            Task {
+                                let success = await sub.purchase(.standardMonthly)
+                                if success { dismiss() }
+                            }
                         } label: {
                             HStack(spacing: 8) {
                                 Image(systemName: "star.fill")
