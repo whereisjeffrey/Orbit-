@@ -1365,6 +1365,7 @@ class KeyboardViewController: UIInputViewController {
 
         let actions: [(String, Selector)] = [
             ("Replace ↩️", #selector(replaceTapped)),
+            ("Clear 🗑️", #selector(clearTapped)),
             ("Save 💾", #selector(saveTapped)),
             ("🎤 Speak", #selector(micTapped)),
         ]
@@ -1824,11 +1825,8 @@ class KeyboardViewController: UIInputViewController {
         if isPasteTranslationActive { return }
 
         if isPaste {
-            // Read full clipboard text — triggers iOS "Orbit wants to paste" prompt,
-            // which is actually good UX (one-tap paste + branding).
-            let clipboardText = UIPasteboard.general.string
-            let textToTranslate = (clipboardText ?? text).trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !textToTranslate.isEmpty else { return }
+            // Use text already in the field — no clipboard read, no iOS privacy prompt.
+            let textToTranslate = text
 
             let detected = detectLanguage(textToTranslate)
             let targetCode = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
@@ -2383,6 +2381,32 @@ class KeyboardViewController: UIInputViewController {
                 performTranslation(text: inputText, source: "tone-change")
             }
         }
+    }
+
+    @objc private func clearTapped() {
+        // Move cursor to the very end first
+        if let after = textDocumentProxy.documentContextAfterInput, !after.isEmpty {
+            textDocumentProxy.adjustTextPosition(byCharacterOffset: after.count)
+        }
+
+        // Delete backwards in chunks — textDocumentProxy truncates what it returns,
+        // so we loop until nothing is left. Handles long Portuguese messages.
+        var safety = 0
+        while let before = textDocumentProxy.documentContextBeforeInput, !before.isEmpty, safety < 50 {
+            for _ in 0..<before.count {
+                textDocumentProxy.deleteBackward()
+            }
+            safety += 1
+        }
+
+        previousTextLength = 0
+        isPasteTranslationActive = false
+        showEmpty()
+
+        let generator = UIImpactFeedbackGenerator(style: .light)
+        generator.impactOccurred()
+
+        NSLog("TSKBD_CLEAR: text field cleared (loops: \(safety))")
     }
 
     @objc private func replaceTapped() {
