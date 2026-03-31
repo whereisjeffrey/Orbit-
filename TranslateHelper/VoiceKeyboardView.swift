@@ -64,16 +64,16 @@ struct VoiceKeyboardBackground: View {
         let radius:       Double
     }
 
-    // Frequencies are 1/3 of the SplashFinisherBackground values — slow ambient drift
-    // so the blobs move gently during a long recording session without being distracting.
+    // Very slow drift — blobs barely move so the rich initial arrangement holds.
+    // A full cycle takes ~60-90 seconds, so even a long recording stays beautiful.
     private static let configs: [BlobConfig] = [
-        BlobConfig(baseX: 0.15, baseY: 0.85, ampX: 0.20, ampY: 0.18, freqX: 0.11, freqY: 0.09, phase: 0.0, radius: 0.90),
-        BlobConfig(baseX: 0.80, baseY: 0.85, ampX: 0.18, ampY: 0.20, freqX: 0.09, freqY: 0.12, phase: 1.2, radius: 0.88),
-        BlobConfig(baseX: 0.45, baseY: 0.50, ampX: 0.22, ampY: 0.20, freqX: 0.13, freqY: 0.10, phase: 2.4, radius: 0.95),
-        BlobConfig(baseX: 0.80, baseY: 0.25, ampX: 0.18, ampY: 0.22, freqX: 0.10, freqY: 0.13, phase: 0.8, radius: 0.88),
-        BlobConfig(baseX: 0.20, baseY: 0.22, ampX: 0.20, ampY: 0.18, freqX: 0.12, freqY: 0.11, phase: 3.6, radius: 0.92),
-        BlobConfig(baseX: 0.65, baseY: 0.10, ampX: 0.16, ampY: 0.16, freqX: 0.08, freqY: 0.09, phase: 1.8, radius: 0.86),
-        BlobConfig(baseX: 0.50, baseY: 0.70, ampX: 0.22, ampY: 0.20, freqX: 0.11, freqY: 0.12, phase: 4.8, radius: 0.90),
+        BlobConfig(baseX: 0.15, baseY: 0.85, ampX: 0.10, ampY: 0.08, freqX: 0.015, freqY: 0.012, phase: 0.0, radius: 0.90),
+        BlobConfig(baseX: 0.80, baseY: 0.85, ampX: 0.08, ampY: 0.10, freqX: 0.012, freqY: 0.016, phase: 1.2, radius: 0.88),
+        BlobConfig(baseX: 0.45, baseY: 0.50, ampX: 0.12, ampY: 0.10, freqX: 0.018, freqY: 0.013, phase: 2.4, radius: 0.95),
+        BlobConfig(baseX: 0.80, baseY: 0.25, ampX: 0.08, ampY: 0.12, freqX: 0.013, freqY: 0.018, phase: 0.8, radius: 0.88),
+        BlobConfig(baseX: 0.20, baseY: 0.22, ampX: 0.10, ampY: 0.08, freqX: 0.016, freqY: 0.014, phase: 3.6, radius: 0.92),
+        BlobConfig(baseX: 0.65, baseY: 0.10, ampX: 0.08, ampY: 0.08, freqX: 0.011, freqY: 0.012, phase: 1.8, radius: 0.86),
+        BlobConfig(baseX: 0.50, baseY: 0.70, ampX: 0.12, ampY: 0.10, freqX: 0.014, freqY: 0.016, phase: 4.8, radius: 0.90),
     ]
 
     @State private var startDate = Date()

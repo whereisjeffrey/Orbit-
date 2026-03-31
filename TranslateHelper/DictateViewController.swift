@@ -809,6 +809,12 @@ class DictateViewController: UIViewController {
         body.append("Content-Disposition: form-data; name=\"response_format\"\r\n\r\n".data(using: .utf8)!)
         body.append("verbose_json\r\n".data(using: .utf8)!)
 
+        // Force language so Whisper doesn't auto-detect per chunk (causes mixed output)
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"language\"\r\n\r\n".data(using: .utf8)!)
+        body.append("\(self.speakingLanguage)\r\n".data(using: .utf8)!)
+        NSLog("🎤 [Dictate] API: forcing language=\(self.speakingLanguage)")
+
         body.append("--\(boundary)--\r\n".data(using: .utf8)!)
 
         request.httpBody = body
@@ -885,12 +891,9 @@ class DictateViewController: UIViewController {
         defaults?.set(Date().timeIntervalSince1970, forKey: "dictate_result_timestamp")
         defaults?.synchronize()
 
+        // Dismiss back to wherever the user came from — iOS returns to the
+        // previous app automatically (WhatsApp, Instagram, Tinder, etc.)
         dismiss(animated: true)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            if let url = URL(string: "whatsapp://") {
-                UIApplication.shared.open(url, options: [:], completionHandler: nil)
-            }
-        }
     }
 
     // MARK: - Actions
@@ -906,12 +909,6 @@ class DictateViewController: UIViewController {
     @objc private func cancelTapped() {
         stopAll()
         dismiss(animated: true)
-        // Return to the app they came from (WhatsApp, Tinder, etc.)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            if let url = URL(string: "whatsapp://") {
-                UIApplication.shared.open(url, options: [:], completionHandler: nil)
-            }
-        }
     }
 }
 
