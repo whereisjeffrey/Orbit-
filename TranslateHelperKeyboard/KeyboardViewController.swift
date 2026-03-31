@@ -39,6 +39,12 @@ class KeyboardViewController: UIInputViewController {
     private var detectedLanguage: String = ""
     private var currentTone: String = "casual"
     private var selectedLanguage: String = "es" // persisted preference (default: Spanish)
+
+    /// The user's native language — defaults to "en" but supports any language.
+    /// Read from App Group so it can be set in onboarding/settings.
+    private var nativeLang: String {
+        UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_native_lang") ?? "en"
+    }
     private var lastSourceWasSpeech: Bool = false
     private var lastSpeechDetectedLang: String = ""  // WhisperKit's language detection (more reliable than text detection)
 
@@ -279,11 +285,11 @@ class KeyboardViewController: UIInputViewController {
             let nlLang = recognizer.dominantLanguage?.rawValue.components(separatedBy: "-").first ?? "und"
 
             let isTargetLang = detected.code == targetCode || nlLang == targetCode
-            let isNonEnglish = (detected.code != "en" && detected.code != "und") ||
-                               (nlLang != "en" && nlLang != "und")
+            let isNotNative = (detected.code != nativeLang && detected.code != "und") ||
+                              (nlLang != nativeLang && nlLang != "und")
 
-            if isTargetLang || isNonEnglish {
-                NSLog("TSKBD_AUTODETECT: text in \(detected.code)/\(nlLang) — translating to English")
+            if isTargetLang || isNotNative {
+                NSLog("TSKBD_AUTODETECT: text in \(detected.code)/\(nlLang) — translating to \(nativeLang)")
                 isPasteTranslationActive = true
                 previousTextLength = fieldText.count
                 performPasteTranslation(text: fieldText, detectedLang: isTargetLang ? targetCode : detected.code)
@@ -310,8 +316,9 @@ class KeyboardViewController: UIInputViewController {
         // regardless of what detectLanguage() returns (numbers, proper nouns etc. can
         // look like English to the heuristic even when the words are Spanish).
         let isSourceTarget = source == "accent_coach" ? true : (detected.code == targetCode)
-        let inProf = isSourceTarget ? (TSProfiles[targetCode] ?? TSProfiles["es"]!) : TSProfiles["en"]!
-        let outProf = isSourceTarget ? TSProfiles["en"]! : (TSProfiles[targetCode] ?? TSProfiles["es"]!)
+        let native = nativeLang
+        let inProf = isSourceTarget ? (TSProfiles[targetCode] ?? TSProfiles["es"]!) : (TSProfiles[native] ?? TSProfiles["en"]!)
+        let outProf = isSourceTarget ? (TSProfiles[native] ?? TSProfiles["en"]!) : (TSProfiles[targetCode] ?? TSProfiles["es"]!)
 
         // Direction header + language mapping
         if isSourceTarget {
@@ -476,7 +483,7 @@ class KeyboardViewController: UIInputViewController {
                     let spokenLang = self.lastSourceWasSpeech && !self.lastSpeechDetectedLang.isEmpty
                         ? self.lastSpeechDetectedLang
                         : detected.code
-                    if self.lastSourceWasSpeech && spokenLang != "en" {
+                    if self.lastSourceWasSpeech && spokenLang != self.nativeLang {
                         self.fetchCoachingTips(spokenText: text, spokenLanguage: spokenLang)
                     } else {
                         self.coachCard.isHidden = true
@@ -636,7 +643,7 @@ class KeyboardViewController: UIInputViewController {
         TalkSwitchAPI.shared.getSpeechCoachingTips(
             spokenText: spokenText,
             spokenLanguage: spokenLanguage,
-            nativeLanguage: "en",
+            nativeLanguage: nativeLang,
             mistakeProfile: mistakeProfile
         ) { [weak self] result in
             DispatchQueue.main.async {
@@ -673,7 +680,7 @@ class KeyboardViewController: UIInputViewController {
         TalkSwitchAPI.shared.getSpeechCoachingTips(
             spokenText: spokenText,
             spokenLanguage: spokenLanguage,
-            nativeLanguage: "en",
+            nativeLanguage: nativeLang,
             mistakeProfile: mistakeProfile
         ) { [weak self] result in
             DispatchQueue.main.async {
@@ -834,7 +841,7 @@ class KeyboardViewController: UIInputViewController {
         let defaults = UserDefaults(suiteName: appGroup)
         let targetCode = defaults?.string(forKey: "talkswitch_target_lang") ?? "es"
         
-        let newLang = lang.hasPrefix(targetCode) ? targetCode : "en"
+        let newLang = lang.hasPrefix(targetCode) ? targetCode : nativeLang
         guard newLang != selectedLanguage else { return }
         selectedLanguage = newLang
         defaults?.set(selectedLanguage, forKey: "talkswitch_lang")
@@ -848,7 +855,7 @@ class KeyboardViewController: UIInputViewController {
         let defaults = UserDefaults(suiteName: appGroup)
         let targetCode = defaults?.string(forKey: "talkswitch_target_lang") ?? "es"
         
-        selectedLanguage = (selectedLanguage == targetCode) ? "en" : targetCode
+        selectedLanguage = (selectedLanguage == targetCode) ? nativeLang : targetCode
         defaults?.set(selectedLanguage, forKey: "talkswitch_lang")
         defaults?.synchronize()
         updateLangPill()
@@ -862,7 +869,7 @@ class KeyboardViewController: UIInputViewController {
         let prof = TSProfiles[selectedLanguage] ?? TSProfiles["en"]!
         langPill.setTitle("\(prof.flag) \(prof.code.uppercased())", for: .normal)
         langPill.setTitleColor(.white, for: .normal)
-        if selectedLanguage == "en" {
+        if selectedLanguage == nativeLang {
             langPill.backgroundColor = UIColor.systemGreen
         } else {
             langPill.backgroundColor = UIColor.systemBlue
@@ -1566,7 +1573,7 @@ class KeyboardViewController: UIInputViewController {
 
         TalkSwitchAPI.shared.getWingmanOptions(
             situation: situation,
-            sourceLang: "en",
+            sourceLang: nativeLang,
             targetLang: targetCode
         ) { [weak self] options in
             guard let self = self else { return }
@@ -1764,7 +1771,7 @@ class KeyboardViewController: UIInputViewController {
 
         TalkSwitchAPI.shared.getWingmanOptions(
             situation: inputText,
-            sourceLang: "en",
+            sourceLang: nativeLang,
             targetLang: targetCode
         ) { [weak self] options in
             guard let self = self else { return }
@@ -1834,13 +1841,13 @@ class KeyboardViewController: UIInputViewController {
             }()
 
             let isTargetLang = detected.code == targetCode || secondOpinion == targetCode
-            let isNonEnglish = (detected.code != "en" && detected.code != "und") ||
-                               (secondOpinion != "en" && secondOpinion != "und")
+            let isNotNative = (detected.code != nativeLang && detected.code != "und") ||
+                              (secondOpinion != nativeLang && secondOpinion != "und")
 
-            NSLog("TSKBD_PASTE: detected=\(detected.code), NL=\(secondOpinion), target=\(targetCode), len=\(textToTranslate.count)")
+            NSLog("TSKBD_PASTE: detected=\(detected.code), NL=\(secondOpinion), target=\(targetCode), native=\(nativeLang), len=\(textToTranslate.count)")
 
-            if isTargetLang || isNonEnglish {
-                NSLog("TSKBD_PASTE: translating to English")
+            if isTargetLang || isNotNative {
+                NSLog("TSKBD_PASTE: translating to \(nativeLang)")
                 isPasteTranslationActive = true
                 performPasteTranslation(text: textToTranslate, detectedLang: isTargetLang ? targetCode : detected.code)
                 return
@@ -1889,13 +1896,14 @@ class KeyboardViewController: UIInputViewController {
 
     // MARK: - Paste Translation (incoming messages)
 
-    /// When user pastes text in the target language, translate it to English so they can understand it.
+    /// When user pastes text in a non-native language, translate it to their native language.
     private func performPasteTranslation(text: String, detectedLang: String) {
         inputText = text
 
         let targetCode = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
-        let inProf = TSProfiles[targetCode] ?? TSProfiles["es"]!
-        let outProf = TSProfiles["en"]!
+        let native = nativeLang
+        let inProf = TSProfiles[detectedLang] ?? TSProfiles[targetCode] ?? TSProfiles["es"]!
+        let outProf = TSProfiles[native] ?? TSProfiles["en"]!
 
         directionLabel.text = "\(inProf.flag) → \(outProf.flag)"
         inputLangLabel.text = "📋 PASTED — \(inProf.name.uppercased())"
@@ -1911,7 +1919,7 @@ class KeyboardViewController: UIInputViewController {
         notesCard.isHidden = true
         loadingSpinner.startAnimating()
 
-        // Translate to English via DeepL
+        // Translate to native language via DeepL
         TranslationService.shared.translate(
             text: text,
             from: inProf.deepL,
@@ -1961,7 +1969,8 @@ class KeyboardViewController: UIInputViewController {
         // Show a brief hint in the notes card
         notesCard.isHidden = false
         notesIcon.text = "📋"
-        notesTextLabel.text = "💡 Got a message you can't read? Just copy and paste it here — we'll translate it to English automatically."
+        let nativeName = TSProfiles[nativeLang]?.name ?? "your language"
+        notesTextLabel.text = "💡 Got a message you can't read? Just copy and paste it here — we'll translate it to \(nativeName) automatically."
 
         NSLog("TSKBD_PASTE_HINT: shown after first translation")
     }
