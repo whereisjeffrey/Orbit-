@@ -214,11 +214,16 @@ class PracticeConversationService {
             }
         }()
 
+        let memoryBlock = SolMemoryStore.shared.buildContextBlock()
+        let callbackHint = SolMemoryStore.shared.buildCallbackSuggestion() ?? ""
+
         let systemPrompt = """
         You are Sol, a warm and fun language coach having a conversation \
         in \(langName) with an English speaker who lives in \(userCity). \
         \
         \(toneBlock) \
+        \(memoryBlock) \
+        \(callbackHint) \
         \
         CRITICAL — HOW YOU SPEAK: \
         - Speak like a REAL person from \(userCity) — use actual slang, contractions, \
@@ -256,7 +261,8 @@ class PracticeConversationService {
           "native_correction": "ONLY the specific part the user got wrong — format: 'Instead of [what they said], try [correct version]'. Do NOT repeat the entire sentence. If multiple errors, list each one separately. null if their \(langName) was fine.", \
           "native_correction_notes": "English explanation of WHY — the grammar rule, the pattern, the nuance. Can be multiple sentences. Use \(langName) words inline. null if no correction.", \
           "slang_notes": [{"phrase": "the \(langName) slang/expression", "meaning": "English meaning", \
-            "context": "English explanation of when/where people use this — be specific to the city/region"}] or [] if none \
+            "context": "English explanation of when/where people use this — be specific to the city/region"}] or [] if none, \
+          "user_facts": ["any personal facts the user revealed in their last message — e.g. 'Looking for an apartment in Condesa', 'Works as a designer', 'Has a date on Friday'. Only include NEW information, not things you already know. Empty array if none."] or [] \
         }
         """
 
@@ -314,6 +320,13 @@ class PracticeConversationService {
                             context: note["context"] ?? ""
                         ))
                     }
+                }
+            }
+
+            // Extract and save user facts for Sol's cross-session memory
+            if let userFacts = parsed["user_facts"] as? [String] {
+                for fact in userFacts where !fact.isEmpty {
+                    SolMemoryStore.shared.remember(fact, category: "personal")
                 }
             }
 

@@ -64,5 +64,10 @@
 	</dict>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.jeffrey.TranslateHelper.tts-cache</string>
+		<string>com.jeffrey.TranslateHelper.mistake-ingest</string>
+	</array>
 </dict>
 </plist>

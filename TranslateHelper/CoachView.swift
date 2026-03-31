@@ -216,6 +216,7 @@ struct CoachPopulatedView: View {
     @Binding var showPopulated: Bool
     @State private var showFullReport = false
     @State private var showPracticeSession = false
+    @State private var showLevelAssessment = false
     @State private var showTalkDrill = false
     @State private var showLevelDetail = false
     @State private var showLightningRound = false
@@ -282,6 +283,17 @@ struct CoachPopulatedView: View {
         }
         .fullScreenCover(isPresented: $showPracticeSession) {
             PracticeSessionView()
+        }
+        .sheet(isPresented: $showLevelAssessment) {
+            LevelAssessmentView()
+                .onDisappear {
+                    // After assessment completes, open practice session
+                    if UserLevelStore.shared.hasBeenAssessed {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            showPracticeSession = true
+                        }
+                    }
+                }
         }
         .fullScreenCover(isPresented: $showLightningRound) {
             LightningRoundView()
@@ -517,7 +529,24 @@ extension CoachPopulatedView {
     // MARK: - 3. Weekly Snapshot
 
     private var weeklySnapshot: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        let stats = PracticeStatsStore.shared
+        let profile = MistakeProfileStore.shared
+        let roundHistory = LightningRoundEngine.shared.loadRoundHistory()
+        let thisWeekRounds = roundHistory.filter {
+            Calendar.current.isDate($0.date, equalTo: Date(), toGranularity: .weekOfYear)
+        }
+        let avgScore: Int = thisWeekRounds.isEmpty ? 0 :
+            thisWeekRounds.reduce(0) { $0 + $1.scorePercent } / thisWeekRounds.count
+
+        // Find this week's wins (mastered items)
+        let weekStart = Calendar(identifier: .iso8601).dateInterval(of: .weekOfYear, for: Date())?.start ?? Date()
+        let mastered = profile.entries.filter { $0.masteredAt != nil && $0.masteredAt! >= weekStart }
+
+        // Find weakest category
+        let breakdown = profile.categoryBreakdown
+        let weakest = breakdown.max(by: { $0.count < $1.count })
+
+        return VStack(alignment: .leading, spacing: 16) {
             HStack {
                 Text("📅")
                     .font(.system(size: 14))
@@ -526,25 +555,40 @@ extension CoachPopulatedView {
                     .foregroundColor(.tsSecondary)
                     .kerning(1.2)
                 Spacer()
-                Text("Mar 17–22")
+                Text(stats.weekRangeString)
                     .font(.custom("HelveticaNeue", size: 12))
                     .foregroundColor(.tsSecondary)
             }
 
-            // ── Stats row ───────────────────────────────────
+            // ── Stats row (real data) ───────────────────────
             HStack(spacing: 16) {
-                statPill(value: "23", label: "messages")
-                statPill(value: "12", label: "min audio")
-                statPill(value: "74", label: "avg score")
+                statPill(value: "\(stats.weeklyMessageCount)", label: "messages")
+                statPill(value: "\(stats.weeklyPracticeMinutes)", label: "min practice")
+                statPill(value: avgScore > 0 ? "\(avgScore)" : "—", label: "avg score")
             }
 
             Divider().opacity(0.3)
 
-            // ── Summary ─────────────────────────────────────
+            // ── Summary (derived from real data) ────────────
             VStack(alignment: .leading, spacing: 12) {
-                weeklyRow(emoji: "✅", text: "Win: Graduated 'ser vs estar'")
-                weeklyRow(emoji: "✏️", text: "Work on: Gender agreement (72%)")
-                weeklyRow(emoji: "🎯", text: "Focus: Practice the R sound in Talk drills this week")
+                if !mastered.isEmpty {
+                    weeklyRow(emoji: "✅", text: "Win: Graduated '\(mastered.first!.correctForm)'")
+                } else if stats.weeklySessionCount > 0 {
+                    weeklyRow(emoji: "✅", text: "Win: \(stats.weeklySessionCount) practice session\(stats.weeklySessionCount == 1 ? "" : "s") this week")
+                } else {
+                    weeklyRow(emoji: "💬", text: "Start a practice session to see your progress here")
+                }
+
+                if let weak = weakest {
+                    let accuracy = profile.categoryAccuracy(weak.category)
+                    weeklyRow(emoji: "✏️", text: "Work on: \(weak.category.displayName)\(accuracy > 0 ? " (\(accuracy)%)" : "")")
+                }
+
+                if stats.currentStreak > 0 {
+                    weeklyRow(emoji: "🔥", text: "\(stats.currentStreak)-day streak — keep it going")
+                } else if !thisWeekRounds.isEmpty {
+                    weeklyRow(emoji: "🎯", text: "\(thisWeekRounds.count) Lightning Round\(thisWeekRounds.count == 1 ? "" : "s") completed")
+                }
             }
 
             Button { showFullReport = true } label: {
@@ -1012,7 +1056,14 @@ extension CoachPopulatedView {
                 .foregroundColor(.tsLabel)
                 .lineSpacing(2)
 
-            Button { showPracticeSession = true } label: {
+            Button {
+                // Route through level assessment if not yet assessed
+                if UserLevelStore.shared.hasBeenAssessed {
+                    showPracticeSession = true
+                } else {
+                    showLevelAssessment = true
+                }
+            } label: {
                 Text("Start Session")
                     .font(.custom("HelveticaNeue-Medium", size: 16))
                     .foregroundColor(.white)
@@ -1168,60 +1219,120 @@ struct WeeklyFullReportView: View {
                             Text("Weekly Report")
                                 .font(.custom("HelveticaNeue-Bold", size: 24))
                                 .foregroundColor(.tsLabel)
-                            Text("March 17 – 22, 2026")
+                            Text(PracticeStatsStore.shared.weekRangeString + ", 2026")
                                 .font(.custom("HelveticaNeue", size: 14))
                                 .foregroundColor(.tsSecondary)
                         }
 
                         // ── Wins ────────────────────────────────
                         reportSection(title: "WINS", icon: "🎉") {
+                            let profile = MistakeProfileStore.shared
+                            let weekStart = Calendar(identifier: .iso8601).dateInterval(of: .weekOfYear, for: Date())?.start ?? Date()
+                            let mastered = profile.entries.filter { $0.masteredAt != nil && $0.masteredAt! >= weekStart }
+                            let stats = PracticeStatsStore.shared
+
                             VStack(alignment: .leading, spacing: 10) {
-                                reportRow("Graduated: ser vs estar — 14 days clean")
-                                reportRow("Gender accuracy: 72% → 81%")
-                                reportRow("New words used: 'saudade', 'madrugada', 'concorrência'")
+                                if !mastered.isEmpty {
+                                    ForEach(mastered.prefix(3), id: \.id) { item in
+                                        reportRow("Graduated: '\(item.correctForm)'")
+                                    }
+                                }
+                                if stats.weeklySessionCount > 0 {
+                                    reportRow("\(stats.weeklySessionCount) practice session\(stats.weeklySessionCount == 1 ? "" : "s") completed")
+                                }
+                                if stats.currentStreak > 1 {
+                                    reportRow("\(stats.currentStreak)-day practice streak")
+                                }
+                                if mastered.isEmpty && stats.weeklySessionCount == 0 {
+                                    reportRow("Get started this week — every session counts")
+                                }
                             }
                         }
 
                         // ── Work On ─────────────────────────────
                         reportSection(title: "WORK ON", icon: "📝") {
+                            let breakdown = MistakeProfileStore.shared.categoryBreakdown
+
                             VStack(alignment: .leading, spacing: 10) {
-                                reportRow("Gender agreement: 81% — defaulting to masculine with -ade words")
-                                reportRow("Prepositions: 'em' vs 'a' for direction (72% accuracy)")
-                                reportRow("Past subjunctive: emerging pattern, 3 occurrences this week")
+                                if breakdown.isEmpty {
+                                    reportRow("No patterns flagged yet — keep using the keyboard and practicing")
+                                } else {
+                                    ForEach(breakdown.prefix(3), id: \.category) { item in
+                                        let accuracy = MistakeProfileStore.shared.categoryAccuracy(item.category)
+                                        reportRow("\(item.category.displayName): \(item.count) active\(accuracy > 0 ? " (\(accuracy)% accuracy)" : "")")
+                                    }
+                                }
                             }
                         }
 
                         // ── By the Numbers ──────────────────────
                         reportSection(title: "BY THE NUMBERS", icon: "📊") {
+                            let stats = PracticeStatsStore.shared
+                            let rounds = LightningRoundEngine.shared.loadRoundHistory()
+                            let weekRounds = rounds.filter {
+                                Calendar.current.isDate($0.date, equalTo: Date(), toGranularity: .weekOfYear)
+                            }
+                            let avgScore = weekRounds.isEmpty ? 0 :
+                                weekRounds.reduce(0) { $0 + $1.scorePercent } / weekRounds.count
+
                             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-                                numberCard(value: "47", label: "Messages sent")
-                                numberCard(value: "23", label: "Voice messages")
-                                numberCard(value: "12", label: "Minutes of audio")
-                                numberCard(value: "74", label: "Avg pronunciation")
+                                numberCard(value: "\(stats.weeklyMessageCount)", label: "Messages")
+                                numberCard(value: "\(stats.weeklySessionCount)", label: "Sessions")
+                                numberCard(value: "\(stats.weeklyPracticeMinutes)", label: "Min practice")
+                                numberCard(value: avgScore > 0 ? "\(avgScore)%" : "—", label: "Avg score")
                             }
                         }
 
                         // ── Trends ──────────────────────────────
                         reportSection(title: "TRENDS", icon: "📈") {
+                            let store = UserLevelStore.shared
+                            let colorMap: [SkillCategory: Color] = [
+                                .pronunciation: Color(hex: "#34C759"),
+                                .grammar: Color(hex: "#007AFF"),
+                                .vocabulary: Color(hex: "#FF9500"),
+                                .fluency: Color(hex: "#AF52DE"),
+                            ]
+
                             VStack(alignment: .leading, spacing: 10) {
-                                trendRow(category: "Pronunciation", direction: "↑", detail: "improving", color: Color(hex: "#34C759"))
-                                trendRow(category: "Grammar", direction: "↑", detail: "big jump to B1", color: Color.tsAccent)
-                                trendRow(category: "Vocabulary", direction: "↑", detail: "growing steadily", color: Color(hex: "#FF9500"))
-                                trendRow(category: "Fluency", direction: "→", detail: "plateau — try slowing down", color: Color(hex: "#AF52DE"))
+                                ForEach(SkillCategory.allCases, id: \.self) { skill in
+                                    if let assessment = store.skills[skill] {
+                                        let dir = assessment.progress > 0.5 ? "↑" : assessment.progress > 0.3 ? "→" : "↓"
+                                        let detail = assessment.progress > 0.5 ? "improving" :
+                                            assessment.progress > 0.3 ? "steady" : "needs focus"
+                                        trendRow(
+                                            category: skill.displayName,
+                                            direction: dir,
+                                            detail: "\(assessment.level.rawValue) — \(detail)",
+                                            color: colorMap[skill] ?? .tsAccent
+                                        )
+                                    }
+                                }
+                                if store.skills.isEmpty {
+                                    reportRow("Complete your level assessment to see trends")
+                                }
                             }
                         }
 
                         // ── Focus ────────────────────────────────
                         reportSection(title: "FOCUS THIS WEEK", icon: "🎯") {
+                            let weakest = MistakeProfileStore.shared.categoryBreakdown.max(by: { $0.count < $1.count })
+
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("Practice the R sound in Talk drills — you're close to getting it natural.")
-                                    .font(.custom("HelveticaNeue", size: 14))
-                                    .foregroundColor(.tsLabel)
-                                    .lineSpacing(2)
-                                Text("Try 2-3 drill sessions this week. Different words, same sound.")
-                                    .font(.custom("HelveticaNeue", size: 13))
-                                    .foregroundColor(.tsSecondary)
-                                    .italic()
+                                if let weak = weakest {
+                                    Text("Focus on \(weak.category.displayName.lowercased()) — \(weak.count) active patterns to work through.")
+                                        .font(.custom("HelveticaNeue", size: 14))
+                                        .foregroundColor(.tsLabel)
+                                        .lineSpacing(2)
+                                    Text("Try a Lightning Round targeting these patterns.")
+                                        .font(.custom("HelveticaNeue", size: 13))
+                                        .foregroundColor(.tsSecondary)
+                                        .italic()
+                                } else {
+                                    Text("Keep practicing with Sol — mistakes become your personalized curriculum.")
+                                        .font(.custom("HelveticaNeue", size: 14))
+                                        .foregroundColor(.tsLabel)
+                                        .lineSpacing(2)
+                                }
                             }
                         }
 
@@ -1329,12 +1440,24 @@ struct LevelDetailView: View {
         let color: Color
     }
 
-    private let skills: [SkillLevel] = [
-        SkillLevel(label: "Pronunciation", level: "B1", progress: 0.65, color: Color(hex: "#34C759")),
-        SkillLevel(label: "Grammar", level: "B1", progress: 0.55, color: Color(hex: "#007AFF")),
-        SkillLevel(label: "Vocabulary", level: "B2", progress: 0.72, color: Color(hex: "#FF9500")),
-        SkillLevel(label: "Fluency", level: "A2", progress: 0.38, color: Color(hex: "#AF52DE")),
-    ]
+    private var skills: [SkillLevel] {
+        let store = UserLevelStore.shared
+        let colorMap: [SkillCategory: Color] = [
+            .pronunciation: Color(hex: "#34C759"),
+            .grammar: Color(hex: "#007AFF"),
+            .vocabulary: Color(hex: "#FF9500"),
+            .fluency: Color(hex: "#AF52DE"),
+        ]
+        return SkillCategory.allCases.map { cat in
+            let assessment = store.skills[cat]
+            return SkillLevel(
+                label: cat.displayName,
+                level: assessment?.level.rawValue ?? "A1",
+                progress: CGFloat(assessment?.progress ?? 0.1),
+                color: colorMap[cat] ?? .tsAccent
+            )
+        }
+    }
 
     private let cefrDescriptions: [String: (title: String, meaning: String)] = [
         "A1": ("Beginner", "You can understand and use basic phrases — greetings, introductions, simple questions. Enough to survive, not enough to connect."),
@@ -1413,10 +1536,11 @@ struct LevelDetailView: View {
 
                     // ── Overall level ──────────────────────────
                     VStack(spacing: 8) {
-                        Text("B1")
+                        let overall = UserLevelStore.shared.overallLevel
+                        Text(overall.rawValue)
                             .font(.custom("HelveticaNeue-Bold", size: 48))
                             .foregroundColor(.tsAccent)
-                        Text("Intermediate")
+                        Text(overall.title)
                             .font(.custom("HelveticaNeue-Medium", size: 16))
                             .foregroundColor(.tsLabel)
                         Text("Your overall level across all categories")
@@ -1427,12 +1551,13 @@ struct LevelDetailView: View {
 
                     // ── What this means ────────────────────────
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("WHAT B1 MEANS")
+                        let overall = UserLevelStore.shared.overallLevel
+                        Text("WHAT \(overall.rawValue) MEANS")
                             .font(.custom("HelveticaNeue-Bold", size: 11))
                             .foregroundColor(.tsSecondary)
                             .kerning(1.2)
 
-                        Text(cefrDescriptions["B1"]?.meaning ?? "")
+                        Text(cefrDescriptions[overall.rawValue]?.meaning ?? overall.description)
                             .font(.custom("HelveticaNeue", size: 14))
                             .foregroundColor(.tsLabel)
                             .lineSpacing(4)
@@ -1708,7 +1833,7 @@ struct PracticeSessionView: View {
             VStack(spacing: 0) {
                 // ── Header ──────────────────────────────────
                 HStack {
-                    Button { dismiss() } label: {
+                    Button { endAndDismiss() } label: {
                         HStack(spacing: 4) {
                             Image(systemName: "chevron.left")
                                 .font(.system(size: 14, weight: .semibold))
@@ -2948,6 +3073,20 @@ struct PracticeSessionView: View {
         recordingSeconds = 0
         withAnimation { isRecording = false }
         conversationService.stopRecording()
+    }
+
+    /// Saves session stats and dismisses the practice view.
+    private func endAndDismiss() {
+        // Persist session stats for weekly reports
+        if sessionSeconds > 5 {  // Only save meaningful sessions
+            PracticeStatsStore.shared.recordSession(
+                durationSeconds: sessionSeconds,
+                messageCount: totalMessagesThisSession,
+                tone: practiceTone
+            )
+            NSLog("🎯 [Practice] session saved: \(sessionSeconds)s, \(totalMessagesThisSession) msgs")
+        }
+        dismiss()
     }
 
     private func stopAndSendRecording() {

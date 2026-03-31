@@ -266,6 +266,16 @@ final class MistakeProfileStore: ObservableObject {
         }
     }
 
+    /// Accuracy percentage for a given category (correct / total seen × 100).
+    func categoryAccuracy(_ category: MistakeCategory) -> Int {
+        let items = entries.filter { $0.category == category && $0.seenCount > 0 }
+        guard !items.isEmpty else { return 0 }
+        let totalSeen = items.reduce(0) { $0 + $1.seenCount }
+        let totalCorrect = items.reduce(0) { $0 + $1.correctCount }
+        guard totalSeen > 0 else { return 0 }
+        return Int(Double(totalCorrect) / Double(totalSeen) * 100)
+    }
+
     // MARK: - Persistence (App Group)
 
     private func save() {
