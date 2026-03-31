@@ -117,6 +117,10 @@ class KeyboardViewController: UIInputViewController {
     private let wingmanToggle = UIStackView()
     private let wingmanOptionsStack = UIStackView()
     private let wingmanOnboardingCard = UIView()
+
+    // Paste translation icons
+    private let pastePlayBtn = UIButton(type: .system)   // speaker on input card (Portuguese)
+    private let pasteClearBtn = UIButton(type: .system)   // X on output card (clear & dismiss)
     private let loadingSpinner: UIActivityIndicatorView = {
         let s = UIActivityIndicatorView(style: .medium)
         s.translatesAutoresizingMaskIntoConstraints = false
@@ -460,6 +464,9 @@ class KeyboardViewController: UIInputViewController {
         } else {
             self.correctionCard.isHidden = true
             self.outputCard.isHidden = false
+            // Show X on input card so user can always clear, hide X on output
+            self.pastePlayBtn.isHidden = false   // X on input card
+            self.pasteClearBtn.isHidden = true    // no X on output (speaker is there)
         }
 
         // Call DeepL API first (always)
@@ -998,14 +1005,32 @@ class KeyboardViewController: UIInputViewController {
         inputCard.addGestureRecognizer(inputTap)
         inputCard.isUserInteractionEnabled = true
 
+        // X clear button on input card — subtle gray matching the charcoal card
+        let xCfg = UIImage.SymbolConfiguration(pointSize: 11, weight: .semibold)
+        pastePlayBtn.setImage(UIImage(systemName: "xmark", withConfiguration: xCfg), for: .normal)
+        pastePlayBtn.tintColor = UIColor.white.withAlphaComponent(0.35)
+        pastePlayBtn.backgroundColor = .clear
+        pastePlayBtn.layer.cornerRadius = 16
+        pastePlayBtn.layer.borderWidth = 1.0
+        pastePlayBtn.layer.borderColor = UIColor.white.withAlphaComponent(0.12).cgColor
+        pastePlayBtn.clipsToBounds = true
+        pastePlayBtn.translatesAutoresizingMaskIntoConstraints = false
+        pastePlayBtn.isHidden = true
+        pastePlayBtn.addTarget(self, action: #selector(inputClearTapped), for: .touchUpInside)
+        inputCard.addSubview(pastePlayBtn)
+
         NSLayoutConstraint.activate([
             inputCard.heightAnchor.constraint(greaterThanOrEqualToConstant: 50),
             inputLangLabel.topAnchor.constraint(equalTo: inputCard.topAnchor, constant: 8),
             inputLangLabel.leadingAnchor.constraint(equalTo: inputCard.leadingAnchor, constant: 12),
             inputTextLabel.topAnchor.constraint(equalTo: inputLangLabel.bottomAnchor, constant: 2),
             inputTextLabel.leadingAnchor.constraint(equalTo: inputCard.leadingAnchor, constant: 12),
-            inputTextLabel.trailingAnchor.constraint(equalTo: inputCard.trailingAnchor, constant: -12),
+            inputTextLabel.trailingAnchor.constraint(equalTo: pastePlayBtn.leadingAnchor, constant: -8),
             inputTextLabel.bottomAnchor.constraint(equalTo: inputCard.bottomAnchor, constant: -8),
+            pastePlayBtn.trailingAnchor.constraint(equalTo: inputCard.trailingAnchor, constant: -10),
+            pastePlayBtn.centerYAnchor.constraint(equalTo: inputCard.centerYAnchor),
+            pastePlayBtn.widthAnchor.constraint(equalToConstant: 32),
+            pastePlayBtn.heightAnchor.constraint(equalToConstant: 32),
         ])
     }
 
@@ -1061,6 +1086,20 @@ class KeyboardViewController: UIInputViewController {
         swipeHintLabel.isHidden = true
         outputCard.addSubview(swipeHintLabel)
 
+        // X clear button for paste mode — clears text and dismisses paste translation
+        let xConfig = UIImage.SymbolConfiguration(pointSize: 10, weight: .semibold)
+        pasteClearBtn.setImage(UIImage(systemName: "xmark", withConfiguration: xConfig), for: .normal)
+        pasteClearBtn.tintColor = UIColor.systemBlue
+        pasteClearBtn.backgroundColor = .clear
+        pasteClearBtn.layer.cornerRadius = 16
+        pasteClearBtn.layer.borderWidth = 1.0
+        pasteClearBtn.layer.borderColor = UIColor.systemBlue.cgColor
+        pasteClearBtn.clipsToBounds = true
+        pasteClearBtn.translatesAutoresizingMaskIntoConstraints = false
+        pasteClearBtn.isHidden = true  // only visible during paste translation
+        pasteClearBtn.addTarget(self, action: #selector(pasteClearTapped), for: .touchUpInside)
+        outputCard.addSubview(pasteClearBtn)
+
         // Spinner — centred overlay inside the output card
         outputCard.addSubview(loadingSpinner)
 
@@ -1072,6 +1111,10 @@ class KeyboardViewController: UIInputViewController {
             speakerBtn.centerYAnchor.constraint(equalTo: outputCard.centerYAnchor),
             speakerBtn.widthAnchor.constraint(equalToConstant: 32),
             speakerBtn.heightAnchor.constraint(equalToConstant: 32),
+            pasteClearBtn.trailingAnchor.constraint(equalTo: outputCard.trailingAnchor, constant: -10),
+            pasteClearBtn.centerYAnchor.constraint(equalTo: outputCard.centerYAnchor),
+            pasteClearBtn.widthAnchor.constraint(equalToConstant: 32),
+            pasteClearBtn.heightAnchor.constraint(equalToConstant: 32),
             outputTextLabel.topAnchor.constraint(equalTo: outputLangLabel.bottomAnchor, constant: 2),
             outputTextLabel.leadingAnchor.constraint(equalTo: outputCard.leadingAnchor, constant: 12),
             outputTextLabel.trailingAnchor.constraint(equalTo: speakerBtn.leadingAnchor, constant: -8),
@@ -1365,7 +1408,7 @@ class KeyboardViewController: UIInputViewController {
 
         let actions: [(String, Selector)] = [
             ("Replace ↩️", #selector(replaceTapped)),
-            ("Clear 🗑️", #selector(clearTapped)),
+            // Clear button removed — clearing is done via X icon on the paste translation card
             ("Save 💾", #selector(saveTapped)),
             ("🎤 Speak", #selector(micTapped)),
         ]
@@ -1917,6 +1960,11 @@ class KeyboardViewController: UIInputViewController {
         notesCard.isHidden = true
         loadingSpinner.startAnimating()
 
+        // Paste mode: X on input card (clear the pasted text), speaker on output (existing)
+        pastePlayBtn.isHidden = false    // X on input card
+        pasteClearBtn.isHidden = true    // no extra button on output — speaker already there
+        swipeHintLabel.isHidden = true   // no "swipe for another" on paste translations
+
         // Translate to native language via DeepL
         TranslationService.shared.translate(
             text: text,
@@ -1933,12 +1981,16 @@ class KeyboardViewController: UIInputViewController {
                     self.translationHistory = [translation]
                     self.currentHistoryIndex = 0
                     self.outputTextLabel.text = translation
-                    self.updateSwipeHint()
 
-                    // Show reply hint — tell them the mic will overwrite the pasted text
+                    // If text was likely truncated, let the user know
                     self.notesCard.isHidden = false
-                    self.notesIcon.text = "🎤"
-                    self.notesTextLabel.text = "Ready to reply? Just hit 🎤 Speak — your response will replace this text automatically."
+                    if text.count >= 280 {
+                        self.notesIcon.text = "✂️"
+                        self.notesTextLabel.text = "Long message — only the first part was translated. Paste the rest separately for a full translation."
+                    } else {
+                        self.notesIcon.text = "🎤"
+                        self.notesTextLabel.text = "Ready to reply? Just hit 🎤 Speak — your response will replace this text automatically."
+                    }
 
                     NSLog("TSKBD_PASTE_TRANSLATED: \(text.prefix(40)) → \(translation.prefix(40))")
 
@@ -2383,30 +2435,40 @@ class KeyboardViewController: UIInputViewController {
         }
     }
 
-    @objc private func clearTapped() {
-        // Move cursor to the very end first
-        if let after = textDocumentProxy.documentContextAfterInput, !after.isEmpty {
-            textDocumentProxy.adjustTextPosition(byCharacterOffset: after.count)
+    /// Clears all text from the field and resets the keyboard to empty state.
+    /// Uses brute force deletion — textDocumentProxy only exposes ~200 chars at a time,
+    /// so we just delete 2000 times. Extra calls after text is empty are no-ops.
+    private func clearTextField() {
+        // Move cursor as far right as possible
+        for _ in 0..<5 {
+            if let after = textDocumentProxy.documentContextAfterInput, !after.isEmpty {
+                textDocumentProxy.adjustTextPosition(byCharacterOffset: after.count)
+            }
         }
 
-        // Delete backwards in chunks — textDocumentProxy truncates what it returns,
-        // so we loop until nothing is left. Handles long Portuguese messages.
-        var safety = 0
-        while let before = textDocumentProxy.documentContextBeforeInput, !before.isEmpty, safety < 50 {
-            for _ in 0..<before.count {
-                textDocumentProxy.deleteBackward()
-            }
-            safety += 1
+        // Brute force delete — guaranteed to clear any length message
+        for _ in 0..<2000 {
+            textDocumentProxy.deleteBackward()
         }
 
         previousTextLength = 0
         isPasteTranslationActive = false
+        pastePlayBtn.isHidden = true
+        pasteClearBtn.isHidden = true
         showEmpty()
 
-        let generator = UIImpactFeedbackGenerator(style: .light)
-        generator.impactOccurred()
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        NSLog("TSKBD_CLEAR: text field cleared")
+    }
 
-        NSLog("TSKBD_CLEAR: text field cleared (loops: \(safety))")
+    /// X button on the input card — clears text field and resets
+    @objc private func inputClearTapped() {
+        clearTextField()
+    }
+
+    /// X button on the output card (paste mode) — also clears everything
+    @objc private func pasteClearTapped() {
+        clearTextField()
     }
 
     @objc private func replaceTapped() {
