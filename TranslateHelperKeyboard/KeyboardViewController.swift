@@ -1,5 +1,6 @@
 import UIKit
 import AVFoundation
+import NaturalLanguage
 
 struct TSLangProfile {
     let code: String
@@ -1772,24 +1773,36 @@ class KeyboardViewController: UIInputViewController {
         let text   = (before + after).trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { previousTextLength = 0; showEmpty(); return }
 
-        // ── Paste detection: text jumped by 15+ chars at once ──
+        // ── Paste detection: text jumped by 8+ chars at once (covers short messages too) ──
         let currentLen = text.count
-        let isPaste = currentLen - previousTextLength >= 15
+        let isPaste = currentLen - previousTextLength >= 8
         previousTextLength = currentLen
 
         if isPaste {
-            // Read full text from clipboard — textDocumentProxy truncates long messages.
-            // UIPasteboard has the complete content with no cap.
-            let fullText = UIPasteboard.general.string ?? text
-            let textToTranslate = fullText.trimmingCharacters(in: .whitespacesAndNewlines)
+            // Use text from the text field directly — avoids triggering iOS's
+            // "App wants to paste" clipboard privacy prompt.
+            let textToTranslate = text
 
             let detected = detectLanguage(textToTranslate)
             let targetCode = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
 
-            // If pasted text is in the target language, auto-translate to English
-            if detected.code == targetCode || (detected.code != "en" && detected.code != "und") {
-                NSLog("TSKBD_PASTE: detected \(detected.code) paste (\(textToTranslate.count) chars), translating to English")
-                performPasteTranslation(text: textToTranslate, detectedLang: detected.code)
+            // Also use NLLanguageRecognizer directly for a second opinion — the wrapper
+            // can sometimes default to "en" for ambiguous text.
+            let secondOpinion: String = {
+                let recognizer = NLLanguageRecognizer()
+                recognizer.processString(textToTranslate)
+                return recognizer.dominantLanguage?.rawValue.components(separatedBy: "-").first ?? "und"
+            }()
+
+            let isTargetLang = detected.code == targetCode || secondOpinion == targetCode
+            let isNonEnglish = (detected.code != "en" && detected.code != "und") ||
+                               (secondOpinion != "en" && secondOpinion != "und")
+
+            NSLog("TSKBD_PASTE: detected=\(detected.code), NL=\(secondOpinion), target=\(targetCode), len=\(textToTranslate.count)")
+
+            if isTargetLang || isNonEnglish {
+                NSLog("TSKBD_PASTE: translating to English")
+                performPasteTranslation(text: textToTranslate, detectedLang: isTargetLang ? targetCode : detected.code)
                 return
             }
         }
