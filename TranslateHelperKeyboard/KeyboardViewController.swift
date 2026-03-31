@@ -59,6 +59,7 @@ class KeyboardViewController: UIInputViewController {
     private var previousTextLength: Int = 0
     private var translationsSent: Int = 0
     private var isPasteTranslationActive: Bool = false  // blocks normal translate from overriding paste
+    private var lastClipboardChangeCount: Int = 0       // tracks clipboard freshness
     #if DEBUG
     private var pasteHintShown: Bool = false  // resets each session in debug
     #else
@@ -278,10 +279,28 @@ class KeyboardViewController: UIInputViewController {
 
         guard !fieldText.isEmpty else { showEmpty(); return }
 
-        // Check if the text in the field is in the target language.
-        // If so, the user likely pasted an incoming message — translate to English.
         let targetCode = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
 
+        // If text is likely truncated (280+ chars = proxy hit its limit) AND it's non-native,
+        // don't translate the partial text. Show Speak + Translate buttons instead so the user
+        // can tap Translate to get the full message from clipboard.
+        if fieldText.count >= 280 {
+            let detected = detectLanguage(fieldText)
+            let recognizer = NLLanguageRecognizer()
+            recognizer.processString(fieldText)
+            let nlLang = recognizer.dominantLanguage?.rawValue.components(separatedBy: "-").first ?? "und"
+
+            let isNotNative = (detected.code != nativeLang && detected.code != "und") ||
+                              (nlLang != nativeLang && nlLang != "und")
+
+            if isNotNative {
+                NSLog("TSKBD_AUTODETECT: truncated non-native text (\(fieldText.count) chars) — showing Translate button")
+                showEmpty()  // shows Speak + Translate buttons
+                return
+            }
+        }
+
+        // Under 280 chars — check if it's non-native and translate directly
         if fieldText.count >= 8 {
             let detected = detectLanguage(fieldText)
             let recognizer = NLLanguageRecognizer()
@@ -738,6 +757,8 @@ class KeyboardViewController: UIInputViewController {
 
     // MARK: - Empty State
 
+    private let translateClipboardBtn = UIButton(type: .system)
+
     private func setupEmptyBar() {
         emptyBar.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(emptyBar)
@@ -748,10 +769,10 @@ class KeyboardViewController: UIInputViewController {
             emptyBar.heightAnchor.constraint(equalToConstant: emptyHeight),
         ])
 
-        // ── Full-width Speak button — the only element in the empty state ──
+        // ── Speak button (left side) ──
         micButton.translatesAutoresizingMaskIntoConstraints = false
         micButton.setTitle("🎤  Speak", for: .normal)
-        micButton.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
+        micButton.titleLabel?.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
         micButton.setTitleColor(.white, for: .normal)
         micButton.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.18)
         micButton.layer.cornerRadius = 14
@@ -760,6 +781,19 @@ class KeyboardViewController: UIInputViewController {
         micButton.clipsToBounds = true
         micButton.addTarget(self, action: #selector(micTapped), for: .touchUpInside)
         emptyBar.addSubview(micButton)
+
+        // ── Translate clipboard button (right side) ──
+        translateClipboardBtn.translatesAutoresizingMaskIntoConstraints = false
+        translateClipboardBtn.setTitle("📋  Translate", for: .normal)
+        translateClipboardBtn.titleLabel?.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
+        translateClipboardBtn.setTitleColor(.white, for: .normal)
+        translateClipboardBtn.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.18)
+        translateClipboardBtn.layer.cornerRadius = 14
+        translateClipboardBtn.layer.borderWidth = 1.0
+        translateClipboardBtn.layer.borderColor = UIColor.systemBlue.withAlphaComponent(0.5).cgColor
+        translateClipboardBtn.clipsToBounds = true
+        translateClipboardBtn.addTarget(self, action: #selector(translateClipboardTapped), for: .touchUpInside)
+        emptyBar.addSubview(translateClipboardBtn)
 
         // langPill and emptyLabel kept as hidden — referenced elsewhere in state management
         langPill.translatesAutoresizingMaskIntoConstraints = false
@@ -773,9 +807,14 @@ class KeyboardViewController: UIInputViewController {
 
         NSLayoutConstraint.activate([
             micButton.leadingAnchor.constraint(equalTo: emptyBar.leadingAnchor, constant: 10),
-            micButton.trailingAnchor.constraint(equalTo: emptyBar.trailingAnchor, constant: -10),
+            micButton.trailingAnchor.constraint(equalTo: emptyBar.centerXAnchor, constant: -4),
             micButton.topAnchor.constraint(equalTo: emptyBar.topAnchor, constant: 10),
             micButton.bottomAnchor.constraint(equalTo: emptyBar.bottomAnchor, constant: -10),
+
+            translateClipboardBtn.leadingAnchor.constraint(equalTo: emptyBar.centerXAnchor, constant: 4),
+            translateClipboardBtn.trailingAnchor.constraint(equalTo: emptyBar.trailingAnchor, constant: -10),
+            translateClipboardBtn.topAnchor.constraint(equalTo: emptyBar.topAnchor, constant: 10),
+            translateClipboardBtn.bottomAnchor.constraint(equalTo: emptyBar.bottomAnchor, constant: -10),
 
             langPill.trailingAnchor.constraint(equalTo: emptyBar.trailingAnchor, constant: -12),
             langPill.centerYAnchor.constraint(equalTo: emptyBar.centerYAnchor),
@@ -2048,6 +2087,21 @@ class KeyboardViewController: UIInputViewController {
         notesCard.isHidden = true
         heightConstraint.constant = emptyHeight
         hidePollingState() // reset any polling UI when going back to empty
+
+        // Show/hide Translate button based on clipboard freshness.
+        // changeCount check does NOT trigger the iOS privacy popup.
+        let currentChangeCount = UIPasteboard.general.changeCount
+        let hasNewClipboard = currentChangeCount != lastClipboardChangeCount && UIPasteboard.general.hasStrings
+
+        if hasNewClipboard {
+            // Fresh clipboard — show both buttons side by side
+            translateClipboardBtn.isHidden = false
+            micButton.constraints.first { $0.firstAttribute == .trailing }?.isActive = false
+            // Mic takes left half, Translate takes right half (constraints already set up)
+        } else {
+            // Stale or empty clipboard — Speak takes full width
+            translateClipboardBtn.isHidden = true
+        }
     }
 
     private func showPanel() {
@@ -2464,6 +2518,44 @@ class KeyboardViewController: UIInputViewController {
     /// X button on the input card — clears text field and resets
     @objc private func inputClearTapped() {
         clearTextField()
+    }
+
+    /// Translate clipboard button — reads full clipboard content (no char limit)
+    @objc private func translateClipboardTapped() {
+        // Mark this clipboard as processed so Translate button hides next time
+        lastClipboardChangeCount = UIPasteboard.general.changeCount
+
+        // This triggers the iOS "Orbit wants to paste" prompt — user taps Allow
+        guard let clipboardText = UIPasteboard.general.string,
+              !clipboardText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            NSLog("TSKBD_CLIPBOARD: empty or no access")
+            return
+        }
+
+        let text = clipboardText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let detected = detectLanguage(text)
+        let targetCode = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
+
+        let recognizer = NLLanguageRecognizer()
+        recognizer.processString(text)
+        let nlLang = recognizer.dominantLanguage?.rawValue.components(separatedBy: "-").first ?? "und"
+
+        let isTargetLang = detected.code == targetCode || nlLang == targetCode
+        let isNotNative = (detected.code != nativeLang && detected.code != "und") ||
+                          (nlLang != nativeLang && nlLang != "und")
+
+        NSLog("TSKBD_CLIPBOARD: \(text.count) chars, detected=\(detected.code), NL=\(nlLang)")
+
+        if isTargetLang || isNotNative {
+            // Non-native text — translate to native language
+            isPasteTranslationActive = true
+            performPasteTranslation(text: text, detectedLang: isTargetLang ? targetCode : detected.code)
+        } else {
+            // Native language text — translate to target language
+            performTranslation(text: text, source: "clipboard")
+        }
+
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
     }
 
     /// X button on the output card (paste mode) — also clears everything
