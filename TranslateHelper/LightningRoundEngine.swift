@@ -410,6 +410,23 @@ final class LightningRoundEngine {
 
     /// Updates the mistake profile based on Lightning Round results.
     func processResults(_ cards: [LightningCard]) {
+        // Map card types to skill categories for level adjustments
+        let cardTypeToSkill: [LightningCardType: SkillCategory] = [
+            .speakIt: .pronunciation,
+            .echo: .pronunciation,
+            .speedConjugation: .grammar,
+            .quickPick: .grammar,
+            .trueOrFalse: .grammar,
+            .thisOrThat: .grammar,
+            .whatDidSheSay: .fluency,
+            .minimalPairs: .pronunciation,
+            .slangInContext: .vocabulary,
+            .contextualResponse: .fluency,
+        ]
+
+        // Track accuracy per skill category this round
+        var skillResults: [SkillCategory: (correct: Int, total: Int)] = [:]
+
         for card in cards {
             guard let mistakeId = card.mistakeId, let correct = card.isCorrect else { continue }
             if correct {
@@ -417,6 +434,21 @@ final class LightningRoundEngine {
             } else {
                 profile.markIncorrect(id: mistakeId)
             }
+
+            // Accumulate per-skill accuracy
+            if let skill = cardTypeToSkill[card.type] {
+                var current = skillResults[skill] ?? (0, 0)
+                current.total += 1
+                if card.isCorrect == true { current.correct += 1 }
+                skillResults[skill] = current
+            }
+        }
+
+        // Update user levels based on this round's per-skill accuracy
+        let levelStore = UserLevelStore.shared
+        for (skill, result) in skillResults where result.total > 0 {
+            let accuracy = Double(result.correct) / Double(result.total)
+            levelStore.updateFromPerformance(skill: skill, accuracy: accuracy)
         }
 
         // Save round result

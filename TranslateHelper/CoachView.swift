@@ -455,19 +455,37 @@ extension CoachPopulatedView {
                 .kerning(1.2)
 
             HStack(spacing: 6) {
-                Image(systemName: "chart.line.uptrend.xyaxis")
+                let store = UserLevelStore.shared
+                let stats = PracticeStatsStore.shared
+                let assessed = store.hasBeenAssessed
+                Image(systemName: assessed ? "chart.line.uptrend.xyaxis" : "questionmark.circle")
                     .font(.system(size: 12))
-                    .foregroundColor(Color(hex: "#34C759"))
-                Text("All categories active · Based on 127 voice messages")
+                    .foregroundColor(assessed ? Color(hex: "#34C759") : .tsSecondary)
+                Text(assessed
+                     ? "Overall: \(store.overallLevel.rawValue) · \(stats.totalSessionCount) session\(stats.totalSessionCount == 1 ? "" : "s")"
+                     : "Take the level assessment to see your scores")
                     .font(.custom("HelveticaNeue", size: 12))
                     .foregroundColor(.tsSecondary)
             }
 
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-                scoreGauge(label: "Pronunciation", level: "B1", progress: 0.65, color: Color(hex: "#34C759"), locked: false)
-                scoreGauge(label: "Grammar", level: "B1", progress: 0.55, color: Color.tsAccent, locked: false)
-                scoreGauge(label: "Vocabulary", level: "B2", progress: 0.72, color: Color(hex: "#FF9500"), locked: false)
-                scoreGauge(label: "Fluency", level: "A2", progress: 0.38, color: Color(hex: "#AF52DE"), locked: false)
+                let store = UserLevelStore.shared
+                let colorMap: [(SkillCategory, Color)] = [
+                    (.pronunciation, Color(hex: "#34C759")),
+                    (.grammar, Color.tsAccent),
+                    (.vocabulary, Color(hex: "#FF9500")),
+                    (.fluency, Color(hex: "#AF52DE")),
+                ]
+                ForEach(colorMap, id: \.0) { skill, color in
+                    let assessment = store.skills[skill]
+                    scoreGauge(
+                        label: skill.displayName,
+                        level: assessment?.level.rawValue ?? "—",
+                        progress: CGFloat(assessment?.progress ?? 0),
+                        color: color,
+                        locked: assessment == nil
+                    )
+                }
             }
         }
         .padding(20)

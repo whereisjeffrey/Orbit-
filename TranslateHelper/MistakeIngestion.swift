@@ -115,6 +115,17 @@ enum MistakeIngestion {
             explanation: notes ?? "A native speaker would say it differently",
             source: .solCoaching
         )
+
+        // Nudge the relevant skill level down slightly (correction = mistake)
+        let skillMap: [MistakeCategory: SkillCategory] = [
+            .grammar: .grammar, .conjugation: .grammar, .wordOrder: .grammar,
+            .preposition: .grammar, .gender: .grammar,
+            .pronunciation: .pronunciation,
+            .vocabulary: .vocabulary, .idiom: .vocabulary,
+        ]
+        if let skill = skillMap[category] {
+            UserLevelStore.shared.updateFromPerformance(skill: skill, accuracy: 0.3)
+        }
     }
 
     /// Called from PronunciationScorer when user mispronounces a word.
