@@ -52,6 +52,7 @@ class KeyboardViewController: UIInputViewController {
     // MARK: - Paste Detection
     private var previousTextLength: Int = 0
     private var translationsSent: Int = 0
+    private var isPasteTranslationActive: Bool = false  // blocks normal translate from overriding paste
     #if DEBUG
     private var pasteHintShown: Bool = false  // resets each session in debug
     #else
@@ -265,11 +266,33 @@ class KeyboardViewController: UIInputViewController {
         let after  = textDocumentProxy.documentContextAfterInput  ?? ""
         let fieldText = (before + after).trimmingCharacters(in: .whitespacesAndNewlines)
 
-        if !fieldText.isEmpty {
-            performTranslation(text: fieldText, source: "field")
-        } else {
-            showEmpty()
+        guard !fieldText.isEmpty else { showEmpty(); return }
+
+        // Check if the text in the field is in the target language.
+        // If so, the user likely pasted an incoming message — translate to English.
+        let targetCode = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
+
+        if fieldText.count >= 8 {
+            let detected = detectLanguage(fieldText)
+            let recognizer = NLLanguageRecognizer()
+            recognizer.processString(fieldText)
+            let nlLang = recognizer.dominantLanguage?.rawValue.components(separatedBy: "-").first ?? "und"
+
+            let isTargetLang = detected.code == targetCode || nlLang == targetCode
+            let isNonEnglish = (detected.code != "en" && detected.code != "und") ||
+                               (nlLang != "en" && nlLang != "und")
+
+            if isTargetLang || isNonEnglish {
+                NSLog("TSKBD_AUTODETECT: text in \(detected.code)/\(nlLang) — translating to English")
+                isPasteTranslationActive = true
+                previousTextLength = fieldText.count
+                performPasteTranslation(text: fieldText, detectedLang: isTargetLang ? targetCode : detected.code)
+                return
+            }
         }
+
+        previousTextLength = fieldText.count
+        performTranslation(text: fieldText, source: "field")
     }
 
     private func performTranslation(text: String, source: String) {
@@ -1771,23 +1794,39 @@ class KeyboardViewController: UIInputViewController {
         let before = textDocumentProxy.documentContextBeforeInput ?? ""
         let after  = textDocumentProxy.documentContextAfterInput  ?? ""
         let text   = (before + after).trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !text.isEmpty else { previousTextLength = 0; showEmpty(); return }
+        guard !text.isEmpty else {
+            previousTextLength = 0
+            isPasteTranslationActive = false
+            showEmpty()
+            return
+        }
 
-        // ── Paste detection: text jumped by 8+ chars at once (covers short messages too) ──
+        // ── Paste detection: text jumped by 8+ chars at once ──
         let currentLen = text.count
         let isPaste = currentLen - previousTextLength >= 8
+
+        // Only clear paste lock when user actually types or deletes (diff 1-3 chars).
+        // diff of 0 = re-fire with same text, don't clear.
+        let diff = abs(currentLen - previousTextLength)
+        if !isPaste && isPasteTranslationActive && diff > 0 && diff <= 3 {
+            isPasteTranslationActive = false
+        }
         previousTextLength = currentLen
 
+        // If a paste translation is already showing, don't let the debounce overwrite it
+        if isPasteTranslationActive { return }
+
         if isPaste {
-            // Use text from the text field directly — avoids triggering iOS's
-            // "App wants to paste" clipboard privacy prompt.
-            let textToTranslate = text
+            // Read full clipboard text — triggers iOS "Orbit wants to paste" prompt,
+            // which is actually good UX (one-tap paste + branding).
+            let clipboardText = UIPasteboard.general.string
+            let textToTranslate = (clipboardText ?? text).trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !textToTranslate.isEmpty else { return }
 
             let detected = detectLanguage(textToTranslate)
             let targetCode = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
 
-            // Also use NLLanguageRecognizer directly for a second opinion — the wrapper
-            // can sometimes default to "en" for ambiguous text.
+            // Dual language detection for reliability
             let secondOpinion: String = {
                 let recognizer = NLLanguageRecognizer()
                 recognizer.processString(textToTranslate)
@@ -1802,6 +1841,7 @@ class KeyboardViewController: UIInputViewController {
 
             if isTargetLang || isNonEnglish {
                 NSLog("TSKBD_PASTE: translating to English")
+                isPasteTranslationActive = true
                 performPasteTranslation(text: textToTranslate, detectedLang: isTargetLang ? targetCode : detected.code)
                 return
             }
