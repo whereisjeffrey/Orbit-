@@ -300,17 +300,11 @@ class KeyboardViewController: UIInputViewController {
                               (nlLang != nativeLang && nlLang != "und")
 
             if isTargetLang || isNotNative {
-                if fieldText.count < 250 {
-                    // Short message — proxy has the full text, translate directly
-                    NSLog("TSKBD_AUTODETECT: short non-native (\(fieldText.count) chars) — translating directly")
-                    previousTextLength = fieldText.count
-                    performPasteTranslation(text: fieldText, detectedLang: isTargetLang ? targetCode : detected.code)
-                } else {
-                    // Long message — proxy is truncated, show Speak/Translate bar
-                    NSLog("TSKBD_AUTODETECT: long non-native (\(fieldText.count) chars) — showing Translate button")
-                    showingTranslateBtn = true
-                    showEmpty()
-                }
+                // Non-native text in field — go to small keyboard with Translate button.
+                // Don't try to translate from the proxy (it truncates unpredictably).
+                // User taps Translate → reads full clipboard → complete translation.
+                NSLog("TSKBD_AUTODETECT: non-native text — showing Speak + Translate")
+                showEmpty()
                 return
             }
         }
@@ -1938,18 +1932,10 @@ class KeyboardViewController: UIInputViewController {
             NSLog("TSKBD_PASTE: detected=\(detected.code), NL=\(secondOpinion), target=\(targetCode), native=\(nativeLang), len=\(textToTranslate.count)")
 
             if isTargetLang || isNotNative {
-                if textToTranslate.count < 250 {
-                    // Short message — proxy has full text, translate directly
-                    NSLog("TSKBD_PASTE: short (\(textToTranslate.count) chars) — translating directly")
-                    isPasteTranslationActive = true
-                    performPasteTranslation(text: textToTranslate, detectedLang: isTargetLang ? targetCode : detected.code)
-                } else {
-                    // Long message — proxy truncated, show Speak/Translate bar
-                    NSLog("TSKBD_PASTE: long (\(textToTranslate.count) chars) — showing Translate button")
-                    autoTranslateTimer?.invalidate()
-                    showingTranslateBtn = true
-                    showEmpty()
-                }
+                // Non-native paste — go straight to small keyboard with Translate button.
+                NSLog("TSKBD_PASTE: non-native — showing Speak + Translate")
+                autoTranslateTimer?.invalidate()
+                showEmpty()
                 return
             }
         }
@@ -2108,8 +2094,9 @@ class KeyboardViewController: UIInputViewController {
         heightConstraint.constant = emptyHeight
         hidePollingState()
 
-        // Show/hide Translate button
-        if showingTranslateBtn {
+        // Show Translate button whenever clipboard has text (no popup from hasStrings)
+        let clipboardHasText = UIPasteboard.general.hasStrings
+        if clipboardHasText {
             translateClipboardBtn.isHidden = false
             micTrailingToEdge.isActive = false
             micTrailingToCenter.isActive = true
