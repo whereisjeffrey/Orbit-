@@ -535,7 +535,7 @@ class TalkSwitchAPI {
         \
         CRITICAL RULES: \
         - Write ALL tips in \(nativeLangName) with \(spokenLangName) words quoted inline \
-        - Be warm, encouraging, and brief — max 2 sentences per tip \
+        - Be warm and brief — ONE sentence per tip, 15 words max. No fluff. \
         - Never be condescending or overly academic \
         - If nothing needs correcting, just say something encouraging about their speech \
         \
@@ -693,7 +693,7 @@ class TalkSwitchAPI {
             • \(targetName) words/phrases appear inline in quotes within English sentences \
             • Focus on the EMOTIONAL and SOCIAL effect of the phrase — not just its literal meaning \
             • If the user's target gender is known, make the coaching specific: how does THIS phrase land on a man / woman? \
-            • Maximum 2 sentences. Be punchy and concise — the user is mid-conversation. No JSON. Plain text only.\(locationBlock)
+            • ONE sentence only. 15 words maximum. Be punchy — just the phrase and when to use it. No fluff, no cultural essays. Example of GOOD: "'Tá rolando' — casual way to say things are going well." Example of BAD: "This phrase captures a casual and upbeat tone that resonates with the culture, emphasizing positivity." No JSON. Plain text only.\(locationBlock)
             """
             let promptPrefix = enOrigin
                 ? "\(targetName) phrase chosen: \"\(targetText)\""
@@ -776,7 +776,7 @@ class TalkSwitchAPI {
             • The note body MUST be in English — never write the whole note in \(targetName) \
             • \(targetName) words/phrases appear inline in quotes within English sentences \
             • Don't correct their grammar (another system does that) \
-            • Maximum 2 sentences. Be punchy and concise — the user is mid-conversation. No JSON. Plain text only.\(locationBlock)
+            • ONE sentence only. 15 words maximum. Be punchy — just the phrase and when to use it. No fluff, no cultural essays. Example of GOOD: "'Tá rolando' — casual way to say things are going well." Example of BAD: "This phrase captures a casual and upbeat tone that resonates with the culture, emphasizing positivity." No JSON. Plain text only.\(locationBlock)
             """
             userPrompt = "\(targetName) phrase: \"\(original)\"\nTone context: \(toneDesc)\nIMPORTANT: Write your note in ENGLISH with \(targetName) phrases quoted inline. Write a short, varied cultural note or local slang connection ONLY about this phrase."
 
@@ -785,51 +785,22 @@ class TalkSwitchAPI {
             // The user NEVER said anything in the target language. NEVER compare target phrase A to target phrase B.
             let targetText = translated
             systemPrompt = """
-            You are a bilingual cultural coach specialising in \(targetName). \
-            A user typed something in ENGLISH and we translated it into \(targetName). \
-            Write a short cultural note explaining the \(targetName) phrase that was chosen — \
-            what it means culturally, why it sounds natural, and how native speakers actually use it. \
+            You are a bilingual coach. A user typed ENGLISH and we translated it to \(targetName). \
+            Write ONE short note about the \(targetName) phrase we chose. \
             \
-            Always cover: \
-            1. Why this particular \(targetName) phrase is a natural, culturally fitting choice \
-            2. How native speakers actually use it — context, register, vibe \
-            3. One slang, idiom, or cultural tip that enriches the learner's understanding \
+            RULES: \
+            - ONE sentence, 15 words max. Just say what the phrase means and when you'd hear it. \
+            - Quote the \(targetName) phrase inline. Write the rest in English. \
+            - NEVER compare two \(targetName) phrases. The user typed English — they never said \
+              anything in \(targetName), so "instead of X, we used Y" makes no sense. \
+            - NEVER say "rather than," "instead of," "we chose X over Y," or any comparison. \
+            - Just explain what the phrase means. That's it. \
             \
-            ════════════ ABSOLUTE PROHIBITION ════════════ \
-            The user typed in ENGLISH. They have NO idea what any other \(targetName) phrasing would be. \
-            NEVER write notes in the form: "[\(targetName) A] was changed to [\(targetName) B]". \
-            NEVER write: "instead of [\(targetName) phrase], we used [\(targetName) phrase]". \
-            NEVER compare two \(targetName) options — that is broken logic for an English speaker. \
-            ══════════════════════════════════════════════ \
+            GOOD: "'Tá rolando' — casual way to say things are going well." \
+            BAD: "We used 'tá rolando' instead of 'está funcionando' for a more casual tone." \
+            BAD: "This phrase captures a casual and upbeat tone that resonates with Brazilian culture." \
             \
-            VARIETY RULE — CRITICAL: \
-            Every note must open with a DIFFERENT sentence structure. \
-            Draw naturally from openers like these — or invent your own variation: \
-            • "We went with '...' here because..." \
-            • "People often use '...' in \(targetName) to..." \
-            • "A very natural way to say this is '...' — you'd hear it when..." \
-            • "The phrase chosen here — '...' — is deliberate:" \
-            • "Worth noting: '...' has a..." \
-            • "This expression lands well because..." \
-            • "You'll hear '...' when..." \
-            • "The cultural pick here is '...' —" \
-            • "Native speakers naturally gravitate toward '...' because..." \
-            • "In \(targetName), this kind of phrase tends to use '...' — it carries..." \
-            Feel free to rephrase any of these in your own words — the goal is that no two notes \
-            ever open the same way. Variety makes the coaching feel human, not robotic. \
-            \
-            ════════════ LANGUAGE OF OUTPUT ════════════ \
-            You MUST write the note in ENGLISH. The user is an English speaker learning \(targetName). \
-            They cannot read a note written entirely in \(targetName). \
-            Write your explanation in English. Only use \(targetName) words when quoting specific phrases \
-            from the translation — these should be in quotes or italics inline within English sentences. \
-            ══════════════════════════════════════════════ \
-            \
-            CRITICAL RULES: \
-            • The note body MUST be in English — never write the whole note in \(targetName) \
-            • \(targetName) words/phrases appear inline in quotes within English sentences \
-            • Do NOT explain the English phrase. Never say "In English..." — they already know English \
-            • Maximum 2 sentences. Be punchy and concise — the user is mid-conversation. No JSON. Plain text only.\(locationBlock)
+            No JSON. Plain text only.\(locationBlock)
             """
             userPrompt = "\(targetName) phrase chosen: \"\(targetText)\"\nTone: \(toneDesc)\nIMPORTANT: Write your note in ENGLISH with \(targetName) phrases quoted inline. Explain why this \(targetName) phrase is a great, natural choice."
 
@@ -874,7 +845,7 @@ class TalkSwitchAPI {
             • The note body MUST be in English — never write the whole note in \(targetName) \
             • \(targetName) words/phrases appear inline in quotes within English sentences \
             • Do NOT explain the English phrase. Never say "In English..." — they already know English \
-            • Maximum 2 sentences. Be punchy and concise — the user is mid-conversation. No JSON. Plain text only.\(locationBlock)
+            • ONE sentence only. 15 words maximum. Be punchy — just the phrase and when to use it. No fluff, no cultural essays. Example of GOOD: "'Tá rolando' — casual way to say things are going well." Example of BAD: "This phrase captures a casual and upbeat tone that resonates with the culture, emphasizing positivity." No JSON. Plain text only.\(locationBlock)
             """
             userPrompt = "\(targetName): \"\(targetText)\"\nEnglish: \"\(enText)\"\nTone: \(toneDesc)\nIMPORTANT: Write your note in ENGLISH with \(targetName) phrases quoted inline. Write notes ONLY about the \(targetName) phrase — cultural context, how it's used, and a natural variation."
         }
@@ -1134,7 +1105,7 @@ class TalkSwitchAPI {
             \(paragraphInstruction)\
             \
             Respond ONLY with valid JSON: {"translation": "...", "notes": "...", "localityTag": "..."}
-            CRITICAL: The "notes" field MUST be written in English, maximum 2 sentences. The user is an English speaker. Use \(targetName) words only when quoting specific phrases inline. \
+            CRITICAL: The "notes" field MUST be written in English, ONE sentence, 15 words max. The user is an English speaker. Use \(targetName) words only when quoting specific phrases inline. \
             The "notes" field should briefly explain what flirty expressions you chose in the OUTPUT translation and why they work. \
             CRITICAL: Never frame notes as comparing one \(targetName) version to another \(targetName) version. \
             Describe the word or phrase you chose and why a native speaker would use it in that flirty, charming way. \
@@ -1179,7 +1150,7 @@ class TalkSwitchAPI {
             that a native \(targetName) speaker would actually use, \
             and substitute it naturally in the translation. \
             \(workExtra)\
-            When an idiom swap was made, explain it in the "notes" field (maximum 2 sentences): name what the source idiom meant and why the chosen expression in \(targetName) carries the same weight. \
+            When an idiom swap was made, explain it in the "notes" field (ONE sentence, 15 words max): name what the source idiom meant and why the chosen expression in \(targetName) carries the same weight. \
             CRITICAL: Do NOT frame notes as comparing one phrase to another phrase in the target language. \
             The notes explain what choice was made in the OUTPUT and why it resonates with a native speaker. \
             If no idiom is present, leave a brief, vivid observation about why the chosen phrasing sounds natural. \
@@ -1190,7 +1161,7 @@ class TalkSwitchAPI {
             Feel free to rephrase these in your own words — variety makes coaching feel human, not robotic. \
             \
             Respond ONLY with valid JSON: {"translation": "...", "notes": "...", "localityTag": "..."}
-            CRITICAL: The "notes" field MUST be written in English, maximum 2 sentences. The user is an English speaker. Use \(targetName) words only when quoting specific phrases inline. \
+            CRITICAL: The "notes" field MUST be written in English, ONE sentence, 15 words max. The user is an English speaker. Use \(targetName) words only when quoting specific phrases inline. \
             The "localityTag" field should describe the geographic scope, e.g. \
             "Understood in Spain & Latin America", "Common across Latin America", \
             "Used in [Country]", or "Used in [City]". Set to null if no location context.
@@ -1212,8 +1183,8 @@ class TalkSwitchAPI {
             \(paragraphInstruction)\
             \
             Respond ONLY with valid JSON: {"translation": "...", "notes": "...", "localityTag": "..."}
-            CRITICAL: The "notes" field MUST be written in English, maximum 2 sentences. The user is an English speaker. Use \(targetName) words only when quoting specific phrases inline. \
-            The "notes" field should explain the slang terms you chose in the OUTPUT translation so the user learns and remembers them (max 2 sentences). \
+            CRITICAL: The "notes" field MUST be in English, ONE sentence, 15 words max. Use \(targetName) words only when quoting specific phrases inline. \
+            Just say what the slang/expression means and when you'd use it. No cultural essays. \
             CRITICAL: Do NOT frame notes as comparing one phrase to another phrase in the target language. \
             Describe what slang word or expression you picked and what it means — bring it to life with a sentence about how and where you'd hear it. \
             VARIETY RULE: Every note must open with a different sentence structure — draw from openers like: \

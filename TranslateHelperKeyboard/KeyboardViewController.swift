@@ -612,20 +612,24 @@ class KeyboardViewController: UIInputViewController {
     /// Hard-caps any notes string to 2 sentences max, regardless of what GPT returned.
     private func capToTwoSentences(_ text: String) -> String {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        // Split on sentence-ending punctuation followed by a space or end of string
-        var sentences: [String] = []
-        var current = ""
+        // Cap to ONE sentence
+        var firstSentence = ""
         for char in trimmed {
-            current.append(char)
-            if (char == "." || char == "!" || char == "?") {
-                sentences.append(current.trimmingCharacters(in: .whitespaces))
-                current = ""
-                if sentences.count >= 2 { break }
+            firstSentence.append(char)
+            if char == "." || char == "!" || char == "?" {
+                break
             }
         }
-        // If we didn't find 2 sentence endings, just return the original
-        if sentences.isEmpty { return trimmed }
-        return sentences.joined(separator: " ")
+        let result = firstSentence.isEmpty ? trimmed : firstSentence.trimmingCharacters(in: .whitespaces)
+        // Hard cap at 80 characters — if GPT still rambles, we cut it
+        if result.count > 80 {
+            let cutoff = result.index(result.startIndex, offsetBy: 77)
+            if let lastSpace = result[result.startIndex..<cutoff].lastIndex(of: " ") {
+                return String(result[result.startIndex..<lastSpace]) + "…"
+            }
+            return String(result[result.startIndex..<cutoff]) + "…"
+        }
+        return result
     }
 
     private func updateNotes(original: String, translated: String) {
@@ -637,7 +641,11 @@ class KeyboardViewController: UIInputViewController {
         let sourceLang = detected.code
         let appGroupNotes = "group.com.jeff.translatehelper"
         let targetCode = UserDefaults(suiteName: appGroupNotes)?.string(forKey: "talkswitch_target_lang") ?? "es"
-        let targetLang = (sourceLang == targetCode) ? "en" : targetCode
+        // Notes are always ABOUT the target language phrase, regardless of direction.
+        // When user speaks Portuguese, sourceLang = "pt" and we want notes about Portuguese.
+        // When user types English, sourceLang = "en" and we want notes about Portuguese.
+        // In both cases, targetLang should be the target language.
+        let targetLang = targetCode
         let tone = Tone(rawValue: currentTone) ?? .casual
         
         // Add pronunciation context if we have low-confidence words from speech
@@ -667,6 +675,18 @@ class KeyboardViewController: UIInputViewController {
                 switch result {
                 case .success(let notes):
                     let capped = self.capToTwoSentences(notes)
+
+                    // Safety net: if GPT wrote the note entirely in the target language
+                    // instead of English, discard it.
+                    let noteRecognizer = NLLanguageRecognizer()
+                    noteRecognizer.processString(capped)
+                    let noteLang = noteRecognizer.dominantLanguage?.rawValue.components(separatedBy: "-").first ?? "en"
+                    if noteLang != "en" && noteLang != "und" {
+                        NSLog("TSKBD_NOTES: rogue note in \(noteLang), hiding")
+                        self.notesCard.isHidden = true
+                        return
+                    }
+
                     self.notesTextLabel.text = capped
                     // Track this note's key phrase to avoid future repeats
                     let words = capped.components(separatedBy: "'")
@@ -791,15 +811,16 @@ class KeyboardViewController: UIInputViewController {
             emptyBar.heightAnchor.constraint(equalToConstant: emptyHeight),
         ])
 
+        // Shared style — matches the action buttons in the big keyboard (Replace/Save/Speak)
         let btnStyle: (UIButton, String) -> Void = { btn, title in
             btn.translatesAutoresizingMaskIntoConstraints = false
             btn.setTitle(title, for: .normal)
-            btn.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
+            btn.titleLabel?.font = UIFont.systemFont(ofSize: 13, weight: .semibold)
             btn.setTitleColor(.white, for: .normal)
-            btn.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.18)
-            btn.layer.cornerRadius = 14
+            btn.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.1)
+            btn.layer.cornerRadius = 10
             btn.layer.borderWidth = 1.0
-            btn.layer.borderColor = UIColor.systemBlue.withAlphaComponent(0.5).cgColor
+            btn.layer.borderColor = UIColor.systemBlue.withAlphaComponent(0.3).cgColor
             btn.clipsToBounds = true
         }
 
@@ -817,7 +838,6 @@ class KeyboardViewController: UIInputViewController {
 
         // Speak button (far right)
         btnStyle(micButton, "🎤 Speak")
-        micButton.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
         micButton.addTarget(self, action: #selector(micTapped), for: .touchUpInside)
         emptyBar.addSubview(micButton)
 
@@ -837,24 +857,23 @@ class KeyboardViewController: UIInputViewController {
         micLeadingToEdge.isActive = true
 
         NSLayoutConstraint.activate([
-            // Mic (Speak) — always on the right
+            // Mic (Speak) — right, fixed 38pt height, centered vertically
             micButton.trailingAnchor.constraint(equalTo: emptyBar.trailingAnchor, constant: -10),
-            micButton.topAnchor.constraint(equalTo: emptyBar.topAnchor, constant: 10),
-            micButton.bottomAnchor.constraint(equalTo: emptyBar.bottomAnchor, constant: -10),
+            micButton.centerYAnchor.constraint(equalTo: emptyBar.centerYAnchor),
+            micButton.heightAnchor.constraint(equalToConstant: 38),
 
-            // Remove — left third (equal width)
+            // Remove — left, fixed 38pt height, centered vertically
             removeBtn.leadingAnchor.constraint(equalTo: emptyBar.leadingAnchor, constant: 10),
-            removeBtn.topAnchor.constraint(equalTo: emptyBar.topAnchor, constant: 10),
-            removeBtn.bottomAnchor.constraint(equalTo: emptyBar.bottomAnchor, constant: -10),
+            removeBtn.centerYAnchor.constraint(equalTo: emptyBar.centerYAnchor),
+            removeBtn.heightAnchor.constraint(equalToConstant: 38),
 
-            // Translate — center third (equal width)
+            // Translate — center, fixed 38pt height, centered vertically
             translateClipboardBtn.leadingAnchor.constraint(equalTo: removeBtn.trailingAnchor, constant: 6),
-            translateClipboardBtn.topAnchor.constraint(equalTo: emptyBar.topAnchor, constant: 10),
-            translateClipboardBtn.bottomAnchor.constraint(equalTo: emptyBar.bottomAnchor, constant: -10),
+            translateClipboardBtn.centerYAnchor.constraint(equalTo: emptyBar.centerYAnchor),
+            translateClipboardBtn.heightAnchor.constraint(equalToConstant: 38),
             translateClipboardBtn.widthAnchor.constraint(equalTo: removeBtn.widthAnchor),
 
-            // Speak takes remaining space — constrained by micLeadingToThird
-            // All three equal width via equal width constraints
+            // All three equal width
             micButton.widthAnchor.constraint(equalTo: removeBtn.widthAnchor),
 
             langPill.trailingAnchor.constraint(equalTo: emptyBar.trailingAnchor, constant: -12),
