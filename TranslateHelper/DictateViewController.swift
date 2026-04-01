@@ -362,9 +362,15 @@ class DictateViewController: UIViewController {
     }
 
     @objc private func languageToggleChanged() {
-        // Re-read the speaking language from App Group and update the banner
+        // Re-read the speaking language from App Group and update the banner + flag
         isToggleOnTarget = (speakingLanguage != "en")
         updateOnboardingText()
+
+        // Update the big flag emoji to match the selected language
+        let langCode = isToggleOnTarget ? targetLanguage : "en"
+        UIView.transition(with: flagLabel, duration: 0.2, options: .transitionCrossDissolve) {
+            self.flagLabel.text = self.flag(for: langCode)
+        }
     }
 
     private func updateOnboardingText() {
