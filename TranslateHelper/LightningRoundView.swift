@@ -374,9 +374,9 @@ struct LightningRoundView: View {
                             Spacer()
 
                             if selectedOption == option {
-                                Image(systemName: option == card.correctAnswer ? "checkmark.circle.fill" : "xmark.circle.fill")
+                                Image(systemName: answersMatch(option, card.correctAnswer) ? "checkmark.circle.fill" : "xmark.circle.fill")
                                     .font(.system(size: 18))
-                                    .foregroundColor(option == card.correctAnswer ? Color(hex: "#34C759") : Color(hex: "#FF3B30"))
+                                    .foregroundColor(answersMatch(option, card.correctAnswer) ? Color(hex: "#34C759") : Color(hex: "#FF3B30"))
                             }
                         }
                         .padding(.horizontal, 16)
@@ -399,14 +399,14 @@ struct LightningRoundView: View {
 
     private func optionLetterColor(_ option: String, card: LightningCard) -> Color {
         guard selectedOption != nil else { return .black.opacity(0.5) }
-        if option == card.correctAnswer { return Color(hex: "#34C759") }
+        if answersMatch(option, card.correctAnswer) { return Color(hex: "#34C759") }
         if option == selectedOption { return Color(hex: "#FF3B30") }
         return .black.opacity(0.2)
     }
 
     private func optionLetterBg(_ option: String, card: LightningCard) -> Color {
         guard selectedOption != nil else { return Color(hex: "#F3F9FB") }
-        if option == card.correctAnswer { return Color(hex: "#34C759").opacity(0.12) }
+        if answersMatch(option, card.correctAnswer) { return Color(hex: "#34C759").opacity(0.12) }
         if option == selectedOption && option != card.correctAnswer { return Color(hex: "#FF3B30").opacity(0.12) }
         return Color(hex: "#F3F9FB").opacity(0.5)
     }
@@ -519,9 +519,9 @@ struct LightningRoundView: View {
                                     .fixedSize(horizontal: false, vertical: true)
                                 Spacer()
                                 if selectedOption == option {
-                                    Image(systemName: option == card.correctAnswer ? "checkmark.circle.fill" : "xmark.circle.fill")
+                                    Image(systemName: answersMatch(option, card.correctAnswer) ? "checkmark.circle.fill" : "xmark.circle.fill")
                                         .font(.system(size: 18))
-                                        .foregroundColor(option == card.correctAnswer ? Color(hex: "#34C759") : Color(hex: "#FF3B30"))
+                                        .foregroundColor(answersMatch(option, card.correctAnswer) ? Color(hex: "#34C759") : Color(hex: "#FF3B30"))
                                 }
                             }
                             .padding(.horizontal, 16)
@@ -836,11 +836,17 @@ struct LightningRoundView: View {
         }
     }
 
+    /// Normalized comparison — handles case, whitespace, and accent differences from GPT
+    private func answersMatch(_ a: String, _ b: String) -> Bool {
+        a.lowercased().trimmingCharacters(in: .whitespacesAndNewlines) ==
+        b.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     private func handleAnswer(_ answer: String, card: LightningCard) {
         guard selectedOption == nil else { return } // Already answered
         selectedOption = answer
 
-        let isCorrect = answer == card.correctAnswer
+        let isCorrect = answersMatch(answer, card.correctAnswer)
         cards[currentIndex].userAnswer = answer
         cards[currentIndex].isCorrect = isCorrect
         cards[currentIndex].answeredAt = Date()
@@ -1038,21 +1044,21 @@ struct LightningRoundView: View {
 
     private func optionTextColor(_ option: String, card: LightningCard) -> Color {
         guard selectedOption != nil else { return .black }
-        if option == card.correctAnswer { return Color(hex: "#34C759") }
+        if answersMatch(option, card.correctAnswer) { return Color(hex: "#34C759") }
         if option == selectedOption { return Color(hex: "#FF3B30") }
         return .black.opacity(0.3)
     }
 
     private func optionBgColor(_ option: String, card: LightningCard) -> Color {
         guard selectedOption != nil else { return Color.white }
-        if option == card.correctAnswer { return Color(hex: "#34C759").opacity(0.1) }
+        if answersMatch(option, card.correctAnswer) { return Color(hex: "#34C759").opacity(0.1) }
         if option == selectedOption && option != card.correctAnswer { return Color(hex: "#FF3B30").opacity(0.1) }
         return Color.white.opacity(0.5)
     }
 
     private func optionBorderColor(_ option: String, card: LightningCard) -> Color {
         guard selectedOption != nil else { return Color.black.opacity(0.08) }
-        if option == card.correctAnswer { return Color(hex: "#34C759").opacity(0.4) }
+        if answersMatch(option, card.correctAnswer) { return Color(hex: "#34C759").opacity(0.4) }
         if option == selectedOption && option != card.correctAnswer { return Color(hex: "#FF3B30").opacity(0.4) }
         return Color.black.opacity(0.04)
     }

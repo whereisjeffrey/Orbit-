@@ -217,6 +217,7 @@ struct CoachPopulatedView: View {
     @State private var showFullReport = false
     @State private var showPracticeSession = false
     @State private var showLevelAssessment = false
+    @State private var assessmentDestination: String = "practice" // "practice" or "lightning"
     @State private var showTalkDrill = false
     @State private var showLevelDetail = false
     @State private var showLightningRound = false
@@ -287,10 +288,14 @@ struct CoachPopulatedView: View {
         .sheet(isPresented: $showLevelAssessment) {
             LevelAssessmentView()
                 .onDisappear {
-                    // After assessment completes, open practice session
+                    // After assessment completes, open whichever feature they tapped
                     if UserLevelStore.shared.hasBeenAssessed {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                            showPracticeSession = true
+                            if assessmentDestination == "lightning" {
+                                showLightningRound = true
+                            } else {
+                                showPracticeSession = true
+                            }
                         }
                     }
                 }
@@ -884,9 +889,14 @@ extension CoachPopulatedView {
                 }
             }
 
-            // Lightning Round button — gradient with blob colors
+            // Lightning Round button
             Button {
-                showLightningRound = true
+                if UserLevelStore.shared.hasBeenAssessed {
+                    showLightningRound = true
+                } else {
+                    assessmentDestination = "lightning"
+                    showLevelAssessment = true
+                }
             } label: {
                 HStack(spacing: 10) {
                     // White circle with yellow bolt
@@ -1123,10 +1133,10 @@ extension CoachPopulatedView {
                 .lineSpacing(2)
 
             Button {
-                // Route through level assessment if not yet assessed
                 if UserLevelStore.shared.hasBeenAssessed {
                     showPracticeSession = true
                 } else {
+                    assessmentDestination = "practice"
                     showLevelAssessment = true
                 }
             } label: {

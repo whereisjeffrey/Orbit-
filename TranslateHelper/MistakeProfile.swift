@@ -303,24 +303,28 @@ final class MistakeProfileStore: ObservableObject {
         if language == "pt" {
             testMistakes = [
                 (.gender, "o viagem", "a viagem", "'Viagem' is feminine — use 'a viagem'"),
-                (.conjugation, "eu sou 25 anos", "eu tenho 25 anos", "Age uses 'ter' (to have), not 'ser' (to be) in Portuguese"),
+                (.conjugation, "eu sou 25 anos", "eu tenho 25 anos", "Age uses 'ter', not 'ser'"),
                 (.preposition, "pensar sobre", "pensar em", "'Pensar' takes 'em', not 'sobre'"),
-                (.grammar, "eu gosto tacos", "eu gosto de tacos", "'Gostar' requires 'de' — 'gosto de tacos'"),
-                (.pronunciation, "coração", "coração", "The 'ão' needs a nasal diphthong — air through the nose"),
-                (.vocabulary, "estou excitado", "estou empolgado", "'Excitado' means aroused — use 'empolgado' for excited"),
-                (.wordOrder, "um muito bom lugar", "um lugar muito bom", "Adjectives follow the noun: 'um lugar muito bom'"),
-                (.idiom, "pagar o pato", "pagar o pato", "Means 'to take the blame' — literally 'pay the duck'"),
+                (.grammar, "eu gosto tacos", "eu gosto de tacos", "'Gostar' requires 'de'"),
+                (.pronunciation, "coração", "coração", "'ão' needs a nasal diphthong"),
+                (.vocabulary, "estou excitado", "estou empolgado", "'Excitado' means aroused — use 'empolgado'"),
+                (.wordOrder, "um muito bom lugar", "um lugar muito bom", "Adjectives follow the noun"),
+                (.idiom, "pagar o pato", "pagar o pato", "Means 'take the blame' — literally 'pay the duck'"),
+                (.conjugation, "eu vai", "eu vou", "'Ir' is irregular — 'eu vou', not 'eu vai'"),
+                (.gender, "o cidade", "a cidade", "'Cidade' is feminine — use 'a cidade'"),
             ]
         } else {
             testMistakes = [
                 (.gender, "el casa", "la casa", "'Casa' is feminine — use 'la' not 'el'"),
-                (.conjugation, "yo soy 25 años", "yo tengo 25 años", "Age uses 'tener' (to have), not 'ser' (to be)"),
+                (.conjugation, "yo soy 25 años", "yo tengo 25 años", "Age uses 'tener', not 'ser'"),
                 (.preposition, "pensar sobre", "pensar en", "'Pensar' takes 'en', not 'sobre'"),
-                (.grammar, "me gusta los tacos", "me gustan los tacos", "'Gustar' agrees with what you like (plural → gustan)"),
-                (.pronunciation, "desarrollar", "desarrollar", "The double 'rr' needs a rolled trill"),
+                (.grammar, "me gusta los tacos", "me gustan los tacos", "'Gustar' agrees with the liked thing"),
+                (.pronunciation, "desarrollar", "desarrollar", "Double 'rr' needs a rolled trill"),
                 (.vocabulary, "estoy caliente", "tengo calor", "'Estoy caliente' means aroused — use 'tengo calor'"),
-                (.wordOrder, "es muy un buen restaurante", "es un muy buen restaurante", "Adjective order: 'un muy buen' not 'muy un buen'"),
-                (.idiom, "hacer sentido", "tener sentido", "'Tener sentido' = 'to make sense' — not 'hacer'"),
+                (.wordOrder, "es muy un buen restaurante", "es un muy buen restaurante", "Adjective order: 'un muy buen'"),
+                (.idiom, "hacer sentido", "tener sentido", "'Tener sentido' = 'to make sense'"),
+                (.conjugation, "yo sabo", "yo sé", "'Saber' is irregular — 'yo sé'"),
+                (.gender, "el leche", "la leche", "'Leche' is feminine — use 'la leche'"),
             ]
         }
 

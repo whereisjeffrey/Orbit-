@@ -247,7 +247,39 @@ struct StudySourceWordView: View {
         generator.impactOccurred()
         let ratingSound: SoundEngine.Sound = rating == 1 ? .again : rating == 2 ? .hard : rating == 3 ? .good : .easy
         SoundEngine.shared.play(ratingSound)
-        
+
+        // Increment daily goal counter
+        let todayKey = "phrases_reviewed_today"
+        let dateKey = "phrases_reviewed_date"
+        let fmt = DateFormatter()
+        fmt.dateFormat = "yyyy-MM-dd"
+        let today = fmt.string(from: Date())
+        let lastDate = UserDefaults.standard.string(forKey: dateKey) ?? ""
+        if today != lastDate {
+            UserDefaults.standard.set(0, forKey: todayKey)
+            UserDefaults.standard.set(today, forKey: dateKey)
+        }
+        UserDefaults.standard.set(UserDefaults.standard.integer(forKey: todayKey) + 1, forKey: todayKey)
+
+        // Track study day for streak widget (same AppStorage keys it reads)
+        let cal = Calendar.current
+        let y = cal.component(.yearForWeekOfYear, from: Date())
+        let w = cal.component(.weekOfYear, from: Date())
+        let currentWeek = "\(y)-\(w)"
+        let storedWeek = UserDefaults.standard.string(forKey: "study_week_id") ?? ""
+        if storedWeek != currentWeek {
+            // New week — reset
+            UserDefaults.standard.set(currentWeek, forKey: "study_week_id")
+            UserDefaults.standard.set("", forKey: "study_days_this_week")
+        }
+        let dayOfWeek = cal.component(.weekday, from: Date())
+        let existingDays = UserDefaults.standard.string(forKey: "study_days_this_week") ?? ""
+        var daySet = Set(existingDays.split(separator: ",").compactMap { Int($0) })
+        if !daySet.contains(dayOfWeek) {
+            daySet.insert(dayOfWeek)
+            UserDefaults.standard.set(daySet.map { "\($0)" }.joined(separator: ","), forKey: "study_days_this_week")
+        }
+
         if var phrase = currentPhrase {
             // Apply SM-2 spaced repetition logic
             if rating < 3 {

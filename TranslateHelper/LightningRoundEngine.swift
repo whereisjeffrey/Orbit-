@@ -141,7 +141,7 @@ final class LightningRoundEngine {
     var isCaching = false
 
     /// Number of cards per round
-    static let cardsPerRound = 6
+    static let cardsPerRound = 10
 
     /// Maximum voice cards per round (mic latency budget)
     static let maxVoiceCards = 2
@@ -279,8 +279,15 @@ final class LightningRoundEngine {
             }
         }
 
+        let store = UserLevelStore.shared
+        let levelContext = store.hasBeenAssessed
+            ? "The user's current levels: Grammar \(store.skills[.grammar]?.level.rawValue ?? "A1"), Vocabulary \(store.skills[.vocabulary]?.level.rawValue ?? "A1"), Pronunciation \(store.skills[.pronunciation]?.level.rawValue ?? "A1"), Fluency \(store.skills[.fluency]?.level.rawValue ?? "A1"). Match quiz difficulty to these levels — don't make it too easy or too hard."
+            : "The user hasn't been assessed yet — assume intermediate (B1) level."
+
         return """
         Generate \(cardTypes.count) Lightning Round quiz cards for a \(langName) learner (English native speaker).
+
+        \(levelContext)
 
         The cards test REAL mistakes this user has made. Here are their recent mistakes:
 
@@ -292,13 +299,18 @@ final class LightningRoundEngine {
         \(cardInstructions)
 
         RULES:
-        - All prompts and explanations in English, with \(langName) words inline where relevant
+        - All prompts and explanations MUST be in English, with \(langName) words quoted inline
+        - ACCURACY IS CRITICAL: Every \(langName) word, translation, and grammar explanation must be 100% correct.
+          Do NOT guess. If unsure about a word's meaning, use a different word you ARE sure about.
         - Wrong options must be PLAUSIBLE — things an English speaker would actually pick
-        - Explanations should be 1 sentence max, warm and helpful, not condescending
+        - The correct_answer must ACTUALLY be correct. Double-check grammar, gender, and meaning.
+        - Options must make sense as answers to the prompt. Don't include random unrelated words.
+        - Explanations: 1 sentence max, 15 words max. Just say WHY the answer is correct.
         - For voice cards (speakIt, echo), include the full sentence as "audio_text"
         - For speakIt, the "target_word" is the specific word/pattern being tested
         - Options array: always include the correct answer, shuffled randomly among the options
         - Make each card feel different — vary sentence topics, don't repeat the same context
+        - For thisOrThat cards: options must be exactly 2 items that test the specific mistake (e.g., "a" vs "o" for gender)
 
         Respond ONLY with valid JSON array:
         [
