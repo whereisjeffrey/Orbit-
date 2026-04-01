@@ -1837,6 +1837,8 @@ struct PracticeSessionView: View {
     @State private var showSaveHint = false
     @State private var saveHintShownForMessage: UUID?
     @AppStorage("practice_save_validated") private var saveValidated = false
+    @State private var showSettingsHint = false
+    @AppStorage("practice_settings_hint_shown") private var settingsHintShown = false
     @State private var totalMessagesThisSession = 0
     @State private var sessionSeconds = 0
     @State private var sessionTimer: Timer?
@@ -1990,6 +1992,12 @@ struct PracticeSessionView: View {
                                 // Show save hint after first coaching tip (once 5+ messages in)
                                 if message.id == saveHintShownForMessage && showSaveHint {
                                     saveHintCard
+                                        .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                                }
+
+                                // Show settings hint after 8+ messages (once per user)
+                                if index == 0 && showSettingsHint {
+                                    settingsHintCard
                                         .transition(.opacity.combined(with: .scale(scale: 0.95)))
                                 }
                             }
@@ -2445,6 +2453,49 @@ struct PracticeSessionView: View {
         .overlay(
             RoundedRectangle(cornerRadius: 12)
                 .stroke(Color(hex: "#FF9500").opacity(0.15), lineWidth: 0.5)
+        )
+    }
+
+    // MARK: - Settings Hint Card
+
+    private var settingsHintCard: some View {
+        HStack(spacing: 12) {
+            Text("⚙️")
+                .font(.system(size: 20))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Customize your coaching")
+                    .font(.custom("HelveticaNeue-Bold", size: 13))
+                    .foregroundColor(.tsLabel)
+                Text("Want more slang? Less grammar? Adjust your coaching style in Settings.")
+                    .font(.custom("HelveticaNeue", size: 12))
+                    .foregroundColor(.tsSecondary)
+                    .lineSpacing(1)
+            }
+
+            Spacer()
+
+            Button {
+                withAnimation(.easeOut(duration: 0.2)) {
+                    showSettingsHint = false
+                    settingsHintShown = true
+                }
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.tsSecondary)
+                    .padding(6)
+                    .background(Circle().fill(Color.tsSecondary.opacity(0.1)))
+            }
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(hex: "#AF52DE").opacity(0.08))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color(hex: "#AF52DE").opacity(0.15), lineWidth: 0.5)
         )
     }
 
@@ -3394,6 +3445,15 @@ struct PracticeSessionView: View {
             messages.append(solMsg)
             messageCount += 1
             totalMessagesThisSession += 1
+
+            // Show settings hint after 8+ messages (once per user, ever)
+            if totalMessagesThisSession >= 8 && !settingsHintShown && !showSettingsHint {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                    withAnimation(.easeIn(duration: 0.3)) {
+                        showSettingsHint = true
+                    }
+                }
+            }
 
             // Ingest correction into mistake profile (outside the array mutation)
             if let nativeVersion = sol.nativeCorrectionForUser, !userText.isEmpty {

@@ -18,6 +18,11 @@ struct SettingsView: View {
     @AppStorage("linkedin_handle")  private var linkedinHandle  = ""
     @AppStorage("facebook_handle")  private var facebookHandle  = ""
 
+    // Coaching preference sliders (0.0–1.0)
+    @AppStorage("coaching_slang_level") private var slangLevel: Double = 0.5
+    @AppStorage("coaching_pronunciation_level") private var pronunciationLevel: Double = 0.5
+    @AppStorage("coaching_grammar_level") private var grammarLevel: Double = 0.5
+
     var body: some View {
         ZStack(alignment: .top) {
             TSGradientBackground()
@@ -256,6 +261,40 @@ struct SettingsView: View {
                     }
                     .padding(.horizontal, 16)
                     
+                    // Coaching Preferences
+                    SectionHeader(title: "Coaching")
+                    VStack(spacing: 16) {
+                        CoachingSlider(
+                            icon: "🗣️",
+                            label: "Slang & Expressions",
+                            value: $slangLevel,
+                            lowLabel: "Less slang",
+                            highLabel: "More slang"
+                        )
+                        Divider().padding(.leading, 44)
+                        CoachingSlider(
+                            icon: "🔤",
+                            label: "Grammar Focus",
+                            value: $grammarLevel,
+                            lowLabel: "Less grammar",
+                            highLabel: "More grammar"
+                        )
+                        Divider().padding(.leading, 44)
+                        CoachingSlider(
+                            icon: "🎙️",
+                            label: "Pronunciation Tips",
+                            value: $pronunciationLevel,
+                            lowLabel: "Fewer tips",
+                            highLabel: "More tips"
+                        )
+                    }
+                    .padding(16)
+                    .background(Color.tsGrayCard)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 8)
+
                     // Subscription (debug toggle)
                     SectionHeader(title: "Subscription")
                     VStack(spacing: 0) {
@@ -923,6 +962,46 @@ struct ConnectHandleSheet: View {
             .onAppear {
                 draft = handle
                 focused = true
+            }
+        }
+    }
+}
+
+// MARK: - Coaching Slider Component
+
+private struct CoachingSlider: View {
+    let icon: String
+    let label: String
+    @Binding var value: Double
+    let lowLabel: String
+    let highLabel: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                Text(icon)
+                    .font(.system(size: 16))
+                Text(label)
+                    .font(.custom("HelveticaNeue-Medium", size: 15))
+                    .foregroundColor(.tsLabel)
+                Spacer()
+                Text("\(Int(value * 100))%")
+                    .font(.custom("HelveticaNeue", size: 13))
+                    .foregroundColor(.tsSecondary)
+                    .frame(width: 36, alignment: .trailing)
+            }
+
+            Slider(value: $value, in: 0...1, step: 0.1)
+                .tint(.tsAccent)
+
+            HStack {
+                Text(lowLabel)
+                    .font(.custom("HelveticaNeue", size: 11))
+                    .foregroundColor(.tsSecondary)
+                Spacer()
+                Text(highLabel)
+                    .font(.custom("HelveticaNeue", size: 11))
+                    .foregroundColor(.tsSecondary)
             }
         }
     }

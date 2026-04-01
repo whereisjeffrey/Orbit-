@@ -13,6 +13,31 @@ import AVFoundation
 class PracticeConversationService {
 
     static let shared = PracticeConversationService()
+
+    /// Reads coaching preference sliders from UserDefaults and builds a prompt block.
+    static func coachingPrefsBlock() -> String {
+        let slang = UserDefaults.standard.double(forKey: "coaching_slang_level")
+        let grammar = UserDefaults.standard.double(forKey: "coaching_grammar_level")
+        let pronunciation = UserDefaults.standard.double(forKey: "coaching_pronunciation_level")
+
+        // Default to 50% if never set
+        let s = slang == 0 ? 0.5 : slang
+        let g = grammar == 0 ? 0.5 : grammar
+        let p = pronunciation == 0 ? 0.5 : pronunciation
+
+        func intensity(_ val: Double) -> String {
+            if val >= 0.8 { return "HIGH — focus heavily on this" }
+            if val >= 0.5 { return "MODERATE — include naturally" }
+            if val >= 0.2 { return "LOW — only mention occasionally" }
+            return "MINIMAL — rarely mention this"
+        }
+
+        return """
+        Slang & expressions: \(intensity(s)) (\(Int(s * 100))%) — \(s >= 0.5 ? "Use slang every 2-3 exchanges" : "Use slang sparingly, only when very natural")
+        Grammar corrections: \(intensity(g)) (\(Int(g * 100))%) — \(g >= 0.5 ? "Point out grammar mistakes and patterns" : "Only correct significant errors")
+        Pronunciation tips: \(intensity(p)) (\(Int(p * 100))%) — \(p >= 0.5 ? "Note pronunciation in slang_notes when relevant" : "Only flag pronunciation for critical misunderstandings")
+        """
+    }
     private init() {}
 
     private var audioEngine = AVAudioEngine()
@@ -234,6 +259,18 @@ class PracticeConversationService {
         - Keep responses short and natural (2-3 sentences) \
         - Match the tone described above — your personality shifts based on the setting \
         \
+        VARIETY — CRITICAL (read this carefully): \
+        - NEVER start two messages in a row the same way. If you just said "E aí", do NOT \
+          start the next message with "E aí". Vary your openers EVERY time. \
+        - Draw from MANY different openers: questions, reactions, observations, exclamations, \
+          statements, jokes, callbacks to what they said. Rotate constantly. \
+        - NEVER repeat the same topic across consecutive messages. If you just talked about \
+          bars, do NOT bring up bars again. Switch to something completely different. \
+        - Think of yourself as having a short attention span — you bounce between topics \
+          naturally, like a real friend would in a casual conversation. \
+        - If the user keeps the same topic going, that's fine — follow their lead. But when \
+          YOU initiate, always go somewhere new. \
+        \
         CONVERSATION RULES: \
         - If they make a grammar or vocabulary mistake, don't correct them inline — \
           just continue naturally. Corrections come in the JSON. \
@@ -245,9 +282,11 @@ class PracticeConversationService {
         - The conversation has no fixed length — keep going as long as it's natural. \
           When a topic wraps up naturally, suggest a new direction or wind down. \
         \
+        COACHING INTENSITY (user's preferences from Settings — respect these): \
+        \(Self.coachingPrefsBlock()) \
+        \
         SLANG TEACHING — PROACTIVE: \
         - Naturally weave in local slang and expressions from \(userCity) into your messages. \
-        - Every 2-3 exchanges, intentionally use a slang expression the user probably doesn't know. \
         - When you use slang, ALWAYS include it in the slang_notes array so the user can learn and save it. \
         - Prioritize slang specific to \(userCity) or the region — not generic textbook expressions. \
         - Examples of what to teach: greetings locals actually use, street-level expressions, \

@@ -77,6 +77,7 @@ class KeyboardViewController: UIInputViewController {
     private let contentStack = UIStackView()
     private var enhancedVoiceBanner: UIView?
     private var translationVersion: Int = 0
+    private var recentNoteTopics: [String] = []  // tracks recent slang/notes to avoid repeats
     private var translationHistory: [String] = []
     private var currentHistoryIndex: Int = -1
     private let swipeHintLabel = UILabel()
@@ -619,21 +620,34 @@ class KeyboardViewController: UIInputViewController {
             pronunciationContext = nil
         }
         
+        // Pass recent note topics so the model mixes things up — not a hard ban, just variety
+        let recentContext = recentNoteTopics.isEmpty ? nil :
+            "VARIETY: These phrases were covered recently — mix it up and teach something different if possible. Don't ban them entirely, but avoid explaining the same phrase multiple times in a session: \(recentNoteTopics.suffix(10).joined(separator: ", "))"
+
         TalkSwitchAPI.shared.getSmartNotes(
             original: original,
             translated: translated,
             sourceLang: sourceLang,
             targetLang: targetLang,
             tone: tone,
-            pronunciationContext: pronunciationContext
+            pronunciationContext: pronunciationContext,
+            recentNotesContext: recentContext
         ) { [weak self] result in
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 switch result {
                 case .success(let notes):
-                    self.notesTextLabel.text = self.capToTwoSentences(notes)
+                    let capped = self.capToTwoSentences(notes)
+                    self.notesTextLabel.text = capped
+                    // Track this note's key phrase to avoid future repeats
+                    let words = capped.components(separatedBy: "'")
+                    if words.count >= 2 {
+                        self.recentNoteTopics.append(words[1])  // extract quoted phrase
+                        if self.recentNoteTopics.count > 15 {
+                            self.recentNoteTopics.removeFirst()
+                        }
+                    }
                 case .failure(let error):
-                    // Fallback to basic notes + show error
                     self.notesTextLabel.text = "⚠️ Error loading phrase tips: \(error.localizedDescription)"
                 }
             }
@@ -2478,9 +2492,19 @@ class KeyboardViewController: UIInputViewController {
               translated != "✨ Refining...",
               translated != "⚠️ Translation failed" else { return }
 
-        if let before = textDocumentProxy.documentContextBeforeInput {
-            for _ in 0..<before.count { textDocumentProxy.deleteBackward() }
+        // Move cursor to the very end first
+        for _ in 0..<5 {
+            if let after = textDocumentProxy.documentContextAfterInput, !after.isEmpty {
+                textDocumentProxy.adjustTextPosition(byCharacterOffset: after.count)
+            }
         }
+
+        // Brute force delete everything — handles long text and proxy truncation
+        for _ in 0..<2000 {
+            textDocumentProxy.deleteBackward()
+        }
+
+        // Insert the translation into a clean field
         textDocumentProxy.insertText(translated)
 
         let generator = UIImpactFeedbackGenerator(style: .medium)

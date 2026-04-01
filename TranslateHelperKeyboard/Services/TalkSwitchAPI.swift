@@ -609,6 +609,7 @@ class TalkSwitchAPI {
         targetLang: String,
         tone: Tone,
         pronunciationContext: String? = nil,
+        recentNotesContext: String? = nil,
         completion: @escaping (Result<String, Error>) -> Void
     ) {
         let apiKey = APIConfig.openAIAPIKey
@@ -881,7 +882,11 @@ class TalkSwitchAPI {
         if let pronContext = pronunciationContext {
             userPrompt += "\n\n⚠️ \(pronContext)"
         }
-        
+
+        if let recentContext = recentNotesContext {
+            userPrompt += "\n\n\(recentContext)"
+        }
+
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
