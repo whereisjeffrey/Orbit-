@@ -47,7 +47,15 @@ struct LevelAssessmentView: View {
                     }
                 }
                 .padding(.top, 20)
-                .padding(.bottom, 32)
+                .padding(.bottom, 12)
+
+                // Framing text — sets expectation
+                Text("Give us your best guess — Sol will fine-tune it as you practice.")
+                    .font(.custom("HelveticaNeue", size: 13))
+                    .foregroundColor(.tsSecondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+                    .padding(.bottom, 24)
 
                 if currentStep < steps.count {
                     let step = steps[currentStep]
@@ -125,10 +133,10 @@ struct LevelAssessmentView: View {
                     VStack(spacing: 16) {
                         Text("✅")
                             .font(.system(size: 40))
-                        Text("You're all set")
+                        Text("Great, we've got a starting point")
                             .font(.custom("HelveticaNeue-Bold", size: 22))
                             .foregroundColor(.tsLabel)
-                        Text("Sol will calibrate to your level and adjust as you improve.")
+                        Text("Sol will adjust to your real level as you practice — this is just a starting point, not a test.")
                             .font(.custom("HelveticaNeue", size: 14))
                             .foregroundColor(.tsSecondary)
                             .multilineTextAlignment(.center)
