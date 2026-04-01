@@ -1209,6 +1209,11 @@ class KeyboardViewController: UIInputViewController {
     // MARK: - Swipe for alternative translation
 
     @objc private func outputCardPanned(_ gesture: UIPanGestureRecognizer) {
+        // Disable swipe on paste translations — no alternative versions needed
+        if isPasteTranslationActive {
+            gesture.state = .cancelled
+            return
+        }
         let tx = gesture.translation(in: outputCard).x
         let canGoBack    = currentHistoryIndex > 0
         let canGoForward = true // always: either advance index or fetch new
@@ -2021,6 +2026,7 @@ class KeyboardViewController: UIInputViewController {
     /// When user pastes text in a non-native language, translate it to their native language.
     private func performPasteTranslation(text: String, detectedLang: String) {
         inputText = text
+        isPasteTranslationActive = true
 
         let targetCode = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
         let native = nativeLang
@@ -2063,15 +2069,12 @@ class KeyboardViewController: UIInputViewController {
                     self.currentHistoryIndex = 0
                     self.outputTextLabel.text = translation
 
-                    // If text was likely truncated, let the user know
-                    self.notesCard.isHidden = false
-                    if text.count >= 280 {
-                        self.notesIcon.text = "✂️"
-                        self.notesTextLabel.text = "Long message — only the first part was translated. Paste the rest separately for a full translation."
-                    } else {
-                        self.notesIcon.text = "🎤"
-                        self.notesTextLabel.text = "Ready to reply? Just hit 🎤 Speak — your response will replace this text automatically."
-                    }
+                    // Paste translations: NO notes, NO corrections, NO coaching, NO swipe hint
+                    // The user just needs to read the translation — nothing else.
+                    self.notesCard.isHidden = true
+                    self.correctionCard.isHidden = true
+                    self.coachCard.isHidden = true
+                    self.swipeHintLabel.isHidden = true
 
                     NSLog("TSKBD_PASTE_TRANSLATED: \(text.prefix(40)) → \(translation.prefix(40))")
 
