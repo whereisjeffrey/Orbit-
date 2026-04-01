@@ -79,11 +79,11 @@ class KeyboardViewController: UIInputViewController {
     private var translationVersion: Int = 0
     private var recentNoteTopics: [String] = []  // tracks recent slang/notes to avoid repeats
 
-    // Translate clipboard button + layout constraints
+    // Translate clipboard button + Remove button + layout constraints
     private let translateClipboardBtn = UIButton(type: .system)
-    private var micTrailingToEdge: NSLayoutConstraint!
-    private var micTrailingToCenter: NSLayoutConstraint!
-    private var showingTranslateBtn = false
+    private let removeBtn = UIButton(type: .system)
+    private var micLeadingToEdge: NSLayoutConstraint!    // full width (no translate/remove)
+    private var micLeadingToThird: NSLayoutConstraint!   // right third (translate + remove visible)
     private var translationHistory: [String] = []
     private var currentHistoryIndex: Int = -1
     private let swipeHintLabel = UILabel()
@@ -769,34 +769,37 @@ class KeyboardViewController: UIInputViewController {
             emptyBar.heightAnchor.constraint(equalToConstant: emptyHeight),
         ])
 
-        // ── Full-width Speak button — the only element in the empty state ──
-        micButton.translatesAutoresizingMaskIntoConstraints = false
-        micButton.setTitle("🎤  Speak", for: .normal)
-        micButton.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
-        micButton.setTitleColor(.white, for: .normal)
-        micButton.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.18)
-        micButton.layer.cornerRadius = 14
-        micButton.layer.borderWidth = 1.0
-        micButton.layer.borderColor = UIColor.systemBlue.withAlphaComponent(0.5).cgColor
-        micButton.clipsToBounds = true
-        micButton.addTarget(self, action: #selector(micTapped), for: .touchUpInside)
-        emptyBar.addSubview(micButton)
+        let btnStyle: (UIButton, String) -> Void = { btn, title in
+            btn.translatesAutoresizingMaskIntoConstraints = false
+            btn.setTitle(title, for: .normal)
+            btn.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
+            btn.setTitleColor(.white, for: .normal)
+            btn.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.18)
+            btn.layer.cornerRadius = 14
+            btn.layer.borderWidth = 1.0
+            btn.layer.borderColor = UIColor.systemBlue.withAlphaComponent(0.5).cgColor
+            btn.clipsToBounds = true
+        }
 
-        // Translate clipboard button (hidden by default, shown for long pastes)
-        translateClipboardBtn.translatesAutoresizingMaskIntoConstraints = false
-        translateClipboardBtn.setTitle("📋  Translate", for: .normal)
-        translateClipboardBtn.titleLabel?.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
-        translateClipboardBtn.setTitleColor(.white, for: .normal)
-        translateClipboardBtn.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.18)
-        translateClipboardBtn.layer.cornerRadius = 14
-        translateClipboardBtn.layer.borderWidth = 1.0
-        translateClipboardBtn.layer.borderColor = UIColor.systemBlue.withAlphaComponent(0.5).cgColor
-        translateClipboardBtn.clipsToBounds = true
+        // Remove button (far left — clears text field)
+        btnStyle(removeBtn, "🗑️ Remove")
+        removeBtn.isHidden = true
+        removeBtn.addTarget(self, action: #selector(removeTextTapped), for: .touchUpInside)
+        emptyBar.addSubview(removeBtn)
+
+        // Translate button (center)
+        btnStyle(translateClipboardBtn, "📋 Translate")
         translateClipboardBtn.isHidden = true
         translateClipboardBtn.addTarget(self, action: #selector(translateClipboardTapped), for: .touchUpInside)
         emptyBar.addSubview(translateClipboardBtn)
 
-        // langPill and emptyLabel kept as hidden — referenced elsewhere in state management
+        // Speak button (far right)
+        btnStyle(micButton, "🎤 Speak")
+        micButton.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
+        micButton.addTarget(self, action: #selector(micTapped), for: .touchUpInside)
+        emptyBar.addSubview(micButton)
+
+        // langPill and emptyLabel kept as hidden
         langPill.translatesAutoresizingMaskIntoConstraints = false
         langPill.isHidden = true
         emptyBar.addSubview(langPill)
@@ -806,20 +809,28 @@ class KeyboardViewController: UIInputViewController {
         emptyLabel.isHidden = true
         emptyBar.addSubview(emptyLabel)
 
-        // Switchable mic trailing constraints
-        micTrailingToEdge = micButton.trailingAnchor.constraint(equalTo: emptyBar.trailingAnchor, constant: -10)
-        micTrailingToCenter = micButton.trailingAnchor.constraint(equalTo: emptyBar.centerXAnchor, constant: -4)
-        micTrailingToEdge.isActive = true
+        // Switchable constraints for mic button leading edge
+        micLeadingToEdge = micButton.leadingAnchor.constraint(equalTo: emptyBar.leadingAnchor, constant: 10)
+        micLeadingToThird = micButton.leadingAnchor.constraint(equalTo: translateClipboardBtn.trailingAnchor, constant: 6)
+        micLeadingToEdge.isActive = true
 
         NSLayoutConstraint.activate([
-            micButton.leadingAnchor.constraint(equalTo: emptyBar.leadingAnchor, constant: 10),
+            // Mic (Speak) — always on the right
+            micButton.trailingAnchor.constraint(equalTo: emptyBar.trailingAnchor, constant: -10),
             micButton.topAnchor.constraint(equalTo: emptyBar.topAnchor, constant: 10),
             micButton.bottomAnchor.constraint(equalTo: emptyBar.bottomAnchor, constant: -10),
 
-            translateClipboardBtn.leadingAnchor.constraint(equalTo: emptyBar.centerXAnchor, constant: 4),
-            translateClipboardBtn.trailingAnchor.constraint(equalTo: emptyBar.trailingAnchor, constant: -10),
+            // Remove — left third
+            removeBtn.leadingAnchor.constraint(equalTo: emptyBar.leadingAnchor, constant: 10),
+            removeBtn.topAnchor.constraint(equalTo: emptyBar.topAnchor, constant: 10),
+            removeBtn.bottomAnchor.constraint(equalTo: emptyBar.bottomAnchor, constant: -10),
+            removeBtn.widthAnchor.constraint(equalTo: emptyBar.widthAnchor, multiplier: 0.28, constant: -10),
+
+            // Translate — center third
+            translateClipboardBtn.leadingAnchor.constraint(equalTo: removeBtn.trailingAnchor, constant: 6),
             translateClipboardBtn.topAnchor.constraint(equalTo: emptyBar.topAnchor, constant: 10),
             translateClipboardBtn.bottomAnchor.constraint(equalTo: emptyBar.bottomAnchor, constant: -10),
+            translateClipboardBtn.widthAnchor.constraint(equalTo: emptyBar.widthAnchor, multiplier: 0.35, constant: -10),
 
             langPill.trailingAnchor.constraint(equalTo: emptyBar.trailingAnchor, constant: -12),
             langPill.centerYAnchor.constraint(equalTo: emptyBar.centerYAnchor),
@@ -2094,16 +2105,18 @@ class KeyboardViewController: UIInputViewController {
         heightConstraint.constant = emptyHeight
         hidePollingState()
 
-        // Show Translate button whenever clipboard has text (no popup from hasStrings)
+        // Show Remove + Translate when clipboard has text, otherwise Speak full width
         let clipboardHasText = UIPasteboard.general.hasStrings
         if clipboardHasText {
+            removeBtn.isHidden = false
             translateClipboardBtn.isHidden = false
-            micTrailingToEdge.isActive = false
-            micTrailingToCenter.isActive = true
+            micLeadingToEdge.isActive = false
+            micLeadingToThird.isActive = true
         } else {
+            removeBtn.isHidden = true
             translateClipboardBtn.isHidden = true
-            micTrailingToCenter.isActive = false
-            micTrailingToEdge.isActive = true
+            micLeadingToThird.isActive = false
+            micLeadingToEdge.isActive = true
         }
         emptyBar.layoutIfNeeded()
     }
@@ -2187,6 +2200,23 @@ class KeyboardViewController: UIInputViewController {
 
     // MARK: - Mic (Speech-to-Text)
     
+    @objc private func removeTextTapped() {
+        // Brute force clear the text field
+        for _ in 0..<5 {
+            if let after = textDocumentProxy.documentContextAfterInput, !after.isEmpty {
+                textDocumentProxy.adjustTextPosition(byCharacterOffset: after.count)
+            }
+        }
+        for _ in 0..<2000 {
+            textDocumentProxy.deleteBackward()
+        }
+        previousTextLength = 0
+        isPasteTranslationActive = false
+        showEmpty()
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        NSLog("TSKBD_REMOVE: text field cleared")
+    }
+
     @objc private func translateClipboardTapped() {
         showingTranslateBtn = false  // hide button after use
 
