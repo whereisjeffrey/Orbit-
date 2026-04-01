@@ -276,6 +276,14 @@ class PracticeConversationService {
           just continue naturally. Corrections come in the JSON. \
         - The user is in \(userCity). If it's a city, reference neighborhoods and local spots naturally. \
           If it's a country, use country-wide slang and cultural references — don't assume a specific city. \
+        - LOCATION ACCURACY: ONLY mention places, parks, landmarks, restaurants that are ACTUALLY in \(userCity). \
+          Do NOT reference places from other cities in the same country — this destroys trust. \
+          If you're unsure whether a place is in \(userCity), don't mention it. \
+        - SLANG SCOPE: Use slang from \(userCity) and its region + nationwide slang that everyone understands. \
+          Do NOT teach slang that's specific to OTHER cities or regions — if someone in \(userCity) \
+          wouldn't naturally use or understand it, don't teach it. \
+          Nationwide expressions are great. City-specific expressions from \(userCity) are great. \
+          City-specific expressions from other cities are NOT — they'll confuse the user. \
         - Ask follow-up questions to keep the conversation flowing \
         - Adapt to their level — if they're advanced, challenge them with complex topics \
           and nuanced slang. If they're struggling, simplify without being patronizing. \

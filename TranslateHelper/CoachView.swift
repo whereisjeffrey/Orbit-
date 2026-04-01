@@ -810,36 +810,37 @@ extension CoachPopulatedView {
                             .padding(14)
                         }
 
-                        // Expanded content — clean, scannable list
+                        // Expanded content — dot + stacked: wrong on top, correct below, short note
                         if isExpanded {
-                            VStack(alignment: .leading, spacing: 10) {
+                            VStack(alignment: .leading, spacing: 14) {
                                 ForEach(mistakes.prefix(5)) { mistake in
-                                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                                    HStack(alignment: .top, spacing: 10) {
                                         Circle()
                                             .fill(color)
-                                            .frame(width: 5, height: 5)
-                                            .padding(.top, 5)
+                                            .frame(width: 6, height: 6)
+                                            .padding(.top, 6)
 
-                                        VStack(alignment: .leading, spacing: 3) {
-                                            // Correction: wrong → right
-                                            HStack(spacing: 0) {
-                                                Text(mistake.userSaid)
-                                                    .font(.custom("HelveticaNeue", size: 13))
-                                                    .foregroundColor(.tsSecondary)
-                                                    .strikethrough(true, color: color.opacity(0.4))
-                                                Text("  →  ")
-                                                    .font(.custom("HelveticaNeue", size: 12))
-                                                    .foregroundColor(.tsSecondary.opacity(0.5))
-                                                Text(mistake.correctForm)
-                                                    .font(.custom("HelveticaNeue-Medium", size: 13))
-                                                    .foregroundColor(.tsLabel)
-                                            }
-                                            // One-line explanation
-                                            Text(capToOneSentence(mistake.explanation))
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            // What they said (wrong) — no strikethrough, just dimmer
+                                            Text(truncatePhrase(mistake.userSaid))
+                                                .font(.custom("HelveticaNeue", size: 14))
+                                                .foregroundColor(.tsSecondary)
+
+                                            // What to say instead (correct)
+                                            Text(truncatePhrase(mistake.correctForm))
+                                                .font(.custom("HelveticaNeue-Medium", size: 14))
+                                                .foregroundColor(.tsLabel)
+
+                                            // Short, varied explanation
+                                            Text(shortenExplanation(mistake.explanation))
                                                 .font(.custom("HelveticaNeue", size: 11))
                                                 .foregroundColor(.tsSecondary)
-                                                .lineLimit(2)
+                                                .lineLimit(1)
                                         }
+                                    }
+
+                                    if mistake.id != mistakes.prefix(5).last?.id {
+                                        Divider().opacity(0.2)
                                     }
                                 }
                                 if mistakes.count > 5 {
@@ -932,6 +933,47 @@ extension CoachPopulatedView {
                 .foregroundColor(.tsSecondary)
         }
         .padding(.vertical, 4)
+    }
+
+    /// Truncates long phrases to keep cards readable — shows just the key part.
+    private func truncatePhrase(_ text: String) -> String {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        // If it's short enough, show it all
+        if trimmed.count <= 35 { return trimmed }
+        // Try to cut at a word boundary
+        let cutoff = trimmed.index(trimmed.startIndex, offsetBy: 32)
+        let prefix = String(trimmed[trimmed.startIndex..<cutoff])
+        if let lastSpace = prefix.lastIndex(of: " ") {
+            return String(prefix[prefix.startIndex..<lastSpace]) + "…"
+        }
+        return prefix + "…"
+    }
+
+    /// Shortens explanation and strips repetitive "In Portuguese" phrasing.
+    private func shortenExplanation(_ text: String) -> String {
+        var cleaned = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Strip common verbose patterns
+        let patterns = [
+            "In Portuguese, ", "In Spanish, ", "In French, ", "In German, ",
+            "In the target language, ", "Native speakers ", "A native speaker would ",
+        ]
+        for pattern in patterns {
+            if cleaned.hasPrefix(pattern) {
+                cleaned = String(cleaned.dropFirst(pattern.count))
+                // Capitalize first letter
+                cleaned = cleaned.prefix(1).uppercased() + cleaned.dropFirst()
+            }
+        }
+        // Cap to ~60 chars
+        if cleaned.count > 60 {
+            if let dotRange = cleaned.range(of: ". ", range: cleaned.startIndex..<cleaned.endIndex) {
+                let first = String(cleaned[cleaned.startIndex...dotRange.lowerBound])
+                if first.count <= 70 { return first }
+            }
+            let idx = cleaned.index(cleaned.startIndex, offsetBy: 57)
+            return String(cleaned[cleaned.startIndex..<idx]) + "..."
+        }
+        return cleaned
     }
 
     /// Trims explanation to one sentence for the condensed view.
@@ -2856,9 +2898,22 @@ struct PracticeSessionView: View {
         \(recentBuffer)
         \(historyContext)
 
-        The user lives in \(userCity). Reference the city SPECIFICALLY — use real place names,
-        real neighbourhoods, real local experiences. Generic is boring. Specific is impressive.
-        Speak naturally in the target language. Use local slang and contractions.
+        The user lives in \(userCity). \
+        LOCATION ACCURACY — CRITICAL: \
+        - ONLY reference places, landmarks, parks, restaurants, and neighbourhoods that are \
+          ACTUALLY in \(userCity). Do NOT reference places from other cities in the same country. \
+        - If you are not 100% sure a place is in \(userCity), do NOT mention it. \
+          It is BETTER to reference something generic about the city than to name a place \
+          that's actually in a different city. Getting this wrong destroys trust. \
+        - For example: Ibirapuera Park is in São Paulo, NOT Rio. Chapultepec is in Mexico City, \
+          NOT Guadalajara. If the user is in Rio, talk about Copacabana, Lapa, Santa Teresa, \
+          Lagoa — not landmarks from São Paulo. \
+        - When in doubt, reference: local food, neighbourhood vibes, weather, daily life, \
+          or cultural habits specific to that city — things you CAN'T get wrong. \
+        \
+        Speak naturally in the target language. Use local slang and contractions. \
+        Use slang from \(userCity) and its region + nationwide slang that everyone understands. \
+        Do NOT teach slang specific to OTHER cities or regions — only slang someone in \(userCity) would use. \
         2-3 sentences max. Ask a question they can easily answer.
 
         Also provide:
