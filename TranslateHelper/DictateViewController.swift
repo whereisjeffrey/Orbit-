@@ -95,6 +95,9 @@ class DictateViewController: UIViewController {
         isToggleOnTarget = (speakingLanguage != "en")
         setupUI()
         loadWhisperKit()
+
+        // Listen for toggle changes to update the onboarding text in real time
+        NotificationCenter.default.addObserver(self, selector: #selector(languageToggleChanged), name: .dictateLanguageToggled, object: nil)
     }
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -358,11 +361,19 @@ class DictateViewController: UIViewController {
         ])
     }
 
-    private func updateOnboardingText() {
-        let langName = languageDisplayName(for: isToggleOnTarget ? targetLanguage : "en")
+    @objc private func languageToggleChanged() {
+        // Re-read the speaking language from App Group and update the banner
+        isToggleOnTarget = (speakingLanguage != "en")
+        updateOnboardingText()
+    }
 
-        // First line: bold + larger
-        let firstLine = "Your voice is set to \(langName)."
+    private func updateOnboardingText() {
+        let langCode = isToggleOnTarget ? targetLanguage : "en"
+        let langName = languageDisplayName(for: langCode)
+        let flag = languageFlag(for: langCode)
+
+        // First line: bold + larger, with flag
+        let firstLine = "\(flag) Your voice is set to \(langName)."
         let firstAttrs: [NSAttributedString.Key: Any] = [
             .font: UIFont.systemFont(ofSize: 20, weight: .bold),
             .foregroundColor: UIColor.white,
@@ -408,6 +419,15 @@ class DictateViewController: UIViewController {
             "ar": "Arabic", "zh": "Chinese", "ru": "Russian", "nl": "Dutch",
         ]
         return map[code] ?? code.uppercased()
+    }
+
+    private func languageFlag(for code: String) -> String {
+        let map: [String: String] = [
+            "en": "🇺🇸", "pt": "🇧🇷", "es": "🇪🇸", "fr": "🇫🇷",
+            "de": "🇩🇪", "it": "🇮🇹", "ja": "🇯🇵", "ko": "🇰🇷",
+            "ar": "🇦🇪", "zh": "🇨🇳", "ru": "🇷🇺", "nl": "🇳🇱",
+        ]
+        return map[code] ?? "🌐"
     }
 
     // MARK: - Gradient border for send button
@@ -945,6 +965,10 @@ class DictateViewController: UIViewController {
 
 // MARK: - Language toggle pill (same layout as LanguageSwitchPill from study cards)
 
+extension Notification.Name {
+    static let dictateLanguageToggled = Notification.Name("dictateLanguageToggled")
+}
+
 struct DictateLanguagePill: View {
     let sourceLang: String  // target language (e.g. "pt")
     let targetLang: String  // "en"
@@ -989,6 +1013,8 @@ struct DictateLanguagePill: View {
                 let speakingLang = swapped ? targetLang : sourceLang
                 defaults?.set(speakingLang, forKey: "dictate_speaking_language")
                 defaults?.synchronize()
+                // Notify DictateViewController to update the onboarding text
+                NotificationCenter.default.post(name: .dictateLanguageToggled, object: nil)
             }) {
                 Image(systemName: "arrow.triangle.2.circlepath")
                     .font(.custom("HelveticaNeue-Bold", size: 14))

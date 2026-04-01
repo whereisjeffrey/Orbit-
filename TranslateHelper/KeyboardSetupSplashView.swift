@@ -17,50 +17,63 @@ struct KeyboardSetupSplashView: View {
 
     var body: some View {
         ZStack {
-            Color.tsBackground.ignoresSafeArea()
+            // Gradient background — same as Lightning Round / voice recording
+            VoiceKeyboardBackground()
+                .ignoresSafeArea()
 
             VStack(spacing: 0) {
 
                 Spacer(minLength: 48)
 
-                // ── Top: large vertical wordmark ──────────────────────────
-                TSVerticalWordmark(iconSize: 112, fontSize: 30)
-                    .scaleEffect(iconBounce ? 1.03 : 1.0)
-                    .animation(
-                        .easeInOut(duration: 2.2).repeatForever(autoreverses: true),
-                        value: iconBounce
-                    )
-                    .onAppear { iconBounce = true }
+                // ── Top: Orbit logo + wordmark ──────────────────────────
+                VStack(spacing: 16) {
+                    Image("OrbitLogo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 100, height: 100)
+                        .scaleEffect(iconBounce ? 1.03 : 1.0)
+                        .animation(
+                            .easeInOut(duration: 2.2).repeatForever(autoreverses: true),
+                            value: iconBounce
+                        )
 
-                Spacer(minLength: 40)
+                    Text("Orbit")
+                        .font(.museoModerno(32))
+                        .foregroundColor(.white)
+                        .kerning(1.2)
+                }
+                .onAppear { iconBounce = true }
 
-                // ── Setup card ────────────────────────────────────────────
+                Spacer(minLength: 36)
+
+                // ── White setup card ────────────────────────────────────
                 VStack(spacing: 0) {
 
-                    // Card header: pulsing keyboard icon + label
-                    VStack(spacing: 12) {
-                        PulsingKeyboardIcon()
-                        Text("Enable Keyboard")
-                            .font(.custom("HelveticaNeue-Medium", size: 17))
+                    // Card header
+                    VStack(spacing: 8) {
+                        Image(systemName: "keyboard.fill")
+                            .font(.system(size: 28))
                             .foregroundColor(.tsAccent)
+                        Text("Enable Your Keyboard")
+                            .font(.custom("HelveticaNeue-Bold", size: 18))
+                            .foregroundColor(.black)
                     }
                     .padding(.top, 28)
-                    .padding(.bottom, 20)
+                    .padding(.bottom, 16)
+
+                    // Instruction copy
+                    Text("Set up the Orbit keyboard to translate\nmessages right inside WhatsApp.")
+                        .font(.custom("HelveticaNeue", size: 14))
+                        .foregroundColor(.black.opacity(0.5))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 20)
 
                     // Separator
                     Rectangle()
-                        .fill(Color.tsAccent.opacity(0.12))
+                        .fill(Color.black.opacity(0.06))
                         .frame(height: 1)
                         .padding(.horizontal, 24)
-
-                    // Instruction copy
-                    Text("To save phrases and translate on the go,\nactivate your TalkSwitch keyboard:")
-                        .font(.custom("HelveticaNeue", size: 14))
-                        .foregroundColor(.tsSecondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 24)
-                        .padding(.top, 20)
-                        .padding(.bottom, 16)
 
                     // Steps
                     VStack(alignment: .leading, spacing: 14) {
@@ -77,7 +90,7 @@ struct KeyboardSetupSplashView: View {
                         KBSetupStep(
                             number: 3,
                             icon: "plus.circle.fill",
-                            text: "Tap **Add New Keyboard** — TalkSwitch is right there"
+                            text: "Tap **Add New Keyboard** and select Orbit"
                         )
                         KBSetupStep(
                             number: 4,
@@ -86,44 +99,37 @@ struct KeyboardSetupSplashView: View {
                         )
                     }
                     .padding(.horizontal, 24)
+                    .padding(.top, 16)
                     .padding(.bottom, 24)
 
-                    // CTA button
+                    // CTA button — glassy style matching the audio button
                     Button(action: openKeyboardSettings) {
                         HStack(spacing: 8) {
                             Image(systemName: "keyboard.badge.ellipsis")
-                                .font(.custom("HelveticaNeue-Medium", size: 15))
+                                .font(.system(size: 15, weight: .medium))
                             Text("Set Up Keyboard")
                                 .font(.custom("HelveticaNeue-Bold", size: 16))
                         }
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .frame(height: 52)
-                        .background(LinearGradient.tsBluePrimary)
-                        .cornerRadius(14)
-                        .shadow(color: Color.tsAccent.opacity(0.35), radius: 12, x: 0, y: 4)
+                        .background(
+                            Capsule()
+                                .fill(Color.white.opacity(0.18))
+                                .overlay(
+                                    Capsule()
+                                        .stroke(Color.white.opacity(0.35), lineWidth: 1)
+                                )
+                        )
                     }
                     .padding(.horizontal, 24)
                     .padding(.bottom, 24)
                 }
                 .background(
                     RoundedRectangle(cornerRadius: cardCorner)
-                        .fill(Color.tsAccent.opacity(0.055))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: cardCorner)
-                                .stroke(Color.tsAccent.opacity(0.22), lineWidth: 1.5)
-                        )
+                        .fill(Color.white)
+                        .shadow(color: .black.opacity(0.12), radius: 20, y: 8)
                 )
-                // Subtle breathing glow
-                .shadow(
-                    color: Color.tsAccent.opacity(cardPulse ? 0.14 : 0.05),
-                    radius: cardPulse ? 20 : 8, x: 0, y: 4
-                )
-                .animation(
-                    .easeInOut(duration: 2.8).repeatForever(autoreverses: true),
-                    value: cardPulse
-                )
-                .onAppear { cardPulse = true }
                 .padding(.horizontal, 24)
 
                 Spacer(minLength: 32)
@@ -132,7 +138,7 @@ struct KeyboardSetupSplashView: View {
                 Button(action: onSkip) {
                     Text("Skip for now")
                         .font(.custom("HelveticaNeue", size: 14))
-                        .foregroundColor(.tsSecondary)
+                        .foregroundColor(.white.opacity(0.5))
                 }
                 .padding(.bottom, 48)
             }
