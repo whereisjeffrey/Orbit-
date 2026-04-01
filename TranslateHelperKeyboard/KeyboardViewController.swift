@@ -268,6 +268,24 @@ class KeyboardViewController: UIInputViewController {
         }
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        // Re-run autoDetect when keyboard becomes visible again — viewWillAppear
+        // doesn't always fire when iOS reuses the keyboard process.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
+            guard let self = self else { return }
+            // Only run if we're showing the empty bar but there's text in the field
+            if !self.emptyBar.isHidden {
+                let before = self.textDocumentProxy.documentContextBeforeInput ?? ""
+                let after = self.textDocumentProxy.documentContextAfterInput ?? ""
+                let text = (before + after).trimmingCharacters(in: .whitespacesAndNewlines)
+                if !text.isEmpty {
+                    self.autoDetect()
+                }
+            }
+        }
+    }
+
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
         if traitCollection.userInterfaceStyle != previousTraitCollection?.userInterfaceStyle {
