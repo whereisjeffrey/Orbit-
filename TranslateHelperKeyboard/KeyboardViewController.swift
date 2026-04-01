@@ -489,7 +489,6 @@ class KeyboardViewController: UIInputViewController {
                 switch result {
                 case .success(let translation):
                     self.translationVersion = 0
-                    self.loadingSpinner.stopAnimating()
                     NSLog("TSKBD_TRANSLATED: \(text) → \(translation)")
 
                     let tone = Tone(rawValue: self.currentTone) ?? .casual
@@ -504,13 +503,15 @@ class KeyboardViewController: UIInputViewController {
                         self.coachCard.isHidden = true
                     }
 
-                    // ── Refinement path: wait for final result before showing anything ──
+                    // ── Refinement path: keep spinner until GPT returns ──
                     let needsRefinement = self.currentTone == "slang"
                         || self.currentTone == "flirty"
                         || self.currentTone == "casual"
                         || self.currentTone == "work"
 
                     if needsRefinement {
+                        // Keep showing "Translating..." + spinner until refinement completes
+                        self.outputTextLabel.text = "✨ Refining..."
                         let langCode = detected.code
 
                         TalkSwitchAPI.shared.refineTranslation(
@@ -524,7 +525,8 @@ class KeyboardViewController: UIInputViewController {
                                 guard let self = self else { return }
                                 switch refineResult {
                                 case .success(let refined):
-                                    // Show ONLY the final refined translation — no intermediate flicker
+                                    self.loadingSpinner.stopAnimating()
+                                    // Show ONLY the final refined translation — one reveal, no flicker
                                     self.translationHistory = [refined.output]
                                     self.currentHistoryIndex = 0
                                     self.outputTextLabel.text = refined.output
@@ -554,7 +556,8 @@ class KeyboardViewController: UIInputViewController {
                                         }
                                     }
                                 case .failure:
-                                    // Refinement failed — show DeepL translation as final
+                                    self.loadingSpinner.stopAnimating()
+                                    // Refinement failed — show DeepL translation as fallback
                                     self.translationHistory = [translation]
                                     self.currentHistoryIndex = 0
                                     self.outputTextLabel.text = translation
@@ -567,6 +570,7 @@ class KeyboardViewController: UIInputViewController {
                         }
                     } else {
                         // No refinement needed — show DeepL translation directly
+                        self.loadingSpinner.stopAnimating()
                         self.translationHistory = [translation]
                         self.currentHistoryIndex = 0
                         self.outputTextLabel.text = translation
@@ -820,17 +824,20 @@ class KeyboardViewController: UIInputViewController {
             micButton.topAnchor.constraint(equalTo: emptyBar.topAnchor, constant: 10),
             micButton.bottomAnchor.constraint(equalTo: emptyBar.bottomAnchor, constant: -10),
 
-            // Remove — left third
+            // Remove — left third (equal width)
             removeBtn.leadingAnchor.constraint(equalTo: emptyBar.leadingAnchor, constant: 10),
             removeBtn.topAnchor.constraint(equalTo: emptyBar.topAnchor, constant: 10),
             removeBtn.bottomAnchor.constraint(equalTo: emptyBar.bottomAnchor, constant: -10),
-            removeBtn.widthAnchor.constraint(equalTo: emptyBar.widthAnchor, multiplier: 0.28, constant: -10),
 
-            // Translate — center third
+            // Translate — center third (equal width)
             translateClipboardBtn.leadingAnchor.constraint(equalTo: removeBtn.trailingAnchor, constant: 6),
             translateClipboardBtn.topAnchor.constraint(equalTo: emptyBar.topAnchor, constant: 10),
             translateClipboardBtn.bottomAnchor.constraint(equalTo: emptyBar.bottomAnchor, constant: -10),
-            translateClipboardBtn.widthAnchor.constraint(equalTo: emptyBar.widthAnchor, multiplier: 0.35, constant: -10),
+            translateClipboardBtn.widthAnchor.constraint(equalTo: removeBtn.widthAnchor),
+
+            // Speak takes remaining space — constrained by micLeadingToThird
+            // All three equal width via equal width constraints
+            micButton.widthAnchor.constraint(equalTo: removeBtn.widthAnchor),
 
             langPill.trailingAnchor.constraint(equalTo: emptyBar.trailingAnchor, constant: -12),
             langPill.centerYAnchor.constraint(equalTo: emptyBar.centerYAnchor),
@@ -2072,11 +2079,10 @@ class KeyboardViewController: UIInputViewController {
         defaults?.synchronize()
         #endif
 
-        // Show a brief hint in the notes card
+        // Show the translate hint in the notes card
         notesCard.isHidden = false
-        notesIcon.text = "📋"
-        let nativeName = TSProfiles[nativeLang]?.name ?? "your language"
-        notesTextLabel.text = "💡 Got a message you can't read? Just copy and paste it here — we'll translate it to \(nativeName) automatically."
+        notesIcon.text = "💡"
+        notesTextLabel.text = "Did you know? You can also translate incoming messages — all within the keyboard. Just copy the message and tap 📋 Translate."
 
         NSLog("TSKBD_PASTE_HINT: shown after first translation")
     }
@@ -2218,7 +2224,6 @@ class KeyboardViewController: UIInputViewController {
     }
 
     @objc private func translateClipboardTapped() {
-        showingTranslateBtn = false  // hide button after use
 
         guard let clipboardText = UIPasteboard.general.string,
               !clipboardText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {

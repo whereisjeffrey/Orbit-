@@ -41,25 +41,37 @@ struct KeyboardSetupSplashView: View {
                         .font(.museoModerno(32))
                         .foregroundColor(.white)
                         .kerning(1.2)
+                        .padding(.top, -16)
                 }
                 .onAppear { iconBounce = true }
 
-                Spacer(minLength: 24)
+                Spacer(minLength: 10)
 
-                // ── Frosted glass setup card (bigger) ───────────────────
+                // ── Frosted glass setup card ────────────────────────────
                 VStack(spacing: 0) {
 
-                    // Card header — big keyboard icon
-                    VStack(spacing: 8) {
-                        Image(systemName: "keyboard.fill")
-                            .font(.system(size: 72))
-                            .foregroundColor(.white.opacity(0.8))
+                    // Card header — keyboard icon in a glassy circle (smaller)
+                    VStack(spacing: 10) {
+                        ZStack {
+                            Circle()
+                                .fill(Color.white.opacity(0.15))
+                                .overlay(
+                                    Circle()
+                                        .stroke(Color.white.opacity(0.35), lineWidth: 1)
+                                )
+                                .frame(width: 68, height: 68)
+
+                            Image(systemName: "keyboard.fill")
+                                .font(.system(size: 30))
+                                .foregroundColor(.white)
+                        }
+
                         Text("Enable Your Keyboard")
                             .font(.custom("HelveticaNeue-Bold", size: 20))
                             .foregroundColor(.white)
                     }
-                    .padding(.top, 28)
-                    .padding(.bottom, 12)
+                    .padding(.top, 20)
+                    .padding(.bottom, 10)
 
                     // Instruction copy
                     Text("Set up the Orbit keyboard to translate\nmessages right inside WhatsApp.")
@@ -74,22 +86,22 @@ struct KeyboardSetupSplashView: View {
                         KBSetupStep(
                             number: 1,
                             icon: "gearshape.fill",
-                            text: "Open **Settings** on your iPhone"
+                            text: "Tap the button below to open **Orbit settings**"
                         )
                         KBSetupStep(
                             number: 2,
                             icon: "keyboard.fill",
-                            text: "Go to **General → Keyboard → Keyboards**"
+                            text: "Tap **Keyboards**"
                         )
                         KBSetupStep(
                             number: 3,
-                            icon: "plus.circle.fill",
-                            text: "Tap **Add New Keyboard** and select Orbit"
+                            icon: "hand.tap.fill",
+                            text: "Toggle on the **Orbit keyboard**"
                         )
                         KBSetupStep(
                             number: 4,
                             icon: "checkmark.shield.fill",
-                            text: "Enable it and allow **Full Access**"
+                            text: "Toggle on **Allow Full Access**"
                         )
                     }
                     .padding(.horizontal, 24)
