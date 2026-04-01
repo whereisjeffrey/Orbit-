@@ -883,21 +883,27 @@ extension CoachPopulatedView {
                 }
             }
 
-            // Lightning Round button
+            // Lightning Round button — gradient with blob colors
             Button {
                 showLightningRound = true
             } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "bolt.fill")
-                        .font(.system(size: 15))
+                HStack(spacing: 10) {
+                    // White circle with yellow bolt
+                    ZStack {
+                        Circle()
+                            .fill(Color.white.opacity(0.25))
+                            .frame(width: 28, height: 28)
+                        Image(systemName: "bolt.fill")
+                            .font(.system(size: 14))
+                            .foregroundColor(Color(hex: "#FFD60A"))
+                    }
                     Text("Lightning Round")
                         .font(.custom("HelveticaNeue-Medium", size: 16))
+                        .foregroundColor(.white)
                 }
-                .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .frame(height: 52)
-                .background(Color.tsAccent)
-                .cornerRadius(14)
+                .background(Capsule().fill(Color.tsAccent))
             }
             .padding(.top, 4)
         }
@@ -1087,8 +1093,7 @@ extension CoachPopulatedView {
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 52)
-                    .background(Color.tsAccent)
-                    .cornerRadius(14)
+                    .background(Capsule().fill(Color.tsAccent))
             }
 
             HStack(spacing: 16) {
