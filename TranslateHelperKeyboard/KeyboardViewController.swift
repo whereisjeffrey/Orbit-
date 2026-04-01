@@ -78,6 +78,12 @@ class KeyboardViewController: UIInputViewController {
     private var enhancedVoiceBanner: UIView?
     private var translationVersion: Int = 0
     private var recentNoteTopics: [String] = []  // tracks recent slang/notes to avoid repeats
+
+    // Translate clipboard button + layout constraints
+    private let translateClipboardBtn = UIButton(type: .system)
+    private var micTrailingToEdge: NSLayoutConstraint!
+    private var micTrailingToCenter: NSLayoutConstraint!
+    private var showingTranslateBtn = false
     private var translationHistory: [String] = []
     private var currentHistoryIndex: Int = -1
     private let swipeHintLabel = UILabel()
@@ -294,10 +300,17 @@ class KeyboardViewController: UIInputViewController {
                               (nlLang != nativeLang && nlLang != "und")
 
             if isTargetLang || isNotNative {
-                NSLog("TSKBD_AUTODETECT: text in \(detected.code)/\(nlLang) — translating to \(nativeLang)")
-                isPasteTranslationActive = true
-                previousTextLength = fieldText.count
-                performPasteTranslation(text: fieldText, detectedLang: isTargetLang ? targetCode : detected.code)
+                if fieldText.count < 250 {
+                    // Short message — proxy has the full text, translate directly
+                    NSLog("TSKBD_AUTODETECT: short non-native (\(fieldText.count) chars) — translating directly")
+                    previousTextLength = fieldText.count
+                    performPasteTranslation(text: fieldText, detectedLang: isTargetLang ? targetCode : detected.code)
+                } else {
+                    // Long message — proxy is truncated, show Speak/Translate bar
+                    NSLog("TSKBD_AUTODETECT: long non-native (\(fieldText.count) chars) — showing Translate button")
+                    showingTranslateBtn = true
+                    showEmpty()
+                }
                 return
             }
         }
@@ -775,6 +788,20 @@ class KeyboardViewController: UIInputViewController {
         micButton.addTarget(self, action: #selector(micTapped), for: .touchUpInside)
         emptyBar.addSubview(micButton)
 
+        // Translate clipboard button (hidden by default, shown for long pastes)
+        translateClipboardBtn.translatesAutoresizingMaskIntoConstraints = false
+        translateClipboardBtn.setTitle("📋  Translate", for: .normal)
+        translateClipboardBtn.titleLabel?.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
+        translateClipboardBtn.setTitleColor(.white, for: .normal)
+        translateClipboardBtn.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.18)
+        translateClipboardBtn.layer.cornerRadius = 14
+        translateClipboardBtn.layer.borderWidth = 1.0
+        translateClipboardBtn.layer.borderColor = UIColor.systemBlue.withAlphaComponent(0.5).cgColor
+        translateClipboardBtn.clipsToBounds = true
+        translateClipboardBtn.isHidden = true
+        translateClipboardBtn.addTarget(self, action: #selector(translateClipboardTapped), for: .touchUpInside)
+        emptyBar.addSubview(translateClipboardBtn)
+
         // langPill and emptyLabel kept as hidden — referenced elsewhere in state management
         langPill.translatesAutoresizingMaskIntoConstraints = false
         langPill.isHidden = true
@@ -785,11 +812,20 @@ class KeyboardViewController: UIInputViewController {
         emptyLabel.isHidden = true
         emptyBar.addSubview(emptyLabel)
 
+        // Switchable mic trailing constraints
+        micTrailingToEdge = micButton.trailingAnchor.constraint(equalTo: emptyBar.trailingAnchor, constant: -10)
+        micTrailingToCenter = micButton.trailingAnchor.constraint(equalTo: emptyBar.centerXAnchor, constant: -4)
+        micTrailingToEdge.isActive = true
+
         NSLayoutConstraint.activate([
             micButton.leadingAnchor.constraint(equalTo: emptyBar.leadingAnchor, constant: 10),
-            micButton.trailingAnchor.constraint(equalTo: emptyBar.trailingAnchor, constant: -10),
             micButton.topAnchor.constraint(equalTo: emptyBar.topAnchor, constant: 10),
             micButton.bottomAnchor.constraint(equalTo: emptyBar.bottomAnchor, constant: -10),
+
+            translateClipboardBtn.leadingAnchor.constraint(equalTo: emptyBar.centerXAnchor, constant: 4),
+            translateClipboardBtn.trailingAnchor.constraint(equalTo: emptyBar.trailingAnchor, constant: -10),
+            translateClipboardBtn.topAnchor.constraint(equalTo: emptyBar.topAnchor, constant: 10),
+            translateClipboardBtn.bottomAnchor.constraint(equalTo: emptyBar.bottomAnchor, constant: -10),
 
             langPill.trailingAnchor.constraint(equalTo: emptyBar.trailingAnchor, constant: -12),
             langPill.centerYAnchor.constraint(equalTo: emptyBar.centerYAnchor),
@@ -1902,9 +1938,18 @@ class KeyboardViewController: UIInputViewController {
             NSLog("TSKBD_PASTE: detected=\(detected.code), NL=\(secondOpinion), target=\(targetCode), native=\(nativeLang), len=\(textToTranslate.count)")
 
             if isTargetLang || isNotNative {
-                NSLog("TSKBD_PASTE: translating to \(nativeLang)")
-                isPasteTranslationActive = true
-                performPasteTranslation(text: textToTranslate, detectedLang: isTargetLang ? targetCode : detected.code)
+                if textToTranslate.count < 250 {
+                    // Short message — proxy has full text, translate directly
+                    NSLog("TSKBD_PASTE: short (\(textToTranslate.count) chars) — translating directly")
+                    isPasteTranslationActive = true
+                    performPasteTranslation(text: textToTranslate, detectedLang: isTargetLang ? targetCode : detected.code)
+                } else {
+                    // Long message — proxy truncated, show Speak/Translate bar
+                    NSLog("TSKBD_PASTE: long (\(textToTranslate.count) chars) — showing Translate button")
+                    autoTranslateTimer?.invalidate()
+                    showingTranslateBtn = true
+                    showEmpty()
+                }
                 return
             }
         }
@@ -2061,7 +2106,19 @@ class KeyboardViewController: UIInputViewController {
         correctionCard.isHidden = true
         notesCard.isHidden = true
         heightConstraint.constant = emptyHeight
-        hidePollingState() // reset any polling UI when going back to empty
+        hidePollingState()
+
+        // Show/hide Translate button
+        if showingTranslateBtn {
+            translateClipboardBtn.isHidden = false
+            micTrailingToEdge.isActive = false
+            micTrailingToCenter.isActive = true
+        } else {
+            translateClipboardBtn.isHidden = true
+            micTrailingToCenter.isActive = false
+            micTrailingToEdge.isActive = true
+        }
+        emptyBar.layoutIfNeeded()
     }
 
     private func showPanel() {
@@ -2143,6 +2200,33 @@ class KeyboardViewController: UIInputViewController {
 
     // MARK: - Mic (Speech-to-Text)
     
+    @objc private func translateClipboardTapped() {
+        showingTranslateBtn = false  // hide button after use
+
+        guard let clipboardText = UIPasteboard.general.string,
+              !clipboardText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            NSLog("TSKBD_CLIPBOARD: empty or no access")
+            return
+        }
+
+        let text = clipboardText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let detected = detectLanguage(text)
+        let targetCode = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
+
+        let isTargetLang = detected.code == targetCode
+        let isNotNative = detected.code != nativeLang && detected.code != "und"
+
+        NSLog("TSKBD_CLIPBOARD: \(text.count) chars, detected=\(detected.code)")
+
+        if isTargetLang || isNotNative {
+            performPasteTranslation(text: text, detectedLang: isTargetLang ? targetCode : detected.code)
+        } else {
+            performTranslation(text: text, source: "clipboard")
+        }
+
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+    }
+
     @objc private func micTapped() {
         // Don't double-fire if we're already waiting for a result
         guard dictationPollTimer == nil else { return }
