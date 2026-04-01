@@ -8,6 +8,7 @@ import SwiftUI
 struct OnboardingView: View {
     @State private var step = 1
     @State private var selectedLanguage: Language? = nil
+    @State private var preloadStarted = false
 
     var body: some View {
         switch step {
@@ -26,6 +27,14 @@ struct OnboardingView: View {
                 onSkip: { step = 3 },
                 onContinue: { step = 3 }
             )
+            .onAppear {
+                // Start WhisperKit download in background while user continues onboarding.
+                // By the time they finish setup + add the keyboard, the model is ready.
+                if !preloadStarted {
+                    preloadStarted = true
+                    DictateViewController.preloadWhisperKit()
+                }
+            }
         case 3:
             OnboardingLocationView(
                 step: 3, totalSteps: 5,

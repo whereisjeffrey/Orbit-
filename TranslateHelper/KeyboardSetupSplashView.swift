@@ -103,6 +103,11 @@ struct KeyboardSetupSplashView: View {
                             icon: "checkmark.shield.fill",
                             text: "Toggle on **Allow Full Access**"
                         )
+                        KBSetupStep(
+                            number: 5,
+                            icon: "globe",
+                            text: "In WhatsApp, tap the **🌐 globe** on your keyboard to switch to Orbit"
+                        )
                     }
                     .padding(.horizontal, 24)
                     .padding(.bottom, 24)

@@ -2,109 +2,134 @@
 //  KeyboardSetupBanner.swift
 //  TranslateHelper
 //
+//  Two-state banner at the top of LibraryView:
+//  State 1: Keyboard not installed → "Set up your keyboard" (taps to setup page)
+//  State 2: Keyboard installed but never opened → "Tap the globe to switch to Orbit"
+//  Hidden once the keyboard has actually been opened.
 
 import SwiftUI
 
-/// Compact persistent banner shown at the top of LibraryView until the
-/// TalkSwitch keyboard has been activated. Tapping "Set Up →" deep-links
-/// directly to the iOS keyboard list (Add New Keyboard).
-///
-/// Dismissal: the X button sets `keyboard_banner_dismissed = true` in
-/// UserDefaults so it stays dismissed for the rest of the session.
-/// The banner auto-hides permanently once the keyboard extension writes
-/// `keyboard_has_launched = true` to the shared app group on its first run.
 struct KeyboardSetupBanner: View {
     @AppStorage("keyboard_banner_dismissed") private var dismissed = false
     @State private var keyboardActive = false
+    @State private var keyboardInstalled = false
+    @State private var showSetupSheet = false
 
     private let appGroup = "group.com.jeff.translatehelper"
 
     var body: some View {
-        // Resolve visibility: hidden if dismissed OR keyboard already launched
-        if !dismissed && !keyboardActive {
-            HStack(spacing: 10) {
-
-                // Mini logo + name
-                HStack(spacing: 6) {
-                    Image("TalkSwitchLogo")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 20, height: 20)
-                        .colorMultiply(Color.tsAccent)
-
-                    Text("TalkSwitch")
-                        .font(.sono(13))
-                        .foregroundColor(.tsAccent)
-                }
-
-                // Divider
-                Rectangle()
-                    .fill(Color.tsAccent.opacity(0.25))
-                    .frame(width: 1, height: 20)
-
-                // Message
-                Text("Keyboard not set up")
-                    .font(.custom("HelveticaNeue-Medium", size: 13))
-                    .foregroundColor(.tsLabel)
-                    .lineLimit(1)
-
-                Spacer()
-
-                // CTA
-                Button(action: openKeyboardSettings) {
-                    HStack(spacing: 4) {
-                        Text("Set Up")
-                            .font(.custom("HelveticaNeue-Medium", size: 13))
-                        Image(systemName: "chevron.right")
-                            .font(.custom("HelveticaNeue-Medium", size: 11))
-                    }
-                    .foregroundColor(.tsAccent)
-                }
-
-                // Dismiss X
-                Button(action: { dismissed = true }) {
-                    Image(systemName: "xmark")
-                        .font(.custom("HelveticaNeue-Medium", size: 11))
-                        .foregroundColor(.tsSecondary)
-                        .frame(width: 24, height: 24)
-                        .background(Color.tsSecondary.opacity(0.12))
-                        .clipShape(Circle())
-                }
+        if !keyboardActive {
+            if keyboardInstalled {
+                // State 2: Installed but never used — teach them the globe
+                globeCard
+            } else if !dismissed {
+                // State 1: Not installed — prompt setup
+                setupCard
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(Color.tsAccent.opacity(0.08))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 14)
-                            .stroke(Color.tsAccent.opacity(0.20), lineWidth: 1)
-                    )
-            )
-            .padding(.horizontal, 16)
-            .onAppear { checkKeyboardActive() }
         }
     }
 
-    // MARK: - Keyboard detection
-    /// Auto-hides the banner once the keyboard extension has run at least once.
-    private func checkKeyboardActive() {
-        guard let defaults = UserDefaults(suiteName: appGroup) else { return }
-        keyboardActive = defaults.bool(forKey: "keyboard_has_launched")
+    // MARK: - Card 1: Setup needed
+
+    private var setupCard: some View {
+        Button { showSetupSheet = true } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "keyboard.fill")
+                    .font(.system(size: 20))
+                    .foregroundColor(.tsAccent)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Set up your keyboard")
+                        .font(.custom("HelveticaNeue-Bold", size: 14))
+                        .foregroundColor(.tsLabel)
+                    Text("Tap here to get started — it only takes a minute.")
+                        .font(.custom("HelveticaNeue", size: 12))
+                        .foregroundColor(.tsSecondary)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.tsAccent)
+            }
+            .padding(14)
+            .background(
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(Color(hex: "#F3F9FB"))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(Color.tsAccent.opacity(0.25), lineWidth: 1)
+            )
+        }
+        .padding(.horizontal, 16)
+        .sheet(isPresented: $showSetupSheet) {
+            KeyboardSetupSplashView(onSkip: { showSetupSheet = false })
+        }
+        .onAppear { checkStatus() }
     }
 
-    // MARK: - Deep-link
-    private func openKeyboardSettings() {
-        let candidates: [String] = [
-            "App-Prefs:root=General&path=Keyboard/KEYBOARDS",
-            "App-Prefs:root=General&path=Keyboard",
-            UIApplication.openSettingsURLString
-        ]
-        for str in candidates {
-            if let url = URL(string: str), UIApplication.shared.canOpenURL(url) {
-                UIApplication.shared.open(url)
-                return
+    // MARK: - Card 2: Installed but not used — globe hint
+
+    private var globeCard: some View {
+        HStack(spacing: 12) {
+            Text("🌐")
+                .font(.system(size: 24))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("You're all set!")
+                    .font(.custom("HelveticaNeue-Bold", size: 14))
+                    .foregroundColor(.tsLabel)
+                Text("To start translating, tap the 🌐 globe on your WhatsApp keyboard to switch to Orbit.")
+                    .font(.custom("HelveticaNeue", size: 12))
+                    .foregroundColor(.tsSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
+
+            Spacer()
+
+            Button {
+                // Dismiss — they know now
+                withAnimation(.easeOut(duration: 0.2)) {
+                    dismissed = true
+                }
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundColor(.tsSecondary)
+                    .frame(width: 24, height: 24)
+                    .background(Color.tsSecondary.opacity(0.1))
+                    .clipShape(Circle())
+            }
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color(hex: "#F3F9FB"))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(Color.tsAccent.opacity(0.25), lineWidth: 1)
+        )
+        .padding(.horizontal, 16)
+        .onAppear { checkStatus() }
+    }
+
+    // MARK: - Status checks
+
+    private func checkStatus() {
+        guard let defaults = UserDefaults(suiteName: appGroup) else { return }
+
+        // Has the keyboard extension ever loaded?
+        keyboardActive = defaults.bool(forKey: "keyboard_has_launched")
+
+        // Is the keyboard in the enabled keyboards list?
+        // We infer "installed" if the user has been through the setup flow
+        // (they came back from Settings) or if UITextInputMode shows our keyboard.
+        let modes = UITextInputMode.activeInputModes
+        keyboardInstalled = modes.contains { mode in
+            mode.primaryLanguage == "mul" // our keyboard uses "mul" (multilingual)
         }
     }
 }
