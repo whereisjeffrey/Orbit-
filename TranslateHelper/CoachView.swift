@@ -1808,6 +1808,8 @@ struct PracticeSessionView: View {
     @State private var messageCount = 0
     @State private var revealedTranslations: Set<UUID> = []
     @State private var showDoubleTapHint = false
+    @State private var showPlaybackHint = false
+    @AppStorage("practice_playback_validated") private var playbackValidated = false
     @State private var showSwipeRightHint = true   // shows first, dismissed after first right swipe
     @State private var showSwipeLeftHint = false    // shows after first right swipe, dismissed after first left swipe
     @AppStorage("practice_swipe_right_done") private var swipeRightDone = false
@@ -1970,6 +1972,12 @@ struct PracticeSessionView: View {
                                 // Show Sol double-tap hint after Sol's first message
                                 if index == 0 && showDoubleTapHint {
                                     doubleTapHintCard
+                                        .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                                }
+
+                                // Show playback hint (after double-tap is validated)
+                                if index == 0 && showPlaybackHint {
+                                    playbackHintCard
                                         .transition(.opacity.combined(with: .scale(scale: 0.95)))
                                 }
 
@@ -2313,6 +2321,48 @@ struct PracticeSessionView: View {
         )
     }
 
+    // MARK: - Playback Hint Card
+
+    private var playbackHintCard: some View {
+        HStack(spacing: 12) {
+            Text("🔊")
+                .font(.system(size: 20))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Want to hear it again?")
+                    .font(.custom("HelveticaNeue-Bold", size: 13))
+                    .foregroundColor(.tsLabel)
+                Text("Tap once on any message from Sol to replay the audio.")
+                    .font(.custom("HelveticaNeue", size: 12))
+                    .foregroundColor(.tsSecondary)
+                    .lineSpacing(1)
+            }
+
+            Spacer()
+
+            Button {
+                withAnimation(.easeOut(duration: 0.2)) {
+                    showPlaybackHint = false
+                }
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.tsSecondary)
+                    .padding(6)
+                    .background(Circle().fill(Color.tsSecondary.opacity(0.1)))
+            }
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(hex: "#FF9500").opacity(0.08))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color(hex: "#FF9500").opacity(0.15), lineWidth: 0.5)
+        )
+    }
+
     // MARK: - Native Hint Card
 
     private var nativeHintCard: some View {
@@ -2515,6 +2565,14 @@ struct PracticeSessionView: View {
                                         withAnimation(.easeOut(duration: 0.2)) {
                                             showDoubleTapHint = false
                                         }
+                                        // Show playback hint after they learn double-tap
+                                        if !playbackValidated {
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                                                withAnimation(.easeIn(duration: 0.3)) {
+                                                    showPlaybackHint = true
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -2541,6 +2599,13 @@ struct PracticeSessionView: View {
                     // Single tap on Sol's message → replay audio
                     if message.role == .sol && textVisible && message.text != "..." {
                         playSolAudio(message: message)
+                        // Validate playback hint
+                        if !playbackValidated {
+                            playbackValidated = true
+                            withAnimation(.easeOut(duration: 0.2)) {
+                                showPlaybackHint = false
+                            }
+                        }
                     }
                 }
 
@@ -2700,21 +2765,43 @@ struct PracticeSessionView: View {
         for msg in messages { revealedText.insert(msg.id) }
         messageCount = 0
 
-        // Fully generative topic — GPT invents a fresh conversation starter
+        // Fully generative topic — GPT invents a fresh conversation starter.
+        // Early sessions prioritize city-specific, hyper-local topics to hook the user.
+        let sessionCount = PracticeStatsStore.shared.totalSessionCount
+        let isEarlyUser = sessionCount < 10
+
+        let earlyUserBoost = isEarlyUser ? """
+        IMPORTANT — THIS IS AN EARLY SESSION. Make a STRONG first impression:
+        - Reference a SPECIFIC real place, restaurant, landmark, neighbourhood, or local experience in \(userCity).
+          Not generic — use actual names. "Have you tried the tacos al pastor at El Huequito?" not "Do you like tacos?"
+        - Use a local expression or slang that would surprise them — something they won't find in textbooks.
+        - Make them feel like they're talking to someone who LIVES there and knows the hidden gems.
+        - If you know their interests, connect the city to those interests specifically.
+          A food lover? Talk about a specific market or street food spot.
+          Into nightlife? Ask about a specific neighbourhood for going out.
+          Remote worker? Reference a specific café or cowork space locals love.
+        - The goal is to make them think "wow, this actually knows my city" — not "this is a generic language exercise."
+        """ : ""
+
         let openingPrompt = """
         Generate a casual, warm opening message for a practice conversation.
 
-        Be CREATIVE — invent a unique, interesting topic. Think about things like:
-        daily life, hobbies, funny observations, local culture, food, music, travel stories,
-        work life, friendships, dating, city life, weekend plans, childhood memories,
-        unpopular opinions, hypothetical questions, or anything else that sparks conversation.
+        Be CREATIVE and SPECIFIC — never generic. Think about:
+        - Real places, restaurants, bars, markets, landmarks in \(userCity)
+        - Local cultural events, traditions, or seasonal things happening
+        - Neighbourhood-specific references (not just the city name)
+        - Local slang, expressions, or inside jokes that residents would know
+        - Food, music, nightlife, dating culture specific to \(userCity)
+        - Funny observations about daily life that only someone living there would notice
+        - Hypothetical questions, unpopular opinions, childhood memories, travel stories
 
+        \(earlyUserBoost)
         \(interestContext)
         \(recentBuffer)
         \(historyContext)
 
-        The user lives in \(userCity). Reference the city naturally if it fits — but don't force it.
-        Not every conversation needs to be about the city.
+        The user lives in \(userCity). Reference the city SPECIFICALLY — use real place names,
+        real neighbourhoods, real local experiences. Generic is boring. Specific is impressive.
         Speak naturally in the target language. Use local slang and contractions.
         2-3 sentences max. Ask a question they can easily answer.
 

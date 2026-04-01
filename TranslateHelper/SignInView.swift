@@ -10,13 +10,14 @@ struct SocialButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .background(
-                RoundedRectangle(cornerRadius: 16)
+                Capsule()
                     .fill(configuration.isPressed ? Color.tsCard.opacity(0.6) : Color.tsCard)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 16)
+                Capsule()
                     .stroke(Color.tsAccent.opacity(configuration.isPressed ? 1.0 : 0.4), lineWidth: 1.5)
             )
+            .clipShape(Capsule())
             .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
             .animation(.easeInOut(duration: 0.12), value: configuration.isPressed)
     }

@@ -25,12 +25,12 @@ struct KeyboardSetupSplashView: View {
 
                 Spacer(minLength: 48)
 
-                // ── Top: Orbit logo + wordmark ──────────────────────────
-                VStack(spacing: 16) {
+                // ── Top: Orbit logo + wordmark ────────────────────────
+                VStack(spacing: 4) {
                     Image("OrbitLogo")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 100, height: 100)
+                        .frame(width: 150, height: 150)
                         .scaleEffect(iconBounce ? 1.03 : 1.0)
                         .animation(
                             .easeInOut(duration: 2.2).repeatForever(autoreverses: true),
@@ -44,38 +44,32 @@ struct KeyboardSetupSplashView: View {
                 }
                 .onAppear { iconBounce = true }
 
-                Spacer(minLength: 36)
+                Spacer(minLength: 24)
 
-                // ── White setup card ────────────────────────────────────
+                // ── Frosted glass setup card (bigger) ───────────────────
                 VStack(spacing: 0) {
 
-                    // Card header
+                    // Card header — big keyboard icon
                     VStack(spacing: 8) {
                         Image(systemName: "keyboard.fill")
-                            .font(.system(size: 28))
-                            .foregroundColor(.tsAccent)
+                            .font(.system(size: 72))
+                            .foregroundColor(.white.opacity(0.8))
                         Text("Enable Your Keyboard")
-                            .font(.custom("HelveticaNeue-Bold", size: 18))
-                            .foregroundColor(.black)
+                            .font(.custom("HelveticaNeue-Bold", size: 20))
+                            .foregroundColor(.white)
                     }
                     .padding(.top, 28)
-                    .padding(.bottom, 16)
+                    .padding(.bottom, 12)
 
                     // Instruction copy
                     Text("Set up the Orbit keyboard to translate\nmessages right inside WhatsApp.")
-                        .font(.custom("HelveticaNeue", size: 14))
-                        .foregroundColor(.black.opacity(0.5))
+                        .font(.custom("HelveticaNeue", size: 13))
+                        .foregroundColor(.white.opacity(0.6))
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 24)
                         .padding(.bottom, 20)
 
-                    // Separator
-                    Rectangle()
-                        .fill(Color.black.opacity(0.06))
-                        .frame(height: 1)
-                        .padding(.horizontal, 24)
-
-                    // Steps
+                    // Steps — no inner container, just glassy number circles
                     VStack(alignment: .leading, spacing: 14) {
                         KBSetupStep(
                             number: 1,
@@ -99,10 +93,9 @@ struct KeyboardSetupSplashView: View {
                         )
                     }
                     .padding(.horizontal, 24)
-                    .padding(.top, 16)
                     .padding(.bottom, 24)
 
-                    // CTA button — glassy style matching the audio button
+                    // CTA button — glassy with white stroke, white text
                     Button(action: openKeyboardSettings) {
                         HStack(spacing: 8) {
                             Image(systemName: "keyboard.badge.ellipsis")
@@ -115,7 +108,7 @@ struct KeyboardSetupSplashView: View {
                         .frame(height: 52)
                         .background(
                             Capsule()
-                                .fill(Color.white.opacity(0.18))
+                                .fill(Color.white.opacity(0.15))
                                 .overlay(
                                     Capsule()
                                         .stroke(Color.white.opacity(0.35), lineWidth: 1)
@@ -123,14 +116,17 @@ struct KeyboardSetupSplashView: View {
                         )
                     }
                     .padding(.horizontal, 24)
-                    .padding(.bottom, 24)
+                    .padding(.bottom, 28)
                 }
                 .background(
                     RoundedRectangle(cornerRadius: cardCorner)
-                        .fill(Color.white)
-                        .shadow(color: .black.opacity(0.12), radius: 20, y: 8)
+                        .fill(Color.white.opacity(0.12))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: cardCorner)
+                                .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                        )
                 )
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 20)
 
                 Spacer(minLength: 32)
 
@@ -256,19 +252,23 @@ private struct KBSetupStep: View {
 
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
-            // Number bubble
+            // Number bubble — glassy circle with white stroke
             ZStack {
                 Circle()
-                    .fill(Color.tsAccent.opacity(0.13))
+                    .fill(Color.white.opacity(0.12))
+                    .overlay(
+                        Circle()
+                            .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                    )
                     .frame(width: 30, height: 30)
                 Text("\(number)")
                     .font(.custom("HelveticaNeue-Bold", size: 13))
-                    .foregroundColor(.tsAccent)
+                    .foregroundColor(.white)
             }
 
             Text(text)
-                .font(.custom("HelveticaNeue", size: 14))
-                .foregroundColor(.tsLabel)
+                .font(.custom("HelveticaNeue", size: 13))
+                .foregroundColor(.white)
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }

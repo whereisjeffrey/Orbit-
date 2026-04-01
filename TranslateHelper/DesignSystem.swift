@@ -399,8 +399,7 @@ struct TSButton: View {
             }
             .frame(maxWidth: .infinity)
             .frame(height: 52)
-            .background(Color.tsAccent)
-            .cornerRadius(14)
+            .background(Capsule().fill(Color.tsAccent))
         }
         .disabled(isLoading)
     }

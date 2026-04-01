@@ -122,7 +122,7 @@ struct LightningRoundView: View {
                     .font(.custom("HelveticaNeue-Bold", size: 28))
                     .foregroundColor(.white)
 
-                Text("6 quick exercises based on your real mistakes.\nTap, speak, listen — 60 seconds.")
+                Text("10 quick exercises based on your real mistakes.\nTap, speak, listen — 90 seconds.")
                     .font(.custom("HelveticaNeue", size: 15))
                     .foregroundColor(.white.opacity(0.7))
                     .multilineTextAlignment(.center)
@@ -712,7 +712,7 @@ struct LightningRoundView: View {
         }
 
         let profile = MistakeProfileStore.shared
-        let mistakes = engine.selectMistakesForRound(count: 6, language: targetLang)
+        let mistakes = engine.selectMistakesForRound(count: 10, language: targetLang)
 
         guard !mistakes.isEmpty else {
             withAnimation { phase = .intro }
@@ -848,8 +848,12 @@ struct LightningRoundView: View {
         totalAnswered += 1
         if isCorrect { correctCount += 1 }
 
-        let generator = UIImpactFeedbackGenerator(style: isCorrect ? .light : .medium)
-        generator.impactOccurred()
+        // Play sound + haptic (shared with flashcards)
+        if isCorrect {
+            SoundEffect.correct.play()
+        } else {
+            SoundEffect.incorrect.play()
+        }
 
         if isCorrect {
             // Green flash, auto-advance after brief pause

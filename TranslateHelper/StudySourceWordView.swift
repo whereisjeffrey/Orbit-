@@ -191,13 +191,10 @@ struct StudySourceWordView: View {
                         let impact = UIImpactFeedbackGenerator(style: .heavy)
                         impact.impactOccurred()
                     }
+                    // Victory sound + haptic (shared with Lightning Round)
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.55) {
-                        let impact = UIImpactFeedbackGenerator(style: .medium)
-                        impact.impactOccurred()
+                        SoundEffect.correct.play()
                     }
-
-                    // Victory sound (system fanfare)
-                    AudioServicesPlaySystemSound(1394)
                 }
             }
         }

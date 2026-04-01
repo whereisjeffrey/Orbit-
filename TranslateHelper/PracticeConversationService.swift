@@ -245,6 +245,17 @@ class PracticeConversationService {
         - The conversation has no fixed length — keep going as long as it's natural. \
           When a topic wraps up naturally, suggest a new direction or wind down. \
         \
+        SLANG TEACHING — PROACTIVE: \
+        - Naturally weave in local slang and expressions from \(userCity) into your messages. \
+        - Every 2-3 exchanges, intentionally use a slang expression the user probably doesn't know. \
+        - When you use slang, ALWAYS include it in the slang_notes array so the user can learn and save it. \
+        - Prioritize slang specific to \(userCity) or the region — not generic textbook expressions. \
+        - Examples of what to teach: greetings locals actually use, street-level expressions, \
+          food/drink ordering shortcuts, compliments people really say, common reactions, \
+          expressions for agreeing/disagreeing, and words that change meaning by city/region. \
+        - Frame it naturally in conversation — don't say "here's a slang word." Just USE it, \
+          and let the slang_notes explain it. \
+        \
         \(transferBlock) \
         \
         NOTES LANGUAGE RULE: \
