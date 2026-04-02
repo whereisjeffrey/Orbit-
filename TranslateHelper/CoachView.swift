@@ -255,10 +255,19 @@ struct CoachPopulatedView: View {
                     .padding(.horizontal, 20)
                     .padding(.bottom, 20)
                     .onAppear {
+                        let lang = LanguageManager.shared.targetLangRequired
+
+                        // If no mistakes exist for the current language, seed starter mistakes
+                        // (works for all 39 languages via GPT)
+                        if !MistakeProfileStore.shared.hasMistakes(for: lang) {
+                            MistakeProfileStore.shared.seedStarterMistakes(language: lang) {
+                                refreshWeeklyData()
+                            }
+                        }
+
                         #if DEBUG
-                        // Seed test mistakes if profile is empty so we can see the full UI
+                        // Additional debug seeds if still empty after starter
                         if MistakeProfileStore.shared.categoryBreakdown.isEmpty {
-                            let lang = LanguageManager.shared.targetLangRequired
                             MistakeProfileStore.shared.seedTestData(language: lang)
                         }
                         #endif
@@ -3669,18 +3678,7 @@ class PracticeTTSService: NSObject, AVAudioPlayerDelegate {
     }
 
     private func googleLocale(for language: String) -> String {
-        let code = String(language.prefix(2))
-        switch code {
-        case "pt": return "pt-BR"
-        case "es": return "es-US"
-        case "fr": return "fr-FR"
-        case "de": return "de-DE"
-        case "it": return "it-IT"
-        case "ja": return "ja-JP"
-        case "ko": return "ko-KR"
-        case "zh": return "cmn-CN"
-        default: return language
-        }
+        LanguageManager.ttsLocale(for: String(language.prefix(2)))
     }
 
     /// Speaking rate based on user level

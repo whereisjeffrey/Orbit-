@@ -365,4 +365,112 @@ final class MistakeProfileStore: ObservableObject {
         defaults.removeObject(forKey: Self.storageKey)
     }
     #endif
+
+    // MARK: - Starter Mistakes (Production)
+
+    /// Check if we have any mistakes for a specific language
+    func hasMistakes(for language: String) -> Bool {
+        entries.contains { $0.language == language && !$0.isMastered }
+    }
+
+    /// Seed common beginner mistakes for any language using GPT.
+    /// Called when user switches to a new language with no mistake history.
+    func seedStarterMistakes(language: String, completion: @escaping () -> Void) {
+        // Don't seed if we already have mistakes for this language
+        guard !hasMistakes(for: language) else {
+            completion()
+            return
+        }
+
+        let langName = LanguageManager.languageName(for: language)
+        let prompt = """
+        Generate 8 common mistakes English speakers make when learning \(langName).
+        Cover these categories: gender, conjugation, preposition, grammar, vocabulary, word_order, idiom, pronunciation.
+
+        For each mistake, provide:
+        - category: one of [gender, conjugation, preposition, grammar, vocabulary, word_order, idiom, pronunciation]
+        - user_said: what the English speaker would incorrectly say in \(langName)
+        - correct: the correct \(langName) form
+        - explanation: 1 sentence in English explaining why (15 words max)
+
+        Respond ONLY with a JSON array:
+        [{"category":"gender","user_said":"...","correct":"...","explanation":"..."}]
+        """
+
+        let apiKey = APIConfig.openAIAPIKey
+        guard let url = URL(string: "https://api.openai.com/v1/chat/completions") else {
+            completion()
+            return
+        }
+
+        let body: [String: Any] = [
+            "model": "gpt-4o-mini",
+            "messages": [
+                ["role": "system", "content": "You are a linguistics expert. Generate realistic language learning mistakes. Respond ONLY with valid JSON."],
+                ["role": "user", "content": prompt]
+            ],
+            "temperature": 0.8,
+            "max_tokens": 800,
+            "response_format": ["type": "json_object"]
+        ]
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        request.timeoutInterval = 15
+
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            defer { DispatchQueue.main.async { completion() } }
+            guard let data = data,
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let choices = json["choices"] as? [[String: Any]],
+                  let message = choices.first?["message"] as? [String: Any],
+                  let content = message["content"] as? String,
+                  let parsed = try? JSONSerialization.jsonObject(with: Data(content.utf8)) as? [String: Any]
+            else { return }
+
+            // Try to find the array — could be at root or nested
+            let mistakes: [[String: Any]]
+            if let arr = parsed["mistakes"] as? [[String: Any]] {
+                mistakes = arr
+            } else if let arr = (parsed.values.first as? [[String: Any]]) {
+                mistakes = arr
+            } else {
+                return
+            }
+
+            for m in mistakes {
+                guard let catStr = m["category"] as? String,
+                      let userSaid = m["user_said"] as? String,
+                      let correct = m["correct"] as? String,
+                      let explanation = m["explanation"] as? String
+                else { continue }
+
+                let category: MistakeCategory
+                switch catStr {
+                case "gender": category = .gender
+                case "conjugation": category = .conjugation
+                case "preposition": category = .preposition
+                case "grammar": category = .grammar
+                case "vocabulary": category = .vocabulary
+                case "word_order": category = .wordOrder
+                case "idiom": category = .idiom
+                case "pronunciation": category = .pronunciation
+                default: category = .grammar
+                }
+
+                self.record(
+                    category: category,
+                    language: language,
+                    userSaid: userSaid,
+                    correctForm: correct,
+                    explanation: explanation,
+                    source: .keyboard
+                )
+            }
+            NSLog("🌍 Seeded \(mistakes.count) starter mistakes for \(langName)")
+        }.resume()
+    }
 }

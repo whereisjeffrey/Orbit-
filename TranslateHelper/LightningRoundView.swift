@@ -765,13 +765,18 @@ struct LightningRoundView: View {
         isGenerating = true
 
         // Check for pre-cached round first — instant start
-        if let cached = engine.cachedCards, !cached.isEmpty {
+        // IMPORTANT: only use cache if it matches the current language
+        if let cached = engine.cachedCards, !cached.isEmpty,
+           cached.first?.language == targetLang {
             engine.cachedCards = nil
             self.cards = cached
             startRound()
             // Pre-generate the NEXT round in background
             preGenerateNextRound()
             return
+        } else if engine.cachedCards != nil {
+            // Cache exists but wrong language — discard it
+            engine.cachedCards = nil
         }
 
         let profile = MistakeProfileStore.shared
