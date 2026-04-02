@@ -30,7 +30,7 @@ struct DeckCard: Codable, Identifiable, Hashable {
         english: String,
         spanish: String,
         notes: String = "",
-        targetLang: String = "es",
+        targetLang: String,
         isConquered: Bool = false,
         repetitions: Int = 0,
         easinessFactor: Double = 2.5,

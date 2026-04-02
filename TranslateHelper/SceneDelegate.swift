@@ -26,6 +26,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         win.makeKeyAndVisible()
         window = win
 
+        // Validate language is set — log warning if not (user may have abandoned onboarding)
+        if !LanguageManager.shared.hasTargetLanguage {
+            NSLog("⚠️ LanguageManager: no target language set — user may not have completed onboarding")
+        }
+
         // Pre-warm WhisperKit so it's ready when user taps mic
         DictateViewController.preloadWhisperKit()
 
@@ -36,7 +41,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         MistakeIngestion.processKeyboardQueue()
 
         // Pre-generate Lightning Round so it's instant when user taps it
-        let roundLang = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
+        let roundLang = LanguageManager.shared.targetLangRequired
         DispatchQueue.global(qos: .background).async {
             LightningRoundEngine.preGenerate(language: roundLang)
         }
@@ -60,9 +65,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     private func handle(url: URL) {
         guard url.scheme == "translatehelper", url.host == "dictate" else { return }
-        // Extract ?lang=es (or zh, fr, etc.) — defaults to "es" if missing
+        // Extract ?lang=xx from deeplink — falls back to user's target language
         let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
-        let lang = components?.queryItems?.first(where: { $0.name == "lang" })?.value ?? "es"
+        let lang = components?.queryItems?.first(where: { $0.name == "lang" })?.value ?? LanguageManager.shared.targetLangRequired
         presentDictate(language: lang)
     }
 

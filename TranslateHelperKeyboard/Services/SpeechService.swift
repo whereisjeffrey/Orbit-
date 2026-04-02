@@ -347,7 +347,7 @@ class SpeechService {
         return "\(abs(raw.hashValue).description).mp3"
     }
 
-    func speak(_ text: String, language: String = "es-MX") {
+    func speak(_ text: String, language: String) {
         synthesizer.stopSpeaking(at: .immediate)
         audioPlayer?.stop()
 

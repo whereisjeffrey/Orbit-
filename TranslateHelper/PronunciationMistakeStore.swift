@@ -113,7 +113,7 @@ final class PronunciationMistakeStore: ObservableObject {
     // MARK: - Dev / Testing helpers
 
     #if DEBUG
-    func seedTestData(language: String = "es") {
+    func seedTestData(language: String) {
         let words = language == "pt"
             ? ["desenvolvimento", "coração", "trabalho", "consciência", "comunicação"]
             : ["desarrollar", "murciélago", "ferrocarril", "extraordinario", "pronunciación"]

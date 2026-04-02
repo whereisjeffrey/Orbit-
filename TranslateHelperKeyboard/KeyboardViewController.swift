@@ -70,7 +70,7 @@ class KeyboardViewController: UIInputViewController {
     private var inputText: String = ""
     private var detectedLanguage: String = ""
     private var currentTone: String = "casual"
-    private var selectedLanguage: String = "es" // persisted preference (default: Spanish)
+    private var selectedLanguage: String = LanguageManager.shared.targetLangRequired // persisted preference — reads from App Group
 
     /// The user's native language — defaults to "en" but supports any language.
     /// Read from App Group so it can be set in onboarding/settings.
@@ -233,7 +233,7 @@ class KeyboardViewController: UIInputViewController {
 
             // Accent-coach mode: speech was recorded in the target language for pronunciation critique.
             // Force into the gentle-correction / native-speaker feedback path.
-            let targetCode = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
+            let targetCode = LanguageManager.shared.targetLangRequired
             if dictateMode == "accent_coach" || detectedLang == targetCode {
                 self.performTranslation(text: textToTranslate, source: "accent_coach")
             } else {
@@ -253,10 +253,15 @@ class KeyboardViewController: UIInputViewController {
         )
         NSLog("TSKBD_LOADED ✅")
 
+        // Validate: target language must be set (onboarding writes it at step 1)
+        if !LanguageManager.shared.hasTargetLanguage {
+            NSLog("⚠️ TSKBD: No target language set — user may not have completed onboarding")
+        }
+
         // Restore persisted language preference
         let appGroup = "group.com.jeff.translatehelper"
         let defaults = UserDefaults(suiteName: appGroup)
-        let saved = defaults?.string(forKey: "talkswitch_lang") ?? "es"
+        let saved = defaults?.string(forKey: "talkswitch_lang") ?? LanguageManager.shared.targetLangRequired
         selectedLanguage = saved
         updateLangPill()
 
@@ -337,7 +342,7 @@ class KeyboardViewController: UIInputViewController {
 
         // Check if the text in the field is in the target language.
         // If so, the user likely pasted an incoming message — translate to English.
-        let targetCode = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
+        let targetCode = LanguageManager.shared.targetLangRequired
 
         if fieldText.count >= 8 {
             let detected = detectLanguage(fieldText)
@@ -371,7 +376,7 @@ class KeyboardViewController: UIInputViewController {
 
         let appGroup = "group.com.jeff.translatehelper"
         let defaults = UserDefaults(suiteName: appGroup)
-        let targetCode = defaults?.string(forKey: "talkswitch_target_lang") ?? "es"
+        let targetCode = LanguageManager.shared.targetLangRequired
 
         // Accent-coach mode: user spoke Spanish for pronunciation practice.
         // Force the isSourceTarget flag so we always enter the gentle-correction path
@@ -675,7 +680,7 @@ class KeyboardViewController: UIInputViewController {
         let detected = detectLanguage(original)
         let sourceLang = detected.code
         let appGroupNotes = "group.com.jeff.translatehelper"
-        let targetCode = UserDefaults(suiteName: appGroupNotes)?.string(forKey: "talkswitch_target_lang") ?? "es"
+        let targetCode = LanguageManager.shared.targetLangRequired
         // Notes are always ABOUT the target language phrase, regardless of direction.
         // When user speaks Portuguese, sourceLang = "pt" and we want notes about Portuguese.
         // When user types English, sourceLang = "en" and we want notes about Portuguese.
@@ -824,7 +829,7 @@ class KeyboardViewController: UIInputViewController {
         if let idiom = foundIdiom {
             notesTextLabel.text = "💡 \"\(idiom)\" is an idiom — translated for meaning, not literally."
         } else {
-            let targetCode = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
+            let targetCode = LanguageManager.shared.targetLangRequired
             let detected = detectLanguage(original).code
             if detected == targetCode {
                 notesTextLabel.text = "💡 Keep practicing! Your local slang notes will appear here."
@@ -980,7 +985,7 @@ class KeyboardViewController: UIInputViewController {
         guard let lang = textInputMode?.primaryLanguage else { return }
         let appGroup = "group.com.jeff.translatehelper"
         let defaults = UserDefaults(suiteName: appGroup)
-        let targetCode = defaults?.string(forKey: "talkswitch_target_lang") ?? "es"
+        let targetCode = LanguageManager.shared.targetLangRequired
         
         let newLang = lang.hasPrefix(targetCode) ? targetCode : nativeLang
         guard newLang != selectedLanguage else { return }
@@ -994,7 +999,7 @@ class KeyboardViewController: UIInputViewController {
     @objc private func langPillTapped() {
         let appGroup = "group.com.jeff.translatehelper"
         let defaults = UserDefaults(suiteName: appGroup)
-        let targetCode = defaults?.string(forKey: "talkswitch_target_lang") ?? "es"
+        let targetCode = LanguageManager.shared.targetLangRequired
         
         selectedLanguage = (selectedLanguage == targetCode) ? nativeLang : targetCode
         defaults?.set(selectedLanguage, forKey: "talkswitch_lang")
@@ -1374,7 +1379,7 @@ class KeyboardViewController: UIInputViewController {
         swipeHintLabel.isHidden = true
         outputCard.isHidden = false
 
-        let targetCode = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
+        let targetCode = LanguageManager.shared.targetLangRequired
         let tone = Tone(rawValue: currentTone) ?? .casual
         TalkSwitchAPI.shared.alternativeTranslation(
             original: inputText,
@@ -1752,7 +1757,7 @@ class KeyboardViewController: UIInputViewController {
         loadingLabel.heightAnchor.constraint(equalToConstant: 40).isActive = true
         wingmanOptionsStack.addArrangedSubview(loadingLabel)
 
-        let targetCode = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
+        let targetCode = LanguageManager.shared.targetLangRequired
 
         TalkSwitchAPI.shared.getWingmanOptions(
             situation: situation,
@@ -1950,7 +1955,7 @@ class KeyboardViewController: UIInputViewController {
         loadingLabel.heightAnchor.constraint(equalToConstant: 40).isActive = true
         wingmanOptionsStack.addArrangedSubview(loadingLabel)
 
-        let targetCode = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
+        let targetCode = LanguageManager.shared.targetLangRequired
 
         TalkSwitchAPI.shared.getWingmanOptions(
             situation: inputText,
@@ -2011,7 +2016,7 @@ class KeyboardViewController: UIInputViewController {
             let textToTranslate = text
 
             let detected = detectLanguage(textToTranslate)
-            let targetCode = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
+            let targetCode = LanguageManager.shared.targetLangRequired
 
             // Dual language detection for reliability
             let secondOpinion: String = {
@@ -2082,7 +2087,7 @@ class KeyboardViewController: UIInputViewController {
         inputText = text
         isPasteTranslationActive = true
 
-        let targetCode = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
+        let targetCode = LanguageManager.shared.targetLangRequired
         let native = nativeLang
         let inProf = TSProfiles[detectedLang] ?? TSProfiles[targetCode] ?? TSProfiles["es"]!
         let outProf = TSProfiles[native] ?? TSProfiles["en"]!
@@ -2258,7 +2263,7 @@ class KeyboardViewController: UIInputViewController {
         let prof = TSProfiles[baseCode] ?? TSProfiles["en"]!
         
         let appGroup = "group.com.jeff.translatehelper"
-        let targetCode = UserDefaults(suiteName: appGroup)?.string(forKey: "talkswitch_target_lang") ?? "es"
+        let targetCode = LanguageManager.shared.targetLangRequired
         
         // If detector isn't sure and text is short, default to current selected Language
         if text.count < 3 && prof.code != targetCode && prof.code != "en" {
@@ -2322,7 +2327,7 @@ class KeyboardViewController: UIInputViewController {
 
         let text = clipboardText.trimmingCharacters(in: .whitespacesAndNewlines)
         let detected = detectLanguage(text)
-        let targetCode = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
+        let targetCode = LanguageManager.shared.targetLangRequired
 
         let isTargetLang = detected.code == targetCode
         let isNotNative = detected.code != nativeLang && detected.code != "und"
@@ -2575,7 +2580,7 @@ class KeyboardViewController: UIInputViewController {
         
         // Determine language of the translation output from actual target language setting
         let appGroup = "group.com.jeff.translatehelper"
-        let targetCode = UserDefaults(suiteName: appGroup)?.string(forKey: "talkswitch_target_lang") ?? "es"
+        let targetCode = LanguageManager.shared.targetLangRequired
 
         // If the output card is showing the target language, use that locale. Otherwise English.
         let detected = detectLanguage(text)
@@ -2717,7 +2722,7 @@ class KeyboardViewController: UIInputViewController {
 
         // Determine languages from current direction
         let appGroup = "group.com.jeff.translatehelper"
-        let targetCode = UserDefaults(suiteName: appGroup)?.string(forKey: "talkswitch_target_lang") ?? "es"
+        let targetCode = LanguageManager.shared.targetLangRequired
         
         let targetLang = selectedLanguage
         let sourceLang = selectedLanguage == targetCode ? "en" : targetCode
@@ -2844,7 +2849,7 @@ extension KeyboardViewController: SpeechServiceDelegate {
         
         let appGroup = "group.com.jeff.translatehelper"
         let defaults = UserDefaults(suiteName: appGroup)
-        let targetCode = defaults?.string(forKey: "talkswitch_target_lang") ?? "es"
+        let targetCode = LanguageManager.shared.targetLangRequired
         
         // Match baseCode to target exactly or assume 'en'
         selectedLanguage = (prof.code == targetCode) ? targetCode : "en"
@@ -2887,7 +2892,7 @@ extension KeyboardViewController: SpeechServiceDelegate {
         #endif
     }
 
-    private func showEnhancedVoiceBanner(language: String = "es") {
+    private func showEnhancedVoiceBanner(language: String) {
         guard enhancedVoiceBanner == nil else { return }
 
         // ── Outer card: purple/indigo ──────────────────────────────

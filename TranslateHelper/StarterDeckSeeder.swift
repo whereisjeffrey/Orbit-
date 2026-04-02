@@ -22,10 +22,9 @@ final class StarterDeckSeeder {
     // AppGroup shared between main app and keyboard extension
     private let appGroup = "group.com.jeff.translatehelper"
 
-    /// The current target language code (falls back to "en").
+    /// The current target language code.
     var targetLanguageCode: String {
-        UserDefaults(suiteName: appGroup)?
-            .string(forKey: "talkswitch_target_lang") ?? "en"
+        LanguageManager.shared.targetLangRequired
     }
 
     /// Human-readable name for the target language.
@@ -43,7 +42,7 @@ final class StarterDeckSeeder {
     func seed(forceLanguage languageCode: String? = nil,
               completion: @escaping (Bool) -> Void) {
         let code = languageCode ?? targetLanguageCode
-        let name = allLanguages.first(where: { $0.code == code })?.name ?? "Spanish"
+        let name = allLanguages.first(where: { $0.code == code })?.name ?? LanguageManager.languageName(for: code)
 
         if code == "es" {
             // ── Fast path: Spanish static content ───────────────────────

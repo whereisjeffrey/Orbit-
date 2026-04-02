@@ -126,7 +126,8 @@ struct AddCardSheet: View {
         let card = DeckCard(
             english: english.trimmingCharacters(in: .whitespaces),
             spanish: spanish.trimmingCharacters(in: .whitespaces),
-            notes: notes.trimmingCharacters(in: .whitespaces)
+            notes: notes.trimmingCharacters(in: .whitespaces),
+            targetLang: LanguageManager.shared.targetLangRequired
         )
         DeckStore.shared.addCard(card, toDeckWithId: deckId)
         dismiss()

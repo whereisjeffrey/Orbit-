@@ -332,7 +332,8 @@ private struct AddWordPane: View {
         guard canSave, let deckId = selectedDeckId else { return }
         let card = DeckCard(
             english: wordText.trimmingCharacters(in: .whitespaces),
-            spanish: translation.trimmingCharacters(in: .whitespaces)
+            spanish: translation.trimmingCharacters(in: .whitespaces),
+            targetLang: LanguageManager.shared.targetLangRequired
         )
         DeckStore.shared.addCard(card, toDeckWithId: deckId)
         dismiss()
@@ -591,7 +592,7 @@ private struct CreateDeckPane: View {
                         name: deckName, description: deckDescription, cardCount: 50
                     )
                     let deckCards = generated.map {
-                        DeckCard(english: $0.sourceText, spanish: $0.translatedText, notes: $0.notes)
+                        DeckCard(english: $0.sourceText, spanish: $0.translatedText, notes: $0.notes, targetLang: LanguageManager.shared.targetLangRequired)
                     }
                     let deck = Deck(emoji: selectedEmoji,
                                    name: deckName.trimmingCharacters(in: .whitespaces),

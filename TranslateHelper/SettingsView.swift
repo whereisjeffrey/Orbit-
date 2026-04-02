@@ -405,8 +405,7 @@ struct SettingsView: View {
     // MARK: - Helpers
     /// Returns the display label for the currently saved target language.
     private var currentLanguageLabel: String {
-        let appGroup = "group.com.jeff.translatehelper"
-        if let code = UserDefaults(suiteName: appGroup)?.string(forKey: "talkswitch_target_lang"),
+        if let code = LanguageManager.shared.targetLang,
            let lang  = allLanguages.first(where: { $0.code == code }) {
             return "\(lang.flag) \(lang.name)"
         }
@@ -554,9 +553,10 @@ struct LanguageSettingsSheet: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
                         if let code = selectedLanguage?.code {
+                            LanguageManager.shared.setTargetLang(code)
+                            // Also update talkswitch_lang for keyboard's active language
                             let ud = UserDefaults(suiteName: appGroup)
                             ud?.set(code, forKey: "talkswitch_lang")
-                            ud?.set(code, forKey: "talkswitch_target_lang")
                             ud?.synchronize()
                         }
                         dismiss()
@@ -568,7 +568,7 @@ struct LanguageSettingsSheet: View {
             }
         }
         .onAppear {
-            let code = UserDefaults(suiteName: appGroup)?.string(forKey: "talkswitch_target_lang") ?? ""
+            let code = LanguageManager.shared.targetLang ?? ""
             selectedCode = code
             selectedLanguage = allLanguages.first(where: { $0.code == code })
         }

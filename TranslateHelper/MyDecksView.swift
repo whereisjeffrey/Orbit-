@@ -888,7 +888,7 @@ struct CreateDeckSheet: View {
                         name: deckName, description: deckDescription, cardCount: 50
                     )
                     let deckCards = generated.map {
-                        DeckCard(english: $0.sourceText, spanish: $0.translatedText, notes: $0.notes)
+                        DeckCard(english: $0.sourceText, spanish: $0.translatedText, notes: $0.notes, targetLang: LanguageManager.shared.targetLangRequired)
                     }
                     let deck = Deck(emoji: selectedEmoji,
                                    name: deckName.trimmingCharacters(in: .whitespaces),

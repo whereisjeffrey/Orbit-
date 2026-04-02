@@ -316,7 +316,7 @@ final class MistakeProfileStore: ObservableObject {
     // MARK: - Dev / Testing
 
     #if DEBUG
-    func seedTestData(language: String = "es") {
+    func seedTestData(language: String) {
         let testMistakes: [(MistakeCategory, String, String, String)]
 
         if language == "pt" {

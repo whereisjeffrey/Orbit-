@@ -74,7 +74,7 @@ class TTSService {
         return voices.contains { $0.quality == .enhanced }
     }
     
-    func speak(_ text: String, language: String = "es-MX") {
+    func speak(_ text: String, language: String) {
         let utterance = AVSpeechUtterance(string: text)
         utterance.rate = 0.48
         utterance.pitchMultiplier = 1.0

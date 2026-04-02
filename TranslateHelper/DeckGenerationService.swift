@@ -60,7 +60,7 @@ final class DeckGenerationService {
     /// Returns `[DeckCard]` ready to drop straight into DeckStore.
     func generateStarterDeck(type deckType: StarterDeckType,
                              targetLanguage: String,
-                             languageCode: String = "es") async throws -> [DeckCard] {
+                             languageCode: String) async throws -> [DeckCard] {
         let raw = try await callOpenAI(
             systemPrompt: deckType.systemPrompt
                 .replacingOccurrences(of: "TARGET LANGUAGE", with: targetLanguage),

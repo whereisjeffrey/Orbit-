@@ -18,7 +18,14 @@ struct OnboardingView: View {
                 selectedLanguage: $selectedLanguage,
                 onBack: {},
                 onSkip: { step = 2 },
-                onContinue: { step = 2 }
+                onContinue: {
+                    // Write language to App Group IMMEDIATELY — before anything else.
+                    // This ensures talkswitch_target_lang is set even if onboarding is abandoned.
+                    if let lang = selectedLanguage {
+                        LanguageManager.shared.setTargetLang(lang.code)
+                    }
+                    step = 2
+                }
             )
         case 2:
             OnboardingGoalsView(
@@ -75,13 +82,13 @@ struct OnboardingView: View {
     private func completeOnboarding() {
         UserDefaults.standard.set(true, forKey: "onboarding_complete")
 
+        // Write language via LanguageManager (may already be set from step 1,
+        // but we write again in case they changed it during onboarding)
         if let lang = selectedLanguage {
-            let appGroup = "group.com.jeff.translatehelper"
-            if let defaults = UserDefaults(suiteName: appGroup) {
-                defaults.set(lang.code, forKey: "talkswitch_lang")
-                defaults.set(lang.code, forKey: "talkswitch_target_lang")
-                defaults.synchronize()
-            }
+            LanguageManager.shared.setTargetLang(lang.code)
+            // Also write talkswitch_lang for keyboard's active language
+            UserDefaults(suiteName: "group.com.jeff.translatehelper")?.set(lang.code, forKey: "talkswitch_lang")
+            UserDefaults(suiteName: "group.com.jeff.translatehelper")?.synchronize()
         }
     }
 }

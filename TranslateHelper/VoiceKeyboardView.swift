@@ -121,8 +121,8 @@ struct VoiceKeyboardBackground: View {
 /// Layers the ambient blob gradient behind the recording UI of DictateViewController.
 final class VoiceDictateContainerViewController: UIViewController {
 
-    /// Language code ("es", "zh", "fr", etc.) passed from SceneDelegate via the URL param.
-    var targetLanguage: String = "es"
+    /// Language code ("pt", "zh", "fr", etc.) passed from SceneDelegate via the URL param.
+    var targetLanguage: String = LanguageManager.shared.targetLangRequired
 
     override func viewDidLoad() {
         super.viewDidLoad()

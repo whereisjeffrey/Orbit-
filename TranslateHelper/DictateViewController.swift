@@ -34,8 +34,8 @@ class DictateViewController: UIViewController {
     private static var sharedWhisperReady = false
     private static var whisperLoadStarted = false
 
-    /// Target language code set by SceneDelegate from the URL param (e.g. "es", "zh", "fr").
-    var targetLanguage: String = "es"
+    /// Target language code set by SceneDelegate from the URL param (e.g. "pt", "zh", "fr").
+    var targetLanguage: String = LanguageManager.shared.targetLangRequired
 
     /// The language the user selected to speak in (persisted globally).
     private var speakingLanguage: String {

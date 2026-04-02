@@ -14,7 +14,7 @@ struct LightningRoundView: View {
     @Environment(\.colorScheme) private var colorScheme
     @AppStorage("talkswitch_target_lang",
                 store: UserDefaults(suiteName: "group.com.jeff.translatehelper"))
-    private var targetLang = "es"
+    private var targetLang = LanguageManager.shared.targetLangRequired
 
     // MARK: - State
 

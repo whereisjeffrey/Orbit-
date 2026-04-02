@@ -36,7 +36,7 @@ struct CoachEmptyView: View {
 
     @AppStorage("talkswitch_target_lang",
                 store: UserDefaults(suiteName: "group.com.jeff.translatehelper"))
-    private var targetLang = "es"
+    private var targetLang = LanguageManager.shared.targetLangRequired
 
     private var targetFlag: String {
         let flags: [String: String] = [
@@ -252,7 +252,7 @@ struct CoachPopulatedView: View {
                         #if DEBUG
                         // Seed test mistakes if profile is empty so we can see the full UI
                         if MistakeProfileStore.shared.categoryBreakdown.isEmpty {
-                            let lang = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "pt"
+                            let lang = LanguageManager.shared.targetLangRequired
                             MistakeProfileStore.shared.seedTestData(language: lang)
                         }
                         #endif
@@ -308,7 +308,7 @@ struct CoachPopulatedView: View {
             // DEV ONLY: seed mistake profile for testing if empty
             let profile = MistakeProfileStore.shared
             if profile.entries.isEmpty {
-                let lang = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
+                let lang = LanguageManager.shared.targetLangRequired
                 let mistakes: [(MistakeCategory, String, String, String, MistakeSource)] = [
                     (.gender, lang == "pt" ? "o viagem" : "la problema",
                      lang == "pt" ? "a viagem" : "el problema",
@@ -355,7 +355,7 @@ struct CoachPopulatedView: View {
             #endif
 
             // Pre-generate Lightning Round in background so it's ready instantly
-            let roundLang = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
+            let roundLang = LanguageManager.shared.targetLangRequired
             DispatchQueue.global(qos: .background).async {
                 LightningRoundEngine.preGenerate(language: roundLang)
             }
@@ -1795,7 +1795,7 @@ struct PracticeSessionView: View {
     @Environment(\.colorScheme) private var colorScheme
     @AppStorage("talkswitch_target_lang",
                 store: UserDefaults(suiteName: "group.com.jeff.translatehelper"))
-    private var targetLang = "es"
+    private var targetLang = LanguageManager.shared.targetLangRequired
 
     // Flag + accent color derived from target language
     private var langFlag: String {
@@ -3910,7 +3910,7 @@ struct TalkDrillView: View {
         if let cached = cachedAudio[word] {
             ttsService.playData(cached)
         } else {
-            ttsService.speak(text: word, language: "pt-BR") {}
+            ttsService.speak(text: word, language: LanguageManager.ttsLocale(for: LanguageManager.shared.targetLangRequired)) {}
         }
     }
 
