@@ -31,18 +31,20 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             NSLog("⚠️ LanguageManager: no target language set — user may not have completed onboarding")
         }
 
-        // Pre-warm WhisperKit so it's ready when user taps mic
-        DictateViewController.preloadWhisperKit()
-
-        // Process pending TTS cache requests from the keyboard
-        TTSCacheProcessor.processPendingRequests()
-
-        // Process queued keyboard corrections into mistake profile
-        MistakeIngestion.processKeyboardQueue()
-
-        // Pre-generate Lightning Round so it's instant when user taps it
+        // ── All non-critical work deferred to background ──
+        // Nothing here blocks the UI from appearing. The user sees the app instantly.
         let roundLang = LanguageManager.shared.targetLangRequired
-        DispatchQueue.global(qos: .background).async {
+        DispatchQueue.global(qos: .utility).async {
+            // Pre-warm WhisperKit (downloads model if needed — can take 30-60s)
+            DictateViewController.preloadWhisperKit()
+
+            // Process pending TTS cache requests from the keyboard
+            TTSCacheProcessor.processPendingRequests()
+
+            // Process queued keyboard corrections into mistake profile
+            MistakeIngestion.processKeyboardQueue()
+
+            // Pre-generate Lightning Round so it's instant when user taps it
             LightningRoundEngine.preGenerate(language: roundLang)
         }
 

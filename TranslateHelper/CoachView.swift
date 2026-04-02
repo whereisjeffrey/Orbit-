@@ -223,6 +223,12 @@ struct CoachPopulatedView: View {
     @State private var showLightningRound = false
     @State private var expandedCategories: Set<MistakeCategory> = []
 
+    // Cached data — computed once on appear, not every frame
+    @State private var cachedRoundHistory: [LightningRoundResult] = []
+    @State private var cachedWeeklyAvgScore: Int = 0
+    @State private var cachedMasteredCount: Int = 0
+    @State private var cachedWeakestCategory: MistakeCategory?
+
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 0) {
@@ -256,6 +262,8 @@ struct CoachPopulatedView: View {
                             MistakeProfileStore.shared.seedTestData(language: lang)
                         }
                         #endif
+                        // Cache weekly data once (not per frame)
+                        refreshWeeklyData()
                     }
 
                 // Milestones removed — lives in weekly/monthly reports now
@@ -551,23 +559,34 @@ extension CoachPopulatedView {
 
     // MARK: - 3. Weekly Snapshot
 
+    /// Refresh cached weekly data — call on appear and after sessions
+    private func refreshWeeklyData() {
+        DispatchQueue.global(qos: .userInitiated).async {
+            let roundHistory = LightningRoundEngine.shared.loadRoundHistory()
+            let thisWeekRounds = roundHistory.filter {
+                Calendar.current.isDate($0.date, equalTo: Date(), toGranularity: .weekOfYear)
+            }
+            let avg = thisWeekRounds.isEmpty ? 0 :
+                thisWeekRounds.reduce(0) { $0 + $1.scorePercent } / thisWeekRounds.count
+
+            let weekStart = Calendar(identifier: .iso8601).dateInterval(of: .weekOfYear, for: Date())?.start ?? Date()
+            let profile = MistakeProfileStore.shared
+            let masteredCount = profile.entries.filter { $0.masteredAt != nil && $0.masteredAt! >= weekStart }.count
+            let breakdown = profile.categoryBreakdown
+            let weakest = breakdown.max(by: { $0.count < $1.count })?.category
+
+            DispatchQueue.main.async {
+                self.cachedRoundHistory = roundHistory
+                self.cachedWeeklyAvgScore = avg
+                self.cachedMasteredCount = masteredCount
+                self.cachedWeakestCategory = weakest
+            }
+        }
+    }
+
     private var weeklySnapshot: some View {
         let stats = PracticeStatsStore.shared
-        let profile = MistakeProfileStore.shared
-        let roundHistory = LightningRoundEngine.shared.loadRoundHistory()
-        let thisWeekRounds = roundHistory.filter {
-            Calendar.current.isDate($0.date, equalTo: Date(), toGranularity: .weekOfYear)
-        }
-        let avgScore: Int = thisWeekRounds.isEmpty ? 0 :
-            thisWeekRounds.reduce(0) { $0 + $1.scorePercent } / thisWeekRounds.count
-
-        // Find this week's wins (mastered items)
-        let weekStart = Calendar(identifier: .iso8601).dateInterval(of: .weekOfYear, for: Date())?.start ?? Date()
-        let mastered = profile.entries.filter { $0.masteredAt != nil && $0.masteredAt! >= weekStart }
-
-        // Find weakest category
-        let breakdown = profile.categoryBreakdown
-        let weakest = breakdown.max(by: { $0.count < $1.count })
+        let avgScore = cachedWeeklyAvgScore
 
         return VStack(alignment: .leading, spacing: 16) {
             HStack {
@@ -594,23 +613,26 @@ extension CoachPopulatedView {
 
             // ── Summary (derived from real data) ────────────
             VStack(alignment: .leading, spacing: 12) {
-                if !mastered.isEmpty {
-                    weeklyRow(emoji: "✅", text: "Win: Graduated '\(mastered.first!.correctForm)'")
+                if cachedMasteredCount > 0 {
+                    weeklyRow(emoji: "✅", text: "Win: Graduated \(cachedMasteredCount) pattern\(cachedMasteredCount == 1 ? "" : "s") this week")
                 } else if stats.weeklySessionCount > 0 {
                     weeklyRow(emoji: "✅", text: "Win: \(stats.weeklySessionCount) practice session\(stats.weeklySessionCount == 1 ? "" : "s") this week")
                 } else {
                     weeklyRow(emoji: "💬", text: "Start a practice session to see your progress here")
                 }
 
-                if let weak = weakest {
-                    let accuracy = profile.categoryAccuracy(weak.category)
-                    weeklyRow(emoji: "✏️", text: "Work on: \(weak.category.displayName)\(accuracy > 0 ? " (\(accuracy)%)" : "")")
+                if let weakCat = cachedWeakestCategory {
+                    let accuracy = MistakeProfileStore.shared.categoryAccuracy(weakCat)
+                    weeklyRow(emoji: "✏️", text: "Work on: \(weakCat.displayName)\(accuracy > 0 ? " (\(accuracy)%)" : "")")
                 }
 
                 if stats.currentStreak > 0 {
                     weeklyRow(emoji: "🔥", text: "\(stats.currentStreak)-day streak — keep it going")
-                } else if !thisWeekRounds.isEmpty {
-                    weeklyRow(emoji: "🎯", text: "\(thisWeekRounds.count) Lightning Round\(thisWeekRounds.count == 1 ? "" : "s") completed")
+                } else if !cachedRoundHistory.isEmpty {
+                    let thisWeek = cachedRoundHistory.filter { Calendar.current.isDate($0.date, equalTo: Date(), toGranularity: .weekOfYear) }
+                    if !thisWeek.isEmpty {
+                        weeklyRow(emoji: "🎯", text: "\(thisWeek.count) Lightning Round\(thisWeek.count == 1 ? "" : "s") completed")
+                    }
                 }
             }
 

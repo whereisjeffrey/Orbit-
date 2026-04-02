@@ -36,27 +36,26 @@ struct LibraryView: View {
         return min(Double(reviewedToday) / Double(dailyGoal), 1.0)
     }
 
-    var allSearchablePhrases: [SavedPhrase] {
+    @State private var cachedSearchablePhrases: [SavedPhrase] = []
+
+    /// Rebuild the searchable phrases list — call on appear and when data changes
+    private func rebuildSearchablePhrases() {
         let clipboardPhrases = store.phrases
         let deckPhrases = deckStore.decks.flatMap { $0.cards.map { $0.toSavedPhrase() } }
-        
-        // Combine and optionally deduplicate by ID, though IDs should be distinct
         var seenIDs = Set<UUID>()
         var combined: [SavedPhrase] = []
-        
         for phrase in (clipboardPhrases + deckPhrases) {
             if !seenIDs.contains(phrase.id) {
                 seenIDs.insert(phrase.id)
                 combined.append(phrase)
             }
         }
-        
-        return combined
+        cachedSearchablePhrases = combined
     }
 
     var filteredPhrases: [SavedPhrase] {
         guard !searchText.isEmpty else { return [] }
-        return allSearchablePhrases.filter {
+        return cachedSearchablePhrases.filter {
             $0.sourceText.localizedCaseInsensitiveContains(searchText) ||
             $0.translatedText.localizedCaseInsensitiveContains(searchText) ||
             ($0.notes?.localizedCaseInsensitiveContains(searchText) ?? false)
@@ -280,7 +279,7 @@ struct LibraryView: View {
                     Spacer().frame(height: searchBarMaxY + 8)
                     PhraseSearchOverlay(
                         searchText: $searchText,
-                        allPhrases: allSearchablePhrases,
+                        allPhrases: cachedSearchablePhrases,
                         selectedPhrase: $selectedPhraseForDetail
                     )
                     Spacer()
@@ -321,6 +320,7 @@ struct LibraryView: View {
         .onAppear {
             store.load()
             store.seedDemoPhrasesIfNeeded()
+            rebuildSearchablePhrases()
 
             // Seed language-specific starter decks whenever the target language changes
             let langCode = StarterDeckSeeder.shared.targetLanguageCode

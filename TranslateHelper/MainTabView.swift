@@ -4,14 +4,20 @@ import SwiftUI
 
 struct MainTabView: View {
     @State private var selectedTab = 0
+    @State private var hasLoadedCoach = false
+    @State private var hasLoadedSettings = false
 
     var body: some View {
         ZStack(alignment: .bottom) {
+            // Lazy tab loading — Coach and Settings only initialize on first tap.
+            // This avoids creating CoachView (4000+ lines) on app launch.
             Group {
                 switch selectedTab {
                 case 0: LibraryView()
                 case 1: CoachView()
+                    .onAppear { hasLoadedCoach = true }
                 case 2: SettingsView()
+                    .onAppear { hasLoadedSettings = true }
                 default: LibraryView()
                 }
             }
