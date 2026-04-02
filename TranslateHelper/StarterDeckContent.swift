@@ -22,7 +22,14 @@ struct StarterDeckContent {
         case "pt": return portuguese(deckType)
         case "it": return italian(deckType)
         case "de": return german(deckType)
-        // TODO: 35 more languages pending — functions generated, awaiting file write
+        case "es": return spanish(deckType)
+        case "ja": return japanese(deckType)
+        case "ko": return korean(deckType)
+        case "ar": return arabic(deckType)
+        case "zh": return chinese(deckType)
+        case "ru": return russian(deckType)
+        case "nl": return dutch(deckType)
+        // TODO: 28 more languages pending
         default:   return nil
         }
     }
@@ -327,6 +334,321 @@ struct StarterDeckContent {
                 DeckCard(english: "You have beautiful eyes", spanish: "Du hast wunderschöne Augen", notes: "Classic compliment. Always works.", targetLang: "de"),
                 DeckCard(english: "Will you be my girlfriend/boyfriend?", spanish: "Willst du meine Freundin/mein Freund sein?", notes: "The official ask. A big deal in German dating culture.", targetLang: "de"),
                 DeckCard(english: "I only have eyes for you", spanish: "Ich habe nur Augen für dich", notes: "Said to express devotion. Direct and sincere.", targetLang: "de"),
+            ]
+        }
+    }
+
+    // MARK: - Spanish
+    private static func spanish(_ type: StarterDeckType) -> [DeckCard] {
+        switch type {
+        case .timelessAdages:
+            return [
+                DeckCard(english: "Tell me who you hang out with and I'll tell you who you are", spanish: "Dime con quién andas y te diré quién eres", notes: "Used to judge someone by their company.", targetLang: "es"),
+                DeckCard(english: "No evil lasts a hundred years", spanish: "No hay mal que dure cien años", notes: "Said to comfort someone — nothing bad is permanent.", targetLang: "es"),
+                DeckCard(english: "He who rises early, God helps him", spanish: "Al que madruga, Dios le ayuda", notes: "The Spanish 'early bird catches the worm'.", targetLang: "es"),
+                DeckCard(english: "You can't cover the sun with one finger", spanish: "No se puede tapar el sol con un dedo", notes: "You can't hide the obvious truth.", targetLang: "es"),
+                DeckCard(english: "Better the devil you know", spanish: "Más vale malo conocido que bueno por conocer", notes: "Said when weighing risky change.", targetLang: "es"),
+                DeckCard(english: "The shrimp that falls asleep gets carried by the current", spanish: "Camarón que se duerme se lo lleva la corriente", notes: "Stay alert or you'll lose out.", targetLang: "es"),
+                DeckCard(english: "Every monkey to their own branch", spanish: "Cada chango a su mecate", notes: "Everyone should mind their own business.", targetLang: "es"),
+                DeckCard(english: "Water you don't need, let it flow", spanish: "Agua que no has de beber, déjala correr", notes: "Don't meddle in things that aren't your concern.", targetLang: "es"),
+                DeckCard(english: "He who has a mouth makes mistakes", spanish: "El que tiene boca se equivoca", notes: "Everyone makes mistakes.", targetLang: "es"),
+                DeckCard(english: "There's no deadline that isn't met", spanish: "No hay plazo que no se cumpla ni deuda que no se pague", notes: "Everything comes due eventually.", targetLang: "es"),
+            ]
+        case .euphemisms:
+            return [
+                DeckCard(english: "To have sex", spanish: "Echar un polvo", notes: "The most common casual euphemism for sex.", targetLang: "es"),
+                DeckCard(english: "To get wasted", spanish: "Ponerse hasta las chanclas", notes: "Mexican slang for getting absolutely hammered.", targetLang: "es"),
+                DeckCard(english: "Foreplay / teasing", spanish: "Calentar los motores", notes: "Warming up the engines — sexual buildup.", targetLang: "es"),
+                DeckCard(english: "To indulge wildly", spanish: "Ponerse las botas", notes: "To feast or enjoy excessively.", targetLang: "es"),
+                DeckCard(english: "To have a lot of nerve", spanish: "Tener mucha cara", notes: "Said about someone bold or shameless.", targetLang: "es"),
+                DeckCard(english: "To go out partying hard", spanish: "Irse de juerga", notes: "To go on a wild night out.", targetLang: "es"),
+                DeckCard(english: "To be horny", spanish: "Estar caliente", notes: "Means sexually aroused in Latin America.", targetLang: "es"),
+                DeckCard(english: "To sleep around", spanish: "Ser de cascos ligeros", notes: "Old-fashioned but still used for promiscuous.", targetLang: "es"),
+                DeckCard(english: "To hook up with someone", spanish: "Liarse con alguien", notes: "Covers making out to a full hookup.", targetLang: "es"),
+                DeckCard(english: "To be well-endowed", spanish: "Estar bien dotado", notes: "Said with a knowing look about anatomy.", targetLang: "es"),
+            ]
+        case .datingAndRomance:
+            return [
+                DeckCard(english: "I like you", spanish: "Me gustas", notes: "The standard way to express romantic attraction.", targetLang: "es"),
+                DeckCard(english: "You drive me crazy", spanish: "Me vuelves loco/loca", notes: "Passionate and very commonly used.", targetLang: "es"),
+                DeckCard(english: "I love you", spanish: "Te quiero", notes: "Used for everyday romantic love.", targetLang: "es"),
+                DeckCard(english: "My love", spanish: "Mi amor", notes: "The most common term of endearment.", targetLang: "es"),
+                DeckCard(english: "You're gorgeous", spanish: "Estás guapísimo/guapísima", notes: "Said when someone looks especially good.", targetLang: "es"),
+                DeckCard(english: "Want to go for a drink?", spanish: "¿Quieres salir a tomar algo?", notes: "The standard casual date invitation.", targetLang: "es"),
+                DeckCard(english: "I miss you", spanish: "Te extraño", notes: "Latin American form. Spain: 'Te echo de menos'.", targetLang: "es"),
+                DeckCard(english: "Can I kiss you?", spanish: "¿Puedo besarte?", notes: "Direct and respectful.", targetLang: "es"),
+                DeckCard(english: "I can't stop thinking about you", spanish: "No puedo dejar de pensar en ti", notes: "Sincere and romantic.", targetLang: "es"),
+                DeckCard(english: "You make me so happy", spanish: "Me haces muy feliz", notes: "Simple, heartfelt.", targetLang: "es"),
+            ]
+        }
+    }
+
+    // MARK: - Japanese
+    private static func japanese(_ type: StarterDeckType) -> [DeckCard] {
+        switch type {
+        case .timelessAdages:
+            return [
+                DeckCard(english: "Fall seven times, stand up eight", spanish: "七転び八起き", notes: "The quintessential Japanese resilience proverb.", targetLang: "ja"),
+                DeckCard(english: "Even monkeys fall from trees", spanish: "猿も木から落ちる", notes: "Even experts make mistakes.", targetLang: "ja"),
+                DeckCard(english: "The nail that sticks out gets hammered", spanish: "出る杭は打たれる", notes: "Don't stand out too much — group harmony.", targetLang: "ja"),
+                DeckCard(english: "Dust piled up becomes a mountain", spanish: "塵も積もれば山となる", notes: "Small efforts add up.", targetLang: "ja"),
+                DeckCard(english: "Seeing is believing", spanish: "百聞は一見にしかず", notes: "Hearing 100 times < seeing once.", targetLang: "ja"),
+                DeckCard(english: "The mouth is the source of disaster", spanish: "口は災いの元", notes: "Watch what you say.", targetLang: "ja"),
+                DeckCard(english: "A frog in a well doesn't know the ocean", spanish: "井の中の蛙大海を知らず", notes: "Someone with a narrow worldview.", targetLang: "ja"),
+                DeckCard(english: "Flowers on a high peak", spanish: "高嶺の花", notes: "Someone unattainably attractive.", targetLang: "ja"),
+                DeckCard(english: "Time flies like an arrow", spanish: "光陰矢のごとし", notes: "Don't waste time.", targetLang: "ja"),
+                DeckCard(english: "A thousand-mile journey begins with one step", spanish: "千里の道も一歩から", notes: "Used to encourage starting something.", targetLang: "ja"),
+            ]
+        case .euphemisms:
+            return [
+                DeckCard(english: "To sleep together", spanish: "一夜を共にする", notes: "To spend one night together.", targetLang: "ja"),
+                DeckCard(english: "Physical relationship", spanish: "体の関係がある", notes: "To have a body relationship.", targetLang: "ja"),
+                DeckCard(english: "To get completely wasted", spanish: "泥酔する", notes: "Mud-drunk — vivid imagery.", targetLang: "ja"),
+                DeckCard(english: "Playboy / womanizer", spanish: "女たらし", notes: "A man who seduces many women.", targetLang: "ja"),
+                DeckCard(english: "To flirt / pick someone up", spanish: "ナンパする", notes: "Very common slang.", targetLang: "ja"),
+                DeckCard(english: "Friends with benefits", spanish: "セフレ", notes: "Abbreviation of 'sex friend'.", targetLang: "ja"),
+                DeckCard(english: "To be a lightweight", spanish: "下戸", notes: "Someone who can't hold their alcohol.", targetLang: "ja"),
+                DeckCard(english: "To drink until morning", spanish: "朝まで飲む", notes: "Standard big night out description.", targetLang: "ja"),
+                DeckCard(english: "To be head over heels", spanish: "メロメロになる", notes: "Going weak with love/desire.", targetLang: "ja"),
+                DeckCard(english: "Late night invitation", spanish: "夜のお誘い", notes: "Everyone understands the implication.", targetLang: "ja"),
+            ]
+        case .datingAndRomance:
+            return [
+                DeckCard(english: "I like you (confession)", spanish: "好きです", notes: "THE phrase for confessing romantic feelings.", targetLang: "ja"),
+                DeckCard(english: "I love you", spanish: "愛してる", notes: "Much heavier than English — deeply serious.", targetLang: "ja"),
+                DeckCard(english: "Will you go out with me?", spanish: "付き合ってください", notes: "Formal way to ask to be together.", targetLang: "ja"),
+                DeckCard(english: "You're cute", spanish: "かわいいね", notes: "The most common compliment.", targetLang: "ja"),
+                DeckCard(english: "You're cool / attractive", spanish: "かっこいい", notes: "Said to men who are handsome or stylish.", targetLang: "ja"),
+                DeckCard(english: "I want to see you", spanish: "会いたい", notes: "More natural than 'I miss you' in Japanese.", targetLang: "ja"),
+                DeckCard(english: "My heart skipped a beat", spanish: "ドキドキした", notes: "Racing heart around a crush.", targetLang: "ja"),
+                DeckCard(english: "I feel at ease with you", spanish: "一緒にいると落ち着く", notes: "A deeply valued compliment — comfort > passion.", targetLang: "ja"),
+                DeckCard(english: "Can I hold your hand?", spanish: "手をつないでもいい？", notes: "Hand-holding is a meaningful step in Japan.", targetLang: "ja"),
+                DeckCard(english: "I want to be with you forever", spanish: "ずっと一緒にいたい", notes: "Serious long-term commitment.", targetLang: "ja"),
+            ]
+        }
+    }
+
+    // MARK: - Korean
+    private static func korean(_ type: StarterDeckType) -> [DeckCard] {
+        switch type {
+        case .timelessAdages:
+            return [
+                DeckCard(english: "Even a worm will turn if stepped on", spanish: "지렁이도 밟으면 꿈틀한다", notes: "Even the meekest person will react if pushed too far.", targetLang: "ko"),
+                DeckCard(english: "Start is half the battle", spanish: "시작이 반이다", notes: "The hardest part is getting started.", targetLang: "ko"),
+                DeckCard(english: "You reap what you sow", spanish: "콩 심은 데 콩 나고 팥 심은 데 팥 난다", notes: "Plant beans, get beans. Actions have consequences.", targetLang: "ko"),
+                DeckCard(english: "A sheet of paper is lighter when lifted together", spanish: "백지장도 맞들면 낫다", notes: "Teamwork makes things easier.", targetLang: "ko"),
+                DeckCard(english: "Words become seeds", spanish: "말이 씨가 된다", notes: "What you say can come true — be careful.", targetLang: "ko"),
+                DeckCard(english: "Even if the sky falls, there's a way out", spanish: "하늘이 무너져도 솟아날 구멍이 있다", notes: "There's always hope.", targetLang: "ko"),
+                DeckCard(english: "Writing characters in front of Confucius", spanish: "공자 앞에서 문자 쓴다", notes: "Don't lecture an expert.", targetLang: "ko"),
+                DeckCard(english: "Misfortune and fortune are intertwined", spanish: "새옹지마", notes: "What seems bad might be good, and vice versa.", targetLang: "ko"),
+                DeckCard(english: "A thousand-li road starts with one step", spanish: "천리 길도 한 걸음부터", notes: "Patience and persistence.", targetLang: "ko"),
+                DeckCard(english: "A tiger leaves its skin, a person their name", spanish: "호랑이는 죽어서 가죽을 남기고 사람은 죽어서 이름을 남긴다", notes: "Your reputation is what survives you.", targetLang: "ko"),
+            ]
+        case .euphemisms:
+            return [
+                DeckCard(english: "To sleep together", spanish: "밤을 같이 보내다", notes: "To spend the night together.", targetLang: "ko"),
+                DeckCard(english: "One-night stand", spanish: "하룻밤", notes: "One night. Everyone knows the implication.", targetLang: "ko"),
+                DeckCard(english: "To get blackout drunk", spanish: "필름이 끊기다", notes: "The film breaks — your memory cuts out.", targetLang: "ko"),
+                DeckCard(english: "To drink soju bombs", spanish: "폭탄주를 마시다", notes: "The iconic Korean heavy-drinking ritual.", targetLang: "ko"),
+                DeckCard(english: "To hit on someone", spanish: "작업을 걸다", notes: "Putting the moves on someone.", targetLang: "ko"),
+                DeckCard(english: "To be a player", spanish: "바람둥이", notes: "Wind-person — someone who cheats.", targetLang: "ko"),
+                DeckCard(english: "That ambiguous pre-relationship phase", spanish: "썸 타다", notes: "Romantic/sexual tension, not yet official.", targetLang: "ko"),
+                DeckCard(english: "To be very attractive", spanish: "섹시하다", notes: "Borrowed from English, used more casually.", targetLang: "ko"),
+                DeckCard(english: "To be hungover", spanish: "숙취에 시달리다", notes: "Korea has a whole culture around hangover cures.", targetLang: "ko"),
+                DeckCard(english: "Physical affection", spanish: "스킨십", notes: "Konglish for holding hands, hugging, etc.", targetLang: "ko"),
+            ]
+        case .datingAndRomance:
+            return [
+                DeckCard(english: "I like you", spanish: "좋아해요", notes: "Standard way to confess feelings.", targetLang: "ko"),
+                DeckCard(english: "I love you", spanish: "사랑해요", notes: "The most iconic Korean phrase.", targetLang: "ko"),
+                DeckCard(english: "Will you go out with me?", spanish: "나랑 사귈래?", notes: "The official 'let's date' question.", targetLang: "ko"),
+                DeckCard(english: "You're so pretty", spanish: "너무 예뻐요", notes: "The go-to compliment for women.", targetLang: "ko"),
+                DeckCard(english: "You're handsome", spanish: "잘생겼어요", notes: "Said to men.", targetLang: "ko"),
+                DeckCard(english: "I miss you", spanish: "보고 싶어요", notes: "I want to see you.", targetLang: "ko"),
+                DeckCard(english: "My heart fluttered", spanish: "설레다", notes: "Butterflies-in-stomach feeling.", targetLang: "ko"),
+                DeckCard(english: "Honey / darling", spanish: "자기야", notes: "Most common pet name between couples.", targetLang: "ko"),
+                DeckCard(english: "Let's eat together", spanish: "같이 밥 먹자", notes: "Basically asking someone on a date.", targetLang: "ko"),
+                DeckCard(english: "I only have you", spanish: "나는 너밖에 없어", notes: "You're the only one for me.", targetLang: "ko"),
+            ]
+        }
+    }
+
+    // MARK: - Arabic
+    private static func arabic(_ type: StarterDeckType) -> [DeckCard] {
+        switch type {
+        case .timelessAdages:
+            return [
+                DeckCard(english: "Patience is the key to relief", spanish: "الصبر مفتاح الفرج", notes: "One of the most-used Arabic proverbs.", targetLang: "ar"),
+                DeckCard(english: "He who digs a hole for his brother falls in it", spanish: "اللي يحفر حفرة لأخيه يقع فيها", notes: "Karma — scheming backfires.", targetLang: "ar"),
+                DeckCard(english: "The monkey in its mother's eye is a gazelle", spanish: "القرد في عين أمه غزال", notes: "Every mother thinks her child is beautiful.", targetLang: "ar"),
+                DeckCard(english: "What is written on the forehead must be seen", spanish: "المكتوب على الجبين لازم تشوفه العين", notes: "You can't escape your fate.", targetLang: "ar"),
+                DeckCard(english: "A hand alone can't clap", spanish: "إيد لوحدها ما بتزقفش", notes: "You need others to succeed.", targetLang: "ar"),
+                DeckCard(english: "Repetition teaches the donkey", spanish: "التكرار يعلّم الحمار", notes: "Even a donkey can learn with repetition.", targetLang: "ar"),
+                DeckCard(english: "The eye can't rise above the eyebrow", spanish: "العين ما بتعلا عن الحاجب", notes: "Know your place.", targetLang: "ar"),
+                DeckCard(english: "He who asks never gets lost", spanish: "اللي يسأل ما يتوهش", notes: "No shame in asking for help.", targetLang: "ar"),
+                DeckCard(english: "After hardship comes ease", spanish: "إن مع العسر يسرا", notes: "Quranic verse used as everyday wisdom.", targetLang: "ar"),
+                DeckCard(english: "He who has no old has no new", spanish: "اللي ما له قديم ما له جديد", notes: "Respect your roots.", targetLang: "ar"),
+            ]
+        case .euphemisms:
+            return [
+                DeckCard(english: "To drink alcohol (discreetly)", spanish: "يشرب حاجة ساقعة", notes: "Drink something cold — coded for alcohol.", targetLang: "ar"),
+                DeckCard(english: "A womanizer", spanish: "زير نساء", notes: "A frequenter of women.", targetLang: "ar"),
+                DeckCard(english: "Intimate relationship", spanish: "العلاقة الحميمة", notes: "The polite way to discuss sex.", targetLang: "ar"),
+                DeckCard(english: "He has a wandering eye", spanish: "عينه زايغة", notes: "Checks everyone out.", targetLang: "ar"),
+                DeckCard(english: "To be shameless", spanish: "وشه حديد", notes: "His face is iron — zero shame.", targetLang: "ar"),
+                DeckCard(english: "To sweet-talk someone", spanish: "يعسّل الكلام", notes: "To honey the words.", targetLang: "ar"),
+                DeckCard(english: "To be tipsy", spanish: "داير على واحدة ونص", notes: "Running on one and a half.", targetLang: "ar"),
+                DeckCard(english: "Drop-dead gorgeous", spanish: "حته من القمر", notes: "A piece of the moon.", targetLang: "ar"),
+                DeckCard(english: "Caught red-handed", spanish: "اتمسك متلبس", notes: "Caught in the act.", targetLang: "ar"),
+                DeckCard(english: "To have a wild night", spanish: "يسهر لآخر الليل", notes: "Stay up until the end of the night.", targetLang: "ar"),
+            ]
+        case .datingAndRomance:
+            return [
+                DeckCard(english: "I love you", spanish: "بحبك", notes: "Egyptian dialect — most widely understood.", targetLang: "ar"),
+                DeckCard(english: "You are my life", spanish: "أنت عمري", notes: "Immortalised by Umm Kulthum.", targetLang: "ar"),
+                DeckCard(english: "My eyes (endearment)", spanish: "يا عيني", notes: "They're precious to you.", targetLang: "ar"),
+                DeckCard(english: "You light up my world", spanish: "بتنور الدنيا لما بتيجي", notes: "The world lights up when you come.", targetLang: "ar"),
+                DeckCard(english: "My soul", spanish: "يا روحي", notes: "One of the most intimate endearments.", targetLang: "ar"),
+                DeckCard(english: "You're beautiful", spanish: "إنتي حلوة أوي", notes: "Egyptian for 'you're so beautiful'.", targetLang: "ar"),
+                DeckCard(english: "I miss you so much", spanish: "وحشتني أوي", notes: "Egyptian — deeply felt.", targetLang: "ar"),
+                DeckCard(english: "You stole my heart", spanish: "سرقت قلبي", notes: "Classic across all dialects.", targetLang: "ar"),
+                DeckCard(english: "I can't live without you", spanish: "ما بقدر أعيش بدونك", notes: "Intense declaration.", targetLang: "ar"),
+                DeckCard(english: "Will you marry me?", spanish: "تتجوزيني؟", notes: "Egyptian dialect — the big question.", targetLang: "ar"),
+            ]
+        }
+    }
+
+    // MARK: - Chinese
+    private static func chinese(_ type: StarterDeckType) -> [DeckCard] {
+        switch type {
+        case .timelessAdages:
+            return [
+                DeckCard(english: "A journey of a thousand miles begins with one step", spanish: "千里之行，始于足下", notes: "From Laozi — used constantly.", targetLang: "zh"),
+                DeckCard(english: "Learning is like rowing upstream", spanish: "学如逆水行舟，不进则退", notes: "Not to advance is to fall back.", targetLang: "zh"),
+                DeckCard(english: "Once bitten by a snake, afraid of rope for ten years", spanish: "一朝被蛇咬，十年怕井绳", notes: "Once burned, twice shy.", targetLang: "zh"),
+                DeckCard(english: "A loss may turn out to be a gain", spanish: "塞翁失马，焉知非福", notes: "Classic parable about perspective.", targetLang: "zh"),
+                DeckCard(english: "True gold doesn't fear fire", spanish: "真金不怕火炼", notes: "Quality proves itself under pressure.", targetLang: "zh"),
+                DeckCard(english: "When drinking water, remember the source", spanish: "饮水思源", notes: "Be grateful to those who helped you.", targetLang: "zh"),
+                DeckCard(english: "Don't judge by appearance", spanish: "人不可貌相", notes: "Used exactly like English equivalent.", targetLang: "zh"),
+                DeckCard(english: "Don't enter the tiger's den, can't catch the cub", spanish: "不入虎穴，焉得虎子", notes: "No risk, no reward.", targetLang: "zh"),
+                DeckCard(english: "Opportunities wait for no one", spanish: "机不可失，时不再来", notes: "Seize the moment.", targetLang: "zh"),
+                DeckCard(english: "Know yourself and your enemy", spanish: "知己知彼，百战百胜", notes: "From Sun Tzu — used in business and life.", targetLang: "zh"),
+            ]
+        case .euphemisms:
+            return [
+                DeckCard(english: "To sleep together", spanish: "滚床单", notes: "Roll the bedsheets — very common slang.", targetLang: "zh"),
+                DeckCard(english: "One-night stand", spanish: "一夜情", notes: "One night of feeling.", targetLang: "zh"),
+                DeckCard(english: "To get wasted", spanish: "喝得烂醉", notes: "Drink until rotten-drunk.", targetLang: "zh"),
+                DeckCard(english: "To flirt", spanish: "撩人", notes: "Huge modern slang.", targetLang: "zh"),
+                DeckCard(english: "A player", spanish: "渣男 / 渣女", notes: "Trash man/woman — internet slang.", targetLang: "zh"),
+                DeckCard(english: "Secret crush", spanish: "暗恋", notes: "Dark love — unrequited feelings.", targetLang: "zh"),
+                DeckCard(english: "To be thick-skinned", spanish: "脸皮厚", notes: "Someone with nerve.", targetLang: "zh"),
+                DeckCard(english: "To show off", spanish: "显摆", notes: "Showing off to attract attention.", targetLang: "zh"),
+                DeckCard(english: "To be whipped", spanish: "耙耳朵", notes: "Wrapped around partner's finger.", targetLang: "zh"),
+                DeckCard(english: "Friends with benefits", spanish: "炮友", notes: "Cannon friend — crude but common.", targetLang: "zh"),
+            ]
+        case .datingAndRomance:
+            return [
+                DeckCard(english: "I like you", spanish: "我喜欢你", notes: "The standard confession.", targetLang: "zh"),
+                DeckCard(english: "I love you", spanish: "我爱你", notes: "Carries real weight in Chinese.", targetLang: "zh"),
+                DeckCard(english: "Will you be my girlfriend/boyfriend?", spanish: "你愿意做我的女朋友/男朋友吗？", notes: "Making it explicit is important.", targetLang: "zh"),
+                DeckCard(english: "You're so beautiful", spanish: "你好漂亮", notes: "The most common compliment.", targetLang: "zh"),
+                DeckCard(english: "I miss you", spanish: "我想你了", notes: "The 了 adds immediacy.", targetLang: "zh"),
+                DeckCard(english: "Baby / darling", spanish: "宝贝", notes: "Treasure — most common pet name.", targetLang: "zh"),
+                DeckCard(english: "You make my heart race", spanish: "你让我心动", notes: "You make my heart move.", targetLang: "zh"),
+                DeckCard(english: "I want to grow old with you", spanish: "我想和你一起慢慢变老", notes: "Sincere long-term commitment.", targetLang: "zh"),
+                DeckCard(english: "You're the one I've been looking for", spanish: "你就是我一直在找的人", notes: "Deeply romantic.", targetLang: "zh"),
+                DeckCard(english: "Let's go eat hotpot", spanish: "一起去吃火锅吧", notes: "Sharing hotpot is a natural date.", targetLang: "zh"),
+            ]
+        }
+    }
+
+    // MARK: - Russian
+    private static func russian(_ type: StarterDeckType) -> [DeckCard] {
+        switch type {
+        case .timelessAdages:
+            return [
+                DeckCard(english: "Trust but verify", spanish: "Доверяй, но проверяй", notes: "Old Russian proverb made famous by Reagan.", targetLang: "ru"),
+                DeckCard(english: "You reap what you sow", spanish: "Что посеешь, то и пожнёшь", notes: "Actions have consequences.", targetLang: "ru"),
+                DeckCard(english: "Morning is wiser than evening", spanish: "Утро вечера мудренее", notes: "Sleep on it before deciding.", targetLang: "ru"),
+                DeckCard(english: "Can't break a wall with your forehead", spanish: "Лбом стену не прошибёшь", notes: "Don't fight what you can't change.", targetLang: "ru"),
+                DeckCard(english: "The tongue will bring you to Kyiv", spanish: "Язык до Киева доведёт", notes: "Ask for directions and you'll get anywhere.", targetLang: "ru"),
+                DeckCard(english: "Not all that glitters is gold", spanish: "Не всё то золото, что блестит", notes: "Appearances deceive.", targetLang: "ru"),
+                DeckCard(english: "Work is not a wolf", spanish: "Работа не волк, в лес не убежит", notes: "Work can wait — justifies procrastination.", targetLang: "ru"),
+                DeckCard(english: "A fish rots from the head", spanish: "Рыба гниёт с головы", notes: "Problems start with bad leadership.", targetLang: "ru"),
+                DeckCard(english: "Fear has big eyes", spanish: "У страха глаза велики", notes: "Fear makes things seem worse.", targetLang: "ru"),
+                DeckCard(english: "Measure seven times, cut once", spanish: "Семь раз отмерь, один раз отрежь", notes: "Think carefully before acting.", targetLang: "ru"),
+            ]
+        case .euphemisms:
+            return [
+                DeckCard(english: "To have sex", spanish: "Переспать", notes: "To sleep over — most common euphemism.", targetLang: "ru"),
+                DeckCard(english: "To get completely wasted", spanish: "Нажраться", notes: "Very common slang for getting hammered.", targetLang: "ru"),
+                DeckCard(english: "To be tipsy", spanish: "Подшофе", notes: "From French — a genteel way to say slightly drunk.", targetLang: "ru"),
+                DeckCard(english: "To hit on someone", spanish: "Подкатывать", notes: "To roll up to someone.", targetLang: "ru"),
+                DeckCard(english: "To cheat", spanish: "Ходить налево", notes: "To walk to the left — classic euphemism.", targetLang: "ru"),
+                DeckCard(english: "Womanizer", spanish: "Бабник", notes: "A man who chases women.", targetLang: "ru"),
+                DeckCard(english: "To be shameless", spanish: "Наглый как танк", notes: "Bold as a tank.", targetLang: "ru"),
+                DeckCard(english: "To get plastered", spanish: "Напиться в стельку", notes: "Drink to the insole.", targetLang: "ru"),
+                DeckCard(english: "Hair of the dog", spanish: "Опохмелиться", notes: "One word for curing hangover by drinking more.", targetLang: "ru"),
+                DeckCard(english: "One-night stand", spanish: "Случайная связь", notes: "Accidental connection.", targetLang: "ru"),
+            ]
+        case .datingAndRomance:
+            return [
+                DeckCard(english: "I like you", spanish: "Ты мне нравишься", notes: "You please me — standard romantic interest.", targetLang: "ru"),
+                DeckCard(english: "I love you", spanish: "Я тебя люблю", notes: "Carries serious weight — not said casually.", targetLang: "ru"),
+                DeckCard(english: "My darling", spanish: "Милая моя", notes: "Sweet and tender for a girlfriend/wife.", targetLang: "ru"),
+                DeckCard(english: "Sunshine", spanish: "Солнышко", notes: "Little sun — most popular pet name.", targetLang: "ru"),
+                DeckCard(english: "You're beautiful", spanish: "Ты красивая", notes: "Direct and sincere.", targetLang: "ru"),
+                DeckCard(english: "I miss you", spanish: "Я скучаю по тебе", notes: "Said when apart from someone you care about.", targetLang: "ru"),
+                DeckCard(english: "Let's go for a walk", spanish: "Пойдём погуляем", notes: "The classic Russian date.", targetLang: "ru"),
+                DeckCard(english: "You drive me crazy", spanish: "Ты сводишь меня с ума", notes: "You drive me from my mind.", targetLang: "ru"),
+                DeckCard(english: "I can't live without you", spanish: "Я без тебя не могу", notes: "Intense declaration.", targetLang: "ru"),
+                DeckCard(english: "Will you marry me?", spanish: "Выходи за меня", notes: "The traditional proposal.", targetLang: "ru"),
+            ]
+        }
+    }
+
+    // MARK: - Dutch
+    private static func dutch(_ type: StarterDeckType) -> [DeckCard] {
+        switch type {
+        case .timelessAdages:
+            return [
+                DeckCard(english: "Act normal, that's crazy enough", spanish: "Doe maar gewoon, dan doe je al gek genoeg", notes: "THE most Dutch proverb — don't show off.", targetLang: "nl"),
+                DeckCard(english: "He who burns himself must sit on the blisters", spanish: "Wie zijn billen brandt, moet op de blaren zitten", notes: "Deal with the consequences.", targetLang: "nl"),
+                DeckCard(english: "Tall trees catch the most wind", spanish: "Hoge bomen vangen veel wind", notes: "Prominent people attract criticism.", targetLang: "nl"),
+                DeckCard(english: "Better one bird in hand than ten in the air", spanish: "Beter één vogel in de hand dan tien in de lucht", notes: "Take the sure thing.", targetLang: "nl"),
+                DeckCard(english: "After rain comes sunshine", spanish: "Na regen komt zonneschijn", notes: "Things will get better.", targetLang: "nl"),
+                DeckCard(english: "The morning hour has gold in its mouth", spanish: "De morgenstond heeft goud in de mond", notes: "Early risers are rewarded.", targetLang: "nl"),
+                DeckCard(english: "Soft healers make stinking wounds", spanish: "Zachte heelmeesters maken stinkende wonden", notes: "Being too gentle causes worse problems.", targetLang: "nl"),
+                DeckCard(english: "The best helmsmen stand on shore", spanish: "De beste stuurlui staan aan wal", notes: "Everyone's an expert from the sidelines.", targetLang: "nl"),
+                DeckCard(english: "Unknown makes unloved", spanish: "Onbekend maakt onbemind", notes: "People fear what they don't know.", targetLang: "nl"),
+                DeckCard(english: "Penny wise, pound foolish", spanish: "Wie het kleine niet eert, is het grote niet weerd", notes: "Respect money — very Dutch.", targetLang: "nl"),
+            ]
+        case .euphemisms:
+            return [
+                DeckCard(english: "To have sex", spanish: "Naar bed gaan met iemand", notes: "To go to bed with someone.", targetLang: "nl"),
+                DeckCard(english: "To make out", spanish: "Zoenen", notes: "Covers making out and often implies more.", targetLang: "nl"),
+                DeckCard(english: "To get completely drunk", spanish: "Ladderzat zijn", notes: "Ladder-drunk — so drunk you need a ladder.", targetLang: "nl"),
+                DeckCard(english: "To be tipsy", spanish: "Aangeschoten zijn", notes: "Shot-at — a little drunk.", targetLang: "nl"),
+                DeckCard(english: "To flirt", spanish: "Versieren", notes: "Standard Dutch word for picking someone up.", targetLang: "nl"),
+                DeckCard(english: "To be well-endowed", spanish: "Goed bedeeld zijn", notes: "Well-gifted — said with a knowing look.", targetLang: "nl"),
+                DeckCard(english: "One-night stand", spanish: "Een onenightstand hebben", notes: "Borrowed from English, fully naturalised.", targetLang: "nl"),
+                DeckCard(english: "Hangover", spanish: "Een kater hebben", notes: "To have a tomcat.", targetLang: "nl"),
+                DeckCard(english: "A player", spanish: "Een rokkenjager", notes: "A skirt-chaser.", targetLang: "nl"),
+                DeckCard(english: "To have nerve", spanish: "Lef hebben", notes: "Guts/nerve — can be admiring or disapproving.", targetLang: "nl"),
+            ]
+        case .datingAndRomance:
+            return [
+                DeckCard(english: "I like you", spanish: "Ik vind je leuk", notes: "I find you nice — THE way to express interest.", targetLang: "nl"),
+                DeckCard(english: "I love you", spanish: "Ik hou van je", notes: "Dutch people don't say this lightly.", targetLang: "nl"),
+                DeckCard(english: "Will you go out with me?", spanish: "Wil je met me uit?", notes: "Standard date invitation.", targetLang: "nl"),
+                DeckCard(english: "You're beautiful", spanish: "Je bent mooi", notes: "Direct Dutch compliment.", targetLang: "nl"),
+                DeckCard(english: "I miss you", spanish: "Ik mis je", notes: "Simple and heartfelt.", targetLang: "nl"),
+                DeckCard(english: "Sweetheart", spanish: "Schatje", notes: "Little treasure — most common pet name.", targetLang: "nl"),
+                DeckCard(english: "Shall we split the bill?", spanish: "Gaan we samen delen?", notes: "Going Dutch is genuinely the norm.", targetLang: "nl"),
+                DeckCard(english: "I'm crazy about you", spanish: "Ik ben gek op je", notes: "I am crazy on you.", targetLang: "nl"),
+                DeckCard(english: "You make me happy", spanish: "Je maakt me gelukkig", notes: "Sincere and straightforward.", targetLang: "nl"),
+                DeckCard(english: "I want to be with you", spanish: "Ik wil bij je zijn", notes: "Expressing desire for commitment.", targetLang: "nl"),
             ]
         }
     }
