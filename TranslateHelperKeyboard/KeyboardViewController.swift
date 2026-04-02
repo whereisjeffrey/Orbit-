@@ -2041,11 +2041,13 @@ class KeyboardViewController: UIInputViewController {
         }
 
         // Debounce: wait 1.8s after last keystroke then auto-translate (or Wingman)
+        // CRITICAL: capture the text NOW — don't re-read textDocumentProxy inside the timer.
+        // The proxy truncates to ~200-300 chars, and by the time the timer fires 1.8s later,
+        // it may return even less. Using the captured `text` ensures we translate everything.
+        let capturedText = text
         autoTranslateTimer = Timer.scheduledTimer(withTimeInterval: 1.8, repeats: false) { [weak self] _ in
             guard let self = self else { return }
-            let b = self.textDocumentProxy.documentContextBeforeInput ?? ""
-            let a = self.textDocumentProxy.documentContextAfterInput  ?? ""
-            let t = (b + a).trimmingCharacters(in: .whitespacesAndNewlines)
+            let t = capturedText
             guard !t.isEmpty else { return }
 
             // Wingman mode: route to situation handler
