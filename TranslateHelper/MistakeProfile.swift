@@ -383,13 +383,27 @@ final class MistakeProfileStore: ObservableObject {
         }
 
         let langName = LanguageManager.languageName(for: language)
+        let userLevel = UserLevelStore.shared.hasBeenAssessed
+            ? UserLevelStore.shared.overallLevel.rawValue
+            : "B1"
+        let levelGuidelines = LightningRoundEngine.difficultyGuidelines(for: userLevel)
+
         let prompt = """
-        Generate 8 common mistakes English speakers make when learning \(langName).
+        Generate 8 common mistakes that an English speaker at CEFR level \(userLevel) would make when learning \(langName).
+
+        THE USER IS LEVEL \(userLevel). This is critical:
+        \(levelGuidelines)
+
+        Generate mistakes that match THIS level — not easier, not harder.
+        - A1/A2: basic errors like wrong articles, simple verb forms, basic word order
+        - B1/B2: subjunctive errors, nuanced preposition choices, false friends, register mistakes
+        - C1/C2: subtle stylistic errors, near-synonym confusion, literary vs colloquial misuse
+
         Cover these categories: gender, conjugation, preposition, grammar, vocabulary, word_order, idiom, pronunciation.
 
         For each mistake, provide:
         - category: one of [gender, conjugation, preposition, grammar, vocabulary, word_order, idiom, pronunciation]
-        - user_said: what the English speaker would incorrectly say in \(langName)
+        - user_said: what the English speaker would incorrectly say in \(langName) (at \(userLevel) complexity)
         - correct: the correct \(langName) form
         - explanation: 1 sentence in English explaining why (15 words max)
 

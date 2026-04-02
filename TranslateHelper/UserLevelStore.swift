@@ -106,7 +106,10 @@ class UserLevelStore {
 
     /// Whether the user has completed their initial self-assessment.
     var hasBeenAssessed: Bool {
-        UserDefaults(suiteName: Self.appGroup)?.bool(forKey: Self.assessedKey) ?? false
+        let assessed = UserDefaults(suiteName: Self.appGroup)?.bool(forKey: Self.assessedKey) ?? false
+        // Safety: if assessed but skills empty, reload from disk
+        if assessed && skills.isEmpty { load() }
+        return assessed
     }
 
     /// Overall level — average of all skill levels.

@@ -387,9 +387,24 @@ final class LightningRoundEngine {
         }
 
         let store = UserLevelStore.shared
-        let levelContext = store.hasBeenAssessed
-            ? "The user's current levels: Grammar \(store.skills[.grammar]?.level.rawValue ?? "A1"), Vocabulary \(store.skills[.vocabulary]?.level.rawValue ?? "A1"), Pronunciation \(store.skills[.pronunciation]?.level.rawValue ?? "A1"), Fluency \(store.skills[.fluency]?.level.rawValue ?? "A1"). Match quiz difficulty to these levels — don't make it too easy or too hard."
-            : "The user hasn't been assessed yet — assume intermediate (B1) level."
+        let overallLevel = store.hasBeenAssessed ? store.overallLevel.rawValue : "B1"
+        NSLog("⚡ [LightningRound] generating cards at level \(overallLevel) (assessed: \(store.hasBeenAssessed))")
+        let levelContext: String
+        if store.hasBeenAssessed {
+            levelContext = """
+            USER LEVEL: \(overallLevel) (Grammar: \(store.skills[.grammar]?.level.rawValue ?? "B1"), Vocabulary: \(store.skills[.vocabulary]?.level.rawValue ?? "B1"), Pronunciation: \(store.skills[.pronunciation]?.level.rawValue ?? "B1"), Fluency: \(store.skills[.fluency]?.level.rawValue ?? "B1"))
+
+            DIFFICULTY REQUIREMENTS FOR \(overallLevel) — THIS IS MANDATORY:
+            \(Self.difficultyGuidelines(for: overallLevel))
+            """
+        } else {
+            levelContext = """
+            USER LEVEL: B1 (not yet assessed — assume intermediate)
+
+            DIFFICULTY REQUIREMENTS FOR B1 — THIS IS MANDATORY:
+            \(Self.difficultyGuidelines(for: "B1"))
+            """
+        }
 
         return """
         Generate \(cardTypes.count) Lightning Round quiz cards for a \(langName) learner (English native speaker).
@@ -666,6 +681,69 @@ final class LightningRoundEngine {
         }
 
         return result
+    }
+
+    /// Concrete difficulty guidelines for each CEFR level.
+    /// Injected into the GPT prompt so card difficulty matches the user's actual level.
+    static func difficultyGuidelines(for level: String) -> String {
+        switch level {
+        case "A1":
+            return """
+            - Use only present tense and the most basic vocabulary (100 most common words)
+            - Sentences must be 3-5 words maximum
+            - Test: basic greetings, numbers, colors, days, simple nouns with articles
+            - Options should be obviously different — no subtle distinctions
+            - Example level: "The house is ___" (big / small)
+            """
+        case "A2":
+            return """
+            - Use present and simple past tense, basic adjectives, common prepositions
+            - Sentences 5-8 words
+            - Test: routine expressions, describing daily activities, simple opinions
+            - Wrong options should be plausible but clearly wrong to someone at A2
+            - Example level: "Yesterday I ___ to the store" (went / go / going)
+            """
+        case "B1":
+            return """
+            - Use past, present, future tenses, conditional mood, common subjunctive
+            - Sentences 8-12 words with one subordinate clause
+            - Test: expressing opinions, narrating events, hypothetical situations
+            - Include some idiomatic expressions and less common vocabulary
+            - Example level: "If I had known, I ___ differently" (would have acted)
+            """
+        case "B2":
+            return """
+            - Use all tenses including subjunctive, passive voice, complex conditionals
+            - Sentences 10-15 words with multiple clauses
+            - Test: nuanced word choice, register differences, idiomatic usage, false friends
+            - Wrong options should be SUBTLE — plausible even to upper-intermediate learners
+            - Include colloquial expressions, slang, and formal register shifts
+            - Example level: "She insisted that he ___ the report before leaving" (submit — subjunctive)
+            """
+        case "C1":
+            return """
+            - Use sophisticated grammar: subjunctive in all forms, literary tenses, complex passive
+            - Sentences 12-20 words with embedded clauses and nuanced connectors
+            - Test: precise word choice between near-synonyms, subtle register shifts, rare idioms
+            - Wrong options should be VERY subtle — differences only an advanced speaker would catch
+            - Include formal/literary vocabulary, professional jargon, culturally-specific expressions
+            - Example level: "The nuance between 'lograr' and 'conseguir' in formal writing"
+            """
+        case "C2":
+            return """
+            - Use the full range of the language: literary constructions, archaic forms, dialect awareness
+            - Test: mastery-level distinctions, stylistic choices, translation of untranslatable concepts
+            - Wrong options should trap even advanced speakers — only true masters get these right
+            - Include proverb variations, double meanings, culture-specific humor, formal rhetoric
+            - Example level: distinguishing subtle connotation shifts between synonyms in context
+            """
+        default:
+            return """
+            - Use intermediate-level grammar and vocabulary
+            - Sentences 8-12 words
+            - Test common grammar patterns and everyday vocabulary
+            """
+        }
     }
 
     private func languageName(for code: String) -> String {
