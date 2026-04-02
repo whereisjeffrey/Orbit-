@@ -1305,13 +1305,27 @@ class TalkSwitchAPI {
         let longMessageNote = wordCount >= 40
             ? "\n\nIMPORTANT: The original is a long message (likely from a voice recording). Your translation MUST use \\n\\n (blank line) to separate distinct ideas or topic shifts into separate paragraphs. It should read like a human who naturally hits Enter between different points — not one continuous wall of text."
             : ""
-        return """
-        Original text: "\(original)"
-        Base translation (DeepL): "\(deeplTranslation)"
-        
-        Refine the base translation to match the \(tone.displayName.lowercased()) tone. \
-        Keep the meaning accurate but make it sound natural for the target language with the right vibe.\(longMessageNote)
-        """
+
+        // If DeepL was skipped (Tier 2 language), the "base translation" is the same as the original.
+        // Tell GPT to translate from scratch rather than "refine."
+        let isDirectTranslation = (original == deeplTranslation)
+
+        if isDirectTranslation {
+            return """
+            Original text: "\(original)"
+
+            Translate this into the target language with a \(tone.displayName.lowercased()) tone. \
+            Make it sound natural — like a native speaker would actually say it.\(longMessageNote)
+            """
+        } else {
+            return """
+            Original text: "\(original)"
+            Base translation (DeepL): "\(deeplTranslation)"
+
+            Refine the base translation to match the \(tone.displayName.lowercased()) tone. \
+            Keep the meaning accurate but make it sound natural for the target language with the right vibe.\(longMessageNote)
+            """
+        }
     }
     
     // MARK: - Response Parsing
