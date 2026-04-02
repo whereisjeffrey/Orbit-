@@ -20,50 +20,55 @@ struct Language: Identifiable, Hashable, Codable {
 }
 
 // MARK: - Language Catalogue
-// All 40 languages are fully selectable — no "coming soon" locks.
-// Ordered by approximate global speaker count (native + L2).
+// All languages fully selectable — no "coming soon" locks.
+// Ordered by most studied/popular among English speakers
+// (based on MLA, Duolingo, and university enrollment data).
 
 let allLanguages: [Language] = [
-    Language(flag: "🇺🇸", name: "English",    code: "en"),   // 1.5 B
-    Language(flag: "🇨🇳", name: "Chinese",    code: "zh"),   // 1.1 B
-    Language(flag: "🇪🇸", name: "Spanish",    code: "es"),   // 550 M
-    Language(flag: "🇮🇳", name: "Hindi",      code: "hi"),   // 600 M
-    Language(flag: "🇸🇦", name: "Arabic",     code: "ar"),   // 430 M
-    Language(flag: "🇧🇩", name: "Bengali",    code: "bn"),   // 270 M
-    Language(flag: "🇫🇷", name: "French",     code: "fr"),   // 280 M
-    Language(flag: "🇧🇷", name: "Portuguese", code: "pt"),   // 260 M
-    Language(flag: "🇷🇺", name: "Russian",    code: "ru"),   // 255 M
-    Language(flag: "🇮🇩", name: "Indonesian", code: "id"),   // 200 M
-    Language(flag: "🇵🇰", name: "Urdu",       code: "ur"),   // 230 M
-    Language(flag: "🇩🇪", name: "German",     code: "de"),   // 130 M
-    Language(flag: "🇯🇵", name: "Japanese",   code: "ja"),   // 125 M
-    Language(flag: "🇳🇬", name: "Swahili",    code: "sw"),   // 200 M
-    Language(flag: "🇰🇷", name: "Korean",     code: "ko"),   // 80 M
-    Language(flag: "🇮🇷", name: "Persian",    code: "fa"),   // 110 M
-    Language(flag: "🇻🇳", name: "Vietnamese", code: "vi"),   // 95 M
+    // Top tier — most studied by English speakers
+    Language(flag: "🇪🇸", name: "Spanish",    code: "es"),
+    Language(flag: "🇫🇷", name: "French",     code: "fr"),
+    Language(flag: "🇮🇹", name: "Italian",    code: "it"),
+    Language(flag: "🇧🇷", name: "Portuguese", code: "pt"),
+    Language(flag: "🇩🇪", name: "German",     code: "de"),
+    Language(flag: "🇯🇵", name: "Japanese",   code: "ja"),
+    Language(flag: "🇨🇳", name: "Chinese",    code: "zh"),
+    Language(flag: "🇰🇷", name: "Korean",     code: "ko"),
+    Language(flag: "🇸🇦", name: "Arabic",     code: "ar"),
+    Language(flag: "🇷🇺", name: "Russian",    code: "ru"),
+    // High demand — growing fast among English learners
+    Language(flag: "🇮🇳", name: "Hindi",      code: "hi"),
+    Language(flag: "🇹🇷", name: "Turkish",    code: "tr"),
+    Language(flag: "🇳🇱", name: "Dutch",      code: "nl"),
+    Language(flag: "🇵🇱", name: "Polish",     code: "pl"),
+    Language(flag: "🇬🇷", name: "Greek",      code: "el"),
+    Language(flag: "🇮🇱", name: "Hebrew",     code: "he"),
+    Language(flag: "🇸🇪", name: "Swedish",    code: "sv"),
+    Language(flag: "🇻🇳", name: "Vietnamese", code: "vi"),
+    Language(flag: "🇹🇭", name: "Thai",       code: "th"),
+    Language(flag: "🇮🇩", name: "Indonesian", code: "id"),
+    // Moderate demand
+    Language(flag: "🇺🇦", name: "Ukrainian",  code: "uk"),
+    Language(flag: "🇳🇴", name: "Norwegian",  code: "no"),
+    Language(flag: "🇩🇰", name: "Danish",     code: "da"),
+    Language(flag: "🇫🇮", name: "Finnish",    code: "fi"),
+    Language(flag: "🇷🇴", name: "Romanian",   code: "ro"),
+    Language(flag: "🇭🇺", name: "Hungarian",  code: "hu"),
     Language(flag: "🇨🇿", name: "Czech",      code: "cs"),
-    Language(flag: "🇮🇹", name: "Italian",    code: "it"),   // 90 M
-    Language(flag: "🇹🇭", name: "Thai",       code: "th"),   // 60 M
-    Language(flag: "🇵🇱", name: "Polish",     code: "pl"),   // 55 M
-    Language(flag: "🇺🇦", name: "Ukrainian",  code: "uk"),   // 45 M
-    Language(flag: "🇳🇱", name: "Dutch",      code: "nl"),   // 30 M
-    Language(flag: "🇹🇷", name: "Turkish",    code: "tr"),   // 85 M
-    Language(flag: "🇮🇱", name: "Hebrew",     code: "he"),   // 10 M
-    Language(flag: "🇬🇷", name: "Greek",      code: "el"),   // 13 M
-    Language(flag: "🇸🇪", name: "Swedish",    code: "sv"),   // 13 M
-    Language(flag: "🇩🇰", name: "Danish",     code: "da"),   // 6 M
-    Language(flag: "🇳🇴", name: "Norwegian",  code: "no"),   // 5 M
-    Language(flag: "🇫🇮", name: "Finnish",    code: "fi"),   // 5 M
-    Language(flag: "🇭🇺", name: "Hungarian",  code: "hu"),   // 13 M
-    Language(flag: "🇷🇴", name: "Romanian",   code: "ro"),   // 24 M
-    Language(flag: "🇧🇬", name: "Bulgarian",  code: "bg"),   // 8 M
-    Language(flag: "🇭🇷", name: "Croatian",   code: "hr"),   // 7 M
-    Language(flag: "🇸🇰", name: "Slovak",     code: "sk"),   // 5 M
-    Language(flag: "🇵🇹", name: "Catalan",    code: "ca"),   // 10 M
-    Language(flag: "🇮🇱", name: "Malay",      code: "ms"),   // 80 M
-    Language(flag: "🇵🇭", name: "Filipino",   code: "fil"),  // 90 M
-    Language(flag: "🇿🇦", name: "Afrikaans",  code: "af"),   // 17 M
-    Language(flag: "🇮🇳", name: "Tamil",      code: "ta"),   // 85 M
+    Language(flag: "🇮🇷", name: "Persian",    code: "fa"),
+    Language(flag: "🇵🇭", name: "Filipino",   code: "tl"),
+    Language(flag: "🇰🇪", name: "Swahili",    code: "sw"),
+    // Niche but supported
+    Language(flag: "🇲🇾", name: "Malay",      code: "ms"),
+    Language(flag: "🇧🇬", name: "Bulgarian",  code: "bg"),
+    Language(flag: "🇭🇷", name: "Croatian",   code: "hr"),
+    Language(flag: "🇸🇰", name: "Slovak",     code: "sk"),
+    Language(flag: "🇧🇩", name: "Bengali",    code: "bn"),
+    Language(flag: "🇵🇰", name: "Urdu",       code: "ur"),
+    Language(flag: "🇮🇳", name: "Tamil",      code: "ta"),
+    Language(flag: "🇿🇦", name: "Afrikaans",  code: "af"),
+    Language(flag: "🇪🇸", name: "Catalan",    code: "ca"),
+    Language(flag: "🇺🇸", name: "English",    code: "en"),
 ]
 
 // Native language picker — same full catalogue so anyone can pick their mother tongue
