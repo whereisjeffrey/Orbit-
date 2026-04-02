@@ -9,6 +9,7 @@ struct OnboardingView: View {
     @State private var step = 1
     @State private var selectedLanguage: Language? = nil
     @State private var preloadStarted = false
+    @State private var keyboardPreWarmed = false
 
     var body: some View {
         switch step {
@@ -34,7 +35,22 @@ struct OnboardingView: View {
                 onSkip: { step = 3 },
                 onContinue: { step = 3 }
             )
+            .background(
+                // Hidden text field to pre-warm the iOS keyboard process.
+                // First keyboard appearance takes 0.5-1.5s — doing it here means
+                // the city search field on step 3 opens instantly.
+                KeyboardPreWarmer(triggered: $keyboardPreWarmed)
+                    .frame(width: 0, height: 0)
+                    .opacity(0)
+            )
             .onAppear {
+                // Pre-warm keyboard on this step so step 3's search field is instant
+                if !keyboardPreWarmed {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        keyboardPreWarmed = true
+                    }
+                }
+
                 // Start WhisperKit download in background while user continues onboarding.
                 // By the time they finish setup + add the keyboard, the model is ready.
                 if !preloadStarted {
@@ -89,6 +105,32 @@ struct OnboardingView: View {
             // Also write talkswitch_lang for keyboard's active language
             UserDefaults(suiteName: "group.com.jeff.translatehelper")?.set(lang.code, forKey: "talkswitch_lang")
             UserDefaults(suiteName: "group.com.jeff.translatehelper")?.synchronize()
+        }
+    }
+}
+
+// MARK: - Keyboard Pre-Warmer
+// A hidden UITextField that briefly becomes first responder to force iOS
+// to load the keyboard process. This eliminates the 1-1.5s delay when the
+// user first taps a text field (like the city search on step 3).
+
+struct KeyboardPreWarmer: UIViewRepresentable {
+    @Binding var triggered: Bool
+
+    func makeUIView(context: Context) -> UITextField {
+        let field = UITextField()
+        field.alpha = 0
+        field.isUserInteractionEnabled = false
+        return field
+    }
+
+    func updateUIView(_ uiView: UITextField, context: Context) {
+        if triggered && !uiView.isFirstResponder {
+            // Briefly grab focus to warm the keyboard, then resign
+            uiView.becomeFirstResponder()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                uiView.resignFirstResponder()
+            }
         }
     }
 }

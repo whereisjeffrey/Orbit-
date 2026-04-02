@@ -10,6 +10,7 @@ struct KeyboardSetupSplashView: View {
 
     @State private var cardPulse = false
     @State private var iconBounce = false
+    @State private var keyboardDetected = false
 
     // ── Layout constants ──────────────────────────────────────────────────
     private let cardCorner: CGFloat = 28
@@ -156,12 +157,39 @@ struct KeyboardSetupSplashView: View {
                 .padding(.bottom, 48)
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            // User is coming back from Settings — check if they enabled the keyboard
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                if checkKeyboardEnabled() {
+                    // Auto-advance to Learn page — skip this screen
+                    onSkip()
+                }
+            }
+        }
+        .onAppear {
+            // Also check on first appear in case keyboard was already enabled
+            if checkKeyboardEnabled() {
+                onSkip()
+            }
+        }
     }
 
     // ── Deep-link directly to the Add Keyboard screen ─────────────────────
     // App-Prefs:root=General&path=Keyboard/KEYBOARDS drops the user
     // directly onto the keyboards list — TalkSwitch appears under
     // "Suggested Keyboards" so they just tap it, no digging required.
+    /// Check if Orbit Keyboard has been added in Settings
+    private func checkKeyboardEnabled() -> Bool {
+        // Check App Group flag (keyboard writes this on first viewDidLoad)
+        if let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper"),
+           defaults.bool(forKey: "keyboard_has_launched") {
+            return true
+        }
+        // Also check active input modes as a fallback
+        let activeIDs = UITextInputMode.activeInputModes.compactMap { $0.value(forKey: "identifier") as? String }
+        return activeIDs.contains { $0.contains("com.jeffrey.TranslateHelper") }
+    }
+
     private func openKeyboardSettings() {
         let candidates: [String] = [
             "App-Prefs:root=General&path=Keyboard/KEYBOARDS",
