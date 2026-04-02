@@ -174,6 +174,59 @@ final class LightningRoundEngine {
         defaults.removeObject(forKey: Self.diskCacheLangKey)
     }
 
+    // MARK: - Card Validation
+
+    /// Validates and cleans generated cards. Discards any card that:
+    /// - Has an empty prompt or correct_answer
+    /// - Is a tap card where correct_answer isn't in the options
+    /// - Is a voice card with no audio_text
+    /// - Contains gibberish (detected by NLLanguageRecognizer)
+    func validateCards(_ cards: [LightningCard], language: String) -> [LightningCard] {
+        return cards.compactMap { card in
+            // 1. Must have a non-empty prompt and answer
+            guard !card.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                  !card.correctAnswer.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            else {
+                NSLog("⚡ [VALIDATION] Discarded card: empty prompt or answer")
+                return nil
+            }
+
+            var fixed = card
+
+            // 2. Voice cards: audio_text must exist and match correct_answer
+            if card.type.isVoiceCard {
+                if card.audioText == nil || card.audioText!.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    // Use correctAnswer as audio_text
+                    fixed = LightningCard(
+                        type: card.type, mistakeId: card.mistakeId, language: card.language,
+                        prompt: card.prompt, correctAnswer: card.correctAnswer,
+                        options: card.options, explanation: card.explanation,
+                        audioText: card.correctAnswer, targetWord: card.targetWord
+                    )
+                }
+            }
+
+            // 3. Tap cards: correct_answer must be in options (case-insensitive)
+            if let options = fixed.options, !fixed.type.isVoiceCard {
+                let normalizedAnswer = fixed.correctAnswer.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+                let normalizedOptions = options.map { $0.lowercased().trimmingCharacters(in: .whitespacesAndNewlines) }
+                if !normalizedOptions.contains(normalizedAnswer) {
+                    NSLog("⚡ [VALIDATION] Discarded card: correct_answer '\(fixed.correctAnswer)' not in options \(options)")
+                    return nil
+                }
+            }
+
+            // 4. Check for gibberish — if correct_answer is very short and doesn't look like real text
+            let answer = fixed.correctAnswer.trimmingCharacters(in: .whitespacesAndNewlines)
+            if answer.count < 2 && !["a", "o", "à", "é", "は", "의"].contains(answer) {
+                NSLog("⚡ [VALIDATION] Discarded card: answer too short '\(answer)'")
+                return nil
+            }
+
+            return fixed
+        }
+    }
+
     /// Track recently used prompts to ensure variety across rounds (last 30 prompts)
     private var recentPrompts: [String] = []
     private let maxRecentPrompts = 30
@@ -429,7 +482,7 @@ final class LightningRoundEngine {
                 ["role": "system", "content": "You generate quiz cards for language learners. Respond ONLY with a valid JSON array."],
                 ["role": "user", "content": prompt],
             ],
-            "temperature": 0.9,
+            "temperature": 0.5,
             "max_tokens": 1500,
             "response_format": ["type": "json_object"],
         ]
@@ -483,9 +536,15 @@ final class LightningRoundEngine {
             }
 
             if !generatedCards.isEmpty {
-                engine.cachedCards = generatedCards
-                engine.saveCacheToDisk(generatedCards, language: language)
-                NSLog("⚡ [LightningRound] pre-generated \(generatedCards.count) cards — ready to go")
+                // Validate — discard bad cards (gibberish, mismatched answers, etc.)
+                let validated = engine.validateCards(generatedCards, language: language)
+                if !validated.isEmpty {
+                    engine.cachedCards = validated
+                    engine.saveCacheToDisk(validated, language: language)
+                    NSLog("⚡ [LightningRound] pre-generated \(validated.count)/\(generatedCards.count) valid cards")
+                } else {
+                    NSLog("⚡ [LightningRound] all cards failed validation — will retry on demand")
+                }
             }
         }.resume()
     }

@@ -522,7 +522,7 @@ struct LightningRoundView: View {
                         Text("Expected:")
                             .font(.custom("HelveticaNeue", size: 12))
                             .foregroundColor(.tsSecondary)
-                        Text("\"\(card.correctAnswer)\"")
+                        Text("\"\(card.audioText ?? card.correctAnswer)\"")
                             .font(.custom("HelveticaNeue-Bold", size: 15))
                             .foregroundColor(Color(hex: "#34C759"))
                             .multilineTextAlignment(.center)
@@ -826,7 +826,7 @@ struct LightningRoundView: View {
                 ["role": "system", "content": "You generate quiz cards for language learners. Respond ONLY with a valid JSON array."],
                 ["role": "user", "content": prompt],
             ],
-            "temperature": 0.9,
+            "temperature": 0.5,
             "max_tokens": 1500,
             "response_format": ["type": "json_object"],
         ]
@@ -920,7 +920,9 @@ struct LightningRoundView: View {
                     generatedCards.append(fallback)
                 }
 
-                self.cards = generatedCards
+                // Validate — discard bad cards
+                let validated = self.engine.validateCards(generatedCards, language: self.targetLang)
+                self.cards = validated.isEmpty ? generatedCards : validated
                 self.startRound()
             }
         }.resume()
@@ -1045,18 +1047,23 @@ struct LightningRoundView: View {
     }
 
     private func handleVoiceResult(heard: String, card: LightningCard) {
-        let expected = card.correctAnswer.lowercased()
+        // For voice cards, compare against audioText (what they were asked to say),
+        // NOT correctAnswer (which may be a different field for some card types)
+        let expectedRaw = (card.audioText ?? card.correctAnswer)
+        let expected = expectedRaw.lowercased()
             .trimmingCharacters(in: .punctuationCharacters)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
         let actual = heard.lowercased()
             .trimmingCharacters(in: .punctuationCharacters)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
 
-        // Simple similarity check — at least 70% word match
+        // Word-level similarity — at least 60% match (more forgiving for pronunciation)
         let expectedWords = Set(expected.split(separator: " ").map(String.init))
         let actualWords = Set(actual.split(separator: " ").map(String.init))
         let intersection = expectedWords.intersection(actualWords)
         let similarity = expectedWords.isEmpty ? 0 : Double(intersection.count) / Double(expectedWords.count)
 
-        let isCorrect = similarity >= 0.7
+        let isCorrect = similarity >= 0.6
 
         cards[currentIndex].userAnswer = heard
         cards[currentIndex].isCorrect = isCorrect
