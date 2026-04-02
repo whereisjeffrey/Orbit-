@@ -764,19 +764,26 @@ struct LightningRoundView: View {
     private func generateRound() {
         isGenerating = true
 
-        // Check for pre-cached round first — instant start
-        // IMPORTANT: only use cache if it matches the current language
+        // 1. Check in-memory cache first (fastest)
         if let cached = engine.cachedCards, !cached.isEmpty,
            cached.first?.language == targetLang {
             engine.cachedCards = nil
+            engine.clearDiskCache()
             self.cards = cached
             startRound()
-            // Pre-generate the NEXT round in background
             preGenerateNextRound()
             return
         } else if engine.cachedCards != nil {
-            // Cache exists but wrong language — discard it
             engine.cachedCards = nil
+        }
+
+        // 2. Check disk cache (survives app close — still instant, no API call)
+        if let diskCached = engine.loadCacheFromDisk(language: targetLang) {
+            engine.clearDiskCache()
+            self.cards = diskCached
+            startRound()
+            preGenerateNextRound()
+            return
         }
 
         let profile = MistakeProfileStore.shared

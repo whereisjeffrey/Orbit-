@@ -34,17 +34,29 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // ── All non-critical work deferred to background ──
         // Nothing here blocks the UI from appearing. The user sees the app instantly.
         let roundLang = LanguageManager.shared.targetLangRequired
+
+        // WhisperKit on low priority (big download, not needed immediately)
         DispatchQueue.global(qos: .utility).async {
-            // Pre-warm WhisperKit (downloads model if needed — can take 30-60s)
             DictateViewController.preloadWhisperKit()
+        }
 
-            // Process pending TTS cache requests from the keyboard
+        // Lightning Round pre-gen on HIGH priority — user may tap it soon
+        DispatchQueue.global(qos: .userInitiated).async {
+            // Process corrections first (they feed the mistake profile)
             TTSCacheProcessor.processPendingRequests()
-
-            // Process queued keyboard corrections into mistake profile
             MistakeIngestion.processKeyboardQueue()
 
-            // Pre-generate Lightning Round so it's instant when user taps it
+            // Seed starter mistakes if needed (synchronous wait for GPT)
+            let profile = MistakeProfileStore.shared
+            if !profile.hasMistakes(for: roundLang) {
+                let semaphore = DispatchSemaphore(value: 0)
+                profile.seedStarterMistakes(language: roundLang) {
+                    semaphore.signal()
+                }
+                _ = semaphore.wait(timeout: .now() + 10) // max 10s wait
+            }
+
+            // NOW pre-generate — mistakes are guaranteed to exist
             LightningRoundEngine.preGenerate(language: roundLang)
         }
 

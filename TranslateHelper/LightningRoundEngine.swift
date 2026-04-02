@@ -140,6 +140,40 @@ final class LightningRoundEngine {
     var cachedCards: [LightningCard]?
     var isCaching = false
 
+    /// Disk cache key for persisting pre-generated rounds across app sessions
+    private static let diskCacheKey = "lightning_round_cache"
+    private static let diskCacheLangKey = "lightning_round_cache_lang"
+    private static let appGroup = "group.com.jeff.translatehelper"
+
+    /// Save pre-generated cards to disk (App Group) so they survive app close
+    func saveCacheToDisk(_ cards: [LightningCard], language: String) {
+        guard let data = try? JSONEncoder().encode(cards),
+              let defaults = UserDefaults(suiteName: Self.appGroup) else { return }
+        defaults.set(data, forKey: Self.diskCacheKey)
+        defaults.set(language, forKey: Self.diskCacheLangKey)
+        defaults.synchronize()
+        NSLog("⚡ [LightningRound] saved \(cards.count) cards to disk for \(language)")
+    }
+
+    /// Load pre-generated cards from disk if they match the current language
+    func loadCacheFromDisk(language: String) -> [LightningCard]? {
+        guard let defaults = UserDefaults(suiteName: Self.appGroup),
+              let cachedLang = defaults.string(forKey: Self.diskCacheLangKey),
+              cachedLang == language,
+              let data = defaults.data(forKey: Self.diskCacheKey),
+              let cards = try? JSONDecoder().decode([LightningCard].self, from: data),
+              !cards.isEmpty else { return nil }
+        NSLog("⚡ [LightningRound] loaded \(cards.count) cards from disk for \(language)")
+        return cards
+    }
+
+    /// Clear disk cache (after using it or when language changes)
+    func clearDiskCache() {
+        guard let defaults = UserDefaults(suiteName: Self.appGroup) else { return }
+        defaults.removeObject(forKey: Self.diskCacheKey)
+        defaults.removeObject(forKey: Self.diskCacheLangKey)
+    }
+
     /// Track recently used prompts to ensure variety across rounds (last 30 prompts)
     private var recentPrompts: [String] = []
     private let maxRecentPrompts = 30
@@ -363,7 +397,15 @@ final class LightningRoundEngine {
     /// Called from Coach tab onAppear and after each completed round.
     static func preGenerate(language: String) {
         let engine = LightningRoundEngine.shared
-        guard !engine.isCaching, engine.cachedCards == nil else { return }
+        // Skip if we already have cached cards for this language
+        guard engine.cachedCards == nil else { return }
+        // Also check disk — skip if we already have a disk cache
+        if engine.loadCacheFromDisk(language: language) != nil {
+            engine.cachedCards = engine.loadCacheFromDisk(language: language)
+            return
+        }
+        // Skip if already generating (but allow retry — isCaching shouldn't block forever)
+        guard !engine.isCaching else { return }
         engine.isCaching = true
 
         let mistakes = engine.selectMistakesForRound(count: cardsPerRound, language: language)
@@ -442,6 +484,7 @@ final class LightningRoundEngine {
 
             if !generatedCards.isEmpty {
                 engine.cachedCards = generatedCards
+                engine.saveCacheToDisk(generatedCards, language: language)
                 NSLog("⚡ [LightningRound] pre-generated \(generatedCards.count) cards — ready to go")
             }
         }.resume()
