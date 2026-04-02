@@ -565,12 +565,15 @@ class KeyboardViewController: UIInputViewController {
                                     NSLog("TSKBD_REFINED: \(text) → \(refined.output)")
                                     // Queue TTS cache for main app to pre-generate Neural2 audio
                                     self.queueTTSCache(text: refined.output, language: targetCode)
-                                    // After first successful translation, teach paste-to-translate
+                                    // Progressive hints — spaced out across first few translations
                                     self.translationsSent += 1
                                     if self.translationsSent == 1 {
-                                        // Delay so it doesn't compete with the translation result
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
                                             self.showPasteHint()
+                                        }
+                                    } else if self.translationsSent == 3 {
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                                            self.showSaveHint()
                                         }
                                     }
                                 case .failure:
@@ -2125,6 +2128,20 @@ class KeyboardViewController: UIInputViewController {
         notesTextLabel.text = "Did you know? You can also translate incoming messages — all within the keyboard. Just copy the message and tap 📋 Translate."
 
         NSLog("TSKBD_PASTE_HINT: shown after first translation")
+    }
+
+    /// Shows a hint after the 3rd translation, teaching them about saving phrases.
+    private func showSaveHint() {
+        let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper")
+        guard !(defaults?.bool(forKey: "ts_save_hint_shown") ?? false) else { return }
+        defaults?.set(true, forKey: "ts_save_hint_shown")
+        defaults?.synchronize()
+
+        notesCard.isHidden = false
+        notesIcon.text = "💾"
+        notesTextLabel.text = "See a word or phrase worth remembering? Tap Save 💾 to add it to your study list and practice it later."
+
+        NSLog("TSKBD_SAVE_HINT: shown after 3rd translation")
     }
 
     private func startDictationPolling() {

@@ -930,7 +930,7 @@ class DictateViewController: UIViewController {
         }
     }
 
-    /// Bounces the center speaker icon as a sparkle, then calls completion.
+    /// Bounces the center speaker icon as a sparkle — like pushing a real object down and releasing.
     private func playStarBounce(completion: @escaping () -> Void) {
         // Fade out everything except the center icon
         UIView.animate(withDuration: 0.2) {
@@ -942,27 +942,35 @@ class DictateViewController: UIViewController {
         let starConfig = UIImage.SymbolConfiguration(pointSize: 39, weight: .medium)
         self.iconImageView.image = UIImage(systemName: "sparkles", withConfiguration: starConfig)
 
-        // Bounce the center circle
+        // Step 1: Push down (like pressing with a finger)
         UIView.animate(
-            withDuration: 0.4,
-            delay: 0.1,
-            usingSpringWithDamping: 0.5,
-            initialSpringVelocity: 0.8
+            withDuration: 0.25,
+            delay: 0.15,
+            options: .curveEaseIn
         ) {
-            self.iconCircle.transform = CGAffineTransform(scaleX: 1.3, y: 1.3)
+            self.iconImageView.transform = CGAffineTransform(scaleX: 0.6, y: 0.6)
         } completion: { _ in
-            // Settle back
+            // Step 2: Release — springs back up naturally, like a real object
             UIView.animate(
-                withDuration: 0.3,
-                delay: 0.05,
-                usingSpringWithDamping: 0.6,
-                initialSpringVelocity: 0.5
+                withDuration: 0.7,
+                delay: 0,
+                usingSpringWithDamping: 0.4,
+                initialSpringVelocity: 0.6
             ) {
-                self.iconCircle.transform = .identity
+                self.iconImageView.transform = CGAffineTransform(scaleX: 1.1, y: 1.1)
             } completion: { _ in
-                // Hold for a beat, then dismiss
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    completion()
+                // Step 3: Gentle settle to resting size
+                UIView.animate(
+                    withDuration: 0.4,
+                    delay: 0,
+                    options: .curveEaseOut
+                ) {
+                    self.iconImageView.transform = .identity
+                } completion: { _ in
+                    // Hold for a moment, then dismiss
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                        completion()
+                    }
                 }
             }
         }
