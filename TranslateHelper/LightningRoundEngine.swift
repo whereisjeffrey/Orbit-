@@ -140,6 +140,21 @@ final class LightningRoundEngine {
     var cachedCards: [LightningCard]?
     var isCaching = false
 
+    /// Track recently used prompts to ensure variety across rounds (last 30 prompts)
+    private var recentPrompts: [String] = []
+    private let maxRecentPrompts = 30
+
+    /// Record prompts from a completed round to avoid repetition
+    func recordUsedPrompts(_ cards: [LightningCard]) {
+        for card in cards {
+            recentPrompts.append(card.prompt)
+        }
+        // Keep only the last N
+        if recentPrompts.count > maxRecentPrompts {
+            recentPrompts = Array(recentPrompts.suffix(maxRecentPrompts))
+        }
+    }
+
     /// Number of cards per round
     static let cardsPerRound = 10
 
@@ -240,15 +255,20 @@ final class LightningRoundEngine {
 
         var mistakeDescriptions = ""
         for (i, m) in mistakes.enumerated() {
-            mistakeDescriptions += """
+            var desc = """
             Mistake \(i + 1):
               Category: \(m.category.rawValue)
               User said: "\(m.userSaid)"
               Correct: "\(m.correctForm)"
               Explanation: \(m.explanation)
               Times seen: \(m.seenCount)
-
             """
+            // Include previously used sentences so GPT never repeats them
+            if !m.usedSentences.isEmpty {
+                let recent = m.usedSentences.suffix(15).map { "  - \"\($0)\"" }.joined(separator: "\n")
+                desc += "\n  ALREADY USED (do NOT reuse these sentences or similar ones):\n\(recent)"
+            }
+            mistakeDescriptions += desc + "\n\n"
         }
 
         var cardInstructions = ""
@@ -298,7 +318,17 @@ final class LightningRoundEngine {
         Generate these cards:
         \(cardInstructions)
 
-        RULES:
+        VARIETY RULES — CRITICAL:
+        - NEVER reuse sentence structures, topics, or scenarios from previous rounds.
+        - Each card must use a COMPLETELY DIFFERENT context: shopping, sports, cooking, travel,
+          work, dating, family, weather, health, music, movies, animals, etc.
+        - Even when testing the SAME grammar pattern, use wildly different sentences.
+          Example: if testing gender of "viagem", don't always say "I'm going on a trip."
+          Instead: "That trip changed my life" / "Book the trip for Saturday" / "Her trip was cancelled"
+        - Vary sentence length: some short (4-5 words), some medium (8-10 words)
+        - Mix registers: some formal, some casual, some slang\(recentPrompts.isEmpty ? "" : "\n\n        DO NOT use any of these recently used prompts or similar sentences:\n        \(recentPrompts.suffix(20).map { "- \"\($0)\"" }.joined(separator: "\n        "))")
+
+        ACCURACY RULES:
         - All prompts and explanations MUST be in English, with \(langName) words quoted inline
         - ACCURACY IS CRITICAL: Every \(langName) word, translation, and grammar explanation must be 100% correct.
           Do NOT guess. If unsure about a word's meaning, use a different word you ARE sure about.
@@ -309,7 +339,6 @@ final class LightningRoundEngine {
         - For voice cards (speakIt, echo), include the full sentence as "audio_text"
         - For speakIt, the "target_word" is the specific word/pattern being tested
         - Options array: always include the correct answer, shuffled randomly among the options
-        - Make each card feel different — vary sentence topics, don't repeat the same context
         - For thisOrThat cards: options must be exactly 2 items that test the specific mistake (e.g., "a" vs "o" for gender)
 
         Respond ONLY with valid JSON array:
@@ -446,6 +475,9 @@ final class LightningRoundEngine {
             } else {
                 profile.markIncorrect(id: mistakeId)
             }
+
+            // Record the sentence used so it's never repeated for this mistake
+            profile.recordUsedSentence(id: mistakeId, sentence: card.prompt)
 
             // Accumulate per-skill accuracy
             if let skill = cardTypeToSkill[card.type] {

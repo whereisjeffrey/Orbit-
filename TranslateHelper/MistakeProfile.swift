@@ -38,6 +38,9 @@ struct MistakeEntry: Codable, Identifiable, Equatable {
     // Graduation
     var masteredAt: Date?             // Set after 3 consecutive correct at interval >= 14
 
+    // Variety tracking — sentences already used to test this mistake (never repeat)
+    var usedSentences: [String]
+
     var isMastered: Bool { masteredAt != nil }
     var isDueForReview: Bool { nextReviewDate <= Date() && !isMastered }
 
@@ -66,6 +69,7 @@ struct MistakeEntry: Codable, Identifiable, Equatable {
         self.intervalDays = 1
         self.nextReviewDate = Date()  // Immediately eligible
         self.masteredAt = nil
+        self.usedSentences = []
     }
 }
 
@@ -228,6 +232,21 @@ final class MistakeProfileStore: ObservableObject {
         entries[idx].masteredAt = nil  // Un-master if they slip
         entries[idx].correctCount = max(0, entries[idx].correctCount - 1)
         save()
+    }
+
+    /// Record a sentence used in Lightning Round so it's never repeated for this mistake.
+    func recordUsedSentence(id: UUID, sentence: String) {
+        guard let idx = entries.firstIndex(where: { $0.id == id }) else { return }
+        let trimmed = sentence.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        if !entries[idx].usedSentences.contains(trimmed) {
+            entries[idx].usedSentences.append(trimmed)
+            // Keep max 50 per mistake to prevent unbounded growth
+            if entries[idx].usedSentences.count > 50 {
+                entries[idx].usedSentences = Array(entries[idx].usedSentences.suffix(50))
+            }
+            save()
+        }
     }
 
     // MARK: - Queries

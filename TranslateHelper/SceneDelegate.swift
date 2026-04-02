@@ -35,6 +35,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Process queued keyboard corrections into mistake profile
         MistakeIngestion.processKeyboardQueue()
 
+        // Pre-generate Lightning Round so it's instant when user taps it
+        let roundLang = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_target_lang") ?? "es"
+        DispatchQueue.global(qos: .background).async {
+            LightningRoundEngine.preGenerate(language: roundLang)
+        }
+
         if let ctx = connectionOptions.urlContexts.first {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
                 self.handle(url: ctx.url)

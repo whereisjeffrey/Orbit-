@@ -89,7 +89,7 @@ struct CoachEmptyView: View {
                         .foregroundColor(.tsSecondary)
                         .kerning(1.2)
 
-                    howItWorksRow(icon: "keyboard", color: Color.tsAccent, text: "Write or send audios like you normally do — in WhatsApp, Tinder, Instagram, anywhere")
+                    howItWorksRow(icon: "keyboard", color: Color.tsAccent, text: "Write or send audios like you normally do in WhatsApp")
                     howItWorksRow(icon: "target", color: Color(hex: "#34C759"), text: "I'll give you 1-2 tips per message — pronunciation, grammar, or both")
                     howItWorksRow(icon: "chart.line.uptrend.xyaxis", color: Color(hex: "#FF9500"), text: "Over time, I'll track your patterns and show you exactly where you're improving")
                     howItWorksRow(icon: "brain.head.profile", color: Color(hex: "#AF52DE"), text: "I know your native language brain will try to trick you — I'll help you untrain those habits")
@@ -136,7 +136,7 @@ struct CoachEmptyView: View {
                 .padding(.bottom, 32)
 
                 // ── CTA ─────────────────────────────────────────
-                Text("Open any messaging app, switch to the Orbit keyboard, and tap the mic button. I'll be listening. 😊")
+                Text("Open WhatsApp, switch to Orbit, and send your first message. I'll take it from there.")
                     .font(.custom("HelveticaNeue", size: 14))
                     .foregroundColor(.tsSecondary)
                     .multilineTextAlignment(.center)

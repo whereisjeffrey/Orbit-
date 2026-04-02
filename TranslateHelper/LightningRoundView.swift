@@ -24,6 +24,8 @@ struct LightningRoundView: View {
     @State private var selectedOption: String?
     @State private var showCorrection = false
     @State private var correctionOffset: CGFloat = 0
+    @State private var cardSwipeOffset: CGFloat = 0
+    @State private var cardSwipeRotation: Double = 0
     @State private var isGenerating = false
     @State private var roundStartTime = Date()
     @State private var cardAppearTime = Date()
@@ -32,6 +34,9 @@ struct LightningRoundView: View {
     @State private var isRecording = false
     @State private var recordingSeconds = 0
     @State private var recordingTimer: Timer?
+    @State private var showVoiceResult = false
+    @State private var voiceHeard: String = ""
+    @State private var voiceWasCorrect: Bool = false
 
     // Results
     @State private var correctCount = 0
@@ -251,26 +256,13 @@ struct LightningRoundView: View {
                 // Correction section (inline, below the options)
                 if showCorrection {
                     correctionCard(card: card)
-                        .offset(x: correctionOffset)
-                        .gesture(
-                            DragGesture()
-                                .onChanged { gesture in
-                                    if gesture.translation.width > 0 {
-                                        correctionOffset = gesture.translation.width
-                                    }
-                                }
-                                .onEnded { gesture in
-                                    if gesture.translation.width > 80 {
-                                        advanceToNext()
-                                    } else {
-                                        withAnimation(.spring(response: 0.3)) {
-                                            correctionOffset = 0
-                                        }
-                                    }
-                                }
-                        )
                         .transition(.opacity.combined(with: .move(edge: .bottom)))
                         .padding(.bottom, 20)
+                }
+
+                // Voice result (inline, below mic)
+                if showVoiceResult && !showCorrection && card.type.isVoiceCard {
+                    // Already shown inside voiceInputArea
                 }
             }
             .background(
@@ -279,6 +271,38 @@ struct LightningRoundView: View {
                     .shadow(color: .black.opacity(0.1), radius: 16, y: 4)
             )
             .padding(.horizontal, 16)
+            // Whole-card swipe — same rotation style as keyboard/flashcards
+            .offset(x: cardSwipeOffset)
+            .rotationEffect(.degrees(cardSwipeRotation), anchor: .bottom)
+            .gesture(
+                DragGesture()
+                    .onChanged { gesture in
+                        if gesture.translation.width > 0 {
+                            cardSwipeOffset = gesture.translation.width
+                            cardSwipeRotation = Double(gesture.translation.width / 20)
+                        }
+                    }
+                    .onEnded { gesture in
+                        if gesture.translation.width > 90 {
+                            // Fly off to the right
+                            withAnimation(.easeOut(duration: 0.25)) {
+                                cardSwipeOffset = 500
+                                cardSwipeRotation = 15
+                            }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                                cardSwipeOffset = 0
+                                cardSwipeRotation = 0
+                                advanceToNext()
+                            }
+                        } else {
+                            // Snap back
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                cardSwipeOffset = 0
+                                cardSwipeRotation = 0
+                            }
+                        }
+                    }
+            )
 
             Spacer()
         }
@@ -473,6 +497,45 @@ struct LightningRoundView: View {
             Text(isRecording ? formatTime(recordingSeconds) : "Tap to record")
                 .font(.custom(isRecording ? "HelveticaNeue-Bold" : "HelveticaNeue", size: 13))
                 .foregroundColor(.black.opacity(0.4))
+
+            // Voice result verification
+            if showVoiceResult {
+                VStack(spacing: 10) {
+                    // What you said
+                    HStack(spacing: 8) {
+                        Image(systemName: voiceWasCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
+                            .foregroundColor(voiceWasCorrect ? Color(hex: "#34C759") : Color(hex: "#FF3B30"))
+                            .font(.system(size: 20))
+                        Text("You said:")
+                            .font(.custom("HelveticaNeue-Medium", size: 13))
+                            .foregroundColor(.tsSecondary)
+                    }
+
+                    Text("\"\(voiceHeard)\"")
+                        .font(.custom("HelveticaNeue-Medium", size: 15))
+                        .foregroundColor(voiceWasCorrect ? Color(hex: "#34C759") : Color(hex: "#FF3B30"))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 16)
+
+                    if !voiceWasCorrect {
+                        // Show correct answer
+                        Text("Expected:")
+                            .font(.custom("HelveticaNeue", size: 12))
+                            .foregroundColor(.tsSecondary)
+                        Text("\"\(card.correctAnswer)\"")
+                            .font(.custom("HelveticaNeue-Bold", size: 15))
+                            .foregroundColor(Color(hex: "#34C759"))
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 16)
+                    }
+                }
+                .padding(16)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(voiceWasCorrect ? Color(hex: "#34C759").opacity(0.08) : Color(hex: "#FF3B30").opacity(0.08))
+                )
+                .transition(.opacity.combined(with: .scale(scale: 0.9)))
+            }
         }
     }
 
@@ -797,15 +860,39 @@ struct LightningRoundView: View {
                     let mistakeIdx = (cardJSON["mistake_index"] as? Int) ?? (i % mistakes.count)
                     let mistake = mistakes[min(mistakeIdx, mistakes.count - 1)]
 
+                    // Filter out dash/empty options from GPT
+                    let rawOptions = cardJSON["options"] as? [String]
+                    let cleanedOptions = rawOptions?.filter { opt in
+                        let trimmed = opt.trimmingCharacters(in: .whitespacesAndNewlines)
+                        return trimmed.count >= 2 && trimmed != "—" && trimmed != "-" && trimmed != "–"
+                    }
+
+                    let rawPrompt = cardJSON["prompt"] as? String ?? ""
+                    let rawAudioText = cardJSON["audio_text"] as? String
+                    let rawCorrectAnswer = cardJSON["correct_answer"] as? String ?? mistake.correctForm
+
+                    // Validate voice cards — must have audio_text and a real prompt
+                    let audioText: String?
+                    let prompt: String
+                    if type.isVoiceCard {
+                        // If audio_text is missing/empty, use correctForm from the mistake
+                        audioText = (rawAudioText?.isEmpty == false) ? rawAudioText : mistake.correctForm
+                        // If prompt is empty or generic, provide a proper one
+                        prompt = rawPrompt.isEmpty ? (type == .echo ? "Listen and repeat:" : "Say this out loud:") : rawPrompt
+                    } else {
+                        audioText = rawAudioText
+                        prompt = rawPrompt.isEmpty ? "What's the correct form?" : rawPrompt
+                    }
+
                     let card = LightningCard(
                         type: type,
                         mistakeId: mistake.id,
                         language: self.targetLang,
-                        prompt: cardJSON["prompt"] as? String ?? "What's the correct form?",
-                        correctAnswer: cardJSON["correct_answer"] as? String ?? mistake.correctForm,
-                        options: cardJSON["options"] as? [String],
+                        prompt: prompt,
+                        correctAnswer: rawCorrectAnswer,
+                        options: cleanedOptions,
                         explanation: cardJSON["explanation"] as? String ?? mistake.explanation,
-                        audioText: cardJSON["audio_text"] as? String,
+                        audioText: audioText,
                         targetWord: cardJSON["target_word"] as? String
                     )
                     generatedCards.append(card)
@@ -877,8 +964,11 @@ struct LightningRoundView: View {
     private func advanceToNext() {
         withAnimation(.easeInOut(duration: 0.25)) {
             showCorrection = false
+            showVoiceResult = false
             selectedOption = nil
             correctionOffset = 0
+            cardSwipeOffset = 0
+            cardSwipeRotation = 0
         }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -890,9 +980,12 @@ struct LightningRoundView: View {
             } else {
                 // Round complete — process results
                 engine.processResults(cards)
+                engine.recordUsedPrompts(cards)
                 withAnimation(.easeInOut(duration: 0.4)) {
                     phase = .summary
                 }
+                // Pre-generate next round in background
+                preGenerateNextRound()
             }
         }
     }
@@ -902,6 +995,9 @@ struct LightningRoundView: View {
         currentIndex = 0
         selectedOption = nil
         showCorrection = false
+        showVoiceResult = false
+        voiceHeard = ""
+        voiceWasCorrect = false
         correctCount = 0
         totalAnswered = 0
     }
@@ -960,17 +1056,24 @@ struct LightningRoundView: View {
         let generator = UIImpactFeedbackGenerator(style: isCorrect ? .light : .medium)
         generator.impactOccurred()
 
+        // Show voice result verification
+        voiceHeard = heard
+        voiceWasCorrect = isCorrect
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
+            showVoiceResult = true
+        }
+
+        // Play sound
+        if isCorrect { SoundEffect.correct.play() } else { SoundEffect.incorrect.play() }
+
         if isCorrect {
-            selectedOption = card.correctAnswer
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            // Auto-advance after showing result for 2 seconds
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                showVoiceResult = false
                 advanceToNext()
             }
-        } else {
-            selectedOption = heard
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
-                showCorrection = true
-            }
         }
+        // If wrong, they swipe to continue (same as tap cards)
     }
 
     // MARK: - Fallback Card Generation
@@ -1022,7 +1125,7 @@ struct LightningRoundView: View {
                 language: targetLang,
                 prompt: "What's the correct form?",
                 correctAnswer: mistake.correctForm,
-                options: [mistake.correctForm, mistake.userSaid, "—"].shuffled(),
+                options: [mistake.correctForm, mistake.userSaid].shuffled(),
                 explanation: mistake.explanation
             )
         }

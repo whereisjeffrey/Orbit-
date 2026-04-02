@@ -24,6 +24,7 @@ struct LibraryView: View {
     @AppStorage("has_swiped_to_deck_v2") private var hasSwipedToDeck: Bool = false
     @AppStorage("starter_decks_seeded_lang") private var seededLanguageCode: String = ""
     @State private var isSeedingDecks: Bool = false
+    @State private var showReviewPrompt: Bool = false
     @State private var activeWidgetPage: Int = 0
     // nil = no deck open; set to a Deck to present study mode.
     // Using item: binding avoids the Bool + optional race that caused a
@@ -82,6 +83,13 @@ struct LibraryView: View {
                     // ── Keyboard setup banner (hidden once keyboard is active) ──
                     KeyboardSetupBanner()
                         .padding(.bottom, 12)
+
+                    // ── Review prompt (behavioral triggers) ──
+                    if showReviewPrompt {
+                        ReviewPromptCard(isShowing: $showReviewPrompt)
+                            .padding(.bottom, 12)
+                            .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                    }
 
                     // ── Search ─────────────────────────────────────────
                     HStack {
