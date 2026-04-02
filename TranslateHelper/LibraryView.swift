@@ -327,7 +327,12 @@ struct LibraryView: View {
             if seededLanguageCode != langCode {
                 seededLanguageCode = langCode
 
-                if langCode == "es" {
+                // Check if decks were already pre-seeded at app launch (SceneDelegate)
+                let alreadySeeded = UserDefaults.standard.string(forKey: "starter_decks_seeded_lang")
+                if alreadySeeded == langCode && !deckStore.decks.isEmpty {
+                    // Decks already exist — no loading needed
+                    NSLog("📚 Starter decks already pre-seeded for \(langCode)")
+                } else if langCode == "es" {
                     // Spanish: instant, static content — no loading overlay needed
                     StarterDeckSeeder.shared.seed(forceLanguage: "es") { _ in }
                 } else {

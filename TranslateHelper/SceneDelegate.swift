@@ -60,6 +60,24 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             LightningRoundEngine.preGenerate(language: roundLang)
         }
 
+        // Pre-seed starter decks on HIGH priority — user sees Library tab first
+        DispatchQueue.global(qos: .userInitiated).async {
+            let seeder = StarterDeckSeeder.shared
+            let langCode = seeder.targetLanguageCode
+            let seededKey = "starter_decks_seeded_lang"
+            let alreadySeeded = UserDefaults.standard.string(forKey: seededKey)
+
+            // Only generate if language changed or never seeded
+            if alreadySeeded != langCode {
+                seeder.seed(forceLanguage: langCode) { success in
+                    if success {
+                        UserDefaults.standard.set(langCode, forKey: seededKey)
+                        NSLog("📚 Starter decks pre-seeded for \(langCode)")
+                    }
+                }
+            }
+        }
+
         if let ctx = connectionOptions.urlContexts.first {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
                 self.handle(url: ctx.url)

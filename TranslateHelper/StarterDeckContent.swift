@@ -18,10 +18,51 @@ struct StarterDeckContent {
     /// Returns static cards for a language+type combo, or nil to fall back to AI.
     static func cardsFor(lang: String, type deckType: StarterDeckType) -> [DeckCard]? {
         switch lang {
+        // Tier 1 — already existed
         case "fr": return french(deckType)
         case "pt": return portuguese(deckType)
         case "it": return italian(deckType)
         case "de": return german(deckType)
+        // Batch 1
+        case "es": return spanish(deckType)
+        case "ja": return japanese(deckType)
+        case "ko": return korean(deckType)
+        case "ar": return arabic(deckType)
+        case "zh": return chinese(deckType)
+        case "ru": return russian(deckType)
+        case "nl": return dutch(deckType)
+        // Batch 2
+        case "pl": return polish(deckType)
+        case "tr": return turkish(deckType)
+        case "uk": return ukrainian(deckType)
+        case "cs": return czech(deckType)
+        case "ro": return romanian(deckType)
+        case "bg": return bulgarian(deckType)
+        case "el": return greek(deckType)
+        // Batch 3
+        case "sv": return swedish(deckType)
+        case "da": return danish(deckType)
+        case "no": return norwegian(deckType)
+        case "fi": return finnish(deckType)
+        case "hu": return hungarian(deckType)
+        case "sk": return slovak(deckType)
+        case "id": return indonesian(deckType)
+        // Batch 4
+        case "vi": return vietnamese(deckType)
+        case "he": return hebrew(deckType)
+        case "hr": return croatian(deckType)
+        case "hi": return hindi(deckType)
+        case "bn": return bengali(deckType)
+        case "ur": return urdu(deckType)
+        case "sw": return swahili(deckType)
+        // Batch 5
+        case "th": return thai(deckType)
+        case "fa": return persian(deckType)
+        case "ms": return malay(deckType)
+        case "tl": return filipino(deckType)
+        case "af": return afrikaans(deckType)
+        case "ta": return tamil(deckType)
+        case "ca": return catalan(deckType)
         default:   return nil
         }
     }
