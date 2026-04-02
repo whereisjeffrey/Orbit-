@@ -191,7 +191,7 @@ class DictateViewController: UIViewController {
         var config = UIButton.Configuration.filled()
         config.baseBackgroundColor = UIColor.white.withAlphaComponent(0.18)
         config.baseForegroundColor = .white
-        config.cornerStyle = .large
+        config.cornerStyle = .capsule
         config.image = UIImage(systemName: "keyboard", withConfiguration:
             UIImage.SymbolConfiguration(pointSize: 18, weight: .medium))
         config.imagePadding = 10
@@ -202,7 +202,7 @@ class DictateViewController: UIViewController {
             return a
         }
         sendButton.configuration = config
-        sendButton.layer.cornerRadius = 18
+        sendButton.layer.cornerRadius = 29  // half of 58pt height = pill shape
         sendButton.clipsToBounds = true
         sendButton.addTarget(self, action: #selector(doneTapped), for: .touchUpInside)
         view.addSubview(sendButton)
@@ -908,8 +908,11 @@ class DictateViewController: UIViewController {
         NSLog("🎤 [Dictate] COMMIT lang=\(lang) text='\(trimmed.prefix(80))'")
         guard !trimmed.isEmpty else { dismiss(animated: true); return }
 
+        committed = true
         let mode = (lang == targetLanguage) ? "accent_coach" : "speech"
 
+        // Write result to App Group IMMEDIATELY — keyboard polling picks it up
+        // while the star animation plays, so translation is ready before we return.
         let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper")
         defaults?.set(trimmed,                     forKey: "dictate_result")
         defaults?.set(lang,                        forKey: "dictate_result_language")
@@ -917,10 +920,51 @@ class DictateViewController: UIViewController {
         defaults?.set(Date().timeIntervalSince1970, forKey: "dictate_result_timestamp")
         defaults?.synchronize()
 
-        // Dismiss dictation and return to the messaging app
-        dismiss(animated: true)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            self.returnToPreviousApp()
+        // Play star bounce animation — buys 1 second for keyboard to process
+        playStarBounce {
+            // After animation → dismiss → return to app
+            self.dismiss(animated: true)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                self.returnToPreviousApp()
+            }
+        }
+    }
+
+    /// Bounces the center speaker icon as a sparkle, then calls completion.
+    private func playStarBounce(completion: @escaping () -> Void) {
+        // Fade out everything except the center icon
+        UIView.animate(withDuration: 0.2) {
+            self.sendButton.alpha = 0
+            self.timerLabel.alpha = 0
+        }
+
+        // Swap the speaker icon to sparkles
+        let starConfig = UIImage.SymbolConfiguration(pointSize: 39, weight: .medium)
+        self.iconImageView.image = UIImage(systemName: "sparkles", withConfiguration: starConfig)
+
+        // Bounce the center circle
+        UIView.animate(
+            withDuration: 0.4,
+            delay: 0.1,
+            usingSpringWithDamping: 0.5,
+            initialSpringVelocity: 0.8
+        ) {
+            self.iconCircle.transform = CGAffineTransform(scaleX: 1.3, y: 1.3)
+        } completion: { _ in
+            // Settle back
+            UIView.animate(
+                withDuration: 0.3,
+                delay: 0.05,
+                usingSpringWithDamping: 0.6,
+                initialSpringVelocity: 0.5
+            ) {
+                self.iconCircle.transform = .identity
+            } completion: { _ in
+                // Hold for a beat, then dismiss
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    completion()
+                }
+            }
         }
     }
 
