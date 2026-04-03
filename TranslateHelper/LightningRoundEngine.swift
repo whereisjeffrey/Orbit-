@@ -243,7 +243,18 @@ final class LightningRoundEngine {
     }
 
     /// Number of cards per round
-    static let cardsPerRound = 10
+    /// First round = 15 cards for calibration, subsequent rounds = 10
+    static var cardsPerRound: Int {
+        let hasCompletedRound = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.bool(forKey: "ts_first_round_complete") ?? false
+        return hasCompletedRound ? 10 : 15
+    }
+
+    /// Mark that the user has completed their first Lightning Round (calibration)
+    static func markFirstRoundComplete() {
+        let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper")
+        defaults?.set(true, forKey: "ts_first_round_complete")
+        defaults?.synchronize()
+    }
 
     /// Maximum voice cards per round (mic latency budget)
     static let maxVoiceCards = 2
@@ -568,6 +579,9 @@ final class LightningRoundEngine {
 
     /// Updates the mistake profile based on Lightning Round results.
     func processResults(_ cards: [LightningCard]) {
+        // Mark first round as complete (subsequent rounds will be 10 cards instead of 15)
+        Self.markFirstRoundComplete()
+
         // Map card types to skill categories for level adjustments
         let cardTypeToSkill: [LightningCardType: SkillCategory] = [
             .speakIt: .pronunciation,

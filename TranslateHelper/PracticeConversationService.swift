@@ -38,6 +38,19 @@ class PracticeConversationService {
         Pronunciation tips: \(intensity(p)) (\(Int(p * 100))%) — \(p >= 0.5 ? "Note pronunciation in slang_notes when relevant" : "Only flag pronunciation for critical misunderstandings")
         """
     }
+    /// Build level context for Sol's system prompt based on self-reported + assessed level.
+    static func solLevelContext() -> String {
+        let store = UserLevelStore.shared
+        if store.hasBeenAssessed {
+            let level = store.overallLevel.rawValue
+            return "\(level) (\(store.overallLevel.title)) — \(store.overallLevel.description)"
+        } else if let selfReport = SelfReportedLevel.saved {
+            return "\(selfReport.initialCEFR.rawValue) (self-reported as '\(selfReport.label)')"
+        } else {
+            return "Unknown — start at B1 and adjust based on their responses"
+        }
+    }
+
     private init() {}
 
     private var audioEngine = AVAudioEngine()
@@ -285,8 +298,9 @@ class PracticeConversationService {
           Nationwide expressions are great. City-specific expressions from \(userCity) are great. \
           City-specific expressions from other cities are NOT — they'll confuse the user. \
         - Ask follow-up questions to keep the conversation flowing \
-        - Adapt to their level — if they're advanced, challenge them with complex topics \
-          and nuanced slang. If they're struggling, simplify without being patronizing. \
+        - USER'S LEVEL: \(Self.solLevelContext()). \
+          Adapt your vocabulary, sentence complexity, and slang difficulty to this level. \
+          Don't speak above or below them — match their ability. \
         - The conversation has no fixed length — keep going as long as it's natural. \
           When a topic wraps up naturally, suggest a new direction or wind down. \
         \

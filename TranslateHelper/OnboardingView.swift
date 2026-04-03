@@ -29,11 +29,17 @@ struct OnboardingView: View {
                 }
             )
         case 2:
+            // Self-assessment — skippable, one tap
+            LevelAssessmentView(
+                isSkippable: true,
+                onComplete: { step = 3 }
+            )
+        case 3:
             OnboardingGoalsView(
-                step: 2, totalSteps: 5,
-                onBack: { step = 1 },
-                onSkip: { step = 3 },
-                onContinue: { step = 3 }
+                step: 3, totalSteps: 6,
+                onBack: { step = 2 },
+                onSkip: { step = 4 },
+                onContinue: { step = 4 }
             )
             .background(
                 // Hidden text field to pre-warm the iOS keyboard process.
@@ -58,35 +64,35 @@ struct OnboardingView: View {
                     DictateViewController.preloadWhisperKit()
                 }
             }
-        case 3:
-            OnboardingLocationView(
-                step: 3, totalSteps: 5,
-                onBack: { step = 2 },
-                onSkip: { step = 4 },
-                onContinue: { step = 4 }
-            )
         case 4:
-            OnboardingStatusView(
+            OnboardingLocationView(
+                step: 4, totalSteps: 6,
                 onBack: { step = 3 },
+                onSkip: { step = 5 },
                 onContinue: { step = 5 }
             )
         case 5:
-            OnboardingInterestsView(
+            OnboardingStatusView(
                 onBack: { step = 4 },
                 onContinue: { step = 6 }
             )
         case 6:
-            OnboardingPlanView(
+            OnboardingInterestsView(
                 onBack: { step = 5 },
-                onFreePlan: { step = 8 },
-                onProTrial: { step = 8 }  // paywall hidden for now — re-enable by routing to step 7
+                onContinue: { step = 7 }
             )
         case 7:
-            OnboardingPaywallView(
+            OnboardingPlanView(
                 onBack: { step = 6 },
-                onComplete: { step = 8 }
+                onFreePlan: { step = 9 },
+                onProTrial: { step = 9 }  // paywall hidden for now — re-enable by routing to step 8
             )
         case 8:
+            OnboardingPaywallView(
+                onBack: { step = 7 },
+                onComplete: { step = 9 }
+            )
+        case 9:
             KeyboardSetupSplashView(
                 onSkip: { completeOnboarding() }
             )

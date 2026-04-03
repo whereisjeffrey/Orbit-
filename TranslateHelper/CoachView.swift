@@ -229,16 +229,80 @@ struct CoachPopulatedView: View {
     @State private var cachedMasteredCount: Int = 0
     @State private var cachedWeakestCategory: MistakeCategory?
 
+    /// Profile unlocks after 3 data sources: self-assessment + Lightning Round + keyboard corrections
+    private var isProfileUnlocked: Bool {
+        let hasAssessment = SelfReportedLevel.hasCompleted
+        let hasRound = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.bool(forKey: "ts_first_round_complete") ?? false
+        let hasCorrections = MistakeProfileStore.shared.entries.count >= 5
+        let sources = [hasAssessment, hasRound, hasCorrections].filter { $0 }.count
+        return sources >= 3
+    }
+
+    /// Locked profile card — shows while calibrating
+    private var lockedProfileCard: some View {
+        VStack(spacing: 12) {
+            HStack(spacing: 10) {
+                Image(systemName: "lock.fill")
+                    .font(.system(size: 18))
+                    .foregroundColor(.tsAccent)
+                Text("Your Skill Profile")
+                    .font(.custom("HelveticaNeue-Bold", size: 16))
+                    .foregroundColor(.tsLabel)
+                Spacer()
+            }
+
+            Text("Orbit is learning how you learn. After a few sessions, your personalized profile will appear here.")
+                .font(.custom("HelveticaNeue", size: 13))
+                .foregroundColor(.tsSecondary)
+                .lineSpacing(2)
+
+            // Progress indicators
+            HStack(spacing: 16) {
+                calibrationDot(label: "Assessment", done: SelfReportedLevel.hasCompleted)
+                calibrationDot(label: "Lightning Round", done: UserDefaults(suiteName: "group.com.jeff.translatehelper")?.bool(forKey: "ts_first_round_complete") ?? false)
+                calibrationDot(label: "Corrections", done: MistakeProfileStore.shared.entries.count >= 5)
+            }
+            .padding(.top, 4)
+        }
+        .padding(18)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.tsCard)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.tsAccent.opacity(0.15), lineWidth: 1)
+        )
+    }
+
+    private func calibrationDot(label: String, done: Bool) -> some View {
+        VStack(spacing: 6) {
+            Image(systemName: done ? "checkmark.circle.fill" : "circle")
+                .font(.system(size: 16))
+                .foregroundColor(done ? Color(hex: "#34C759") : .tsSecondary.opacity(0.4))
+            Text(label)
+                .font(.custom("HelveticaNeue", size: 10))
+                .foregroundColor(done ? .tsLabel : .tsSecondary)
+        }
+    }
+
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 0) {
 
-                // ── 1. Score Overview (4 gauges) ─────────────────
-                scoreOverview
-                    .padding(.horizontal, 20)
-                    .padding(.top, 16)
-                    .padding(.bottom, 20)
-                    .onTapGesture { showLevelDetail = true }
+                // ── 1. Skill Profile (locked until 3 data sources) ──
+                if isProfileUnlocked {
+                    scoreOverview
+                        .padding(.horizontal, 20)
+                        .padding(.top, 16)
+                        .padding(.bottom, 20)
+                        .onTapGesture { showLevelDetail = true }
+                } else {
+                    lockedProfileCard
+                        .padding(.horizontal, 20)
+                        .padding(.top, 16)
+                        .padding(.bottom, 20)
+                }
 
                 // ── 2. Practice Mode Card ────────────────────────
                 practiceCard
@@ -303,19 +367,23 @@ struct CoachPopulatedView: View {
             PracticeSessionView()
         }
         .sheet(isPresented: $showLevelAssessment) {
-            LevelAssessmentView()
-                .onDisappear {
-                    // After assessment completes, open whichever feature they tapped
-                    if UserLevelStore.shared.hasBeenAssessed {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                            if assessmentDestination == "lightning" {
-                                showLightningRound = true
-                            } else {
-                                showPracticeSession = true
-                            }
+            LevelAssessmentView(
+                isSkippable: false,
+                onComplete: {},
+                contextMessage: "Just a quick question to help us get started."
+            )
+            .onDisappear {
+                // After assessment completes, open whichever feature they tapped
+                if SelfReportedLevel.hasCompleted {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        if assessmentDestination == "lightning" {
+                            showLightningRound = true
+                        } else {
+                            showPracticeSession = true
                         }
                     }
                 }
+            }
         }
         .fullScreenCover(isPresented: $showLightningRound) {
             LightningRoundView()
@@ -883,7 +951,7 @@ extension CoachPopulatedView {
 
             // Lightning Round button
             Button {
-                if UserLevelStore.shared.hasBeenAssessed {
+                if SelfReportedLevel.hasCompleted {
                     showLightningRound = true
                 } else {
                     assessmentDestination = "lightning"
@@ -1125,7 +1193,7 @@ extension CoachPopulatedView {
                 .lineSpacing(2)
 
             Button {
-                if UserLevelStore.shared.hasBeenAssessed {
+                if SelfReportedLevel.hasCompleted {
                     showPracticeSession = true
                 } else {
                     assessmentDestination = "practice"
