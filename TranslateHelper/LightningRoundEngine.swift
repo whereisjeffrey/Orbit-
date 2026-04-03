@@ -479,17 +479,21 @@ final class LightningRoundEngine {
         // Skip if we already have cached cards for this language
         guard engine.cachedCards == nil else { return }
         // Also check disk — skip if we already have a disk cache
-        if engine.loadCacheFromDisk(language: language) != nil {
-            engine.cachedCards = engine.loadCacheFromDisk(language: language)
+        if let diskCards = engine.loadCacheFromDisk(language: language) {
+            engine.cachedCards = diskCards
             return
         }
         // Skip if already generating (but allow retry — isCaching shouldn't block forever)
         guard !engine.isCaching else { return }
         engine.isCaching = true
 
-        let mistakes = engine.selectMistakesForRound(count: cardsPerRound, language: language)
+        // Pre-gen always uses 10 cards — the extra 5 calibration cards (first round)
+        // are only added when the user actually opens Lightning Round
+        let preGenCount = 10
+        let mistakes = engine.selectMistakesForRound(count: preGenCount, language: language)
         guard !mistakes.isEmpty else {
             engine.isCaching = false
+            NSLog("⚡ [LightningRound] pre-gen: no mistakes found for \(language)")
             return
         }
 

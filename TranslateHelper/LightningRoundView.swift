@@ -18,7 +18,7 @@ struct LightningRoundView: View {
 
     // MARK: - State
 
-    @State private var phase: RoundPhase = .intro
+    @State private var phase: RoundPhase = .loading
     @State private var cards: [LightningCard] = []
     @State private var currentIndex = 0
     @State private var selectedOption: String?
@@ -84,6 +84,12 @@ struct LightningRoundView: View {
             }
         }
         .statusBarHidden(true)
+        .onAppear {
+            // Skip intro — go straight to generating the round
+            if phase == .loading {
+                generateRound()
+            }
+        }
     }
 
     // MARK: - Intro
@@ -787,10 +793,23 @@ struct LightningRoundView: View {
         }
 
         let profile = MistakeProfileStore.shared
-        let mistakes = engine.selectMistakesForRound(count: 10, language: targetLang)
+        var mistakes = engine.selectMistakesForRound(count: 10, language: targetLang)
 
-        guard !mistakes.isEmpty else {
-            withAnimation { phase = .intro }
+        // If no mistakes exist, seed them on demand and retry
+        if mistakes.isEmpty {
+            NSLog("⚡ [LightningRound] no mistakes — seeding on demand for \(targetLang)")
+            profile.seedStarterMistakes(language: targetLang) { [self] in
+                let retryMistakes = engine.selectMistakesForRound(count: 10, language: targetLang)
+                if retryMistakes.isEmpty {
+                    NSLog("⚡ [LightningRound] seeding failed — dismissing")
+                    dismiss()
+                    return
+                }
+                // Retry with seeded mistakes
+                let types = engine.buildRoundCardTypes()
+                let prompt = engine.generateCardsPrompt(cardTypes: types, mistakes: retryMistakes, language: targetLang)
+                generateCardsViaGPT(prompt: prompt, cardTypes: types, mistakes: retryMistakes)
+            }
             return
         }
 

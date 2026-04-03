@@ -167,10 +167,10 @@ struct KeyboardSetupSplashView: View {
             }
         }
         .onAppear {
-            // Also check on first appear in case keyboard was already enabled
-            if checkKeyboardEnabled() {
-                onSkip()
-            }
+            // Don't auto-skip during onboarding — let the user see the setup instructions.
+            // The auto-advance only triggers when returning from Settings (foreground notification).
+            iconBounce = true
+            cardPulse = true
         }
     }
 

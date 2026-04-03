@@ -53,11 +53,19 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 profile.seedStarterMistakes(language: roundLang) {
                     semaphore.signal()
                 }
-                _ = semaphore.wait(timeout: .now() + 10) // max 10s wait
+                // Wait up to 20s — GPT can be slow on first call
+                let result = semaphore.wait(timeout: .now() + 20)
+                if result == .timedOut {
+                    NSLog("⚠️ Starter mistake seeding timed out — Lightning Round will generate on demand")
+                }
             }
 
-            // NOW pre-generate — mistakes are guaranteed to exist
-            LightningRoundEngine.preGenerate(language: roundLang)
+            // Only pre-generate if we actually have mistakes to work with
+            if profile.hasMistakes(for: roundLang) {
+                LightningRoundEngine.preGenerate(language: roundLang)
+            } else {
+                NSLog("⚠️ No mistakes for \(roundLang) — skipping Lightning Round pre-gen")
+            }
         }
 
         // Pre-seed starter decks on HIGH priority — user sees Library tab first

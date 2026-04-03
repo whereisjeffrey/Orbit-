@@ -132,12 +132,13 @@ struct LevelAssessmentView: View {
                     }
                 }
 
-                Spacer(minLength: 20)
+                Spacer(minLength: 0)
+                    .frame(maxHeight: 40)
 
                 // Header
                 VStack(spacing: 10) {
                     Text(LanguageManager.shared.targetLangFlag ?? "🌐")
-                        .font(.system(size: 48))
+                        .font(.system(size: 86))
 
                     Text("How's your \(targetLangName)?")
                         .font(.custom("HelveticaNeue-Bold", size: 26))
