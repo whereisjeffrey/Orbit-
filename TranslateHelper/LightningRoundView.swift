@@ -680,16 +680,28 @@ struct LightningRoundView: View {
     // MARK: - Summary
 
     private var summaryView: some View {
-        VStack(spacing: 0) {
-            Spacer().frame(height: 60)
+        ZStack {
+            // Gradient background — same as intro
+            VoiceKeyboardBackground()
+                .ignoresSafeArea()
 
-            // Summary card — light bluish like the active card
-            VStack(spacing: 20) {
+            VStack(spacing: 0) {
+                Spacer().frame(height: 50)
+
+                // Lightning bolt for perfect rounds
+                if correctCount == totalAnswered && totalAnswered > 0 {
+                    Image(systemName: "bolt.fill")
+                        .font(.system(size: 44))
+                        .foregroundColor(Color(hex: "#FFD60A"))
+                        .shadow(color: Color(hex: "#FFD60A").opacity(0.6), radius: 12)
+                        .padding(.bottom, 12)
+                }
+
                 // Score circle
                 ZStack {
                     Circle()
-                        .stroke(Color.black.opacity(0.06), lineWidth: 8)
-                        .frame(width: 100, height: 100)
+                        .stroke(Color.white.opacity(0.15), lineWidth: 8)
+                        .frame(width: 110, height: 110)
 
                     Circle()
                         .trim(from: 0, to: CGFloat(correctCount) / max(CGFloat(totalAnswered), 1))
@@ -697,30 +709,71 @@ struct LightningRoundView: View {
                             scoreColor,
                             style: StrokeStyle(lineWidth: 8, lineCap: .round)
                         )
-                        .frame(width: 100, height: 100)
+                        .frame(width: 110, height: 110)
                         .rotationEffect(.degrees(-90))
 
                     VStack(spacing: 2) {
                         Text("\(correctCount)/\(totalAnswered)")
-                            .font(.custom("HelveticaNeue-Bold", size: 24))
-                            .foregroundColor(.black)
+                            .font(.custom("HelveticaNeue-Bold", size: 28))
+                            .foregroundColor(.white)
                         Text("correct")
                             .font(.custom("HelveticaNeue", size: 12))
-                            .foregroundColor(.black.opacity(0.4))
+                            .foregroundColor(.white.opacity(0.6))
                     }
                 }
-                .padding(.top, 8)
+                .padding(.bottom, 16)
 
+                // Result message
                 Text(summaryMessage)
-                    .font(.custom("HelveticaNeue-Medium", size: 17))
-                    .foregroundColor(.black)
+                    .font(.custom("HelveticaNeue-Bold", size: 20))
+                    .foregroundColor(.white)
                     .multilineTextAlignment(.center)
+                    .padding(.bottom, 20)
 
-                Text(summarySubtext)
-                    .font(.custom("HelveticaNeue", size: 13))
-                    .foregroundColor(.black.opacity(0.5))
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 16)
+                // Focus areas (what they got wrong)
+                if !focusAreas.isEmpty {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(randomFocusPhrase)
+                            .font(.custom("HelveticaNeue-Medium", size: 14))
+                            .foregroundColor(.white.opacity(0.7))
+
+                        ForEach(focusAreas, id: \.category) { area in
+                            HStack(spacing: 10) {
+                                Text(area.icon)
+                                    .font(.system(size: 16))
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(area.category)
+                                        .font(.custom("HelveticaNeue-Medium", size: 14))
+                                        .foregroundColor(.white)
+                                    if let example = area.example {
+                                        Text(example)
+                                            .font(.custom("HelveticaNeue", size: 12))
+                                            .foregroundColor(.white.opacity(0.5))
+                                    }
+                                }
+                                Spacer()
+                            }
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 10)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(Color.white.opacity(0.08))
+                            )
+                        }
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 24)
+                } else {
+                    // Perfect round message
+                    Text(randomPerfectPhrase)
+                        .font(.custom("HelveticaNeue", size: 15))
+                        .foregroundColor(.white.opacity(0.7))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 40)
+                        .padding(.bottom, 24)
+                }
+
+                Spacer()
 
                 // Go Again button
                 Button {
@@ -733,34 +786,107 @@ struct LightningRoundView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "bolt.fill")
                             .font(.system(size: 14))
+                            .foregroundColor(Color(hex: "#FFD60A"))
                         Text("Go Again")
-                            .font(.custom("HelveticaNeue-Medium", size: 16))
+                            .font(.custom("HelveticaNeue-Bold", size: 17))
+                            .foregroundColor(.white)
                     }
-                    .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
-                    .frame(height: 48)
-                    .background(Color.tsAccent)
-                    .cornerRadius(14)
+                    .frame(height: 52)
+                    .background(
+                        Capsule()
+                            .fill(Color.white.opacity(0.15))
+                            .overlay(
+                                Capsule()
+                                    .stroke(Color.white.opacity(0.25), lineWidth: 1)
+                            )
+                    )
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, 24)
 
                 Button { dismiss() } label: {
                     Text("Done")
                         .font(.custom("HelveticaNeue", size: 14))
-                        .foregroundColor(.black.opacity(0.4))
+                        .foregroundColor(.white.opacity(0.4))
                 }
-                .padding(.bottom, 4)
+                .padding(.top, 12)
+                .padding(.bottom, 48)
             }
-            .padding(24)
-            .background(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color(hex: "#F3F9FB"))
-                    .shadow(color: .black.opacity(0.1), radius: 16, y: 4)
-            )
-            .padding(.horizontal, 16)
-
-            Spacer()
         }
+    }
+
+    // MARK: - Summary Data
+
+    private struct FocusArea {
+        let category: String
+        let icon: String
+        let example: String?
+    }
+
+    /// Extract focus areas from wrong answers
+    private var focusAreas: [FocusArea] {
+        let wrongCards = cards.filter { $0.isCorrect == false }
+        var seen = Set<String>()
+        var areas: [FocusArea] = []
+
+        for card in wrongCards {
+            let cat: String
+            let icon: String
+            switch card.type {
+            case .speedConjugation: cat = "Conjugation"; icon = "🔄"
+            case .thisOrThat: cat = "Gender"; icon = "⚥"
+            case .minimalPairs, .echo, .speakIt: cat = "Pronunciation"; icon = "🗣"
+            case .slangInContext: cat = "Vocabulary"; icon = "📖"
+            case .quickPick, .trueOrFalse: cat = "Grammar"; icon = "📐"
+            case .contextualResponse: cat = "Fluency"; icon = "💬"
+            case .whatDidSheSay: cat = "Listening"; icon = "👂"
+            }
+
+            if !seen.contains(cat) {
+                seen.insert(cat)
+                let example = card.correctAnswer.isEmpty ? nil : card.correctAnswer
+                areas.append(FocusArea(category: cat, icon: icon, example: example))
+            }
+        }
+        return areas
+    }
+
+    private var randomFocusPhrase: String {
+        let phrases = [
+            "Still working on:",
+            "Keep an eye on:",
+            "Almost there with:",
+            "One more round should lock in:",
+            "Getting closer on:",
+            "Just needs a little more practice:",
+            "You're right on the edge of mastering:",
+            "So close with:",
+            "Let's keep sharpening:",
+            "Worth another look:",
+            "Don't let this one slip:",
+            "This one's almost yours:",
+            "Stay on this:",
+            "Keep chipping away at:",
+            "Tricky one to watch:",
+            "This one keeps sneaking in:",
+            "Not quite locked in yet:",
+            "Your brain's still cooking on:",
+            "Give this one more reps:",
+        ]
+        return phrases.randomElement() ?? "Keep working on:"
+    }
+
+    private var randomPerfectPhrase: String {
+        let phrases = [
+            "Nothing got past you this time.",
+            "Clean sweep.",
+            "Every single one. Respect.",
+            "You didn't miss a beat.",
+            "Flawless round — keep that energy.",
+            "Zero mistakes. That's the standard now.",
+            "Locked in. All of it.",
+        ]
+        return phrases.randomElement() ?? "Perfect round."
     }
 
     // MARK: - Logic
@@ -1218,19 +1344,11 @@ struct LightningRoundView: View {
     }
 
     private var summaryMessage: String {
+        if correctCount == totalAnswered && totalAnswered > 0 { return "Perfect Round!" }
         let pct = Double(correctCount) / max(Double(totalAnswered), 1)
-        if pct >= 0.9 { return "Incredible. You're on fire." }
-        if pct >= 0.7 { return "Solid round. Getting sharper." }
-        if pct >= 0.5 { return "Good work. Those mistakes are fading." }
-        return "Keep at it. Every round makes you better."
-    }
-
-    private var summarySubtext: String {
-        let due = MistakeProfileStore.shared.dueForReview.count
-        if due > 0 {
-            return "\(due) pattern\(due == 1 ? "" : "s") still due for review. Come back tomorrow."
-        }
-        return "All caught up for now. Come back tomorrow."
+        if pct >= 0.7 { return "Strong round!" }
+        if pct >= 0.4 { return "Getting there!" }
+        return "Keep at it!"
     }
 
     private func formatTime(_ seconds: Int) -> String {
