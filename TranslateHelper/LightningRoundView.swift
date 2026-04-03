@@ -776,10 +776,12 @@ struct LightningRoundView: View {
 
     private func generateRound() {
         isGenerating = true
+        NSLog("⚡ [LightningRound] generateRound called — checking caches")
 
         // 1. Check in-memory cache first (fastest)
         if let cached = engine.cachedCards, !cached.isEmpty,
            cached.first?.language == targetLang {
+            NSLog("⚡ [LightningRound] HIT: memory cache (\(cached.count) cards)")
             engine.cachedCards = nil
             engine.clearDiskCache()
             self.cards = cached
@@ -792,12 +794,34 @@ struct LightningRoundView: View {
 
         // 2. Check disk cache (survives app close — still instant, no API call)
         if let diskCached = engine.loadCacheFromDisk(language: targetLang) {
+            NSLog("⚡ [LightningRound] HIT: disk cache (\(diskCached.count) cards)")
             engine.clearDiskCache()
             self.cards = diskCached
             startRound()
             preGenerateNextRound()
             return
         }
+
+        // 3. Check if pre-gen is in flight — wait for it instead of making a duplicate call
+        NSLog("⚡ [LightningRound] MISS: no cache — checking if pre-gen is in flight")
+        engine.waitForPreGen { [self] waitedCards in
+            if let cards = waitedCards, !cards.isEmpty,
+               cards.first?.language == targetLang {
+                NSLog("⚡ [LightningRound] HIT: waited for in-flight pre-gen (\(cards.count) cards)")
+                self.engine.cachedCards = nil
+                self.engine.clearDiskCache()
+                self.cards = cards
+                self.startRound()
+                self.preGenerateNextRound()
+                return
+            }
+            NSLog("⚡ [LightningRound] MISS: no in-flight pre-gen — generating fresh")
+            self.generateRoundFresh()
+        }
+    }
+
+    /// Generate a round from scratch (no cache available)
+    private func generateRoundFresh() {
 
         let profile = MistakeProfileStore.shared
         var mistakes = engine.selectMistakesForRound(count: 10, language: targetLang)

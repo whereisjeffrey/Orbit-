@@ -136,9 +136,50 @@ final class LightningRoundEngine {
 
     private let profile = MistakeProfileStore.shared
 
-    /// Pre-cached round — built in background, consumed when user taps Lightning Round
-    var cachedCards: [LightningCard]?
-    var isCaching = false
+    /// Thread-safe access to cached cards via a serial queue
+    private let cacheQueue = DispatchQueue(label: "com.orbit.lightning.cache")
+    private var _cachedCards: [LightningCard]?
+    private var _isCaching = false
+
+    /// Waiters — closures that get called when pre-gen completes
+    private var preGenWaiters: [([LightningCard]) -> Void] = []
+
+    var cachedCards: [LightningCard]? {
+        get { cacheQueue.sync { _cachedCards } }
+        set { cacheQueue.sync { _cachedCards = newValue } }
+    }
+
+    var isCaching: Bool {
+        get { cacheQueue.sync { _isCaching } }
+        set { cacheQueue.sync { _isCaching = newValue } }
+    }
+
+    /// Wait for an in-flight pre-gen to complete. If not caching, calls back immediately with nil.
+    func waitForPreGen(completion: @escaping ([LightningCard]?) -> Void) {
+        cacheQueue.sync {
+            if let cards = _cachedCards, !cards.isEmpty {
+                completion(cards)
+            } else if _isCaching {
+                // Pre-gen is in flight — add to waiters list
+                preGenWaiters.append { cards in completion(cards) }
+                NSLog("⚡ [LightningRound] waiting for in-flight pre-gen (\(preGenWaiters.count) waiters)")
+            } else {
+                completion(nil)
+            }
+        }
+    }
+
+    /// Notify all waiters that pre-gen completed
+    private func notifyWaiters(cards: [LightningCard]) {
+        let waiters: [([LightningCard]) -> Void] = cacheQueue.sync {
+            let w = preGenWaiters
+            preGenWaiters.removeAll()
+            return w
+        }
+        for waiter in waiters {
+            DispatchQueue.main.async { waiter(cards) }
+        }
+    }
 
     /// Disk cache key for persisting pre-generated rounds across app sessions
     private static let diskCacheKey = "lightning_round_cache"
@@ -147,12 +188,19 @@ final class LightningRoundEngine {
 
     /// Save pre-generated cards to disk (App Group) so they survive app close
     func saveCacheToDisk(_ cards: [LightningCard], language: String) {
-        guard let data = try? JSONEncoder().encode(cards),
-              let defaults = UserDefaults(suiteName: Self.appGroup) else { return }
-        defaults.set(data, forKey: Self.diskCacheKey)
-        defaults.set(language, forKey: Self.diskCacheLangKey)
-        defaults.synchronize()
-        NSLog("⚡ [LightningRound] saved \(cards.count) cards to disk for \(language)")
+        do {
+            let data = try JSONEncoder().encode(cards)
+            guard let defaults = UserDefaults(suiteName: Self.appGroup) else {
+                NSLog("⚡ [LightningRound] ERROR: App Group unavailable — can't save to disk")
+                return
+            }
+            defaults.set(data, forKey: Self.diskCacheKey)
+            defaults.set(language, forKey: Self.diskCacheLangKey)
+            defaults.synchronize()
+            NSLog("⚡ [LightningRound] saved \(cards.count) cards to disk for \(language) (\(data.count) bytes)")
+        } catch {
+            NSLog("⚡ [LightningRound] ERROR: disk save failed — \(error.localizedDescription)")
+        }
     }
 
     /// Load pre-generated cards from disk if they match the current language
@@ -571,10 +619,14 @@ final class LightningRoundEngine {
                 if !validated.isEmpty {
                     engine.cachedCards = validated
                     engine.saveCacheToDisk(validated, language: language)
+                    engine.notifyWaiters(cards: validated)
                     NSLog("⚡ [LightningRound] pre-generated \(validated.count)/\(generatedCards.count) valid cards")
                 } else {
+                    engine.notifyWaiters(cards: [])
                     NSLog("⚡ [LightningRound] all cards failed validation — will retry on demand")
                 }
+            } else {
+                engine.notifyWaiters(cards: [])
             }
         }.resume()
     }
