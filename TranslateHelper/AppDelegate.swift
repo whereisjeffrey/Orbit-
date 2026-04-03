@@ -80,33 +80,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         let lang = LanguageManager.shared.targetLangRequired
 
-        // Seed mistakes if needed
-        let profile = MistakeProfileStore.shared
-        if !profile.hasMistakes(for: lang) {
-            let sem = DispatchSemaphore(value: 0)
-            profile.seedStarterMistakes(language: lang) { sem.signal() }
-            _ = sem.wait(timeout: .now() + 20)
-        }
-
-        // Check if we already have cached cards
-        let engine = LightningRoundEngine.shared
-        if engine.cachedCards != nil || engine.loadCacheFromDisk(language: lang) != nil {
-            NSLog("⚡ [BG] Lightning Round already cached — skipping")
-            task.setTaskCompleted(success: true)
-            scheduleLightningRoundTask()
-            return
-        }
-
-        // Generate cards synchronously (we're in a background task, this is fine)
-        let mistakes = engine.selectMistakesForRound(count: 10, language: lang)
-        guard !mistakes.isEmpty else {
-            NSLog("⚡ [BG] No mistakes for \(lang) — can't pre-gen")
-            task.setTaskCompleted(success: true)
-            scheduleLightningRoundTask()
-            return
-        }
-
-        // Use the same pre-gen path — it handles API call + validation + disk save
+        // Single API call — no seeding prerequisite
         LightningRoundEngine.preGenerate(language: lang)
 
         // Give the API call time to complete (up to 30s)

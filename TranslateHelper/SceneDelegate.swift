@@ -40,32 +40,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             DictateViewController.preloadWhisperKit()
         }
 
-        // Lightning Round pre-gen on HIGH priority — user may tap it soon
+        // Lightning Round pre-gen — SINGLE API call, no seeding prerequisite
         DispatchQueue.global(qos: .userInitiated).async {
-            // Process corrections first (they feed the mistake profile)
+            // Process any pending keyboard corrections first (enriches the mistake profile)
             TTSCacheProcessor.processPendingRequests()
             MistakeIngestion.processKeyboardQueue()
 
-            // Seed starter mistakes if needed (synchronous wait for GPT)
-            let profile = MistakeProfileStore.shared
-            if !profile.hasMistakes(for: roundLang) {
-                let semaphore = DispatchSemaphore(value: 0)
-                profile.seedStarterMistakes(language: roundLang) {
-                    semaphore.signal()
-                }
-                // Wait up to 20s — GPT can be slow on first call
-                let result = semaphore.wait(timeout: .now() + 20)
-                if result == .timedOut {
-                    NSLog("⚠️ Starter mistake seeding timed out — Lightning Round will generate on demand")
-                }
-            }
-
-            // Only pre-generate if we actually have mistakes to work with
-            if profile.hasMistakes(for: roundLang) {
-                LightningRoundEngine.preGenerate(language: roundLang)
-            } else {
-                NSLog("⚠️ No mistakes for \(roundLang) — skipping Lightning Round pre-gen")
-            }
+            // Pre-generate cards — works with or without existing mistakes
+            LightningRoundEngine.preGenerate(language: roundLang)
         }
 
         // Pre-seed starter decks on HIGH priority — user sees Library tab first

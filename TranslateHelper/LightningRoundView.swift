@@ -85,20 +85,11 @@ struct LightningRoundView: View {
         }
         .statusBarHidden(true)
         .onAppear {
-            // Start generating cards as soon as the Lightning Round screen appears.
-            // While the user watches the intro animation (2-3 seconds), cards are
-            // being fetched in the background. By the time they tap "Let's Go",
-            // cards are usually ready — instant start.
+            // Trigger pre-gen as soon as the intro screen appears.
+            // Single API call — no seeding prerequisite. If app launch pre-gen
+            // already completed, this is a no-op (cache exists).
             if phase == .intro && cards.isEmpty {
                 DispatchQueue.global(qos: .userInitiated).async {
-                    // Seed mistakes if needed
-                    let profile = MistakeProfileStore.shared
-                    if !profile.hasMistakes(for: self.targetLang) {
-                        let sem = DispatchSemaphore(value: 0)
-                        profile.seedStarterMistakes(language: self.targetLang) { sem.signal() }
-                        _ = sem.wait(timeout: .now() + 15)
-                    }
-                    // Try pre-gen (will skip if already cached)
                     LightningRoundEngine.preGenerate(language: self.targetLang)
                 }
             }
@@ -821,37 +812,19 @@ struct LightningRoundView: View {
     }
 
     /// Generate a round from scratch (no cache available)
+    /// Generate a round from scratch using the unified single-call approach
     private func generateRoundFresh() {
-
-        let profile = MistakeProfileStore.shared
-        var mistakes = engine.selectMistakesForRound(count: 10, language: targetLang)
-
-        // If no mistakes exist, seed them on demand and retry
-        if mistakes.isEmpty {
-            NSLog("⚡ [LightningRound] no mistakes — seeding on demand for \(targetLang)")
-            profile.seedStarterMistakes(language: targetLang) { [self] in
-                let retryMistakes = engine.selectMistakesForRound(count: 10, language: targetLang)
-                if retryMistakes.isEmpty {
-                    NSLog("⚡ [LightningRound] seeding failed — dismissing")
-                    dismiss()
-                    return
-                }
-                // Retry with seeded mistakes
-                let types = engine.buildRoundCardTypes()
-                let prompt = engine.generateCardsPrompt(cardTypes: types, mistakes: retryMistakes, language: targetLang)
-                generateCardsViaGPT(prompt: prompt, cardTypes: types, mistakes: retryMistakes)
-            }
-            return
-        }
-
+        NSLog("⚡ [LightningRound] generating fresh round (single API call)")
+        let langName = LanguageManager.languageName(for: targetLang)
+        let existingMistakes = engine.selectMistakesForRound(count: 10, language: targetLang)
         let cardTypes = engine.buildRoundCardTypes()
-        let prompt = engine.generateCardsPrompt(
+        let prompt = engine.buildUnifiedPrompt(
             cardTypes: cardTypes,
-            mistakes: mistakes,
-            language: targetLang
+            existingMistakes: existingMistakes,
+            language: targetLang,
+            langName: langName
         )
-
-        generateCardsViaGPT(prompt: prompt, cardTypes: cardTypes, mistakes: mistakes)
+        generateCardsViaGPT(prompt: prompt, cardTypes: cardTypes, mistakes: existingMistakes)
     }
 
     /// Pre-generates the next round in the background so it's ready instantly

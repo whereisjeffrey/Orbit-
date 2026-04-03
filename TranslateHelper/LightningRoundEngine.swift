@@ -391,6 +391,90 @@ final class LightningRoundEngine {
     }
 
     /// Generates the GPT prompt to create Lightning Round cards from mistake entries.
+    /// Unified prompt — works with OR without existing mistakes.
+    /// If mistakes exist, generates cards targeting those mistakes.
+    /// If no mistakes, generates common mistake cards for the user's level.
+    func buildUnifiedPrompt(
+        cardTypes: [LightningCardType],
+        existingMistakes: [MistakeEntry],
+        language: String,
+        langName: String
+    ) -> String {
+        let store = UserLevelStore.shared
+        let overallLevel = store.hasBeenAssessed ? store.overallLevel.rawValue : (SelfReportedLevel.saved?.initialCEFR.rawValue ?? "B1")
+        let transferBlock = TransferPatterns.patterns(for: language)
+
+        let mistakeBlock: String
+        if !existingMistakes.isEmpty {
+            var desc = "The cards should test REAL mistakes this user has made:\n\n"
+            for (i, m) in existingMistakes.enumerated() {
+                desc += "Mistake \(i+1): category=\(m.category.rawValue), said=\"\(m.userSaid)\", correct=\"\(m.correctForm)\"\n"
+                if !m.usedSentences.isEmpty {
+                    desc += "  DO NOT reuse: \(m.usedSentences.suffix(5).joined(separator: ", "))\n"
+                }
+            }
+            mistakeBlock = desc
+        } else {
+            mistakeBlock = """
+            The user has NO recorded mistakes yet. Generate cards testing COMMON mistakes \
+            English speakers make when learning \(langName) at \(overallLevel) level. \
+            Cover: gender, conjugation, prepositions, vocabulary (false friends), word order, idioms.
+            """
+        }
+
+        var cardInstructions = ""
+        for (i, type) in cardTypes.enumerated() {
+            cardInstructions += "Card \(i+1): type=\"\(type.rawValue)\"\n"
+            switch type {
+            case .speakIt:
+                cardInstructions += "  → Natural sentence the user must say in \(langName).\n"
+            case .echo:
+                cardInstructions += "  → Natural \(langName) sentence to hear and repeat.\n"
+            case .speedConjugation:
+                cardInstructions += "  → Verb conjugation question, 4 options.\n"
+            case .whatDidSheSay:
+                cardInstructions += "  → \(langName) sentence spoken aloud, 4 written options.\n"
+            case .minimalPairs:
+                cardInstructions += "  → Two similar-sounding words, pick which matches the meaning.\n"
+            case .quickPick:
+                cardInstructions += "  → Fill-in-the-blank or grammar question, 4 options.\n"
+            case .trueOrFalse:
+                cardInstructions += "  → Sentence that is correct or has one mistake. True/False.\n"
+            case .thisOrThat:
+                cardInstructions += "  → Binary choice (e.g., a/o, ser/estar). Exactly 2 options.\n"
+            case .slangInContext:
+                cardInstructions += "  → Short dialogue with slang, pick the meaning (3 options).\n"
+            case .contextualResponse:
+                cardInstructions += "  → 2-line conversation, pick the most natural reply (3 options).\n"
+            }
+        }
+
+        return """
+        Generate \(cardTypes.count) Lightning Round quiz cards for a \(langName) learner (English native speaker).
+
+        USER LEVEL: \(overallLevel)
+        \(Self.difficultyGuidelines(for: overallLevel))
+
+        \(mistakeBlock)
+
+        \(transferBlock)
+
+        \(cardInstructions)
+
+        RULES:
+        - All prompts and explanations in English, with \(langName) words quoted inline
+        - ACCURACY IS CRITICAL — every word must be 100% correct
+        - correct_answer MUST appear in the options array (for tap cards)
+        - Voice cards (speakIt, echo): include "audio_text" with the full sentence
+        - Vary topics: shopping, sports, cooking, travel, dating, family, weather, etc.
+        - Vary sentence length and register
+        - For thisOrThat: exactly 2 options
+
+        Respond with JSON: {"cards": [{"type":"...","prompt":"...","correct_answer":"...","options":[...],"explanation":"...","audio_text":"...","target_word":"..."}]}
+        """
+    }
+
+    /// Legacy prompt — kept for compatibility but buildUnifiedPrompt is preferred
     func generateCardsPrompt(
         cardTypes: [LightningCardType],
         mistakes: [MistakeEntry],
@@ -518,35 +602,44 @@ final class LightningRoundEngine {
         """
     }
 
-    // MARK: - Background Pre-Generation
+    // MARK: - Unified Pre-Generation (Single API Call)
 
-    /// Pre-generates a Lightning Round in the background so it's ready instantly.
-    /// Called from Coach tab onAppear and after each completed round.
+    /// Pre-generates a Lightning Round in ONE API call — no seeding step required.
+    /// Works with or without existing mistakes in the profile.
+    /// Called from: SceneDelegate (app launch), Coach tab, after each round, background task.
     static func preGenerate(language: String) {
         let engine = LightningRoundEngine.shared
+
         // Skip if we already have cached cards for this language
-        guard engine.cachedCards == nil else { return }
-        // Also check disk — skip if we already have a disk cache
+        guard engine.cachedCards == nil else {
+            NSLog("⚡ [PreGen] skipped — memory cache exists")
+            return
+        }
+        // Check disk cache
         if let diskCards = engine.loadCacheFromDisk(language: language) {
             engine.cachedCards = diskCards
+            NSLog("⚡ [PreGen] loaded \(diskCards.count) cards from disk")
             return
         }
-        // Skip if already generating (but allow retry — isCaching shouldn't block forever)
-        guard !engine.isCaching else { return }
+        // Skip if already generating
+        guard !engine.isCaching else {
+            NSLog("⚡ [PreGen] skipped — already in flight")
+            return
+        }
         engine.isCaching = true
+        NSLog("⚡ [PreGen] starting for \(language)")
 
-        // Pre-gen always uses 10 cards — the extra 5 calibration cards (first round)
-        // are only added when the user actually opens Lightning Round
-        let preGenCount = 10
-        let mistakes = engine.selectMistakesForRound(count: preGenCount, language: language)
-        guard !mistakes.isEmpty else {
-            engine.isCaching = false
-            NSLog("⚡ [LightningRound] pre-gen: no mistakes found for \(language)")
-            return
-        }
-
+        let langName = engine.languageName(for: language)
         let cardTypes = engine.buildRoundCardTypes()
-        let prompt = engine.generateCardsPrompt(cardTypes: cardTypes, mistakes: mistakes, language: language)
+
+        // Build prompt — uses existing mistakes if available, otherwise generates from scratch
+        let existingMistakes = engine.selectMistakesForRound(count: 10, language: language)
+        let prompt = engine.buildUnifiedPrompt(
+            cardTypes: cardTypes,
+            existingMistakes: existingMistakes,
+            language: language,
+            langName: langName
+        )
 
         let apiKey = APIConfig.openAIAPIKey
         guard let url = URL(string: "https://api.openai.com/v1/chat/completions") else {
@@ -557,11 +650,11 @@ final class LightningRoundEngine {
         let body: [String: Any] = [
             "model": "gpt-4o-mini",
             "messages": [
-                ["role": "system", "content": "You generate quiz cards for language learners. Respond ONLY with a valid JSON array."],
+                ["role": "system", "content": "You generate quiz cards for language learners. Respond ONLY with valid JSON."],
                 ["role": "user", "content": prompt],
             ],
             "temperature": 0.5,
-            "max_tokens": 1500,
+            "max_tokens": 2000,
             "response_format": ["type": "json_object"],
         ]
 
@@ -572,8 +665,14 @@ final class LightningRoundEngine {
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
         request.timeoutInterval = 30
 
-        URLSession.shared.dataTask(with: request) { data, _, _ in
+        URLSession.shared.dataTask(with: request) { data, _, error in
             defer { engine.isCaching = false }
+
+            if let error = error {
+                NSLog("⚡ [PreGen] FAILED: \(error.localizedDescription)")
+                engine.notifyWaiters(cards: [])
+                return
+            }
 
             guard let data = data,
                   let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -583,10 +682,12 @@ final class LightningRoundEngine {
                   let contentData = content.data(using: .utf8),
                   let parsed = try? JSONSerialization.jsonObject(with: contentData) as? [String: Any]
             else {
-                NSLog("⚡ [LightningRound] pre-gen failed — will generate on demand")
+                NSLog("⚡ [PreGen] FAILED: couldn't parse response")
+                engine.notifyWaiters(cards: [])
                 return
             }
 
+            // Parse cards
             let cardsArray: [[String: Any]]
             if let arr = parsed["cards"] as? [[String: Any]] {
                 cardsArray = arr
@@ -597,38 +698,79 @@ final class LightningRoundEngine {
             var generatedCards: [LightningCard] = []
             for (i, cardJSON) in cardsArray.enumerated() where i < cardTypes.count {
                 let type = cardTypes[i]
-                let mistakeIdx = (cardJSON["mistake_index"] as? Int) ?? (i % mistakes.count)
-                let mistake = mistakes[min(mistakeIdx, mistakes.count - 1)]
+
+                let rawPrompt = cardJSON["prompt"] as? String ?? ""
+                let rawCorrectAnswer = cardJSON["correct_answer"] as? String ?? ""
+                let rawAudioText = cardJSON["audio_text"] as? String
+                let rawOptions = (cardJSON["options"] as? [String])?.filter {
+                    $0.trimmingCharacters(in: .whitespacesAndNewlines).count >= 2 &&
+                    $0 != "—" && $0 != "-" && $0 != "–"
+                }
+
+                // Voice card validation
+                let audioText = type.isVoiceCard ? (rawAudioText ?? rawCorrectAnswer) : rawAudioText
+                let prompt = rawPrompt.isEmpty ? (type.isVoiceCard ? "Say this out loud:" : "What's the correct form?") : rawPrompt
 
                 generatedCards.append(LightningCard(
                     type: type,
-                    mistakeId: mistake.id,
+                    mistakeId: nil,
                     language: language,
-                    prompt: cardJSON["prompt"] as? String ?? "What's the correct form?",
-                    correctAnswer: cardJSON["correct_answer"] as? String ?? mistake.correctForm,
-                    options: cardJSON["options"] as? [String],
-                    explanation: cardJSON["explanation"] as? String ?? mistake.explanation,
-                    audioText: cardJSON["audio_text"] as? String,
+                    prompt: prompt,
+                    correctAnswer: rawCorrectAnswer,
+                    options: rawOptions,
+                    explanation: cardJSON["explanation"] as? String ?? "",
+                    audioText: audioText,
                     targetWord: cardJSON["target_word"] as? String
                 ))
             }
 
             if !generatedCards.isEmpty {
-                // Validate — discard bad cards (gibberish, mismatched answers, etc.)
                 let validated = engine.validateCards(generatedCards, language: language)
                 if !validated.isEmpty {
                     engine.cachedCards = validated
                     engine.saveCacheToDisk(validated, language: language)
                     engine.notifyWaiters(cards: validated)
-                    NSLog("⚡ [LightningRound] pre-generated \(validated.count)/\(generatedCards.count) valid cards")
+                    NSLog("⚡ [PreGen] SUCCESS: \(validated.count) valid cards cached")
+
+                    // Also seed the mistake profile from the generated cards (if profile is empty)
+                    if existingMistakes.isEmpty {
+                        engine.seedMistakesFromCards(validated, language: language)
+                    }
                 } else {
                     engine.notifyWaiters(cards: [])
-                    NSLog("⚡ [LightningRound] all cards failed validation — will retry on demand")
+                    NSLog("⚡ [PreGen] all cards failed validation")
                 }
             } else {
                 engine.notifyWaiters(cards: [])
+                NSLog("⚡ [PreGen] no cards in response")
             }
         }.resume()
+    }
+
+    /// Seed the mistake profile from generated cards (reverse: cards → mistakes)
+    private func seedMistakesFromCards(_ cards: [LightningCard], language: String) {
+        let profile = MistakeProfileStore.shared
+        for card in cards {
+            guard !card.correctAnswer.isEmpty else { continue }
+            let category: MistakeCategory
+            switch card.type {
+            case .speedConjugation: category = .conjugation
+            case .thisOrThat: category = .gender
+            case .minimalPairs: category = .pronunciation
+            case .slangInContext: category = .vocabulary
+            case .speakIt, .echo: category = .pronunciation
+            default: category = .grammar
+            }
+            profile.record(
+                category: category,
+                language: language,
+                userSaid: card.prompt,
+                correctForm: card.correctAnswer,
+                explanation: card.explanation,
+                source: .keyboard
+            )
+        }
+        NSLog("⚡ [PreGen] seeded \(cards.count) mistakes from generated cards")
     }
 
     // MARK: - Process Round Results
