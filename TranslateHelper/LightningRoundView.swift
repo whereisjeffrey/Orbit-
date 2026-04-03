@@ -271,7 +271,7 @@ struct LightningRoundView: View {
             }
             .background(
                 RoundedRectangle(cornerRadius: 20)
-                    .fill(Color(hex: "#F3F9FB"))
+                    .fill(Color(hex: "#E3F0F7").opacity(0.9))
                     .shadow(color: .black.opacity(0.1), radius: 16, y: 4)
             )
             .padding(.horizontal, 16)
@@ -319,9 +319,9 @@ struct LightningRoundView: View {
         let parts = splitPrompt(card.prompt)
 
         return VStack(alignment: .leading, spacing: 14) {
-            // Context / dialogue — bold, dark text on light card
+            // Context / dialogue — medium weight, dark text on light card
             Text(parts.context)
-                .font(.custom("HelveticaNeue-Bold", size: 18))
+                .font(.custom("HelveticaNeue-Medium", size: 17))
                 .foregroundColor(.black)
                 .lineSpacing(4)
                 .fixedSize(horizontal: false, vertical: true)
@@ -338,9 +338,10 @@ struct LightningRoundView: View {
         .padding(.horizontal, 20)
     }
 
-    /// Splits prompt into context (top) + question (bottom).
+    /// Splits prompt into context (statement/quote at top) + question (below).
+    /// Ensures the foreign language phrase is always visually separated from the English question.
     private func splitPrompt(_ prompt: String) -> (context: String, question: String?) {
-        // Try newline split first
+        // 1. Explicit newline split
         if prompt.contains("\n") {
             let lines = prompt.split(separator: "\n", maxSplits: 1)
             if lines.count == 2 {
@@ -349,17 +350,52 @@ struct LightningRoundView: View {
             }
         }
 
-        // Try splitting on question mark — everything before is context, the question + rest is the question
+        // 2. Quoted text — split before or after quotes
+        //    e.g., "Ele muita bomba de ouvido" What does this mean?
+        let quotePatterns: [Character] = ["\"", "'", "\u{201C}", "\u{201D}", "\u{2018}", "\u{2019}"]
+        if let firstQuote = prompt.firstIndex(where: { quotePatterns.contains($0) }),
+           let lastQuote = prompt.lastIndex(where: { quotePatterns.contains($0) }),
+           firstQuote != lastQuote {
+            let quoted = String(prompt[firstQuote...lastQuote])
+            let beforeQuote = String(prompt[prompt.startIndex..<firstQuote]).trimmingCharacters(in: .whitespacesAndNewlines)
+            let afterQuote = String(prompt[prompt.index(after: lastQuote)...]).trimmingCharacters(in: .whitespacesAndNewlines)
+
+            if !afterQuote.isEmpty {
+                // Quote first, question after: "Ele falou" What does this mean?
+                return (quoted, afterQuote)
+            } else if !beforeQuote.isEmpty {
+                // Question first, quote after: What does "falou" mean?
+                return (quoted, beforeQuote)
+            }
+        }
+
+        // 3. Common question phrases — split at the question boundary
+        let questionStarters = [
+            "What does", "What do", "What is", "What are",
+            "Which", "How do you", "How would",
+            "Is this", "Is the", "Does this",
+            "True or false", "Choose the",
+        ]
+        for starter in questionStarters {
+            if let range = prompt.range(of: starter, options: .caseInsensitive) {
+                let before = String(prompt[prompt.startIndex..<range.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+                let question = String(prompt[range.lowerBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
+                if !before.isEmpty && before.count > 3 {
+                    return (before, question)
+                }
+            }
+        }
+
+        // 4. Question mark split — statement before, question after
         if let qRange = prompt.range(of: "? ") {
             let before = String(prompt[prompt.startIndex...qRange.lowerBound])
             let after = String(prompt[qRange.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
-            // If "after" looks like options (a/b/c), put the question mark part as the question
             if !after.isEmpty {
                 return (after, before + "?")
             }
         }
 
-        // Try colon split
+        // 5. Colon split
         if let colonRange = prompt.range(of: ": ") {
             let instruction = String(prompt[prompt.startIndex..<colonRange.lowerBound])
             let content = String(prompt[colonRange.upperBound...])
@@ -413,10 +449,6 @@ struct LightningRoundView: View {
                             RoundedRectangle(cornerRadius: 12)
                                 .fill(Color.white)
                         )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(optionBorderColor(option, card: card), lineWidth: 1)
-                        )
                     }
                     .disabled(selectedOption != nil)
                 }
@@ -426,17 +458,17 @@ struct LightningRoundView: View {
     }
 
     private func optionLetterColor(_ option: String, card: LightningCard) -> Color {
-        guard selectedOption != nil else { return .black.opacity(0.5) }
+        guard selectedOption != nil else { return .tsAccent }
         if answersMatch(option, card.correctAnswer) { return Color(hex: "#34C759") }
         if option == selectedOption { return Color(hex: "#FF3B30") }
-        return .black.opacity(0.2)
+        return .tsAccent.opacity(0.3)
     }
 
     private func optionLetterBg(_ option: String, card: LightningCard) -> Color {
-        guard selectedOption != nil else { return Color(hex: "#F3F9FB") }
+        guard selectedOption != nil else { return Color.tsAccent.opacity(0.1) }
         if answersMatch(option, card.correctAnswer) { return Color(hex: "#34C759").opacity(0.12) }
         if option == selectedOption && option != card.correctAnswer { return Color(hex: "#FF3B30").opacity(0.12) }
-        return Color(hex: "#F3F9FB").opacity(0.5)
+        return Color.tsAccent.opacity(0.05)
     }
 
     private func optionLetterColorGlass(_ option: String, card: LightningCard) -> Color {
