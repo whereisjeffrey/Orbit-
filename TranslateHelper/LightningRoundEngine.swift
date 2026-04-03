@@ -752,6 +752,23 @@ final class LightningRoundEngine {
         let profile = MistakeProfileStore.shared
         for card in cards {
             guard !card.correctAnswer.isEmpty else { continue }
+
+            // Use targetWord or the wrong option as userSaid — NOT the English prompt
+            let wrongAnswer: String
+            if let tw = card.targetWord, !tw.isEmpty {
+                wrongAnswer = tw
+            } else if let options = card.options,
+                      let wrong = options.first(where: {
+                          $0.lowercased().trimmingCharacters(in: .whitespacesAndNewlines) !=
+                          card.correctAnswer.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+                      }),
+                      !wrong.isEmpty {
+                wrongAnswer = wrong
+            } else {
+                // Skip — we don't have a valid target-language "wrong" form
+                continue
+            }
+
             let category: MistakeCategory
             switch card.type {
             case .speedConjugation: category = .conjugation
@@ -764,7 +781,7 @@ final class LightningRoundEngine {
             profile.record(
                 category: category,
                 language: language,
-                userSaid: card.prompt,
+                userSaid: wrongAnswer,
                 correctForm: card.correctAnswer,
                 explanation: card.explanation,
                 source: .keyboard

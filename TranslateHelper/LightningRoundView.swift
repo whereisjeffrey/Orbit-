@@ -271,7 +271,7 @@ struct LightningRoundView: View {
             }
             .background(
                 RoundedRectangle(cornerRadius: 20)
-                    .fill(Color(hex: "#E3F0F7").opacity(0.9))
+                    .fill(Color(hex: "#EDF6FE"))
                     .shadow(color: .black.opacity(0.1), radius: 16, y: 4)
             )
             .padding(.horizontal, 16)
@@ -319,9 +319,9 @@ struct LightningRoundView: View {
         let parts = splitPrompt(card.prompt)
 
         return VStack(alignment: .leading, spacing: 14) {
-            // Context / dialogue — medium weight, dark text on light card
+            // Context / dialogue — light weight, dark text on light card
             Text(parts.context)
-                .font(.custom("HelveticaNeue-Medium", size: 17))
+                .font(.custom("HelveticaNeue", size: 17))
                 .foregroundColor(.black)
                 .lineSpacing(4)
                 .fixedSize(horizontal: false, vertical: true)
@@ -443,11 +443,12 @@ struct LightningRoundView: View {
                                     .foregroundColor(answersMatch(option, card.correctAnswer) ? Color(hex: "#34C759") : Color(hex: "#FF3B30"))
                             }
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 14)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 16)
                         .background(
                             RoundedRectangle(cornerRadius: 12)
-                                .fill(Color.white)
+                                .fill(optionCardBg(option, card: card))
+                                .shadow(color: .black.opacity(0.06), radius: 6, y: 2)
                         )
                     }
                     .disabled(selectedOption != nil)
@@ -465,14 +466,28 @@ struct LightningRoundView: View {
     }
 
     private func optionLetterBg(_ option: String, card: LightningCard) -> Color {
-        guard selectedOption != nil else { return Color.tsAccent.opacity(0.1) }
+        guard selectedOption != nil else { return Color(hex: "#EDF6FE") }
         if answersMatch(option, card.correctAnswer) { return Color(hex: "#34C759").opacity(0.12) }
         if option == selectedOption && option != card.correctAnswer { return Color(hex: "#FF3B30").opacity(0.12) }
-        return Color.tsAccent.opacity(0.05)
+        return Color(hex: "#EDF6FE").opacity(0.5)
     }
 
     private func optionLetterColorGlass(_ option: String, card: LightningCard) -> Color {
         optionLetterColor(option, card: card)
+    }
+
+    /// Option card background — white normally, tinted green/red after answering
+    private func optionCardBg(_ option: String, card: LightningCard) -> Color {
+        guard selectedOption != nil else { return .white }
+        if answersMatch(option, card.correctAnswer) {
+            // Crisp white with a clear green tint
+            return Color(red: 0.90, green: 1.0, blue: 0.92)
+        }
+        if option == selectedOption && !answersMatch(option, card.correctAnswer) {
+            // Crisp white with a clear red tint
+            return Color(red: 1.0, green: 0.90, blue: 0.90)
+        }
+        return .white.opacity(0.5)
     }
 
     private func optionLetterBgGlass(_ option: String, card: LightningCard) -> Color {
@@ -697,14 +712,16 @@ struct LightningRoundView: View {
                 }
             }
         }
-        .padding(16)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
         .background(
             RoundedRectangle(cornerRadius: 14)
-                .fill(accentColor.opacity(0.1))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 14)
-                .stroke(accentColor.opacity(0.25), lineWidth: 0.5)
+                .fill(Color.white)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(accentColor.opacity(0.12))
+                )
+                .shadow(color: .black.opacity(0.06), radius: 6, y: 2)
         )
         .padding(.horizontal, 20)
     }
