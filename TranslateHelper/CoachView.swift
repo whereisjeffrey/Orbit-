@@ -900,7 +900,7 @@ extension CoachPopulatedView {
                                             Text(shortenExplanation(mistake.explanation))
                                                 .font(.custom("HelveticaNeue", size: 11))
                                                 .foregroundColor(.tsSecondary)
-                                                .lineLimit(1)
+                                                .fixedSize(horizontal: false, vertical: true)
                                         }
                                     }
 
