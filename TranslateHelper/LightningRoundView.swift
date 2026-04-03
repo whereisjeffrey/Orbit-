@@ -18,7 +18,7 @@ struct LightningRoundView: View {
 
     // MARK: - State
 
-    @State private var phase: RoundPhase = .loading
+    @State private var phase: RoundPhase = .intro
     @State private var cards: [LightningCard] = []
     @State private var currentIndex = 0
     @State private var selectedOption: String?
@@ -85,9 +85,22 @@ struct LightningRoundView: View {
         }
         .statusBarHidden(true)
         .onAppear {
-            // Skip intro — go straight to generating the round
-            if phase == .loading {
-                generateRound()
+            // Start generating cards as soon as the Lightning Round screen appears.
+            // While the user watches the intro animation (2-3 seconds), cards are
+            // being fetched in the background. By the time they tap "Let's Go",
+            // cards are usually ready — instant start.
+            if phase == .intro && cards.isEmpty {
+                DispatchQueue.global(qos: .userInitiated).async {
+                    // Seed mistakes if needed
+                    let profile = MistakeProfileStore.shared
+                    if !profile.hasMistakes(for: self.targetLang) {
+                        let sem = DispatchSemaphore(value: 0)
+                        profile.seedStarterMistakes(language: self.targetLang) { sem.signal() }
+                        _ = sem.wait(timeout: .now() + 15)
+                    }
+                    // Try pre-gen (will skip if already cached)
+                    LightningRoundEngine.preGenerate(language: self.targetLang)
+                }
             }
         }
     }
@@ -133,12 +146,6 @@ struct LightningRoundView: View {
                     .font(.custom("HelveticaNeue-Bold", size: 28))
                     .foregroundColor(.white)
 
-                Text("10 quick exercises based on your real mistakes.\nTap, speak, listen — 90 seconds.")
-                    .font(.custom("HelveticaNeue", size: 15))
-                    .foregroundColor(.white.opacity(0.7))
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(3)
-                    .padding(.horizontal, 40)
 
                 Spacer()
 

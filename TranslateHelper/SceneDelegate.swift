@@ -132,10 +132,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func sceneWillResignActive(_ scene: UIScene) {}
     func sceneWillEnterForeground(_ scene: UIScene) {}
     func sceneDidEnterBackground(_ scene: UIScene) {
-        // Schedule background tasks for TTS cache + mistake ingestion
+        // Schedule background tasks
         if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
             appDelegate.scheduleTTSCacheTask()
             appDelegate.scheduleMistakeIngestTask()
+            appDelegate.scheduleLightningRoundTask()
         }
     }
 }

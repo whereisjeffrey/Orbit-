@@ -13,6 +13,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     static let ttsCacheTaskId = "com.jeffrey.TranslateHelper.tts-cache"
     static let mistakeIngestTaskId = "com.jeffrey.TranslateHelper.mistake-ingest"
+    static let lightningRoundTaskId = "com.jeffrey.TranslateHelper.lightning-round"
 
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
@@ -32,6 +33,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Mistake queue ingestion — processes keyboard corrections into mistake profile
         BGTaskScheduler.shared.register(forTaskWithIdentifier: Self.mistakeIngestTaskId, using: nil) { task in
             self.handleMistakeIngestTask(task as! BGProcessingTask)
+        }
+
+        // Lightning Round pre-generation — builds cards in background so they're instant
+        BGTaskScheduler.shared.register(forTaskWithIdentifier: Self.lightningRoundTaskId, using: nil) { task in
+            self.handleLightningRoundTask(task as! BGProcessingTask)
         }
     }
 
@@ -64,6 +70,57 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let request = BGProcessingTaskRequest(identifier: Self.mistakeIngestTaskId)
         request.requiresNetworkConnectivity = false
         request.earliestBeginDate = Date(timeIntervalSinceNow: 30 * 60)  // 30 min
+        try? BGTaskScheduler.shared.submit(request)
+    }
+
+    // MARK: - Lightning Round Background Pre-Generation
+
+    private func handleLightningRoundTask(_ task: BGProcessingTask) {
+        task.expirationHandler = { task.setTaskCompleted(success: false) }
+
+        let lang = LanguageManager.shared.targetLangRequired
+
+        // Seed mistakes if needed
+        let profile = MistakeProfileStore.shared
+        if !profile.hasMistakes(for: lang) {
+            let sem = DispatchSemaphore(value: 0)
+            profile.seedStarterMistakes(language: lang) { sem.signal() }
+            _ = sem.wait(timeout: .now() + 20)
+        }
+
+        // Check if we already have cached cards
+        let engine = LightningRoundEngine.shared
+        if engine.cachedCards != nil || engine.loadCacheFromDisk(language: lang) != nil {
+            NSLog("⚡ [BG] Lightning Round already cached — skipping")
+            task.setTaskCompleted(success: true)
+            scheduleLightningRoundTask()
+            return
+        }
+
+        // Generate cards synchronously (we're in a background task, this is fine)
+        let mistakes = engine.selectMistakesForRound(count: 10, language: lang)
+        guard !mistakes.isEmpty else {
+            NSLog("⚡ [BG] No mistakes for \(lang) — can't pre-gen")
+            task.setTaskCompleted(success: true)
+            scheduleLightningRoundTask()
+            return
+        }
+
+        // Use the same pre-gen path — it handles API call + validation + disk save
+        LightningRoundEngine.preGenerate(language: lang)
+
+        // Give the API call time to complete (up to 30s)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 30) {
+            task.setTaskCompleted(success: true)
+            self.scheduleLightningRoundTask()
+            NSLog("⚡ [BG] Lightning Round background task completed")
+        }
+    }
+
+    func scheduleLightningRoundTask() {
+        let request = BGProcessingTaskRequest(identifier: Self.lightningRoundTaskId)
+        request.requiresNetworkConnectivity = true  // needs GPT API
+        request.earliestBeginDate = Date(timeIntervalSinceNow: 15 * 60)  // every 15 min
         try? BGTaskScheduler.shared.submit(request)
     }
 
