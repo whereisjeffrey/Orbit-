@@ -21,7 +21,45 @@ class TalkSwitchAPI {
 
     static let shared = TalkSwitchAPI()
     private let urlSession = URLSession(configuration: .default)
+    private var activeTasks: [URLSessionTask] = []
+    private let taskLock = NSLock()
     private init() {}
+
+    /// Track a task so it can be cancelled later
+    private func track(_ task: URLSessionTask) {
+        taskLock.lock()
+        activeTasks.append(task)
+        taskLock.unlock()
+    }
+
+    /// Remove a completed task from tracking
+    private func untrack(_ task: URLSessionTask) {
+        taskLock.lock()
+        activeTasks.removeAll { $0.taskIdentifier == task.taskIdentifier }
+        taskLock.unlock()
+    }
+
+    /// Cancel ALL in-flight API calls — frees memory from pending responses
+    func cancelAllTasks() {
+        taskLock.lock()
+        let tasks = activeTasks
+        activeTasks.removeAll()
+        taskLock.unlock()
+        for task in tasks { task.cancel() }
+        if !tasks.isEmpty { NSLog("TSKBD_API: cancelled \(tasks.count) pending tasks") }
+    }
+
+    /// Create a tracked data task — automatically untracked on completion
+    private func trackedDataTask(with request: URLRequest, completion: @escaping (Data?, URLResponse?, Error?) -> Void) -> URLSessionTask {
+        var taskRef: URLSessionTask!
+        let task = urlSession.dataTask(with: request) { [weak self] data, response, error in
+            self?.untrack(taskRef)
+            completion(data, response, error)
+        }
+        taskRef = task
+        track(task)
+        return task
+    }
 
     // MARK: - Language Name Mapper
 
@@ -1438,25 +1476,44 @@ class TalkSwitchAPI {
     // MARK: - Automated Persona Profiler
     
     /// Records a translation and triggers background persona update if threshold is met
+    /// In-memory buffer — only writes to disk every 5 translations
+    private var personaBuffer: [[String: String]] = []
+    private let personaFlushInterval = 5
+
     func recordTranslationForPersona(original: String, translated: String, tone: Tone) {
-        guard let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper") else { return }
-        let key = "talkswitch_persona_history"
-        
-        var history = defaults.array(forKey: key) as? [[String: String]] ?? []
-        history.append([
+        personaBuffer.append([
             "original": original,
             "translated": translated,
             "tone": tone.displayName
         ])
-        
-        // If we hit 20 translations, offload to summarize
+
+        // Only write to disk every 5 translations (or when buffer hits 20 for summary)
+        guard personaBuffer.count >= personaFlushInterval else { return }
+        flushPersonaBuffer()
+    }
+
+    /// Write buffered translations to disk — called every 5 translations
+    func flushPersonaBuffer() {
+        guard !personaBuffer.isEmpty else { return }
+        guard let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper") else { return }
+        let key = "talkswitch_persona_history"
+
+        var history = defaults.array(forKey: key) as? [[String: String]] ?? []
+        history.append(contentsOf: personaBuffer)
+        personaBuffer.removeAll()
+
+        // Hard cap
+        if history.count > 30 {
+            history = Array(history.suffix(20))
+        }
+
+        // Summarize at 20
         if history.count >= 20 {
-            defaults.removeObject(forKey: key) // Clear current batch
+            defaults.removeObject(forKey: key)
             generatePersonaSummary(from: history)
         } else {
             defaults.set(history, forKey: key)
         }
-        defaults.synchronize()
     }
     
     private func generatePersonaSummary(from history: [[String: String]]) {

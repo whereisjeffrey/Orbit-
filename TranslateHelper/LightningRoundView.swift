@@ -35,6 +35,8 @@ struct LightningRoundView: View {
     @State private var recordingSeconds = 0
     @State private var recordingTimer: Timer?
     @State private var showVoiceResult = false
+    @State private var savedToClipboard = false
+    @State private var clipboardCheckmark = false
     @State private var voiceHeard: String = ""
     @State private var voiceWasCorrect: Bool = false
     @State private var pronunciationScore: Int = 0
@@ -273,7 +275,7 @@ struct LightningRoundView: View {
             }
             .background(
                 RoundedRectangle(cornerRadius: 20)
-                    .fill(Color(hex: "#E3F0F7").opacity(0.9))
+                    .fill(Color.white)
                     .shadow(color: .black.opacity(0.1), radius: 16, y: 4)
             )
             .padding(.horizontal, 16)
@@ -321,12 +323,20 @@ struct LightningRoundView: View {
         let parts = splitPrompt(card.prompt)
 
         return VStack(alignment: .leading, spacing: 14) {
-            // Context / dialogue — medium weight, dark text on light card
-            Text(parts.context)
-                .font(.custom("HelveticaNeue-Medium", size: 17))
-                .foregroundColor(.black)
-                .lineSpacing(4)
-                .fixedSize(horizontal: false, vertical: true)
+            // Context / dialogue — for slang cards, underline the slang term
+            if card.type == .slangInContext {
+                Text(underlineTermInText(parts.context, card: card))
+                    .font(.custom("HelveticaNeue-Medium", size: 17))
+                    .foregroundColor(.black)
+                    .lineSpacing(4)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else {
+                Text(parts.context)
+                    .font(.custom("HelveticaNeue-Medium", size: 17))
+                    .foregroundColor(.black)
+                    .lineSpacing(4)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
 
             // Question — regular weight, softer
             if let question = parts.question {
@@ -342,6 +352,59 @@ struct LightningRoundView: View {
 
     /// Splits prompt into context (statement/quote at top) + question (below).
     /// Ensures the foreign language phrase is always visually separated from the English question.
+    /// Underlines the slang term (quoted text, targetWord, or correctAnswer) in the prompt
+    private func underlineTermInText(_ text: String, card: LightningCard) -> AttributedString {
+        var result = AttributedString(text)
+        let terms = [card.targetWord, card.correctAnswer].compactMap { $0 }.filter { !$0.isEmpty }
+
+        // Try quoted terms first
+        let quoteChars: [Character] = ["'", "'", "'", "\"", "\u{201C}", "\u{201D}"]
+        var i = text.startIndex
+        while i < text.endIndex {
+            if quoteChars.contains(text[i]) {
+                let searchStart = text.index(after: i)
+                if searchStart < text.endIndex,
+                   let closeIdx = text[searchStart...].firstIndex(where: { quoteChars.contains($0) }) {
+                    let nsRange = NSRange(i...closeIdx, in: text)
+                    if let attrRange = Range(nsRange, in: result) {
+                        result[attrRange].underlineStyle = .single
+                        return result
+                    }
+                }
+            }
+            i = text.index(after: i)
+        }
+
+        // Fallback: underline targetWord or correctAnswer
+        for term in terms {
+            if let range = text.range(of: term, options: .caseInsensitive) {
+                let nsRange = NSRange(range, in: text)
+                if let attrRange = Range(nsRange, in: result) {
+                    result[attrRange].underlineStyle = .single
+                    return result
+                }
+            }
+        }
+        return result
+    }
+
+    /// Bolds the slang term inside the explanation text
+    private func boldTermInText(_ text: String, card: LightningCard) -> AttributedString {
+        var result = AttributedString(text)
+        let terms = [card.targetWord, card.correctAnswer].compactMap { $0 }.filter { !$0.isEmpty }
+        for term in terms {
+            if let range = text.range(of: term, options: .caseInsensitive) {
+                let nsRange = NSRange(range, in: text)
+                if let attrRange = Range(nsRange, in: result) {
+                    result[attrRange].font = .custom("HelveticaNeue-Bold", size: 13)
+                    result[attrRange].foregroundColor = .black
+                    return result
+                }
+            }
+        }
+        return result
+    }
+
     private func splitPrompt(_ prompt: String) -> (context: String, question: String?) {
         // 1. Explicit newline split
         if prompt.contains("\n") {
@@ -696,11 +759,46 @@ struct LightningRoundView: View {
                         .foregroundColor(.black)
                 }
 
-                Text("💡 \(card.explanation)")
-                    .font(.custom("HelveticaNeue", size: 13))
-                    .foregroundColor(.black.opacity(0.5))
-                    .lineSpacing(3)
-                    .fixedSize(horizontal: false, vertical: true)
+                // Explanation — bold the slang term if slang card
+                if card.type == .slangInContext {
+                    Text(boldTermInText("💡 \(card.explanation)", card: card))
+                        .font(.custom("HelveticaNeue", size: 13))
+                        .foregroundColor(.black.opacity(0.5))
+                        .lineSpacing(3)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    Text("💡 \(card.explanation)")
+                        .font(.custom("HelveticaNeue", size: 13))
+                        .foregroundColor(.black.opacity(0.5))
+                        .lineSpacing(3)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                // Slang cards — clipboard → checkmark animation
+                if card.type == .slangInContext && savedToClipboard {
+                    if clipboardCheckmark {
+                        HStack(spacing: 6) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 14))
+                                .foregroundColor(Color(hex: "#34C759"))
+                            Text("Saved")
+                                .font(.custom("HelveticaNeue-Medium", size: 12))
+                                .foregroundColor(Color(hex: "#34C759"))
+                        }
+                        .padding(.top, 4)
+                        .transition(.opacity.combined(with: .scale(scale: 0.8)))
+                    } else {
+                        HStack(spacing: 6) {
+                            Text("📋")
+                                .font(.system(size: 14))
+                            Text("Added to your clipboard")
+                                .font(.custom("HelveticaNeue-Medium", size: 12))
+                                .foregroundColor(.tsAccent)
+                        }
+                        .padding(.top, 4)
+                        .transition(.opacity.combined(with: .move(edge: .bottom)).combined(with: .scale(scale: 0.8)))
+                    }
+                }
             }
 
             HStack {
@@ -888,7 +986,7 @@ struct LightningRoundView: View {
             case .minimalPairs, .echo, .speakIt: cat = "Pronunciation"; icon = "🗣"
             case .slangInContext: cat = "Vocabulary"; icon = "📖"
             case .quickPick, .trueOrFalse: cat = "Grammar"; icon = "📐"
-            case .contextualResponse: cat = "Fluency"; icon = "💬"
+            // contextualResponse removed
             case .whatDidSheSay: cat = "Listening"; icon = "👂"
             }
 
@@ -1016,39 +1114,64 @@ struct LightningRoundView: View {
         cardTypes: [LightningCardType],
         mistakes: [MistakeEntry]
     ) {
-        let apiKey = APIConfig.openAIAPIKey
-        guard let url = URL(string: "https://api.openai.com/v1/chat/completions") else { return }
+        let apiKey = APIConfig.anthropicAPIKey
+        guard let url = URL(string: "\(APIConfig.anthropicBaseURL)/messages") else { return }
 
         let body: [String: Any] = [
-            "model": "gpt-4o",
+            "model": "claude-sonnet-4-20250514",
+            "max_tokens": 2000,
             "messages": [
-                ["role": "system", "content": "You generate quiz cards for language learners. Respond ONLY with a valid JSON array."],
-                ["role": "user", "content": prompt],
+                ["role": "user", "content": "You generate quiz cards for language learners. Respond ONLY with valid JSON.\n\n\(prompt)"],
             ],
-            "temperature": 0.5,
-            "max_tokens": 1500,
-            "response_format": ["type": "json_object"],
         ]
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
+        request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
-        request.timeoutInterval = 20
+        request.timeoutInterval = 30
 
         URLSession.shared.dataTask(with: request) { data, _, _ in
             DispatchQueue.main.async {
                 self.isGenerating = false
+
                 guard let data = data,
                       let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                      let choices = json["choices"] as? [[String: Any]],
-                      let message = choices.first?["message"] as? [String: Any],
-                      let content = message["content"] as? String,
-                      let contentData = content.data(using: .utf8),
-                      let parsed = try? JSONSerialization.jsonObject(with: contentData) as? [String: Any]
+                      let contentArray = json["content"] as? [[String: Any]],
+                      let firstContent = contentArray.first,
+                      let content = firstContent["text"] as? String
                 else {
-                    // Fallback: generate cards locally
+                    self.cards = self.generateFallbackCards(types: cardTypes, mistakes: mistakes)
+                    self.startRound()
+                    return
+                }
+
+                // Extract JSON from Claude's response
+                let jsonString: String
+                if let start = content.range(of: "["), let end = content.range(of: "]", options: .backwards) {
+                    jsonString = String(content[start.lowerBound...end.upperBound])
+                } else if let start = content.range(of: "{"), let end = content.range(of: "}", options: .backwards) {
+                    jsonString = String(content[start.lowerBound...end.upperBound])
+                } else {
+                    jsonString = content
+                }
+
+                guard let contentData = jsonString.data(using: .utf8),
+                      let rawParsed = try? JSONSerialization.jsonObject(with: contentData)
+                else {
+                    self.cards = self.generateFallbackCards(types: cardTypes, mistakes: mistakes)
+                    self.startRound()
+                    return
+                }
+
+                let parsed: [String: Any]
+                if let dict = rawParsed as? [String: Any] {
+                    parsed = dict
+                } else if let arr = rawParsed as? [[String: Any]] {
+                    parsed = ["cards": arr]
+                } else {
                     self.cards = self.generateFallbackCards(types: cardTypes, mistakes: mistakes)
                     self.startRound()
                     return
@@ -1187,6 +1310,13 @@ struct LightningRoundView: View {
             withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
                 showCorrection = true
             }
+
+            // Auto-save slang cards — delayed so correction card appears first
+            if card.type == .slangInContext {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                    saveSlangToClipboard(card: card)
+                }
+            }
         }
     }
 
@@ -1198,6 +1328,8 @@ struct LightningRoundView: View {
             correctionOffset = 0
             cardSwipeOffset = 0
             cardSwipeRotation = 0
+            savedToClipboard = false
+            clipboardCheckmark = false
         }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -1361,6 +1493,40 @@ struct LightningRoundView: View {
         let distance = matrix[m][n]
         let maxLen = max(m, n)
         return 1.0 - (Double(distance) / Double(maxLen))
+    }
+
+    /// Auto-save slang to clipboard with animated feedback
+    private func saveSlangToClipboard(card: LightningCard) {
+        let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper")
+        let key = "talkswitch_saved_phrases"
+        var existing = defaults?.array(forKey: key) as? [[String: String]] ?? []
+
+        // Don't save duplicates
+        if existing.contains(where: { $0["translation"] == card.correctAnswer }) {
+            withAnimation { savedToClipboard = true }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                withAnimation(.easeInOut(duration: 0.3)) { clipboardCheckmark = true }
+            }
+            return
+        }
+
+        let entry: [String: String] = [
+            "id": UUID().uuidString,
+            "sourceText": card.explanation,
+            "translation": card.correctAnswer,
+            "sourceLang": "en",
+            "targetLang": targetLang,
+            "savedAt": ISO8601DateFormatter().string(from: Date()),
+            "notes": "From Lightning Round"
+        ]
+        existing.insert(entry, at: 0)
+        defaults?.set(existing, forKey: key)
+        defaults?.synchronize()
+
+        withAnimation { savedToClipboard = true }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            withAnimation(.easeInOut(duration: 0.3)) { clipboardCheckmark = true }
+        }
     }
 
     // MARK: - Fallback Card Generation

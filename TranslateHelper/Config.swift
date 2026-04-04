@@ -24,4 +24,8 @@ enum APIConfig {
     // Google Cloud Text-to-Speech (WaveNet)
     static let googleTTSAPIKey = "AIzaSyCDB3PkYCjVedGWF2CjjOloEwmIZgIp3Q0"
     static let googleTTSBaseURL = "https://texttospeech.googleapis.com/v1"
+
+    // Anthropic (Claude) API — used for Lightning Round card generation
+    static let anthropicAPIKey = "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"
+    static let anthropicBaseURL = "https://api.anthropic.com/v1"
 }

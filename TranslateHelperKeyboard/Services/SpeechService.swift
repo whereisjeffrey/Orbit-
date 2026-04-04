@@ -334,7 +334,8 @@ class SpeechService {
 
     // MARK: - Audio player for Neural2
     private var audioPlayer: AVAudioPlayer?
-    private var cachedAudio: [String: Data] = [:]  // in-memory cache (max 5 to save memory)
+    private var cachedAudio: [(key: String, data: Data)] = []  // ordered cache, max 3
+    private let cacheLimit = 3
 
     /// App Group cache directory (main app writes Neural2 audio here)
     private static var appGroupCacheDir: URL? {
@@ -354,9 +355,9 @@ class SpeechService {
         let cacheKey = "\(text)|\(language)"
 
         // 1. Check in-memory cache (instant replay)
-        if let cached = cachedAudio[cacheKey] {
+        if let cached = cachedAudio.first(where: { $0.key == cacheKey }) {
             NSLog("TSKBD_TTS: playing from memory cache")
-            playAudioData(cached)
+            playAudioData(cached.data)
             return
         }
 
@@ -366,7 +367,7 @@ class SpeechService {
             let cacheFile = cacheDir.appendingPathComponent(fileKey)
             if let audioData = try? Data(contentsOf: cacheFile) {
                 NSLog("TSKBD_TTS: playing from App Group cache")
-                cachedAudio[cacheKey] = audioData
+                addToCache(key: cacheKey, data: audioData)
                 playAudioData(audioData)
                 return
             }
@@ -464,17 +465,33 @@ class SpeechService {
                 return
             }
 
-            // Small in-memory cache — max 5 entries to stay within keyboard memory limits
-            self.cachedAudio[cacheKey] = audioData
-            if self.cachedAudio.count > 5 {
-                let oldest = self.cachedAudio.keys.first!
-                self.cachedAudio.removeValue(forKey: oldest)
-            }
+            // Small ordered cache — max 3 entries to stay within keyboard 60MB limit
+            self.addToCache(key: cacheKey, data: audioData)
 
             DispatchQueue.main.async {
                 self.playAudioData(audioData)
             }
         }.resume()
+    }
+
+    /// Clear all cached audio — called on memory warning
+    func clearAudioCache() {
+        cachedAudio.removeAll()
+        audioPlayer?.stop()
+        audioPlayer = nil
+        NSLog("TSKBD_TTS: audio cache cleared")
+    }
+
+    /// Thread-safe ordered cache — evicts oldest when full
+    private func addToCache(key: String, data: Data) {
+        // Remove existing entry with same key (if re-caching)
+        cachedAudio.removeAll { $0.key == key }
+        // Add new entry at the end (newest)
+        cachedAudio.append((key: key, data: data))
+        // Evict oldest entries beyond the limit
+        while cachedAudio.count > cacheLimit {
+            cachedAudio.removeFirst()
+        }
     }
 
     private func playAudioData(_ data: Data) {

@@ -166,10 +166,9 @@ class DictateViewController: UIViewController {
         // ── Speaker circle — glass-morphic, matches Lightning Round intro ──
         iconCircle.translatesAutoresizingMaskIntoConstraints = false
         iconCircle.backgroundColor = UIColor.white.withAlphaComponent(0.15)
-        iconCircle.layer.cornerRadius = 40  // 80 / 2
+        iconCircle.layer.cornerRadius = 40
         iconCircle.layer.borderWidth = 1
         iconCircle.layer.borderColor = UIColor.white.withAlphaComponent(0.25).cgColor
-        // Soft white glow on the outside
         iconCircle.layer.shadowColor = UIColor.white.cgColor
         iconCircle.layer.shadowOpacity = 0.3
         iconCircle.layer.shadowRadius = 16
@@ -212,7 +211,7 @@ class DictateViewController: UIViewController {
         sendButton.layer.cornerRadius = 29
         sendButton.clipsToBounds = true
         sendButton.layer.borderWidth = 1
-        sendButton.layer.borderColor = UIColor.white.withAlphaComponent(0.17).cgColor
+        sendButton.layer.borderColor = UIColor.white.withAlphaComponent(0.25).cgColor
         sendButton.addTarget(self, action: #selector(doneTapped), for: .touchUpInside)
         view.addSubview(sendButton)
 
@@ -939,8 +938,8 @@ class DictateViewController: UIViewController {
         }
     }
 
-    /// Sparkle animation — matches Lightning Round bolt appearance exactly.
-    /// Speaker fades out, sparkle fades in slowly, then bounces.
+    /// Sparkle animation — exact match of Lightning Round bolt intro.
+    /// Circle bounces in from small → full, then sparkle fades in smoothly.
     private func playStarBounce(completion: @escaping () -> Void) {
         // Step 0: Fade out button + timer
         UIView.animate(withDuration: 0.2) {
@@ -948,55 +947,37 @@ class DictateViewController: UIViewController {
             self.timerLabel.alpha = 0
         }
 
-        // Step 1: Fade out the speaker icon (0.3s)
-        UIView.animate(withDuration: 0.3) {
+        // Step 1: Fade out speaker
+        UIView.animate(withDuration: 0.2) {
             self.iconImageView.alpha = 0
         } completion: { _ in
-            // Swap to sparkles while invisible
+            // Swap to sparkles — keep invisible
             let starConfig = UIImage.SymbolConfiguration(pointSize: 36, weight: .medium)
             self.iconImageView.image = UIImage(systemName: "sparkles", withConfiguration: starConfig)
-            self.iconImageView.transform = .identity
+            self.iconImageView.alpha = 0  // stay hidden until after bounce
 
-            // Step 2: Sparkle fades in — same timing as Lightning Round bolt
-            // (easeIn, 0.8s duration, 0.4s delay after circle lands)
+            // Step 2: Shrink circle, then bounce it
+            self.iconCircle.transform = CGAffineTransform(scaleX: 0.6, y: 0.6)
+            UIView.animate(
+                withDuration: 0.5,
+                delay: 0.1,
+                usingSpringWithDamping: 0.6,
+                initialSpringVelocity: 0.8,
+                options: []
+            ) {
+                self.iconCircle.transform = .identity
+            }
+
+            // Step 3: Star fades in AFTER circle bounce lands
             UIView.animate(
                 withDuration: 0.8,
-                delay: 0.4,
+                delay: 0.5,
                 options: .curveEaseIn
             ) {
                 self.iconImageView.alpha = 1
             } completion: { _ in
-                // Step 3: Push down (like pressing with a finger)
-                UIView.animate(
-                    withDuration: 0.25,
-                    delay: 0.1,
-                    options: .curveEaseIn
-                ) {
-                    self.iconImageView.transform = CGAffineTransform(scaleX: 0.6, y: 0.6)
-                } completion: { _ in
-                    // Step 4: Release — springs back up naturally
-                    UIView.animate(
-                        withDuration: 0.7,
-                        delay: 0,
-                        usingSpringWithDamping: 0.4,
-                        initialSpringVelocity: 0.6
-                    ) {
-                        self.iconImageView.transform = CGAffineTransform(scaleX: 1.1, y: 1.1)
-                    } completion: { _ in
-                        // Step 5: Gentle settle to resting size
-                        UIView.animate(
-                            withDuration: 0.4,
-                            delay: 0,
-                            options: .curveEaseOut
-                        ) {
-                            self.iconImageView.transform = .identity
-                        } completion: { _ in
-                            // Hold for a moment, then dismiss
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                                completion()
-                            }
-                        }
-                    }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    completion()
                 }
             }
         }

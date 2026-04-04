@@ -298,6 +298,23 @@ class KeyboardViewController: UIInputViewController {
         }
     }
 
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        // Cancel all pending API calls and flush buffers before keyboard dismisses
+        TalkSwitchAPI.shared.cancelAllTasks()
+        TalkSwitchAPI.shared.flushPersonaBuffer()
+    }
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // iOS is about to kill us — dump everything non-essential to survive
+        TalkSwitchAPI.shared.cancelAllTasks()
+        TalkSwitchAPI.shared.flushPersonaBuffer()
+        SpeechService.shared.clearAudioCache()
+        translationHistory.removeAll()
+        NSLog("TSKBD_MEMORY: ⚠️ memory warning — cleared all caches")
+    }
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         checkForPendingDictation()
@@ -370,6 +387,9 @@ class KeyboardViewController: UIInputViewController {
     }
 
     private func performTranslation(text: String, source: String) {
+        // Cancel ALL pending API tasks from previous translations — frees memory immediately
+        TalkSwitchAPI.shared.cancelAllTasks()
+
         inputText = text
 
         let detected = detectLanguage(text)
@@ -2780,11 +2800,11 @@ class KeyboardViewController: UIInputViewController {
                     var existing = defaults.array(forKey: key) as? [[String: String]] ?? []
                     existing.insert(newEntry, at: 0) // Prepend so newest is first
                     defaults.set(existing, forKey: key)
-                    defaults.synchronize() // Force write to shared container
+                    defaults.synchronize()
                 }
 
                 saveBtn.isEnabled = true
-                self.flashActionButton(index: 2, tempTitle: "Saved! ✅", originalTitle: "Save 💾")
+                self.flashActionButton(index: 1, tempTitle: "Saved! ✅", originalTitle: "Save 💾")
             }
         }
     }

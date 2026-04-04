@@ -46,7 +46,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // and the cards get rejected when the user picks their actual language.
         // For new users, the onboarding pre-gen (step 2) handles this instead.
         if LanguageManager.shared.hasTargetLanguage {
-            DispatchQueue.global(qos: .userInitiated).async {
+            // Low priority + 10s delay — don't compete with keyboard's first translation
+            DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 10) {
                 LightningRoundEngine.preGenerate(language: roundLang)
             }
         }

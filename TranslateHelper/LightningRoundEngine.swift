@@ -20,7 +20,7 @@ enum LightningCardType: String, Codable, CaseIterable {
     case trueOrFalse        // Is this sentence correct? (tap, 2 options)
     case thisOrThat         // Binary choice: a/o, ser/estar, etc. (tap, 2 options)
     case slangInContext     // Slang in a sentence, pick the meaning (tap, 3 options)
-    case contextualResponse // Pick the most natural reply (tap, 3 options)
+    // contextualResponse removed — too ambiguous for users
 
     var isVoiceCard: Bool {
         self == .speakIt || self == .echo
@@ -41,7 +41,7 @@ enum LightningCardType: String, Codable, CaseIterable {
         case .trueOrFalse:        return "True or False"
         case .thisOrThat:         return "This or That"
         case .slangInContext:     return "Slang in Context"
-        case .contextualResponse: return "What Would You Say?"
+        // contextualResponse removed
         }
     }
 
@@ -50,7 +50,7 @@ enum LightningCardType: String, Codable, CaseIterable {
         switch self {
         case .thisOrThat, .trueOrFalse:       return 4
         case .quickPick, .speedConjugation:   return 5
-        case .slangInContext, .contextualResponse: return 6
+        case .slangInContext: return 6
         case .whatDidSheSay, .minimalPairs:    return 7
         case .echo:                           return 9
         case .speakIt:                        return 11
@@ -500,8 +500,6 @@ final class LightningRoundEngine {
                 cardInstructions += "  → Binary choice (e.g., a/o, ser/estar). Exactly 2 options.\n"
             case .slangInContext:
                 cardInstructions += "  → Short dialogue with slang, pick the meaning (3 options).\n"
-            case .contextualResponse:
-                cardInstructions += "  → 2-line conversation, pick the most natural reply (3 options).\n"
             }
         }
 
@@ -580,8 +578,6 @@ final class LightningRoundEngine {
                 cardInstructions += "  → Create a binary choice question (e.g., a/o, ser/estar, por/para). The two options must test the specific mistake pattern.\n"
             case .slangInContext:
                 cardInstructions += "  → Create a short dialogue with a slang expression. Ask what the slang means with 3 options.\n"
-            case .contextualResponse:
-                cardInstructions += "  → Create a 2-line conversation. Ask which of 3 responses is most natural.\n"
             }
         }
 
@@ -719,26 +715,24 @@ final class LightningRoundEngine {
             langName: langName
         )
 
-        let apiKey = APIConfig.openAIAPIKey
-        guard let url = URL(string: "https://api.openai.com/v1/chat/completions") else {
+        let apiKey = APIConfig.anthropicAPIKey
+        guard let url = URL(string: "\(APIConfig.anthropicBaseURL)/messages") else {
             engine.isCaching = false
             return
         }
 
         let body: [String: Any] = [
-            "model": "gpt-4o",
-            "messages": [
-                ["role": "system", "content": "You generate quiz cards for language learners. Respond ONLY with valid JSON."],
-                ["role": "user", "content": prompt],
-            ],
-            "temperature": 0.5,
+            "model": "claude-sonnet-4-20250514",
             "max_tokens": 2000,
-            "response_format": ["type": "json_object"],
+            "messages": [
+                ["role": "user", "content": "You generate quiz cards for language learners. Respond ONLY with valid JSON.\n\n\(prompt)"],
+            ],
         ]
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
+        request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
         request.timeoutInterval = 30
@@ -752,15 +746,45 @@ final class LightningRoundEngine {
                 return
             }
 
+            // Parse Claude response
             guard let data = data,
                   let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                  let choices = json["choices"] as? [[String: Any]],
-                  let message = choices.first?["message"] as? [String: Any],
-                  let content = message["content"] as? String,
-                  let contentData = content.data(using: .utf8),
-                  let parsed = try? JSONSerialization.jsonObject(with: contentData) as? [String: Any]
+                  let contentArray = json["content"] as? [[String: Any]],
+                  let firstContent = contentArray.first,
+                  let content = firstContent["text"] as? String
             else {
-                NSLog("⚡ [PreGen] FAILED: couldn't parse response")
+                NSLog("⚡ [PreGen] FAILED: couldn't parse Claude response")
+                if let data = data, let raw = String(data: data, encoding: .utf8) {
+                    NSLog("⚡ [PreGen] Raw: \(raw.prefix(500))")
+                }
+                engine.notifyWaiters(cards: [])
+                return
+            }
+
+            // Extract JSON from Claude's response (may have markdown fences)
+            let jsonString: String
+            if let start = content.range(of: "["), let end = content.range(of: "]", options: .backwards) {
+                jsonString = String(content[start.lowerBound...end.upperBound])
+            } else if let start = content.range(of: "{"), let end = content.range(of: "}", options: .backwards) {
+                jsonString = String(content[start.lowerBound...end.upperBound])
+            } else {
+                jsonString = content
+            }
+
+            guard let contentData = jsonString.data(using: .utf8),
+                  let rawParsed = try? JSONSerialization.jsonObject(with: contentData)
+            else {
+                NSLog("⚡ [PreGen] FAILED: couldn't parse JSON from Claude")
+                engine.notifyWaiters(cards: [])
+                return
+            }
+
+            let parsed: [String: Any]
+            if let dict = rawParsed as? [String: Any] {
+                parsed = dict
+            } else if let arr = rawParsed as? [[String: Any]] {
+                parsed = ["cards": arr]
+            } else {
                 engine.notifyWaiters(cards: [])
                 return
             }
@@ -869,7 +893,7 @@ final class LightningRoundEngine {
             .whatDidSheSay: .fluency,
             .minimalPairs: .pronunciation,
             .slangInContext: .vocabulary,
-            .contextualResponse: .fluency,
+            // contextualResponse removed
         ]
 
         // Track accuracy per skill category this round

@@ -207,10 +207,7 @@ class PracticeConversationService {
             return
         }
 
-        let langName: String = {
-            let map: [String: String] = ["pt": "Portuguese", "es": "Spanish", "fr": "French", "de": "German", "it": "Italian", "ja": "Japanese", "ko": "Korean", "zh": "Chinese"]
-            return map[targetLanguage] ?? "Portuguese"
-        }()
+        let langName = LanguageManager.languageName(for: targetLanguage)
 
         let transferBlock = TransferPatterns.patterns(for: targetLanguage)
 
