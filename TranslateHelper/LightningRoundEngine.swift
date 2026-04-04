@@ -327,23 +327,58 @@ final class LightningRoundEngine {
                 }
             }
 
+            // 9. Duplicate check — discard if prompt matches a recent one
+            loadRecentPrompts()
+            let promptNorm = fixed.prompt.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+            for recent in recentPrompts {
+                let recentNorm = recent.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+                if promptNorm == recentNorm {
+                    NSLog("⚡ [VALIDATION] Discarded card: exact duplicate of recent prompt")
+                    return nil
+                }
+                let promptWords = Set(promptNorm.split(separator: " "))
+                let recentWords = Set(recentNorm.split(separator: " "))
+                if !promptWords.isEmpty && !recentWords.isEmpty {
+                    let overlap = promptWords.intersection(recentWords).count
+                    let similarity = Double(overlap) / Double(max(promptWords.count, recentWords.count))
+                    if similarity >= 0.8 {
+                        NSLog("⚡ [VALIDATION] Discarded card: too similar to recent (\(Int(similarity * 100))%)")
+                        return nil
+                    }
+                }
+            }
+
             return fixed
         }
     }
 
-    /// Track recently used prompts to ensure variety across rounds (last 30 prompts)
+    /// Track recently used prompts — persisted to disk so it survives app restarts
+    private static let recentPromptsKey = "lightning_round_recent_prompts"
     private var recentPrompts: [String] = []
-    private let maxRecentPrompts = 30
+    private let maxRecentPrompts = 50
 
-    /// Record prompts from a completed round to avoid repetition
+    private func loadRecentPrompts() {
+        if recentPrompts.isEmpty {
+            let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper")
+            recentPrompts = defaults?.stringArray(forKey: Self.recentPromptsKey) ?? []
+        }
+    }
+
+    private func saveRecentPrompts() {
+        let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper")
+        defaults?.set(recentPrompts, forKey: Self.recentPromptsKey)
+    }
+
+    /// Record prompts from a completed round — persisted to disk
     func recordUsedPrompts(_ cards: [LightningCard]) {
+        loadRecentPrompts()
         for card in cards {
             recentPrompts.append(card.prompt)
         }
-        // Keep only the last N
         if recentPrompts.count > maxRecentPrompts {
             recentPrompts = Array(recentPrompts.suffix(maxRecentPrompts))
         }
+        saveRecentPrompts()
     }
 
     /// Number of cards per round
@@ -460,6 +495,16 @@ final class LightningRoundEngine {
         let overallLevel = store.hasBeenAssessed ? store.overallLevel.rawValue : (SelfReportedLevel.saved?.initialCEFR.rawValue ?? "B1")
         let transferBlock = TransferPatterns.patterns(for: language)
 
+        // Load recently used prompts for the "don't repeat" instruction
+        loadRecentPrompts()
+        let recentBlock: String
+        if !recentPrompts.isEmpty {
+            let recent = recentPrompts.suffix(20).map { "- \"\($0)\"" }.joined(separator: "\n")
+            recentBlock = "\nDO NOT reuse any of these recently used prompts or similar sentences:\n\(recent)\n"
+        } else {
+            recentBlock = ""
+        }
+
         let mistakeBlock: String
         if !existingMistakes.isEmpty {
             var desc = "The cards should test REAL mistakes this user has made:\n\n"
@@ -512,7 +557,7 @@ final class LightningRoundEngine {
         \(mistakeBlock)
 
         \(transferBlock)
-
+        \(recentBlock)
         \(cardInstructions)
 
         RULES:
