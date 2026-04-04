@@ -43,9 +43,9 @@ enum SelfReportedLevel: String, CaseIterable, Codable {
     var initialCEFR: CEFRLevel {
         switch self {
         case .beginner:     return .a1
-        case .basic:        return .b1
-        case .intermediate: return .b2
-        case .comfortable:  return .c1
+        case .basic:        return .a2
+        case .intermediate: return .b1
+        case .comfortable:  return .b2
         case .fluent:       return .c1
         }
     }

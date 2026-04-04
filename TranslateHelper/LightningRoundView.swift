@@ -514,6 +514,10 @@ struct LightningRoundView: View {
                             RoundedRectangle(cornerRadius: 12)
                                 .fill(Color.white)
                         )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(optionBorderColor(option, card: card), lineWidth: 1)
+                        )
                     }
                     .disabled(selectedOption != nil)
                 }
@@ -777,16 +781,11 @@ struct LightningRoundView: View {
                 // Slang cards — clipboard → checkmark animation
                 if card.type == .slangInContext && savedToClipboard {
                     if clipboardCheckmark {
-                        HStack(spacing: 6) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .font(.system(size: 14))
-                                .foregroundColor(Color(hex: "#34C759"))
-                            Text("Saved")
-                                .font(.custom("HelveticaNeue-Medium", size: 12))
-                                .foregroundColor(Color(hex: "#34C759"))
-                        }
-                        .padding(.top, 4)
-                        .transition(.opacity.combined(with: .scale(scale: 0.8)))
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 16))
+                            .foregroundColor(Color(hex: "#34C759"))
+                            .padding(.top, 4)
+                            .transition(.opacity.combined(with: .scale(scale: 0.8)))
                     } else {
                         HStack(spacing: 6) {
                             Text("📋")
@@ -1342,6 +1341,7 @@ struct LightningRoundView: View {
                 // Round complete — process results
                 engine.processResults(cards)
                 engine.recordUsedPrompts(cards)
+                UserLevelStore.shared.incrementRoundsCompleted()
                 withAnimation(.easeInOut(duration: 0.4)) {
                     phase = .summary
                 }

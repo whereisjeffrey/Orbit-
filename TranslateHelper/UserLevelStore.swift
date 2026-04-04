@@ -104,6 +104,17 @@ class UserLevelStore {
 
     private(set) var skills: [SkillCategory: SkillAssessment] = [:]
 
+    /// How many Lightning Rounds completed — used to decide when assessed level overrides self-report
+    var totalRoundsCompleted: Int {
+        UserDefaults(suiteName: Self.appGroup)?.integer(forKey: "ts_total_rounds_completed") ?? 0
+    }
+
+    func incrementRoundsCompleted() {
+        let defaults = UserDefaults(suiteName: Self.appGroup)
+        let current = defaults?.integer(forKey: "ts_total_rounds_completed") ?? 0
+        defaults?.set(current + 1, forKey: "ts_total_rounds_completed")
+    }
+
     /// Whether the user has completed their initial self-assessment.
     var hasBeenAssessed: Bool {
         let assessed = UserDefaults(suiteName: Self.appGroup)?.bool(forKey: Self.assessedKey) ?? false

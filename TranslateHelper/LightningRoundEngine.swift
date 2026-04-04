@@ -492,7 +492,17 @@ final class LightningRoundEngine {
         langName: String
     ) -> String {
         let store = UserLevelStore.shared
-        let overallLevel = store.hasBeenAssessed ? store.overallLevel.rawValue : (SelfReportedLevel.saved?.initialCEFR.rawValue ?? "B1")
+        // Self-report is the baseline. Only override with assessed level if the user
+        // has completed enough rounds for a reliable assessment (3+ rounds).
+        let overallLevel: String
+        if store.hasBeenAssessed && store.totalRoundsCompleted >= 3 {
+            overallLevel = store.overallLevel.rawValue
+        } else if let selfReport = SelfReportedLevel.saved {
+            overallLevel = selfReport.initialCEFR.rawValue
+        } else {
+            overallLevel = "B1"
+        }
+        NSLog("⚡ [LightningRound] Using level: \(overallLevel) (assessed: \(store.hasBeenAssessed), rounds: \(store.totalRoundsCompleted), selfReport: \(SelfReportedLevel.saved?.rawValue ?? "none"))")
         let transferBlock = TransferPatterns.patterns(for: language)
 
         // Load recently used prompts for the "don't repeat" instruction
@@ -544,7 +554,7 @@ final class LightningRoundEngine {
             case .thisOrThat:
                 cardInstructions += "  → Binary choice (e.g., a/o, ser/estar). Exactly 2 options.\n"
             case .slangInContext:
-                cardInstructions += "  → Short dialogue with slang, pick the meaning (3 options).\n"
+                cardInstructions += "  → Show the slang expression used in a natural sentence. Ask what it means with 3 options.\n"
             }
         }
 
@@ -622,7 +632,7 @@ final class LightningRoundEngine {
             case .thisOrThat:
                 cardInstructions += "  → Create a binary choice question (e.g., a/o, ser/estar, por/para). The two options must test the specific mistake pattern.\n"
             case .slangInContext:
-                cardInstructions += "  → Create a short dialogue with a slang expression. Ask what the slang means with 3 options.\n"
+                cardInstructions += "  → Create a natural sentence using a slang expression. The slang term must be in quotes within the sentence. Ask what it means with 3 options.\n"
             }
         }
 
