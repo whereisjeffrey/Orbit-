@@ -222,6 +222,7 @@ struct CoachPopulatedView: View {
     @State private var showLevelDetail = false
     @State private var showLightningRound = false
     @State private var expandedCategories: Set<MistakeCategory> = []
+    @State private var expandedMistakes: Set<UUID> = []  // individual mistake rows
 
     // Cached data — computed once on appear, not every frame
     @State private var cachedRoundHistory: [LightningRoundResult] = []
@@ -390,19 +391,18 @@ struct CoachPopulatedView: View {
         }
         .onAppear {
             #if DEBUG
-            // DEV ONLY: seed static test mistakes for Portuguese/Spanish only.
-            // All other languages use seedStarterMistakes() (GPT-generated, above).
+            // DEV ONLY: seed ALL 8 categories so we can review them.
+            // Clear and re-seed every launch during development.
             let profile = MistakeProfileStore.shared
             let lang = LanguageManager.shared.targetLangRequired
-            if profile.entries.isEmpty && (lang == "pt" || lang == "es") {
-                profile.seedTestData(language: lang)
-                NSLog("⚡ [DEBUG] Seeded static \(lang) mistakes")
-            }
+            profile.clearAll()
+            profile.seedTestData(language: lang)
+            NSLog("⚡ [DEBUG] Force re-seeded all 8 categories for \(lang)")
             #endif
 
-            // Pre-generate Lightning Round in background so it's ready instantly
+            // Pre-generate Lightning Round — high priority, user may tap it soon
             let roundLang = LanguageManager.shared.targetLangRequired
-            DispatchQueue.global(qos: .background).async {
+            DispatchQueue.global(qos: .userInitiated).async {
                 LightningRoundEngine.preGenerate(language: roundLang)
             }
         }
@@ -875,46 +875,85 @@ extension CoachPopulatedView {
                             .padding(14)
                         }
 
-                        // Expanded content — dot + stacked: wrong on top, correct below, short note
+                        // Expanded content — rule description + expandable quiz rows
                         if isExpanded {
-                            VStack(alignment: .leading, spacing: 14) {
+                            VStack(alignment: .leading, spacing: 12) {
+                                // Category rule/insight
+                                Text(categoryInsight(item.category, mistakes: mistakes))
+                                    .font(.custom("HelveticaNeue", size: 13))
+                                    .foregroundColor(.tsSecondary)
+                                    .lineSpacing(3)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .padding(.horizontal, 14)
+                                    .padding(.top, 2)
+
+                                Divider().opacity(0.15).padding(.horizontal, 14)
+
+                                // Individual mistake rows — expandable
                                 ForEach(mistakes.prefix(5)) { mistake in
-                                    HStack(alignment: .top, spacing: 10) {
-                                        Circle()
-                                            .fill(color)
-                                            .frame(width: 6, height: 6)
-                                            .padding(.top, 6)
+                                    let isMistakeExpanded = expandedMistakes.contains(mistake.id)
 
-                                        VStack(alignment: .leading, spacing: 4) {
-                                            // What they said (wrong) — no strikethrough, just dimmer
-                                            Text(truncatePhrase(mistake.userSaid))
-                                                .font(.custom("HelveticaNeue", size: 14))
-                                                .foregroundColor(.tsSecondary)
+                                    VStack(alignment: .leading, spacing: 0) {
+                                        // Tap row — shows target language word + chevron
+                                        Button {
+                                            withAnimation(.easeInOut(duration: 0.2)) {
+                                                if isMistakeExpanded {
+                                                    expandedMistakes.remove(mistake.id)
+                                                } else {
+                                                    expandedMistakes.insert(mistake.id)
+                                                }
+                                            }
+                                        } label: {
+                                            HStack(spacing: 10) {
+                                                Circle()
+                                                    .fill(color)
+                                                    .frame(width: 6, height: 6)
+                                                Text(truncatePhrase(mistake.correctForm))
+                                                    .font(.custom("HelveticaNeue-Medium", size: 14))
+                                                    .foregroundColor(.tsLabel)
+                                                Spacer()
+                                                Image(systemName: isMistakeExpanded ? "chevron.up" : "chevron.down")
+                                                    .font(.system(size: 9, weight: .semibold))
+                                                    .foregroundColor(.tsSecondary.opacity(0.5))
+                                            }
+                                            .padding(.vertical, 8)
+                                            .padding(.horizontal, 14)
+                                        }
 
-                                            // What to say instead (correct)
-                                            Text(truncatePhrase(mistake.correctForm))
-                                                .font(.custom("HelveticaNeue-Medium", size: 14))
-                                                .foregroundColor(.tsLabel)
+                                        // Expanded detail — what went wrong + explanation
+                                        if isMistakeExpanded {
+                                            VStack(alignment: .leading, spacing: 6) {
+                                                // What they said wrong
+                                                HStack(spacing: 6) {
+                                                    Text("You said:")
+                                                        .font(.custom("HelveticaNeue", size: 12))
+                                                        .foregroundColor(.tsSecondary)
+                                                    Text(truncatePhrase(mistake.userSaid))
+                                                        .font(.custom("HelveticaNeue", size: 12))
+                                                        .foregroundColor(Color(hex: "#FF3B30").opacity(0.7))
+                                                }
 
-                                            // Short, varied explanation
-                                            Text(shortenExplanation(mistake.explanation))
-                                                .font(.custom("HelveticaNeue", size: 11))
-                                                .foregroundColor(.tsSecondary)
-                                                .fixedSize(horizontal: false, vertical: true)
+                                                // Explanation
+                                                Text(mistake.explanation)
+                                                    .font(.custom("HelveticaNeue", size: 12))
+                                                    .foregroundColor(.tsSecondary)
+                                                    .lineSpacing(2)
+                                                    .fixedSize(horizontal: false, vertical: true)
+                                            }
+                                            .padding(.horizontal, 30)
+                                            .padding(.bottom, 8)
+                                            .transition(.opacity)
                                         }
                                     }
-
-                                    if mistake.id != mistakes.prefix(5).last?.id {
-                                        Divider().opacity(0.2)
-                                    }
                                 }
+
                                 if mistakes.count > 5 {
                                     Text("+ \(mistakes.count - 5) more")
                                         .font(.custom("HelveticaNeue", size: 11))
                                         .foregroundColor(color)
+                                        .padding(.horizontal, 14)
                                 }
                             }
-                            .padding(.horizontal, 14)
                             .padding(.bottom, 14)
                             .transition(.opacity.combined(with: .move(edge: .top)))
                         }
@@ -1007,19 +1046,57 @@ extension CoachPopulatedView {
 
     /// Truncates long phrases to keep cards readable — shows just the key part.
     private func truncatePhrase(_ text: String) -> String {
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        // If it's short enough, show it all
-        if trimmed.count <= 35 { return trimmed }
-        // Try to cut at a word boundary
-        let cutoff = trimmed.index(trimmed.startIndex, offsetBy: 32)
-        let prefix = String(trimmed[trimmed.startIndex..<cutoff])
-        if let lastSpace = prefix.lastIndex(of: " ") {
-            return String(prefix[prefix.startIndex..<lastSpace]) + "…"
-        }
-        return prefix + "…"
+        text.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     /// Shortens explanation and strips repetitive "In Portuguese" phrasing.
+    /// Generates a rule-based insight for each category based on the actual mistakes.
+    private func categoryInsight(_ category: MistakeCategory, mistakes: [MistakeEntry]) -> String {
+        let langName = LanguageManager.shared.targetLangName ?? "the target language"
+        let examples = mistakes.prefix(3).map { "'\($0.correctForm)'" }.joined(separator: ", ")
+
+        switch category {
+        case .grammar:
+            let hasDeError = mistakes.contains { $0.explanation.lowercased().contains("de") || $0.userSaid.lowercased().contains("gosto") }
+            if hasDeError {
+                return "Some \(langName) verbs require a preposition after them that English doesn't. Verbs like the ones below need specific prepositions — your brain skips them because English doesn't have this pattern."
+            }
+            return "You're making structural errors that come from thinking in English. The rules below work differently in \(langName) — focus on the pattern, not just the correction."
+
+        case .pronunciation:
+            let sounds = mistakes.prefix(3).map { "'\($0.correctForm)'" }.joined(separator: ", ")
+            return "You're working on sounds that don't exist in English. Words like \(sounds) use sounds your mouth isn't used to making — practice them slowly and exaggerate at first."
+
+        case .vocabulary:
+            return "These are false friends — words that look or sound like English but mean something completely different. They're the most embarrassing mistakes to make, so worth memorizing."
+
+        case .gender:
+            let femExamples = mistakes.filter { $0.correctForm.hasPrefix("a ") }.prefix(2).map { "'\($0.correctForm)'" }.joined(separator: ", ")
+            let mascExamples = mistakes.filter { $0.correctForm.hasPrefix("o ") }.prefix(2).map { "'\($0.correctForm)'" }.joined(separator: ", ")
+            var insight = "English has no grammatical gender, so your brain guesses. Look for patterns: "
+            if !femExamples.isEmpty { insight += "feminine: \(femExamples). " }
+            if !mascExamples.isEmpty { insight += "masculine: \(mascExamples)." }
+            if femExamples.isEmpty && mascExamples.isEmpty { insight += "words like \(examples) follow rules based on their endings." }
+            return insight
+
+        case .conjugation:
+            let hasTerSer = mistakes.contains { $0.explanation.lowercased().contains("ter") || $0.explanation.lowercased().contains("ser") }
+            if hasTerSer {
+                return "English uses 'to be' for everything. \(langName) splits this across different verbs — age, feelings, and states each use a specific verb. The ones below trip you up."
+            }
+            return "Verb forms are where English speakers struggle most. The patterns below are the ones your brain keeps defaulting to the wrong form on."
+
+        case .wordOrder:
+            return "English puts adjectives before nouns. \(langName) usually puts them after. Your brain will fight this — it takes repetition to override the English word order instinct."
+
+        case .preposition:
+            return "Every \(langName) verb has its own preposition — and they almost never match the English ones. Don't translate 'think about' → 'pensar sobre.' Each one below has its own rule."
+
+        case .idiom:
+            return "These expressions don't translate literally — they carry cultural meaning that you just have to learn. The fun part: using them correctly makes you sound like a local."
+        }
+    }
+
     private func shortenExplanation(_ text: String) -> String {
         var cleaned = text.trimmingCharacters(in: .whitespacesAndNewlines)
         // Strip common verbose patterns
@@ -1030,18 +1107,8 @@ extension CoachPopulatedView {
         for pattern in patterns {
             if cleaned.hasPrefix(pattern) {
                 cleaned = String(cleaned.dropFirst(pattern.count))
-                // Capitalize first letter
                 cleaned = cleaned.prefix(1).uppercased() + cleaned.dropFirst()
             }
-        }
-        // Cap to ~60 chars
-        if cleaned.count > 60 {
-            if let dotRange = cleaned.range(of: ". ", range: cleaned.startIndex..<cleaned.endIndex) {
-                let first = String(cleaned[cleaned.startIndex...dotRange.lowerBound])
-                if first.count <= 70 { return first }
-            }
-            let idx = cleaned.index(cleaned.startIndex, offsetBy: 57)
-            return String(cleaned[cleaned.startIndex..<idx]) + "..."
         }
         return cleaned
     }

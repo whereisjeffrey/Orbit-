@@ -40,14 +40,22 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             DictateViewController.preloadWhisperKit()
         }
 
-        // Lightning Round pre-gen — SINGLE API call, no seeding prerequisite
-        DispatchQueue.global(qos: .userInitiated).async {
-            // Process any pending keyboard corrections first (enriches the mistake profile)
+        // Lightning Round pre-gen — only if a real language is set.
+        // On fresh install, targetLangRequired returns nativeLang ("en") because
+        // the user hasn't picked a language yet. Pre-generating for "en" is wasted work
+        // and the cards get rejected when the user picks their actual language.
+        // For new users, the onboarding pre-gen (step 2) handles this instead.
+        if LanguageManager.shared.hasTargetLanguage {
+            DispatchQueue.global(qos: .userInitiated).async {
+                LightningRoundEngine.preGenerate(language: roundLang)
+            }
+        }
+
+        // Process pending keyboard corrections separately — enriches mistake profile
+        // for FUTURE rounds, but doesn't block the current pre-gen.
+        DispatchQueue.global(qos: .utility).async {
             TTSCacheProcessor.processPendingRequests()
             MistakeIngestion.processKeyboardQueue()
-
-            // Pre-generate cards — works with or without existing mistakes
-            LightningRoundEngine.preGenerate(language: roundLang)
         }
 
         // Pre-seed starter decks on HIGH priority — user sees Library tab first

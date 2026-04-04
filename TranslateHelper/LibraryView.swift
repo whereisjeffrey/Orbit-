@@ -175,6 +175,43 @@ struct LibraryView: View {
                             .padding(.bottom, 16)
                     }
 
+                    // ── This Week's Streak ───────────────────────────
+                    WeeklyStreakCard()
+                        .padding(.horizontal, 16)
+                        .padding(.top, 16)
+                        .padding(.bottom, 24)
+
+                    // ── MY DECKS ───────────────────────────────────────
+                    HStack {
+                        Text("MY DECKS")
+                            .font(.custom("HelveticaNeue-Medium", size: 13))
+                            .foregroundColor(.tsSecondary)
+                            .tracking(1.2)
+                        Spacer()
+                    Button("See All") { showMyDecks = true }
+                            .foregroundColor(.tsAccent)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 10)
+
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 12) {
+                            // New Deck — always pinned left
+                            NewDeckCard { showNewDeck = true }
+                                .frame(width: 160)
+                            // User decks — newest first (DeckStore inserts at 0)
+                            ForEach(deckStore.decks) { deck in
+                                LibraryDeckCard(emoji: deck.emoji, title: deck.name, count: deck.cards.count, tint: deck.tintColor) {
+                                    deckStudyDeck = deck
+                                }
+                                .frame(width: 160)
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 2)
+                    }
+                    .padding(.bottom, 24)
+
                     // ── Daily Goal — botanical card ───────────────────
                     VStack(alignment: .leading, spacing: 12) {
                         HStack {
@@ -221,44 +258,7 @@ struct LibraryView: View {
                     .background(BotanicalCardBackground())
                     .cornerRadius(20)
                     .padding(.horizontal, 16)
-                    .padding(.top, 16)
-                    .padding(.bottom, 24)
-
-                    // ── MY DECKS ───────────────────────────────────────
-                    HStack {
-                        Text("MY DECKS")
-                            .font(.custom("HelveticaNeue-Medium", size: 13))
-                            .foregroundColor(.tsSecondary)
-                            .tracking(1.2)
-                        Spacer()
-                    Button("See All") { showMyDecks = true }
-                            .foregroundColor(.tsAccent)
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 10)
-
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 12) {
-                            // New Deck — always pinned left
-                            NewDeckCard { showNewDeck = true }
-                                .frame(width: 160)
-                            // User decks — newest first (DeckStore inserts at 0)
-                            ForEach(deckStore.decks) { deck in
-                                LibraryDeckCard(emoji: deck.emoji, title: deck.name, count: deck.cards.count, tint: deck.tintColor) {
-                                    deckStudyDeck = deck
-                                }
-                                .frame(width: 160)
-                            }
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 2)
-                    }
-                    .padding(.bottom, 24)
-
-                    WeeklyStreakCard()
-                        .padding(.horizontal, 16)
-                        .padding(.top, 16)
-                        .padding(.bottom, 120)
+                    .padding(.bottom, 120)
                 }
             }
 

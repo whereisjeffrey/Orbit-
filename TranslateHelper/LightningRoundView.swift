@@ -37,6 +37,8 @@ struct LightningRoundView: View {
     @State private var showVoiceResult = false
     @State private var voiceHeard: String = ""
     @State private var voiceWasCorrect: Bool = false
+    @State private var pronunciationScore: Int = 0
+    @State private var pronunciationFeedback: String = ""
 
     // Results
     @State private var correctCount = 0
@@ -271,7 +273,7 @@ struct LightningRoundView: View {
             }
             .background(
                 RoundedRectangle(cornerRadius: 20)
-                    .fill(Color(hex: "#EDF6FE"))
+                    .fill(Color(hex: "#E3F0F7").opacity(0.9))
                     .shadow(color: .black.opacity(0.1), radius: 16, y: 4)
             )
             .padding(.horizontal, 16)
@@ -319,9 +321,9 @@ struct LightningRoundView: View {
         let parts = splitPrompt(card.prompt)
 
         return VStack(alignment: .leading, spacing: 14) {
-            // Context / dialogue — light weight, dark text on light card
+            // Context / dialogue — medium weight, dark text on light card
             Text(parts.context)
-                .font(.custom("HelveticaNeue", size: 17))
+                .font(.custom("HelveticaNeue-Medium", size: 17))
                 .foregroundColor(.black)
                 .lineSpacing(4)
                 .fixedSize(horizontal: false, vertical: true)
@@ -443,12 +445,11 @@ struct LightningRoundView: View {
                                     .foregroundColor(answersMatch(option, card.correctAnswer) ? Color(hex: "#34C759") : Color(hex: "#FF3B30"))
                             }
                         }
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 16)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 14)
                         .background(
                             RoundedRectangle(cornerRadius: 12)
-                                .fill(optionCardBg(option, card: card))
-                                .shadow(color: .black.opacity(0.06), radius: 6, y: 2)
+                                .fill(Color.white)
                         )
                     }
                     .disabled(selectedOption != nil)
@@ -466,28 +467,14 @@ struct LightningRoundView: View {
     }
 
     private func optionLetterBg(_ option: String, card: LightningCard) -> Color {
-        guard selectedOption != nil else { return Color(hex: "#EDF6FE") }
+        guard selectedOption != nil else { return Color.tsAccent.opacity(0.1) }
         if answersMatch(option, card.correctAnswer) { return Color(hex: "#34C759").opacity(0.12) }
         if option == selectedOption && option != card.correctAnswer { return Color(hex: "#FF3B30").opacity(0.12) }
-        return Color(hex: "#EDF6FE").opacity(0.5)
+        return Color.tsAccent.opacity(0.05)
     }
 
     private func optionLetterColorGlass(_ option: String, card: LightningCard) -> Color {
         optionLetterColor(option, card: card)
-    }
-
-    /// Option card background — white normally, tinted green/red after answering
-    private func optionCardBg(_ option: String, card: LightningCard) -> Color {
-        guard selectedOption != nil else { return .white }
-        if answersMatch(option, card.correctAnswer) {
-            // Crisp white with a clear green tint
-            return Color(red: 0.90, green: 1.0, blue: 0.92)
-        }
-        if option == selectedOption && !answersMatch(option, card.correctAnswer) {
-            // Crisp white with a clear red tint
-            return Color(red: 1.0, green: 0.90, blue: 0.90)
-        }
-        return .white.opacity(0.5)
     }
 
     private func optionLetterBgGlass(_ option: String, card: LightningCard) -> Color {
@@ -549,42 +536,58 @@ struct LightningRoundView: View {
                 .font(.custom(isRecording ? "HelveticaNeue-Bold" : "HelveticaNeue", size: 13))
                 .foregroundColor(.black.opacity(0.4))
 
-            // Voice result verification
+            // Voice result with pronunciation score — white card
             if showVoiceResult {
-                VStack(spacing: 10) {
-                    // What you said
+                VStack(alignment: .leading, spacing: 10) {
+                    // Score + status
                     HStack(spacing: 8) {
                         Image(systemName: voiceWasCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
                             .foregroundColor(voiceWasCorrect ? Color(hex: "#34C759") : Color(hex: "#FF3B30"))
                             .font(.system(size: 20))
-                        Text("You said:")
-                            .font(.custom("HelveticaNeue-Medium", size: 13))
-                            .foregroundColor(.tsSecondary)
+                        Text(voiceWasCorrect ? "Correct" : "Not quite")
+                            .font(.custom("HelveticaNeue-Medium", size: 14))
+                            .foregroundColor(voiceWasCorrect ? Color(hex: "#34C759") : Color(hex: "#FF3B30"))
+                        Spacer()
+                        Text("Pronunciation: \(pronunciationScore)%")
+                            .font(.custom("HelveticaNeue-Bold", size: 13))
+                            .foregroundColor(pronunciationScore >= 75 ? Color(hex: "#34C759") : pronunciationScore >= 50 ? Color(hex: "#FF9500") : Color(hex: "#FF3B30"))
                     }
 
+                    // What you said
                     Text("\"\(voiceHeard)\"")
                         .font(.custom("HelveticaNeue-Medium", size: 15))
-                        .foregroundColor(voiceWasCorrect ? Color(hex: "#34C759") : Color(hex: "#FF3B30"))
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 16)
+                        .foregroundColor(.tsLabel)
+                        .multilineTextAlignment(.leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
 
-                    if !voiceWasCorrect {
-                        // Show correct answer
-                        Text("Expected:")
+                    // Pronunciation feedback
+                    if !pronunciationFeedback.isEmpty {
+                        Text(pronunciationFeedback)
                             .font(.custom("HelveticaNeue", size: 12))
                             .foregroundColor(.tsSecondary)
-                        Text("\"\(card.audioText ?? card.correctAnswer)\"")
-                            .font(.custom("HelveticaNeue-Bold", size: 15))
-                            .foregroundColor(Color(hex: "#34C759"))
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 16)
+                            .multilineTextAlignment(.leading)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+
+                    if !voiceWasCorrect {
+                        HStack(spacing: 4) {
+                            Text("Expected:")
+                                .font(.custom("HelveticaNeue", size: 12))
+                                .foregroundColor(.tsSecondary)
+                            Text("\"\(card.audioText ?? card.correctAnswer)\"")
+                                .font(.custom("HelveticaNeue-Medium", size: 13))
+                                .foregroundColor(Color(hex: "#34C759"))
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
                 .padding(16)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(voiceWasCorrect ? Color(hex: "#34C759").opacity(0.08) : Color(hex: "#FF3B30").opacity(0.08))
+                        .fill(Color.white)
+                        .shadow(color: .black.opacity(0.06), radius: 8, y: 2)
                 )
+                .padding(.horizontal, 16)
                 .transition(.opacity.combined(with: .scale(scale: 0.9)))
             }
         }
@@ -712,16 +715,14 @@ struct LightningRoundView: View {
                 }
             }
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 16)
+        .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 14)
-                .fill(Color.white)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14)
-                        .fill(accentColor.opacity(0.12))
-                )
-                .shadow(color: .black.opacity(0.06), radius: 6, y: 2)
+                .fill(accentColor.opacity(0.1))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(accentColor.opacity(0.25), lineWidth: 0.5)
         )
         .padding(.horizontal, 20)
     }
@@ -1019,7 +1020,7 @@ struct LightningRoundView: View {
         guard let url = URL(string: "https://api.openai.com/v1/chat/completions") else { return }
 
         let body: [String: Any] = [
-            "model": "gpt-4o-mini",
+            "model": "gpt-4o",
             "messages": [
                 ["role": "system", "content": "You generate quiz cards for language learners. Respond ONLY with a valid JSON array."],
                 ["role": "user", "content": prompt],
@@ -1070,11 +1071,18 @@ struct LightningRoundView: View {
                     let mistakeIdx = (cardJSON["mistake_index"] as? Int) ?? (i % mistakes.count)
                     let mistake = mistakes[min(mistakeIdx, mistakes.count - 1)]
 
-                    // Filter out dash/empty options from GPT
+                    // Filter out dash/empty/duplicate options from GPT
                     let rawOptions = cardJSON["options"] as? [String]
-                    let cleanedOptions = rawOptions?.filter { opt in
+                    var seenOpts = Set<String>()
+                    let cleanedOptions: [String]? = rawOptions?.filter { opt in
                         let trimmed = opt.trimmingCharacters(in: .whitespacesAndNewlines)
-                        return trimmed.count >= 2 && trimmed != "—" && trimmed != "-" && trimmed != "–"
+                        let key = trimmed.lowercased()
+                        guard trimmed.count >= 2,
+                              trimmed != "—", trimmed != "-", trimmed != "–",
+                              !seenOpts.contains(key)
+                        else { return false }
+                        seenOpts.insert(key)
+                        return true
                     }
 
                     let rawPrompt = cardJSON["prompt"] as? String ?? ""
@@ -1118,9 +1126,18 @@ struct LightningRoundView: View {
                     generatedCards.append(fallback)
                 }
 
-                // Validate — discard bad cards
+                // Validate — discard bad cards. NEVER fall back to unvalidated.
                 let validated = self.engine.validateCards(generatedCards, language: self.targetLang)
-                self.cards = validated.isEmpty ? generatedCards : validated
+                if validated.isEmpty {
+                    NSLog("⚡ [LightningRound] ALL cards failed validation — using fallback cards")
+                    // Build fallback cards from the mistake data we already have
+                    let fallbacks = cardTypes.enumerated().map { (i, type) in
+                        self.generateFallbackCard(type: type, mistake: mistakes[i % mistakes.count])
+                    }
+                    self.cards = fallbacks
+                } else {
+                    self.cards = validated
+                }
                 self.startRound()
             }
         }.resume()
@@ -1245,8 +1262,6 @@ struct LightningRoundView: View {
     }
 
     private func handleVoiceResult(heard: String, card: LightningCard) {
-        // For voice cards, compare against audioText (what they were asked to say),
-        // NOT correctAnswer (which may be a different field for some card types)
         let expectedRaw = (card.audioText ?? card.correctAnswer)
         let expected = expectedRaw.lowercased()
             .trimmingCharacters(in: .punctuationCharacters)
@@ -1255,13 +1270,39 @@ struct LightningRoundView: View {
             .trimmingCharacters(in: .punctuationCharacters)
             .trimmingCharacters(in: .whitespacesAndNewlines)
 
-        // Word-level similarity — at least 60% match (more forgiving for pronunciation)
-        let expectedWords = Set(expected.split(separator: " ").map(String.init))
-        let actualWords = Set(actual.split(separator: " ").map(String.init))
-        let intersection = expectedWords.intersection(actualWords)
-        let similarity = expectedWords.isEmpty ? 0 : Double(intersection.count) / Double(expectedWords.count)
+        // Word match
+        let expectedWords = expected.split(separator: " ").map(String.init)
+        let actualWords = actual.split(separator: " ").map(String.init)
+        let expectedSet = Set(expectedWords)
+        let actualSet = Set(actualWords)
+        let intersection = expectedSet.intersection(actualSet)
+        let wordMatch = expectedSet.isEmpty ? 0.0 : Double(intersection.count) / Double(expectedSet.count)
 
-        let isCorrect = similarity >= 0.6
+        // Levenshtein similarity for pronunciation accuracy
+        let levenshteinScore = Self.levenshteinSimilarity(expected, actual)
+
+        // Combined score: 50% word match + 50% Levenshtein
+        let score = Int((wordMatch * 50) + (levenshteinScore * 50))
+        let isCorrect = wordMatch >= 0.6
+
+        // Pronunciation feedback
+        let feedback: String
+        if score >= 90 {
+            feedback = "Excellent pronunciation!"
+        } else if score >= 75 {
+            feedback = "Good — clearly understood."
+        } else if score >= 60 {
+            let missed = expectedSet.subtracting(actualSet)
+            if let firstMissed = missed.first {
+                feedback = "Watch your pronunciation on \"\(firstMissed)\""
+            } else {
+                feedback = "Almost — a few sounds were off."
+            }
+        } else if score >= 40 {
+            feedback = "Keep practicing — some sounds need work."
+        } else {
+            feedback = "Try again slowly — focus on each word."
+        }
 
         cards[currentIndex].userAnswer = heard
         cards[currentIndex].isCorrect = isCorrect
@@ -1273,24 +1314,53 @@ struct LightningRoundView: View {
         let generator = UIImpactFeedbackGenerator(style: isCorrect ? .light : .medium)
         generator.impactOccurred()
 
-        // Show voice result verification
+        // Show voice result with pronunciation score
         voiceHeard = heard
         voiceWasCorrect = isCorrect
+        pronunciationScore = score
+        pronunciationFeedback = feedback
         withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
             showVoiceResult = true
         }
 
-        // Play sound
         if isCorrect { SoundEffect.correct.play() } else { SoundEffect.incorrect.play() }
 
         if isCorrect {
-            // Auto-advance after showing result for 2 seconds
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            // Longer hold for lower scores so they can read feedback
+            let delay = score >= 85 ? 2.0 : 3.0
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                 showVoiceResult = false
                 advanceToNext()
             }
         }
         // If wrong, they swipe to continue (same as tap cards)
+    }
+
+    /// Levenshtein similarity between two strings (0.0 = completely different, 1.0 = identical)
+    private static func levenshteinSimilarity(_ s1: String, _ s2: String) -> Double {
+        let a = Array(s1)
+        let b = Array(s2)
+        let m = a.count, n = b.count
+        guard m > 0 && n > 0 else { return m == n ? 1.0 : 0.0 }
+
+        var matrix = [[Int]](repeating: [Int](repeating: 0, count: n + 1), count: m + 1)
+        for i in 0...m { matrix[i][0] = i }
+        for j in 0...n { matrix[0][j] = j }
+
+        for i in 1...m {
+            for j in 1...n {
+                let cost = a[i - 1] == b[j - 1] ? 0 : 1
+                matrix[i][j] = min(
+                    matrix[i - 1][j] + 1,
+                    matrix[i][j - 1] + 1,
+                    matrix[i - 1][j - 1] + cost
+                )
+            }
+        }
+
+        let distance = matrix[m][n]
+        let maxLen = max(m, n)
+        return 1.0 - (Double(distance) / Double(maxLen))
     }
 
     // MARK: - Fallback Card Generation

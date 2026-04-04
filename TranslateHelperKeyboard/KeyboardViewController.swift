@@ -117,6 +117,7 @@ class KeyboardViewController: UIInputViewController {
     private var micLeadingToEdge: NSLayoutConstraint!    // full width (no translate/remove)
     private var micLeadingToThird: NSLayoutConstraint!   // right third (translate + remove visible)
     private var translationHistory: [String] = []
+    private var pendingTranslationTasks: [URLSessionTask] = []  // cancel on new translation
     private var currentHistoryIndex: Int = -1
     private let swipeHintLabel = UILabel()
 

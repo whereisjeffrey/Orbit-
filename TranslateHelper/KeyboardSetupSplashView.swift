@@ -87,17 +87,17 @@ struct KeyboardSetupSplashView: View {
                         KBSetupStep(
                             number: 1,
                             icon: "gearshape.fill",
-                            text: "Tap the button below to open **Orbit settings**"
+                            text: "Tap **Set Up Keyboard** below"
                         )
                         KBSetupStep(
                             number: 2,
                             icon: "keyboard.fill",
-                            text: "Tap **Keyboards**"
+                            text: "Tap **Keyboards** on the settings page"
                         )
                         KBSetupStep(
                             number: 3,
                             icon: "hand.tap.fill",
-                            text: "Toggle on the **Orbit keyboard**"
+                            text: "Toggle on **Orbit Keyboard**"
                         )
                         KBSetupStep(
                             number: 4,
@@ -107,7 +107,7 @@ struct KeyboardSetupSplashView: View {
                         KBSetupStep(
                             number: 5,
                             icon: "globe",
-                            text: "In WhatsApp, tap the **🌐 globe** on your keyboard to switch to Orbit"
+                            text: "In WhatsApp, tap the **🌐 globe** to switch to Orbit"
                         )
                     }
                     .padding(.horizontal, 24)
@@ -158,10 +158,11 @@ struct KeyboardSetupSplashView: View {
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
-            // User is coming back from Settings — check if they enabled the keyboard
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                if checkKeyboardEnabled() {
-                    // Auto-advance to Learn page — skip this screen
+            // User is coming back from Settings — always complete onboarding.
+            // Whether they enabled the keyboard or not, they've reached the last step.
+            // The keyboard setup banner on the Learn page will guide them if they skipped it.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                DispatchQueue.main.async {
                     onSkip()
                 }
             }
@@ -178,29 +179,27 @@ struct KeyboardSetupSplashView: View {
     // App-Prefs:root=General&path=Keyboard/KEYBOARDS drops the user
     // directly onto the keyboards list — TalkSwitch appears under
     // "Suggested Keyboards" so they just tap it, no digging required.
-    /// Check if Orbit Keyboard has been added in Settings
+    /// Check if Orbit Keyboard has actually been used.
+    /// Only returns true when the keyboard extension has loaded at least once —
+    /// meaning the user enabled it AND switched to it in a text field.
+    /// Visiting the settings page without enabling does NOT trigger this.
     private func checkKeyboardEnabled() -> Bool {
-        // Check App Group flag (keyboard writes this on first viewDidLoad)
-        if let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper"),
-           defaults.bool(forKey: "keyboard_has_launched") {
-            return true
-        }
-        // Also check active input modes as a fallback
+        // Check 1: keyboard extension has actually loaded (set in viewDidLoad)
+        let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper")
+        if defaults?.bool(forKey: "keyboard_has_launched") == true { return true }
+
+        // Check 2: keyboard is in active input modes (set by iOS when enabled in Settings)
+        let bundleID = "com.jeffrey.TranslateHelper.Keyboard"
         let activeIDs = UITextInputMode.activeInputModes.compactMap { $0.value(forKey: "identifier") as? String }
-        return activeIDs.contains { $0.contains("com.jeffrey.TranslateHelper") }
+        if activeIDs.contains(where: { $0.contains(bundleID) || $0.contains("TranslateHelper") }) { return true }
+
+        return false
     }
 
     private func openKeyboardSettings() {
-        let candidates: [String] = [
-            "App-Prefs:root=General&path=Keyboard/KEYBOARDS",
-            "App-Prefs:root=General&path=Keyboard",
-            UIApplication.openSettingsURLString
-        ]
-        for str in candidates {
-            if let url = URL(string: str), UIApplication.shared.canOpenURL(url) {
-                UIApplication.shared.open(url)
-                return
-            }
+        // Opens the Orbit settings page — user taps Keyboards → enables Orbit Keyboard
+        if let url = URL(string: UIApplication.openSettingsURLString) {
+            UIApplication.shared.open(url)
         }
     }
 }

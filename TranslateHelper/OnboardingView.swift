@@ -32,7 +32,15 @@ struct OnboardingView: View {
             // Self-assessment — skippable, one tap
             LevelAssessmentView(
                 isSkippable: true,
-                onComplete: { step = 3 }
+                onComplete: {
+                    // Fire Lightning Round pre-gen as soon as they set their level.
+                    // By the time they finish onboarding (~60s), cards are on disk.
+                    let lang = LanguageManager.shared.targetLangRequired
+                    DispatchQueue.global(qos: .userInitiated).async {
+                        LightningRoundEngine.preGenerate(language: lang)
+                    }
+                    step = 3
+                }
             )
         case 3:
             OnboardingGoalsView(

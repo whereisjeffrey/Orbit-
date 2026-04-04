@@ -163,13 +163,20 @@ class DictateViewController: UIViewController {
         // ── Language toggle pill ──────────────────────────────────────
         setupToggle()
 
-        // ── Speaker circle ────────────────────────────────────────────
+        // ── Speaker circle — glass-morphic, matches Lightning Round intro ──
         iconCircle.translatesAutoresizingMaskIntoConstraints = false
-        iconCircle.backgroundColor = UIColor.white.withAlphaComponent(0.18)
-        iconCircle.layer.cornerRadius = 33.75
+        iconCircle.backgroundColor = UIColor.white.withAlphaComponent(0.15)
+        iconCircle.layer.cornerRadius = 40  // 80 / 2
+        iconCircle.layer.borderWidth = 1
+        iconCircle.layer.borderColor = UIColor.white.withAlphaComponent(0.25).cgColor
+        // Soft white glow on the outside
+        iconCircle.layer.shadowColor = UIColor.white.cgColor
+        iconCircle.layer.shadowOpacity = 0.3
+        iconCircle.layer.shadowRadius = 16
+        iconCircle.layer.shadowOffset = .zero
         view.addSubview(iconCircle)
 
-        let iconCfg = UIImage.SymbolConfiguration(pointSize: 39, weight: .medium)
+        let iconCfg = UIImage.SymbolConfiguration(pointSize: 36, weight: .medium)
         iconImageView.translatesAutoresizingMaskIntoConstraints = false
         iconImageView.image = UIImage(systemName: "speaker.wave.2.fill", withConfiguration: iconCfg)
         iconImageView.tintColor = .white
@@ -189,7 +196,7 @@ class DictateViewController: UIViewController {
         // ── Send to Keyboard button ───────────────────────────────────
         sendButton.translatesAutoresizingMaskIntoConstraints = false
         var config = UIButton.Configuration.filled()
-        config.baseBackgroundColor = UIColor.white.withAlphaComponent(0.18)
+        config.baseBackgroundColor = UIColor.white.withAlphaComponent(0.15)
         config.baseForegroundColor = .white
         config.cornerStyle = .capsule
         config.image = UIImage(systemName: "keyboard", withConfiguration:
@@ -202,8 +209,10 @@ class DictateViewController: UIViewController {
             return a
         }
         sendButton.configuration = config
-        sendButton.layer.cornerRadius = 29  // half of 58pt height = pill shape
+        sendButton.layer.cornerRadius = 29
         sendButton.clipsToBounds = true
+        sendButton.layer.borderWidth = 1
+        sendButton.layer.borderColor = UIColor.white.withAlphaComponent(0.17).cgColor
         sendButton.addTarget(self, action: #selector(doneTapped), for: .touchUpInside)
         view.addSubview(sendButton)
 
@@ -220,20 +229,20 @@ class DictateViewController: UIViewController {
 
             iconCircle.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             iconCircle.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -40),
-            iconCircle.widthAnchor.constraint(equalToConstant: 67.5),
-            iconCircle.heightAnchor.constraint(equalToConstant: 67.5),
+            iconCircle.widthAnchor.constraint(equalToConstant: 80),
+            iconCircle.heightAnchor.constraint(equalToConstant: 80),
 
             iconImageView.centerXAnchor.constraint(equalTo: iconCircle.centerXAnchor),
             iconImageView.centerYAnchor.constraint(equalTo: iconCircle.centerYAnchor),
-            iconImageView.widthAnchor.constraint(equalToConstant: 36),
-            iconImageView.heightAnchor.constraint(equalToConstant: 36),
+            iconImageView.widthAnchor.constraint(equalToConstant: 40),
+            iconImageView.heightAnchor.constraint(equalToConstant: 40),
 
             timerLabel.topAnchor.constraint(equalTo: iconCircle.bottomAnchor, constant: 28),
             timerLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
 
             sendButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -90),
-            sendButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            sendButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            sendButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 48),
+            sendButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -48),
             sendButton.heightAnchor.constraint(equalToConstant: 58),
 
 
@@ -930,46 +939,63 @@ class DictateViewController: UIViewController {
         }
     }
 
-    /// Bounces the center speaker icon as a sparkle — like pushing a real object down and releasing.
+    /// Sparkle animation — matches Lightning Round bolt appearance exactly.
+    /// Speaker fades out, sparkle fades in slowly, then bounces.
     private func playStarBounce(completion: @escaping () -> Void) {
-        // Fade out everything except the center icon
+        // Step 0: Fade out button + timer
         UIView.animate(withDuration: 0.2) {
             self.sendButton.alpha = 0
             self.timerLabel.alpha = 0
         }
 
-        // Swap the speaker icon to sparkles
-        let starConfig = UIImage.SymbolConfiguration(pointSize: 39, weight: .medium)
-        self.iconImageView.image = UIImage(systemName: "sparkles", withConfiguration: starConfig)
-
-        // Step 1: Push down (like pressing with a finger)
-        UIView.animate(
-            withDuration: 0.25,
-            delay: 0.15,
-            options: .curveEaseIn
-        ) {
-            self.iconImageView.transform = CGAffineTransform(scaleX: 0.6, y: 0.6)
+        // Step 1: Fade out the speaker icon (0.3s)
+        UIView.animate(withDuration: 0.3) {
+            self.iconImageView.alpha = 0
         } completion: { _ in
-            // Step 2: Release — springs back up naturally, like a real object
+            // Swap to sparkles while invisible
+            let starConfig = UIImage.SymbolConfiguration(pointSize: 36, weight: .medium)
+            self.iconImageView.image = UIImage(systemName: "sparkles", withConfiguration: starConfig)
+            self.iconImageView.transform = .identity
+
+            // Step 2: Sparkle fades in — same timing as Lightning Round bolt
+            // (easeIn, 0.8s duration, 0.4s delay after circle lands)
             UIView.animate(
-                withDuration: 0.7,
-                delay: 0,
-                usingSpringWithDamping: 0.4,
-                initialSpringVelocity: 0.6
+                withDuration: 0.8,
+                delay: 0.4,
+                options: .curveEaseIn
             ) {
-                self.iconImageView.transform = CGAffineTransform(scaleX: 1.1, y: 1.1)
+                self.iconImageView.alpha = 1
             } completion: { _ in
-                // Step 3: Gentle settle to resting size
+                // Step 3: Push down (like pressing with a finger)
                 UIView.animate(
-                    withDuration: 0.4,
-                    delay: 0,
-                    options: .curveEaseOut
+                    withDuration: 0.25,
+                    delay: 0.1,
+                    options: .curveEaseIn
                 ) {
-                    self.iconImageView.transform = .identity
+                    self.iconImageView.transform = CGAffineTransform(scaleX: 0.6, y: 0.6)
                 } completion: { _ in
-                    // Hold for a moment, then dismiss
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                        completion()
+                    // Step 4: Release — springs back up naturally
+                    UIView.animate(
+                        withDuration: 0.7,
+                        delay: 0,
+                        usingSpringWithDamping: 0.4,
+                        initialSpringVelocity: 0.6
+                    ) {
+                        self.iconImageView.transform = CGAffineTransform(scaleX: 1.1, y: 1.1)
+                    } completion: { _ in
+                        // Step 5: Gentle settle to resting size
+                        UIView.animate(
+                            withDuration: 0.4,
+                            delay: 0,
+                            options: .curveEaseOut
+                        ) {
+                            self.iconImageView.transform = .identity
+                        } completion: { _ in
+                            // Hold for a moment, then dismiss
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                completion()
+                            }
+                        }
                     }
                 }
             }

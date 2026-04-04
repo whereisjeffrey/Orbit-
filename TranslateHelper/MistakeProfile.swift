@@ -9,6 +9,7 @@
 
 import Foundation
 import Combine
+import NaturalLanguage
 
 // MARK: - Mistake Entry
 
@@ -321,29 +322,73 @@ final class MistakeProfileStore: ObservableObject {
 
         if language == "pt" {
             testMistakes = [
-                (.gender, "o viagem", "a viagem", "'Viagem' is feminine — use 'a viagem'"),
-                (.conjugation, "eu sou 25 anos", "eu tenho 25 anos", "Age uses 'ter', not 'ser'"),
-                (.preposition, "pensar sobre", "pensar em", "'Pensar' takes 'em', not 'sobre'"),
-                (.grammar, "eu gosto tacos", "eu gosto de tacos", "'Gostar' requires 'de'"),
-                (.pronunciation, "coração", "coração", "'ão' needs a nasal diphthong"),
-                (.vocabulary, "estou excitado", "estou empolgado", "'Excitado' means aroused — use 'empolgado'"),
-                (.wordOrder, "um muito bom lugar", "um lugar muito bom", "Adjectives follow the noun"),
-                (.idiom, "pagar o pato", "pagar o pato", "Means 'take the blame' — literally 'pay the duck'"),
-                (.conjugation, "eu vai", "eu vou", "'Ir' is irregular — 'eu vou', not 'eu vai'"),
-                (.gender, "o cidade", "a cidade", "'Cidade' is feminine — use 'a cidade'"),
+                // Gender — pattern: word endings predict gender
+                (.gender, "o viagem", "a viagem", "Words ending in '-agem' are always feminine: a viagem, a garagem, a paisagem. No exceptions."),
+                (.gender, "o cidade", "a cidade", "Words ending in '-ade' are always feminine: a cidade, a saudade, a liberdade, a felicidade."),
+                (.gender, "a problema", "o problema", "Words ending in '-ema' and '-ama' are masculine (Greek origin): o problema, o sistema, o tema, o drama."),
+
+                // Conjugation — pattern: English 'to be' splits into multiple verbs
+                (.conjugation, "eu sou 25 anos", "eu tenho 25 anos", "English uses 'I am' for age. Portuguese uses 'ter' (to have): tenho 25 anos, tenho fome, tenho sede, tenho calor."),
+                (.conjugation, "eu vai", "eu vou", "'Ir' is irregular: eu vou, você vai, nós vamos. Your brain wants to use 'vai' for everything — that's the você form."),
+                (.conjugation, "se eu seria", "se eu fosse", "After 'se' (if), use subjunctive: 'se eu fosse', 'se eu tivesse'. Never conditional 'seria/teria' after 'se'."),
+
+                // Preposition — pattern: verbs have fixed prepositions
+                (.preposition, "pensar sobre", "pensar em", "'Pensar' takes 'em': penso em você. Other verbs with 'em': acreditar em, confiar em, insistir em."),
+                (.preposition, "sonhar sobre", "sonhar com", "'Sonhar' takes 'com': sonho com você. Other verbs with 'com': concordar com, contar com, preocupar-se com."),
+
+                // Grammar — pattern: verb structure differs from English
+                (.grammar, "eu gosto tacos", "eu gosto de tacos", "Verbs of preference need 'de': gostar de, precisar de, depender de, cuidar de. English skips the preposition — Portuguese can't."),
+                (.grammar, "eu conheço ele", "eu o conheço", "Object pronouns go before the verb in Portuguese: 'eu o conheço', 'eu a vi', 'eu te amo'. English puts them after."),
+
+                // Pronunciation — pattern: sounds that don't exist in English
+                (.pronunciation, "coração", "coração", "The 'ão' nasal diphthong: tongue back, jaw drops, air through nose. Practice on: coração, irmão, pão, avião, mão."),
+                (.pronunciation, "desenvolvimento", "desenvolvimento", "The 'lh' sound (like in 'trabalho'): tongue touches the roof of your mouth. Not 'l', not 'ly' — it's unique to Portuguese."),
+
+                // Vocabulary — false friends
+                (.vocabulary, "estou excitado", "estou empolgado", "⚠️ False friend: 'excitado' means sexually aroused. For 'excited', say 'empolgado'. Also: 'puxar' ≠ push (it means pull)."),
+                (.vocabulary, "realizar que", "perceber que", "⚠️ False friend: 'realizar' means to accomplish/achieve. For 'to realize', use 'perceber'. Huge difference."),
+
+                // Word Order
+                (.wordOrder, "um muito bom lugar", "um lugar muito bom", "Adjectives come AFTER the noun: um lugar bom, uma casa grande, o carro vermelho. English does the opposite."),
+
+                // Idiom
+                (.idiom, "pagar o pato", "pagar o pato", "🦆 Literally 'to pay the duck.' Means to take the blame for something you didn't do. Use it: 'Eu sempre pago o pato.'"),
+                (.idiom, "dar um rolê", "dar um rolê", "Means 'to go for a stroll' or 'hang out.' Very casual: 'Vamos dar um rolê?' = 'Want to hang out?'"),
             ]
         } else {
             testMistakes = [
-                (.gender, "el casa", "la casa", "'Casa' is feminine — use 'la' not 'el'"),
-                (.conjugation, "yo soy 25 años", "yo tengo 25 años", "Age uses 'tener', not 'ser'"),
-                (.preposition, "pensar sobre", "pensar en", "'Pensar' takes 'en', not 'sobre'"),
-                (.grammar, "me gusta los tacos", "me gustan los tacos", "'Gustar' agrees with the liked thing"),
-                (.pronunciation, "desarrollar", "desarrollar", "Double 'rr' needs a rolled trill"),
-                (.vocabulary, "estoy caliente", "tengo calor", "'Estoy caliente' means aroused — use 'tengo calor'"),
-                (.wordOrder, "es muy un buen restaurante", "es un muy buen restaurante", "Adjective order: 'un muy buen'"),
-                (.idiom, "hacer sentido", "tener sentido", "'Tener sentido' = 'to make sense'"),
-                (.conjugation, "yo sabo", "yo sé", "'Saber' is irregular — 'yo sé'"),
-                (.gender, "el leche", "la leche", "'Leche' is feminine — use 'la leche'"),
+                // Gender
+                (.gender, "el casa", "la casa", "Words ending in '-a' are usually feminine: la casa, la mesa, la persona. Exception: el día, el mapa, el problema."),
+                (.gender, "el leche", "la leche", "Words ending in '-e' can go either way, but 'leche' is feminine. Also feminine: la calle, la noche, la clase."),
+                (.gender, "la problema", "el problema", "Words ending in '-ema'/'-ama' are masculine (Greek origin): el problema, el sistema, el tema, el drama."),
+
+                // Conjugation
+                (.conjugation, "yo soy 25 años", "yo tengo 25 años", "English uses 'I am' for age. Spanish uses 'tener': tengo 25 años, tengo hambre, tengo sed, tengo calor."),
+                (.conjugation, "yo sabo", "yo sé", "'Saber' is irregular: yo sé, tú sabes. Also irregular: yo conozco, yo hago, yo pongo, yo digo — these just need memorization."),
+                (.conjugation, "si yo tendría", "si yo tuviera", "After 'si' (if), use subjunctive: 'si yo tuviera', 'si yo fuera'. Never conditional 'tendría/sería' after 'si'."),
+
+                // Preposition
+                (.preposition, "pensar sobre", "pensar en", "'Pensar' takes 'en': pienso en ti. Other verbs with 'en': confiar en, insistir en, fijarse en."),
+                (.preposition, "soñar sobre", "soñar con", "'Soñar' takes 'con': sueño contigo. Other verbs with 'con': contar con, quedar con, casarse con."),
+
+                // Grammar
+                (.grammar, "me gusta los tacos", "me gustan los tacos", "'Gustar' agrees with the liked thing, not the person: me gusta el café (singular), me gustan los tacos (plural)."),
+                (.grammar, "yo conozco él", "yo lo conozco", "Object pronouns go before the verb: 'lo conozco', 'la vi', 'te quiero'. English puts them after."),
+
+                // Pronunciation
+                (.pronunciation, "desarrollar", "desarrollar", "The double 'rr' is a rolled trill: perro, carro, arriba. Single 'r' is a tap. The difference changes meaning: pero ≠ perro."),
+                (.pronunciation, "vergüenza", "vergüenza", "The 'gü' makes a 'gw' sound. The dots (diéresis) over the 'u' mean you pronounce it: güe = 'gwe', güi = 'gwi'."),
+
+                // Vocabulary
+                (.vocabulary, "estoy caliente", "tengo calor", "⚠️ False friend: 'estoy caliente' means sexually aroused. For 'I'm hot (temperature)', say 'tengo calor'."),
+                (.vocabulary, "realizar que", "darse cuenta de que", "⚠️ False friend: 'realizar' means to accomplish. For 'to realize', use 'darse cuenta'. Huge difference."),
+
+                // Word Order
+                (.wordOrder, "es muy un buen restaurante", "es un muy buen restaurante", "Adjectives come AFTER the noun: una casa grande, el carro rojo. Some short ones go before: buen, gran, mal."),
+
+                // Idiom
+                (.idiom, "hacer sentido", "tener sentido", "'Tener sentido' = to make sense. 'Hacer sentido' is an English calque — it doesn't exist in Spanish. Use: 'Eso no tiene sentido.'"),
+                (.idiom, "dar en el clavo", "dar en el clavo", "🎯 Literally 'to hit the nail.' Means you got it exactly right. Use it: '¡Diste en el clavo!' = 'You nailed it!'"),
             ]
         }
 
@@ -389,26 +434,39 @@ final class MistakeProfileStore: ObservableObject {
         let levelGuidelines = LightningRoundEngine.difficultyGuidelines(for: userLevel)
 
         let prompt = """
-        Generate 8 common mistakes that an English speaker at CEFR level \(userLevel) would make when learning \(langName).
+        Generate 16 common mistakes that an English speaker at CEFR level \(userLevel) would make when learning \(langName).
 
         THE USER IS LEVEL \(userLevel). This is critical:
         \(levelGuidelines)
 
         Generate mistakes that match THIS level — not easier, not harder.
-        - A1/A2: basic errors like wrong articles, simple verb forms, basic word order
-        - B1/B2: subjunctive errors, nuanced preposition choices, false friends, register mistakes
-        - C1/C2: subtle stylistic errors, near-synonym confusion, literary vs colloquial misuse
 
-        Cover these categories: gender, conjugation, preposition, grammar, vocabulary, word_order, idiom, pronunciation.
+        Cover ALL 8 categories (2 mistakes each):
+        gender, conjugation, preposition, grammar, vocabulary, word_order, idiom, pronunciation
+
+        CRITICAL RULES FOR EXPLANATIONS:
+        - Teach the RULE or PATTERN behind the mistake, not just the individual correction.
+        - Include 2-4 similar words/verbs that follow the same rule so the learner can generalize.
+        - For gender: explain the word-ending pattern (e.g., "Words ending in '-tion' are feminine: la nation, la situation")
+        - For conjugation: explain which verb tense is wrong and WHY English speakers default to the wrong one
+        - For preposition: list other verbs that take the same preposition
+        - For grammar: explain the structural difference from English
+        - For pronunciation: name the specific sound, describe how to make it, list 3-4 practice words
+        - For vocabulary: mark false friends with "⚠️ False friend:" and explain what the word actually means
+        - For idiom: give the literal translation, the real meaning, and an example sentence using it
+        - For word_order: show the English order vs the \(langName) order with examples
+        - 2-3 sentences per explanation. Never just one word or phrase.
+        - ALL explanations must be in ENGLISH with \(langName) words quoted inline.
+        - user_said and correct must ALWAYS be in \(langName), never English.
 
         For each mistake, provide:
         - category: one of [gender, conjugation, preposition, grammar, vocabulary, word_order, idiom, pronunciation]
-        - user_said: what the English speaker would incorrectly say in \(langName) (at \(userLevel) complexity)
+        - user_said: what the English speaker would incorrectly say in \(langName)
         - correct: the correct \(langName) form
-        - explanation: 1 sentence in English explaining why (15 words max)
+        - explanation: 2-3 sentences in English teaching the rule/pattern with similar examples
 
-        Respond ONLY with a JSON array:
-        [{"category":"gender","user_said":"...","correct":"...","explanation":"..."}]
+        Respond ONLY with JSON:
+        {"mistakes": [{"category":"gender","user_said":"...","correct":"...","explanation":"..."}]}
         """
 
         let apiKey = APIConfig.openAIAPIKey
@@ -424,7 +482,7 @@ final class MistakeProfileStore: ObservableObject {
                 ["role": "user", "content": prompt]
             ],
             "temperature": 0.8,
-            "max_tokens": 800,
+            "max_tokens": 2000,
             "response_format": ["type": "json_object"]
         ]
 
@@ -473,6 +531,25 @@ final class MistakeProfileStore: ObservableObject {
                 case "idiom": category = .idiom
                 case "pronunciation": category = .pronunciation
                 default: category = .grammar
+                }
+
+                // Reject entries where userSaid or correct is in English
+                // (GPT sometimes returns English instead of target language)
+                if language != "en" {
+                    let recognizer = NLLanguageRecognizer()
+                    recognizer.processString(userSaid)
+                    let detectedLang = recognizer.dominantLanguage?.rawValue ?? ""
+                    if detectedLang.hasPrefix("en") && userSaid.count > 10 {
+                        NSLog("⚠️ Rejected English seed entry: \(userSaid)")
+                        continue
+                    }
+                    let recognizer2 = NLLanguageRecognizer()
+                    recognizer2.processString(correct)
+                    let detectedLang2 = recognizer2.dominantLanguage?.rawValue ?? ""
+                    if detectedLang2.hasPrefix("en") && correct.count > 10 {
+                        NSLog("⚠️ Rejected English seed entry: \(correct)")
+                        continue
+                    }
                 }
 
                 self.record(

@@ -241,10 +241,9 @@ final class LightningRoundEngine {
 
             var fixed = card
 
-            // 2. Voice cards: audio_text must exist and match correct_answer
+            // 2. Voice cards: audio_text must exist and be a real sentence
             if card.type.isVoiceCard {
                 if card.audioText == nil || card.audioText!.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    // Use correctAnswer as audio_text
                     fixed = LightningCard(
                         type: card.type, mistakeId: card.mistakeId, language: card.language,
                         prompt: card.prompt, correctAnswer: card.correctAnswer,
@@ -252,9 +251,37 @@ final class LightningRoundEngine {
                         audioText: card.correctAnswer, targetWord: card.targetWord
                     )
                 }
+                // Voice card audio_text must be at least 2 words
+                let wordCount = (fixed.audioText ?? "").split(separator: " ").count
+                if wordCount < 2 {
+                    NSLog("⚡ [VALIDATION] Discarded voice card: audio_text too short (\(wordCount) words)")
+                    return nil
+                }
             }
 
-            // 3. Tap cards: correct_answer must be in options (case-insensitive)
+            // 3. Clean options — remove dashes, blanks, duplicates
+            if var options = fixed.options {
+                options = options.filter { opt in
+                    let trimmed = opt.trimmingCharacters(in: .whitespacesAndNewlines)
+                    return trimmed.count >= 2 && trimmed != "-" && trimmed != "—" && trimmed != "–" && trimmed != "..."
+                }
+                // Remove duplicates (case-insensitive)
+                var seen = Set<String>()
+                options = options.filter { opt in
+                    let key = opt.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+                    if seen.contains(key) { return false }
+                    seen.insert(key)
+                    return true
+                }
+                fixed = LightningCard(
+                    type: fixed.type, mistakeId: fixed.mistakeId, language: fixed.language,
+                    prompt: fixed.prompt, correctAnswer: fixed.correctAnswer,
+                    options: options, explanation: fixed.explanation,
+                    audioText: fixed.audioText, targetWord: fixed.targetWord
+                )
+            }
+
+            // 4. Tap cards: correct_answer must be in options
             if let options = fixed.options, !fixed.type.isVoiceCard {
                 let normalizedAnswer = fixed.correctAnswer.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
                 let normalizedOptions = options.map { $0.lowercased().trimmingCharacters(in: .whitespacesAndNewlines) }
@@ -264,11 +291,40 @@ final class LightningRoundEngine {
                 }
             }
 
-            // 4. Check for gibberish — if correct_answer is very short and doesn't look like real text
+            // 5. thisOrThat must have exactly 2 options
+            if fixed.type == .thisOrThat {
+                if let options = fixed.options, options.count != 2 {
+                    NSLog("⚡ [VALIDATION] Discarded thisOrThat: expected 2 options, got \(options.count)")
+                    return nil
+                }
+            }
+
+            // 6. trueOrFalse answer must be True or False
+            if fixed.type == .trueOrFalse {
+                let validAnswers = ["true", "false", "verdadeiro", "falso", "vrai", "faux", "richtig", "falsch", "verdadero"]
+                if !validAnswers.contains(fixed.correctAnswer.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)) {
+                    NSLog("⚡ [VALIDATION] Discarded trueOrFalse: answer '\(fixed.correctAnswer)' is not True/False")
+                    return nil
+                }
+            }
+
+            // 7. Answer too short
             let answer = fixed.correctAnswer.trimmingCharacters(in: .whitespacesAndNewlines)
             if answer.count < 2 && !["a", "o", "à", "é", "は", "의"].contains(answer) {
                 NSLog("⚡ [VALIDATION] Discarded card: answer too short '\(answer)'")
                 return nil
+            }
+
+            // 8. Tap cards must have at least 2 options
+            if !fixed.type.isVoiceCard {
+                if let options = fixed.options, options.count < 2 {
+                    NSLog("⚡ [VALIDATION] Discarded card: fewer than 2 options")
+                    return nil
+                }
+                if fixed.options == nil {
+                    NSLog("⚡ [VALIDATION] Discarded tap card: no options array")
+                    return nil
+                }
             }
 
             return fixed
@@ -573,6 +629,15 @@ final class LightningRoundEngine {
         - Vary sentence length: some short (4-5 words), some medium (8-10 words)
         - Mix registers: some formal, some casual, some slang\(recentPrompts.isEmpty ? "" : "\n\n        DO NOT use any of these recently used prompts or similar sentences:\n        \(recentPrompts.suffix(20).map { "- \"\($0)\"" }.joined(separator: "\n        "))")
 
+        PROMPT FORMAT — CRITICAL:
+        - Every prompt MUST use \\n to separate the statement from the question.
+        - Line 1 = the \(langName) phrase, dialogue, or sentence being tested.
+        - Line 2 = the English question about it.
+        - Example: "A mesa é grande\\nWhat does 'grande' mean?"
+        - For speakIt: "Say in \(langName):\\nI am going to his house later today"
+        - For dialogues: "A: Você vai?\\nB: Sim, eu vou.\\nWhat does 'vou' mean?"
+        - NEVER put statement and question on the same line.
+
         ACCURACY RULES:
         - All prompts and explanations MUST be in English, with \(langName) words quoted inline
         - ACCURACY IS CRITICAL: Every \(langName) word, translation, and grammar explanation must be 100% correct.
@@ -584,7 +649,20 @@ final class LightningRoundEngine {
         - For voice cards (speakIt, echo), include the full sentence as "audio_text"
         - For speakIt, the "target_word" is the specific word/pattern being tested
         - Options array: always include the correct answer, shuffled randomly among the options
-        - For thisOrThat cards: options must be exactly 2 items that test the specific mistake (e.g., "a" vs "o" for gender)
+        - For thisOrThat cards: options must be exactly 2 items
+        - NO duplicate options — every option must be different
+        - NO dashes, blanks, or placeholder options — every option must be a real answer
+
+        SELF-REVIEW — MANDATORY:
+        Before outputting each card, verify:
+        1. Does the question make logical sense? Could a human answer it?
+        2. Is correct_answer actually in the options array?
+        3. Are all options different from each other?
+        4. Is the prompt in the right format (statement \\n question)?
+        5. For voice cards: does audio_text contain a full speakable sentence?
+        6. Would YOU get this card right if you knew \(langName)? If the answer is ambiguous, rewrite it.
+        7. Is the correct answer ACTUALLY correct? Not a trick — genuinely right.
+        If any check fails, fix the card before including it.
 
         Respond ONLY with valid JSON array:
         [
@@ -648,7 +726,7 @@ final class LightningRoundEngine {
         }
 
         let body: [String: Any] = [
-            "model": "gpt-4o-mini",
+            "model": "gpt-4o",
             "messages": [
                 ["role": "system", "content": "You generate quiz cards for language learners. Respond ONLY with valid JSON."],
                 ["role": "user", "content": prompt],
@@ -752,23 +830,6 @@ final class LightningRoundEngine {
         let profile = MistakeProfileStore.shared
         for card in cards {
             guard !card.correctAnswer.isEmpty else { continue }
-
-            // Use targetWord or the wrong option as userSaid — NOT the English prompt
-            let wrongAnswer: String
-            if let tw = card.targetWord, !tw.isEmpty {
-                wrongAnswer = tw
-            } else if let options = card.options,
-                      let wrong = options.first(where: {
-                          $0.lowercased().trimmingCharacters(in: .whitespacesAndNewlines) !=
-                          card.correctAnswer.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-                      }),
-                      !wrong.isEmpty {
-                wrongAnswer = wrong
-            } else {
-                // Skip — we don't have a valid target-language "wrong" form
-                continue
-            }
-
             let category: MistakeCategory
             switch card.type {
             case .speedConjugation: category = .conjugation
@@ -781,7 +842,7 @@ final class LightningRoundEngine {
             profile.record(
                 category: category,
                 language: language,
-                userSaid: wrongAnswer,
+                userSaid: card.prompt,
                 correctForm: card.correctAnswer,
                 explanation: card.explanation,
                 source: .keyboard
