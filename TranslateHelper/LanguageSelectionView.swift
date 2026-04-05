@@ -52,11 +52,7 @@ struct LanguageSelectionView: View {
     let onSkip: () -> Void
     let onContinue: () -> Void
 
-    @State private var nativeLanguage: Language = {
-        let localeCode = Locale.current.language.languageCode?.identifier ?? "en"
-        let baseCode = localeCode.components(separatedBy: "-").first ?? "en"
-        return nativeLanguages.first(where: { $0.code == baseCode }) ?? nativeLanguages[0]
-    }()
+    private let nativeLanguage: Language = Language(flag: "🇺🇸", name: "English", code: "en")
 
     @State private var searchText: String = ""
 
@@ -80,35 +76,22 @@ struct LanguageSelectionView: View {
 
             VStack(spacing: 0) {
 
-                // ── Nav bar ────────────────────────────────────────────
+                // ── Nav bar with progress ──────────────────────────────
                 HStack {
                     Button(action: onBack) {
                         Image(systemName: "chevron.left")
-                            .font(.custom("HelveticaNeue-Medium", size: 22))
-                            .foregroundColor(.tsAccent)
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundColor(.tsLabel)
                     }
                     .frame(width: 40, height: 40)
 
                     Spacer()
 
-                    // Progress bar
-                    ZStack(alignment: .leading) {
-                        Capsule()
-                            .fill(Color.tsLabel.opacity(0.1))
-                            .frame(width: 128, height: 6)
-                        Capsule()
-                            .fill(Color.tsAccent)
-                            .frame(width: 128 * (CGFloat(step) / CGFloat(totalSteps)), height: 6)
-                    }
+                    OnboardingProgressBar(currentStep: 1, totalSteps: 8)
 
                     Spacer()
 
-                    Button(action: onSkip) {
-                        Text("Skip")
-                            .font(.custom("HelveticaNeue-Medium", size: 16))
-                            .foregroundColor(.tsAccent)
-                    }
-                    .frame(width: 40, height: 40)
+                    Color.clear.frame(width: 40, height: 40)
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
@@ -122,22 +105,32 @@ struct LanguageSelectionView: View {
                             Text("My native language")
                                 .font(.custom("HelveticaNeue-Bold", size: 34))
                                 .foregroundColor(.tsLabel)
-                            Text("Please select your native language")
+                            Text("Your native language is set to English.")
                                 .font(.custom("HelveticaNeue", size: 17))
                                 .foregroundColor(.tsSecondary)
                         }
                         .padding(.bottom, 24)
 
-                        // Native language picker
-                        TSPickerField(label: "\(nativeLanguage.flag) \(nativeLanguage.name)") {
-                            ForEach(nativeLanguages) { lang in
-                                Button {
-                                    nativeLanguage = lang
-                                } label: {
-                                    Label("\(lang.flag) \(lang.name)", systemImage: "")
-                                }
-                            }
+                        // Native language — static English chip
+                        HStack(spacing: 10) {
+                            Text(nativeLanguage.flag)
+                                .font(.system(size: 22))
+                            Text(nativeLanguage.name)
+                                .font(.custom("HelveticaNeue-Medium", size: 17))
+                                .foregroundColor(.tsLabel)
+                            Spacer()
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.tsAccent)
+                                .font(.system(size: 18))
                         }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 14)
+                        .background(Color.tsCard)
+                        .cornerRadius(12)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.tsAccent.opacity(0.5), lineWidth: 1)
+                        )
                         .padding(.bottom, 32)
 
                         // ── Learn section ─────────────────────────────
@@ -180,7 +173,7 @@ struct LanguageSelectionView: View {
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .stroke(Color.tsBorder.opacity(0.6), lineWidth: 1)
+                                .stroke(Color.tsBorder, lineWidth: 1)
                         )
                         .padding(.bottom, 20)
 
@@ -239,6 +232,12 @@ struct LanguageSelectionView: View {
                     .disabled(selectedLanguage == nil)
                     .animation(.easeInOut(duration: 0.2), value: selectedLanguage != nil)
                     .padding(.horizontal, 24)
+
+                    Button(action: onSkip) {
+                        Text("Skip")
+                            .font(.custom("HelveticaNeue", size: 15))
+                            .foregroundColor(.tsSecondary)
+                    }
 
                     RoundedRectangle(cornerRadius: 3)
                         .fill(Color.tsLabel.opacity(0.2))

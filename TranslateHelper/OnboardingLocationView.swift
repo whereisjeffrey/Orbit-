@@ -25,38 +25,27 @@ struct OnboardingLocationView: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            Color.tsBackground.ignoresSafeArea()
+            TSGradientBackground().ignoresSafeArea()
 
             VStack(spacing: 0) {
 
-                // ── Nav bar ────────────────────────────────────────────
+                // ── Nav bar with progress ──────────────────────────────
                 HStack {
                     Button(action: onBack) {
                         Image(systemName: "chevron.left")
-                            .font(.custom("HelveticaNeue-Medium", size: 22))
-                            .foregroundColor(.tsAccent)
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundColor(.tsLabel)
                     }
                     .frame(width: 40, height: 40)
 
                     Spacer()
 
-                    ZStack(alignment: .leading) {
-                        Capsule()
-                            .fill(Color.white.opacity(0.1))
-                            .frame(width: 128, height: 6)
-                        Capsule()
-                            .fill(Color.tsAccent)
-                            .frame(width: 128 * (CGFloat(step) / CGFloat(totalSteps)), height: 6)
-                    }
+                    OnboardingProgressBar(currentStep: 4, totalSteps: 8)
 
                     Spacer()
 
-                    Button(action: onSkip) {
-                        Text("Skip")
-                            .font(.custom("HelveticaNeue-Medium", size: 16))
-                            .foregroundColor(.tsAccent)
-                    }
-                    .frame(width: 40, height: 40)
+                    // Invisible spacer to balance the back button
+                    Color.clear.frame(width: 40, height: 40)
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
@@ -224,7 +213,7 @@ struct OnboardingLocationView: View {
                         }
                         onContinue()
                     }) {
-                        Text(locStore.locations.isEmpty ? "Skip for Now" : "Continue")
+                        Text("Continue")
                             .font(.custom("HelveticaNeue-Bold", size: 18))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -234,6 +223,12 @@ struct OnboardingLocationView: View {
                     }
                     .padding(.horizontal, 24)
                     .animation(.easeInOut(duration: 0.2), value: locStore.locations.isEmpty)
+
+                    Button(action: onSkip) {
+                        Text("Skip")
+                            .font(.custom("HelveticaNeue", size: 15))
+                            .foregroundColor(.tsSecondary)
+                    }
 
                     RoundedRectangle(cornerRadius: 3)
                         .fill(Color.white.opacity(0.2))

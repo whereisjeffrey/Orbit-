@@ -268,6 +268,63 @@ It should be the primary value driver for early subscriptions and beta recruitme
 - Community matching by interest/duration (from onboarding intent data)
 - Visa alerts, city-switcher, multi-LatAm expansion (ROADMAP future section above)
 
+---
+
+## Sol Intelligence Roadmap — Personalized Conversations
+
+### Phase 1 — Gemini-seeded local knowledge (building now)
+- Gemini Flash API call on onboarding completion → generates 5-7 DEEP local references
+  matched to user's city + interests (photography, remote work, nightlife, etc.)
+- Each reference includes: what it is, why it's interesting, interest connection,
+  what's nearby, 3 conversation hooks — enough depth for 3-4 exchanges per topic
+- References stored in user profile as "conversation pool"
+- Sol's system prompt reads from pool, uses 1-2 per session
+- Background refresh after each Sol session: Gemini sees conversation history,
+  generates more references based on what they actually talked about
+- Cost: <$0.01/month per user (Gemini Flash)
+
+### Phase 2 — Engagement scoring (~100 users per city)
+- Track which references generate high engagement (3+ exchanges) vs low (1 reply, topic change)
+- Tag references: high_engagement, low_engagement, user_provided
+- Sol prioritizes high-engagement references for new users with similar interests
+- User-provided facts (from Sol memory) always rank highest
+
+### Phase 3 — Community intelligence (~500 users per city)
+- Conversation pool becomes hybrid: user facts + community-validated references + Gemini fresh
+- "70 remote workers in CDMX love Café Nin in Roma Norte" → Sol recommends it to new remote workers
+- Community data is aggregated and anonymized — no individual conversations shared
+- Sol becomes the collective knowledge of every expat in that city
+- New users get day-1 personalization from community data, not just Gemini guesses
+
+### Phase 4 — Cross-city intelligence (~5,000+ total users)
+- User moving from CDMX to Medellín? Sol pre-loads Medellín references
+  weighted by what similar users (same interests, same origin city) found valuable
+- "People who loved Roma Norte in CDMX tend to love El Poblado in Medellín"
+- Pre-arrival conversation: "I see you're heading to Medellín — want me to
+  switch to Colombian Spanish and start prepping you?"
+
+---
+
+## Lightning Round Roadmap (shelved for v1.1)
+
+### Phase 1 — Database-backed cards
+- Generate 500 cards per language using Claude Sonnet (one-time, $1.35/language)
+- Auto-audit each card with a second Sonnet call (pass/fail verification)
+- Store verified cards in Firebase/local database tagged by: language, category,
+  difficulty, specific pattern
+- Lightning Round pulls from database — zero API calls at runtime, instant load
+
+### Phase 2 — Personalized hybrid (with revenue)
+- Database serves 7-8 cards per round (zero cost)
+- Claude Haiku generates 2-3 cards targeting user's specific recent mistakes ($0.0006)
+- Total cost per round: <$0.001
+- Cards from Haiku get auto-audited and added to database for future users
+
+### Phase 3 — Community card pool
+- Cards generated for User A can serve User B (same language, level, mistake category)
+- Database grows exponentially with users
+- Eventually: zero API calls needed, infinite variety from community pool
+
 ### Beta recruitment script (for reference)
 > "We're building the expat companion app for Mexico City. The keyboard alone is worth it —
 > but we're also building the best community layer for expats and we need activity.

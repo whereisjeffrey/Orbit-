@@ -28,4 +28,9 @@ enum APIConfig {
     // Anthropic (Claude) API — used for Lightning Round card generation
     static let anthropicAPIKey = "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"
     static let anthropicBaseURL = "https://api.anthropic.com/v1"
+
+    // Google Gemini Flash — conversation pool seeding (dirt cheap, <$0.01/month/user)
+    // Uses the same GCP project as TTS — enable "Generative Language API" in Cloud Console
+    static let geminiAPIKey = "AIzaSyCDB3PkYCjVedGWF2CjjOloEwmIZgIp3Q0"
+    static let geminiBaseURL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
 }

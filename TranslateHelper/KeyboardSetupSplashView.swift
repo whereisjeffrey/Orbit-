@@ -24,7 +24,10 @@ struct KeyboardSetupSplashView: View {
 
             VStack(spacing: 0) {
 
-                Spacer(minLength: 48)
+                OnboardingProgressBar(currentStep: 8, totalSteps: 8)
+                    .padding(.top, 16)
+
+                Spacer(minLength: 8)
 
                 // ── Top: Orbit logo + wordmark ────────────────────────
                 VStack(spacing: 4) {
@@ -138,10 +141,10 @@ struct KeyboardSetupSplashView: View {
                 }
                 .background(
                     RoundedRectangle(cornerRadius: cardCorner)
-                        .fill(Color.white.opacity(0.12))
+                        .fill(Color.clear)
                         .overlay(
                             RoundedRectangle(cornerRadius: cardCorner)
-                                .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                                .stroke(Color.tsBorder, lineWidth: 1)
                         )
                 )
                 .padding(.horizontal, 20)

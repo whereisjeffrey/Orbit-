@@ -80,8 +80,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         let lang = LanguageManager.shared.targetLangRequired
 
-        // Single API call — no seeding prerequisite
-        LightningRoundEngine.preGenerate(language: lang)
+        // Lightning Round shelved for v1.1 — skip pre-gen
+        // LightningRoundEngine.preGenerate(language: lang)
 
         // Give the API call time to complete (up to 30s)
         DispatchQueue.main.asyncAfter(deadline: .now() + 30) {

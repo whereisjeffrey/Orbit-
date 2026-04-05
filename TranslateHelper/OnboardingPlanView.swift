@@ -12,23 +12,22 @@ struct OnboardingPlanView: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            Color.tsBackground.ignoresSafeArea()
+            TSGradientBackground().ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // ── Nav ───────────────────────────────────────────────
+                // ── Nav bar with progress ──────────────────────────────
                 HStack {
                     Button(action: onBack) {
                         Image(systemName: "chevron.left")
-                            .font(.custom("HelveticaNeue-Medium", size: 22))
-                            .foregroundColor(.tsAccent)
-                            .frame(width: 40, height: 40)
-                            .background(Color.tsLabel.opacity(0.08))
-                            .clipShape(Circle())
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundColor(.tsLabel)
                     }
+                    .frame(width: 40, height: 40)
+
                     Spacer()
-                    Text("Choose Your Plan")
-                        .font(.custom("HelveticaNeue-Bold", size: 18))
-                        .foregroundColor(.tsLabel)
+
+                    OnboardingProgressBar(currentStep: 7, totalSteps: 8)
+
                     Spacer()
                     Spacer().frame(width: 40)
                 }

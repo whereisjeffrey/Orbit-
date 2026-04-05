@@ -33,12 +33,7 @@ struct OnboardingView: View {
             LevelAssessmentView(
                 isSkippable: true,
                 onComplete: {
-                    // Fire Lightning Round pre-gen as soon as they set their level.
-                    // By the time they finish onboarding (~60s), cards are on disk.
-                    let lang = LanguageManager.shared.targetLangRequired
-                    DispatchQueue.global(qos: .userInitiated).async {
-                        LightningRoundEngine.preGenerate(language: lang)
-                    }
+                    // Lightning Round pre-gen disabled (shelved for v1.1)
                     step = 3
                 }
             )
@@ -87,7 +82,12 @@ struct OnboardingView: View {
         case 6:
             OnboardingInterestsView(
                 onBack: { step = 5 },
-                onContinue: { step = 7 }
+                onContinue: {
+                    // Fire Gemini conversation pool seed in background.
+                    // By the time they finish onboarding, Sol has deep local references.
+                    seedConversationPool()
+                    step = 7
+                }
             )
         case 7:
             OnboardingPlanView(
@@ -106,6 +106,26 @@ struct OnboardingView: View {
             )
         default:
             EmptyView()
+        }
+    }
+
+    private func seedConversationPool() {
+        // Read interests the user just saved
+        let interestsRaw = UserDefaults.standard.string(forKey: "user_interests") ?? ""
+        let interests = interestsRaw.split(separator: ",").map(String.init)
+        guard !interests.isEmpty else { return }
+
+        // Read their primary location from UserLocationsStore (free-text city search)
+        let cityName = UserLocationsStore.shared.locations.first?.displayName ?? "their city"
+
+        // Read goals (Work, Flirty, Family, etc.) — shapes the angle of references
+        let goalsRaw = UserDefaults.standard.string(forKey: "user_goals") ?? ""
+        let goals = goalsRaw.split(separator: ",").map(String.init)
+
+        DispatchQueue.global(qos: .utility).async {
+            ConversationPoolManager.shared.seedPool(city: cityName, interests: interests, goals: goals) { success in
+                NSLog("🌐 [Onboarding] Conversation pool seed: \(success ? "success" : "failed")")
+            }
         }
     }
 

@@ -12,6 +12,7 @@ struct OnboardingGoalsView: View {
     let onSkip: () -> Void
     let onContinue: () -> Void
 
+    @AppStorage("user_goals") private var savedGoals = ""
     @State private var selectedGoals: Set<String> = []
 
     let goals: [(String, String, Color)] = [
@@ -25,38 +26,26 @@ struct OnboardingGoalsView: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            Color.tsBackground.ignoresSafeArea()
+            TSGradientBackground().ignoresSafeArea()
 
             VStack(spacing: 0) {
 
-                // ── Nav bar ────────────────────────────────────────────
+                // ── Nav bar with progress ──────────────────────────────
                 HStack {
                     Button(action: onBack) {
                         Image(systemName: "chevron.left")
-                            .font(.custom("HelveticaNeue-Medium", size: 22))
-                            .foregroundColor(.tsAccent)
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundColor(.tsLabel)
                     }
                     .frame(width: 40, height: 40)
 
                     Spacer()
 
-                    ZStack(alignment: .leading) {
-                        Capsule()
-                            .fill(Color.white.opacity(0.1))
-                            .frame(width: 128, height: 6)
-                        Capsule()
-                            .fill(Color.tsAccent)
-                            .frame(width: 128 * (CGFloat(step) / CGFloat(totalSteps)), height: 6)
-                    }
+                    OnboardingProgressBar(currentStep: 3, totalSteps: 8)
 
                     Spacer()
 
-                    Button(action: onSkip) {
-                        Text("Skip")
-                            .font(.custom("HelveticaNeue-Medium", size: 16))
-                            .foregroundColor(.tsAccent)
-                    }
-                    .frame(width: 40, height: 40)
+                    Color.clear.frame(width: 40, height: 40)
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
@@ -103,7 +92,7 @@ struct OnboardingGoalsView: View {
                                     .cornerRadius(20)
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 20)
-                                            .stroke(isSelected ? Color.tsAccent : Color.clear, lineWidth: 2)
+                                            .stroke(isSelected ? Color.tsAccent : Color.tsBorder, lineWidth: isSelected ? 2 : 1)
                                     )
                                 }
                                 .buttonStyle(ScaleButtonStyle())
@@ -125,7 +114,10 @@ struct OnboardingGoalsView: View {
                 .allowsHitTesting(false)
 
                 VStack(spacing: 16) {
-                    Button(action: onContinue) {
+                    Button {
+                        savedGoals = selectedGoals.joined(separator: ",")
+                        onContinue()
+                    } label: {
                         Text("Continue")
                             .font(.custom("HelveticaNeue-Bold", size: 18))
                             .foregroundColor(.white)
@@ -135,6 +127,15 @@ struct OnboardingGoalsView: View {
                             .clipShape(Capsule())
                     }
                     .padding(.horizontal, 24)
+
+                    Button {
+                        savedGoals = ""
+                        onSkip()
+                    } label: {
+                        Text("Skip")
+                            .font(.custom("HelveticaNeue", size: 15))
+                            .foregroundColor(.tsSecondary)
+                    }
 
                     RoundedRectangle(cornerRadius: 3)
                         .fill(Color.white.opacity(0.2))

@@ -51,17 +51,25 @@ struct OnboardingStatusView: View {
         ZStack { TSGradientBackground()
             VStack(spacing: 0) {
 
-                // ── Back ───────────────────────────────────────────
+                // ── Nav bar with progress ──────────────────────────────
                 HStack {
                     Button(action: onBack) {
                         Image(systemName: "chevron.left")
-                            .font(.custom("HelveticaNeue-Medium", size: 17))
+                            .font(.system(size: 17, weight: .semibold))
                             .foregroundColor(.tsLabel)
                     }
+                    .frame(width: 40, height: 40)
+
                     Spacer()
+
+                    OnboardingProgressBar(currentStep: 5, totalSteps: 8)
+
+                    Spacer()
+
+                    Color.clear.frame(width: 40, height: 40)
                 }
-                .padding(.horizontal, 24)
-                .padding(.top, 16)
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 32) {
@@ -159,7 +167,7 @@ struct StatusOptionRow: View {
                     .fill(isSelected ? Color.tsAccent.opacity(0.08) : Color.tsCard)
                     .overlay(
                         RoundedRectangle(cornerRadius: 16)
-                            .stroke(isSelected ? Color.tsAccent : Color.clear, lineWidth: 1.5)
+                            .stroke(isSelected ? Color.tsAccent : Color.tsBorder, lineWidth: isSelected ? 2 : 1)
                     )
             )
         }

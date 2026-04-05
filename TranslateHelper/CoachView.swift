@@ -392,11 +392,7 @@ struct CoachPopulatedView: View {
             NSLog("⚡ [DEBUG] Force re-seeded all 8 categories for \(lang)")
             #endif
 
-            // Pre-generate Lightning Round — high priority, user may tap it soon
-            let roundLang = LanguageManager.shared.targetLangRequired
-            DispatchQueue.global(qos: .userInitiated).async {
-                LightningRoundEngine.preGenerate(language: roundLang)
-            }
+            // Lightning Round pre-gen disabled (shelved for v1.1)
         }
     }
 
@@ -812,25 +808,44 @@ extension CoachPopulatedView {
             let breakdown = profile.categoryBreakdown
 
             if breakdown.isEmpty {
-                // No mistakes yet
-                HStack(spacing: 12) {
-                    Image(systemName: "checkmark.circle")
-                        .font(.system(size: 20))
-                        .foregroundColor(Color(hex: "#34C759"))
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("No patterns flagged yet")
+                // All 8 categories at zero — shows what will be tracked
+                ForEach(MistakeCategory.allCases, id: \.self) { category in
+                    HStack(spacing: 10) {
+                        Text(category.icon)
+                            .font(.system(size: 14))
+                        Text(category.displayName)
                             .font(.custom("HelveticaNeue-Medium", size: 14))
                             .foregroundColor(.tsLabel)
-                        Text("Keep using the keyboard and practicing with Sol — I'll track your mistakes automatically.")
-                            .font(.custom("HelveticaNeue", size: 13))
-                            .foregroundColor(.tsSecondary)
-                            .lineSpacing(2)
+                        Spacer()
+                        Text("—")
+                            .font(.custom("HelveticaNeue", size: 12))
+                            .foregroundColor(.tsSecondary.opacity(0.4))
                     }
+                    .padding(14)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.tsCard.opacity(0.5))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.tsBorder.opacity(0.15), lineWidth: 0.5)
+                    )
                 }
-                .padding(16)
+
+                // Hint card
+                HStack(spacing: 10) {
+                    Image(systemName: "target")
+                        .font(.system(size: 16))
+                        .foregroundColor(.tsAccent)
+                    Text("Start using the keyboard or talk with Sol to begin tracking your target areas.")
+                        .font(.custom("HelveticaNeue", size: 13))
+                        .foregroundColor(.tsSecondary)
+                        .lineSpacing(2)
+                }
+                .padding(14)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color(hex: "#34C759").opacity(0.06))
+                        .fill(Color.tsAccent.opacity(0.06))
                 )
             } else {
                 // Expandable category sub-cards
@@ -2019,10 +2034,17 @@ struct PracticeSessionView: View {
                     Spacer()
 
                     // Settings gear
-                    Button { showSettings = true } label: {
+                    Button {
+                        showSettings = true
+                        // Dismiss the coaching hint — they found settings
+                        if showSettingsHint {
+                            showSettingsHint = false
+                            settingsHintShown = true
+                        }
+                    } label: {
                         Image(systemName: "gearshape.fill")
                             .font(.system(size: 15))
-                            .foregroundColor(.tsSecondary)
+                            .foregroundColor(.tsAccent)
                             .padding(6)
                             .background(Color.tsCard)
                             .clipShape(Circle())
@@ -3405,6 +3427,30 @@ struct PracticeSessionView: View {
                 tone: practiceTone
             )
             NSLog("🎯 [Practice] session saved: \(sessionSeconds)s, \(totalMessagesThisSession) msgs")
+
+            // Check if it's time for a Gemini conversation pool refresh
+            let shouldRefresh = ConversationPoolManager.shared.incrementSessionCount()
+            if shouldRefresh {
+                let cityName = UserLocationsStore.shared.locations.first?.displayName ?? "their city"
+                let interestsRaw = UserDefaults.standard.string(forKey: "user_interests") ?? ""
+                let interests = interestsRaw.split(separator: ",").map(String.init)
+
+                // Build a brief summary of this session for Gemini
+                let summary = messages
+                    .prefix(20)
+                    .map { "\($0.role == .sol ? "Sol" : "User"): \($0.text)" }
+                    .joined(separator: "\n")
+
+                DispatchQueue.global(qos: .utility).async {
+                    ConversationPoolManager.shared.refreshPool(
+                        city: cityName,
+                        interests: interests,
+                        recentConversationSummary: summary
+                    ) { success in
+                        NSLog("🌐 [ConvPool] Post-session refresh: \(success ? "success" : "skipped")")
+                    }
+                }
+            }
         }
         dismiss()
     }
@@ -3578,9 +3624,14 @@ struct PracticeSessionView: View {
             }
         }
 
-        // Resolve city for every Sol response — not just the first topic
-        let fetchCityId = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "selected_city_id") ?? ""
-        let fetchCity = Self.resolveCityName(fetchCityId)
+        // Resolve city — prefer UserLocationsStore (free-text), fall back to selected_city_id
+        let fetchCity: String = {
+            if let loc = UserLocationsStore.shared.locations.first {
+                return loc.displayName
+            }
+            let cityId = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "selected_city_id") ?? ""
+            return Self.resolveCityName(cityId)
+        }()
 
         conversationService.getSolResponse(conversationHistory: history, userCity: fetchCity, targetLanguage: targetLang, tone: practiceTone) { [self] response in
             isFetchingSolResponse2 = false
@@ -3626,6 +3677,17 @@ struct PracticeSessionView: View {
                     nativeCorrection: nativeVersion,
                     notes: sol.nativeCorrectionNotes,
                     language: targetLang
+                )
+            }
+
+            // Fire background Gemini enrichment for the NEXT turn.
+            // Sol already responded — this just pre-loads deeper knowledge.
+            let enrichHistory = history.suffix(4)
+            let enrichCity = fetchCity
+            DispatchQueue.global(qos: .utility).async {
+                ConversationPoolManager.shared.enrichFromConversation(
+                    city: enrichCity,
+                    recentMessages: enrichHistory.map { ($0.role, $0.text) }
                 )
             }
 

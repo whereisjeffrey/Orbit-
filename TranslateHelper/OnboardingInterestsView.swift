@@ -36,13 +36,19 @@ struct OnboardingInterestsView: View {
         ZStack { TSGradientBackground()
             VStack(spacing: 0) {
 
-                // ── Back ───────────────────────────────────────────
+                // ── Nav bar with progress ──────────────────────────────
                 HStack {
                     Button(action: onBack) {
                         Image(systemName: "chevron.left")
-                            .font(.custom("HelveticaNeue-Medium", size: 17))
+                            .font(.system(size: 17, weight: .semibold))
                             .foregroundColor(.tsLabel)
                     }
+                    .frame(width: 40, height: 40)
+
+                    Spacer()
+
+                    OnboardingProgressBar(currentStep: 6, totalSteps: 8)
+
                     Spacer()
                     if !selected.isEmpty {
                         Text("\(selected.count) selected")
@@ -137,7 +143,7 @@ struct InterestTile: View {
                     .fill(isSelected ? Color.tsAccent.opacity(0.08) : Color.tsCard)
                     .overlay(
                         RoundedRectangle(cornerRadius: 16)
-                            .stroke(isSelected ? Color.tsAccent : Color.tsBorder.opacity(0.5), lineWidth: isSelected ? 1.5 : 1)
+                            .stroke(isSelected ? Color.tsAccent : Color.tsBorder, lineWidth: isSelected ? 2 : 1)
                     )
             )
         }

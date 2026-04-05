@@ -109,36 +109,67 @@ struct LevelAssessmentView: View {
         LanguageManager.shared.targetLangName ?? "your target language"
     }
 
+    /// Primary colour of the target language's flag — used for subtle glow behind emoji
+    private var flagGlowColor: Color {
+        let code = LanguageManager.shared.targetLangRequired
+        let colors: [String: String] = [
+            "es": "#C60B1E",  // red
+            "pt": "#009739",  // green
+            "fr": "#002395",  // blue
+            "de": "#DD0000",  // red
+            "it": "#008C45",  // green
+            "ja": "#BC002D",  // red
+            "ko": "#003478",  // blue
+            "zh": "#DE2910",  // red
+            "ar": "#007A3D",  // green
+            "nl": "#FF4F00",  // orange
+            "en": "#B22234",  // red
+            "ru": "#0039A6",  // blue
+            "pl": "#DC143C",  // red
+            "tr": "#E30A17",  // red
+            "sv": "#006AA7",  // blue
+            "da": "#C60C30",  // red
+            "fi": "#003580",  // blue
+            "el": "#0D5EAF",  // blue
+            "cs": "#D7141A",  // red
+            "ro": "#002B7F",  // blue
+            "hu": "#436F4D",  // green
+            "uk": "#005BBB",  // blue
+            "id": "#FF0000",  // red
+            "vi": "#DA251D",  // red
+            "hi": "#FF9933",  // saffron
+            "he": "#0038B8",  // blue
+            "th": "#A51931",  // red
+        ]
+        return Color(hex: colors[code] ?? "#007AFF")
+    }
+
     var body: some View {
         ZStack {
             TSGradientBackground().ignoresSafeArea()
 
             VStack(spacing: 0) {
 
-                // Skip button (only in onboarding)
-                if isSkippable {
-                    HStack {
-                        Spacer()
-                        Button {
-                            onComplete()
-                            dismiss()
-                        } label: {
-                            Text("Skip")
-                                .font(.custom("HelveticaNeue-Medium", size: 16))
-                                .foregroundColor(.tsAccent)
-                        }
-                        .padding(.trailing, 20)
-                        .padding(.top, 12)
-                    }
+                // ── Nav bar with progress ──────────────────────────────
+                HStack {
+                    Color.clear.frame(width: 40, height: 40)
+                    Spacer()
+                    OnboardingProgressBar(currentStep: 2, totalSteps: 8)
+                    Spacer()
+                    Color.clear.frame(width: 40, height: 40)
                 }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
 
                 Spacer(minLength: 0)
-                    .frame(maxHeight: 40)
+                    .frame(maxHeight: 24)
 
                 // Header
                 VStack(spacing: 10) {
                     Text(LanguageManager.shared.targetLangFlag ?? "🌐")
                         .font(.system(size: 86))
+                        .shadow(color: flagGlowColor.opacity(0.4), radius: 24, x: 0, y: 0)
+                        .shadow(color: flagGlowColor.opacity(0.2), radius: 48, x: 0, y: 0)
 
                     Text("How's your \(targetLangName)?")
                         .font(.custom("HelveticaNeue-Bold", size: 26))
@@ -162,12 +193,6 @@ struct LevelAssessmentView: View {
                             withAnimation(.easeInOut(duration: 0.15)) {
                                 selectedLevel = level
                             }
-                            // Save and dismiss after brief pause
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                level.save()
-                                onComplete()
-                                dismiss()
-                            }
                         } label: {
                             HStack(spacing: 14) {
                                 Text(level.icon)
@@ -176,26 +201,26 @@ struct LevelAssessmentView: View {
 
                                 Text(level.label)
                                     .font(.custom("HelveticaNeue-Medium", size: 15))
-                                    .foregroundColor(isSelected ? .white : .tsLabel)
+                                    .foregroundColor(.tsLabel)
                                     .multilineTextAlignment(.leading)
 
-                                Spacer()
+                                Spacer(minLength: 32)
 
-                                if isSelected {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .font(.system(size: 20))
-                                        .foregroundColor(.white)
-                                }
+                                // Always reserve space for the checkmark so text doesn't shift
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.system(size: 20))
+                                    .foregroundColor(.tsAccent)
+                                    .opacity(isSelected ? 1 : 0)
                             }
-                            .padding(.horizontal, 18)
-                            .padding(.vertical, 16)
+                            .padding(.horizontal, 16)
+                            .frame(height: 56)
                             .background(
                                 RoundedRectangle(cornerRadius: 14)
-                                    .fill(isSelected ? Color.tsAccent : Color.tsCard)
+                                    .fill(Color.tsCard)
                             )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 14)
-                                    .stroke(isSelected ? Color.clear : Color.tsBorder, lineWidth: 1)
+                                    .stroke(isSelected ? Color.tsAccent : Color.tsBorder, lineWidth: isSelected ? 2 : 1)
                             )
                         }
                     }
@@ -203,6 +228,36 @@ struct LevelAssessmentView: View {
                 .padding(.horizontal, 20)
 
                 Spacer()
+
+                // ── CTA ────────────────────────────────────────────
+                VStack(spacing: 16) {
+                    Button {
+                        selectedLevel?.save()
+                        onComplete()
+                        dismiss()
+                    } label: {
+                        Text("Continue")
+                            .font(.custom("HelveticaNeue-Medium", size: 16))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 52)
+                            .background(Capsule().fill(selectedLevel != nil ? Color.tsAccent : Color.tsSecondary.opacity(0.3)))
+                    }
+                    .disabled(selectedLevel == nil)
+
+                    if isSkippable {
+                        Button {
+                            onComplete()
+                            dismiss()
+                        } label: {
+                            Text("Skip")
+                                .font(.custom("HelveticaNeue", size: 15))
+                                .foregroundColor(.tsSecondary)
+                        }
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 40)
             }
         }
     }

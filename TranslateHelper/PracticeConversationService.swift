@@ -251,6 +251,21 @@ class PracticeConversationService {
 
         let memoryBlock = SolMemoryStore.shared.buildContextBlock()
         let callbackHint = SolMemoryStore.shared.buildCallbackSuggestion() ?? ""
+        let poolBlock = ConversationPoolManager.shared.buildPoolContextBlock()
+        let enrichmentBlock: String = {
+            if let enrichment = ConversationPoolManager.shared.consumeEnrichment() {
+                return """
+
+                LIVE KNOWLEDGE — Fresh background info on what the user just asked about:
+                \(enrichment)
+
+                Use this naturally in your NEXT response — weave in 1-2 of these facts to \
+                show depth. Don't dump everything at once. Don't say "I looked it up" — \
+                just know it, like a knowledgeable friend would.
+                """
+            }
+            return ""
+        }()
 
         let systemPrompt = """
         You are Sol, a warm and fun language coach having a conversation \
@@ -259,6 +274,8 @@ class PracticeConversationService {
         \(toneBlock) \
         \(memoryBlock) \
         \(callbackHint) \
+        \(poolBlock) \
+        \(enrichmentBlock) \
         \
         CRITICAL — HOW YOU SPEAK: \
         - Speak like a REAL person from \(userCity) — use actual slang, contractions, \
@@ -327,11 +344,12 @@ class PracticeConversationService {
           "response": "your response in \(langName) — speak like a real local", \
           "translation": "English translation of your response", \
           "translation_notes": "1 brief English note about a word/phrase you used (optional, null if none)", \
-          "native_correction": "ONLY the specific part the user got wrong — format: 'Instead of [what they said], try [correct version]'. Do NOT repeat the entire sentence. If multiple errors, list each one separately. null if their \(langName) was fine.", \
-          "native_correction_notes": "English explanation of WHY — the grammar rule, the pattern, the nuance. Can be multiple sentences. Use \(langName) words inline. null if no correction.", \
+          "native_correction": "How a native speaker would say what the user just said — ALWAYS provide this, even if the user's message was grammatically correct. If they made errors, fix them. If their message was fine but a local would phrase it differently (more natural contractions, slang, word order), show that version. Format: the full corrected/natural sentence. Only null if the user spoke perfect native-level \(langName) with natural phrasing.", \
+          "native_correction_notes": "English explanation — what changed and why. If it was an error: the grammar rule. If it was a naturalness upgrade: why the native phrasing sounds better. Use \(langName) words inline. null only if native_correction is null.", \
           "slang_notes": [{"phrase": "the \(langName) slang/expression", "meaning": "English meaning", \
             "context": "English explanation of when/where people use this — be specific to the city/region"}] or [] if none, \
-          "user_facts": ["any personal facts the user revealed in their last message — e.g. 'Looking for an apartment in Condesa', 'Works as a designer', 'Has a date on Friday'. Only include NEW information, not things you already know. Empty array if none."] or [] \
+          "user_facts": ["any personal facts the user revealed in their last message — e.g. 'Looking for an apartment in Condesa', 'Works as a designer', 'Has a date on Friday'. Only include NEW information, not things you already know. Empty array if none."] or [], \
+          "interest_refinements": [{"interest": "category like wellness/food/outdoors", "likes": ["specific things they expressed liking"], "dislikes": ["specific things they rejected or showed disinterest in"]}] or [] \
         }
         """
 
@@ -396,6 +414,21 @@ class PracticeConversationService {
             if let userFacts = parsed["user_facts"] as? [String] {
                 for fact in userFacts where !fact.isEmpty {
                     SolMemoryStore.shared.remember(fact, category: "personal")
+                }
+            }
+
+            // Extract interest refinements (likes/dislikes inferred from conversation)
+            if let refines = parsed["interest_refinements"] as? [[String: Any]] {
+                for r in refines {
+                    if let interest = r["interest"] as? String {
+                        let likes = r["likes"] as? [String] ?? []
+                        let dislikes = r["dislikes"] as? [String] ?? []
+                        if !likes.isEmpty || !dislikes.isEmpty {
+                            ConversationPoolManager.shared.addRefinement(
+                                interest: interest, likes: likes, dislikes: dislikes
+                            )
+                        }
+                    }
                 }
             }
 
