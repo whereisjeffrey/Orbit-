@@ -315,30 +315,8 @@ struct CoachPopulatedView: View {
                     .padding(.horizontal, 20)
                     .padding(.bottom, 20)
 
-                // ── 4. Target Areas + Lightning Round ───────────────
-                targetAreas
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 20)
-                    .onAppear {
-                        let lang = LanguageManager.shared.targetLangRequired
-
-                        // If no mistakes exist for the current language, seed starter mistakes
-                        // (works for all 39 languages via GPT)
-                        if !MistakeProfileStore.shared.hasMistakes(for: lang) {
-                            MistakeProfileStore.shared.seedStarterMistakes(language: lang) {
-                                refreshWeeklyData()
-                            }
-                        }
-
-                        #if DEBUG
-                        // Additional debug seeds if still empty after starter
-                        if MistakeProfileStore.shared.categoryBreakdown.isEmpty {
-                            MistakeProfileStore.shared.seedTestData(language: lang)
-                        }
-                        #endif
-                        // Cache weekly data once (not per frame)
-                        refreshWeeklyData()
-                    }
+                // Target Areas + Lightning Round — shelved for v1.1
+                // Kept in code but hidden from UI. Mistake seeding disabled to save API calls.
 
                 // Milestones removed — lives in weekly/monthly reports now
                 // Talk card removed — pronunciation drills covered by Lightning Round
@@ -988,34 +966,9 @@ extension CoachPopulatedView {
                 }
             }
 
-            // Lightning Round button
-            Button {
-                if SelfReportedLevel.hasCompleted {
-                    showLightningRound = true
-                } else {
-                    assessmentDestination = "lightning"
-                    showLevelAssessment = true
-                }
-            } label: {
-                HStack(spacing: 10) {
-                    // White circle with yellow bolt
-                    ZStack {
-                        Circle()
-                            .fill(Color.white.opacity(0.25))
-                            .frame(width: 28, height: 28)
-                        Image(systemName: "bolt.fill")
-                            .font(.system(size: 14))
-                            .foregroundColor(Color(hex: "#FFD60A"))
-                    }
-                    Text("Lightning Round")
-                        .font(.custom("HelveticaNeue-Medium", size: 16))
-                        .foregroundColor(.white)
-                }
-                .frame(maxWidth: .infinity)
-                .frame(height: 52)
-                .background(Capsule().fill(Color.tsAccent))
-            }
-            .padding(.top, 4)
+            // Lightning Round — shelved for v1.1 (database-backed version)
+            // Button and fullScreenCover kept in code but hidden from UI.
+            // To re-enable: uncomment this block.
         }
         .padding(20)
         .background(

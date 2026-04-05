@@ -45,12 +45,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // the user hasn't picked a language yet. Pre-generating for "en" is wasted work
         // and the cards get rejected when the user picks their actual language.
         // For new users, the onboarding pre-gen (step 2) handles this instead.
-        if LanguageManager.shared.hasTargetLanguage {
-            // Low priority + 10s delay — don't compete with keyboard's first translation
-            DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 10) {
-                LightningRoundEngine.preGenerate(language: roundLang)
-            }
-        }
+        // Lightning Round pre-gen — DISABLED for v1 (shelved until database-backed version)
+        // if LanguageManager.shared.hasTargetLanguage {
+        //     DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 10) {
+        //         LightningRoundEngine.preGenerate(language: roundLang)
+        //     }
+        // }
 
         // Process pending keyboard corrections separately — enriches mistake profile
         // for FUTURE rounds, but doesn't block the current pre-gen.
@@ -127,7 +127,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
             appDelegate.scheduleTTSCacheTask()
             appDelegate.scheduleMistakeIngestTask()
-            appDelegate.scheduleLightningRoundTask()
+            // appDelegate.scheduleLightningRoundTask()  // Shelved for v1.1
         }
     }
 }

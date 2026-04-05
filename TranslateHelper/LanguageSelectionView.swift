@@ -24,8 +24,9 @@ struct Language: Identifiable, Hashable, Codable {
 // Ordered by most studied/popular among English speakers
 // (based on MLA, Duolingo, and university enrollment data).
 
+// MVP: 10 languages — the most studied by English speakers with the best AI support.
+// All 39 remain in LanguageManager/keyboard for future expansion.
 let allLanguages: [Language] = [
-    // Top tier — most studied by English speakers
     Language(flag: "🇪🇸", name: "Spanish",    code: "es"),
     Language(flag: "🇫🇷", name: "French",     code: "fr"),
     Language(flag: "🇮🇹", name: "Italian",    code: "it"),
@@ -35,40 +36,7 @@ let allLanguages: [Language] = [
     Language(flag: "🇨🇳", name: "Chinese",    code: "zh"),
     Language(flag: "🇰🇷", name: "Korean",     code: "ko"),
     Language(flag: "🇸🇦", name: "Arabic",     code: "ar"),
-    Language(flag: "🇷🇺", name: "Russian",    code: "ru"),
-    // High demand — growing fast among English learners
-    Language(flag: "🇮🇳", name: "Hindi",      code: "hi"),
-    Language(flag: "🇹🇷", name: "Turkish",    code: "tr"),
     Language(flag: "🇳🇱", name: "Dutch",      code: "nl"),
-    Language(flag: "🇵🇱", name: "Polish",     code: "pl"),
-    Language(flag: "🇬🇷", name: "Greek",      code: "el"),
-    Language(flag: "🇮🇱", name: "Hebrew",     code: "he"),
-    Language(flag: "🇸🇪", name: "Swedish",    code: "sv"),
-    Language(flag: "🇻🇳", name: "Vietnamese", code: "vi"),
-    Language(flag: "🇹🇭", name: "Thai",       code: "th"),
-    Language(flag: "🇮🇩", name: "Indonesian", code: "id"),
-    // Moderate demand
-    Language(flag: "🇺🇦", name: "Ukrainian",  code: "uk"),
-    Language(flag: "🇳🇴", name: "Norwegian",  code: "no"),
-    Language(flag: "🇩🇰", name: "Danish",     code: "da"),
-    Language(flag: "🇫🇮", name: "Finnish",    code: "fi"),
-    Language(flag: "🇷🇴", name: "Romanian",   code: "ro"),
-    Language(flag: "🇭🇺", name: "Hungarian",  code: "hu"),
-    Language(flag: "🇨🇿", name: "Czech",      code: "cs"),
-    Language(flag: "🇮🇷", name: "Persian",    code: "fa"),
-    Language(flag: "🇵🇭", name: "Filipino",   code: "tl"),
-    Language(flag: "🇰🇪", name: "Swahili",    code: "sw"),
-    // Niche but supported
-    Language(flag: "🇲🇾", name: "Malay",      code: "ms"),
-    Language(flag: "🇧🇬", name: "Bulgarian",  code: "bg"),
-    Language(flag: "🇭🇷", name: "Croatian",   code: "hr"),
-    Language(flag: "🇸🇰", name: "Slovak",     code: "sk"),
-    Language(flag: "🇧🇩", name: "Bengali",    code: "bn"),
-    Language(flag: "🇵🇰", name: "Urdu",       code: "ur"),
-    Language(flag: "🇮🇳", name: "Tamil",      code: "ta"),
-    Language(flag: "🇿🇦", name: "Afrikaans",  code: "af"),
-    Language(flag: "🇪🇸", name: "Catalan",    code: "ca"),
-    Language(flag: "🇺🇸", name: "English",    code: "en"),
 ]
 
 // Native language picker — same full catalogue so anyone can pick their mother tongue
