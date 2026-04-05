@@ -14,59 +14,27 @@ struct OnboardingView: View {
     var body: some View {
         switch step {
         case 1:
+            OnboardingNameView(
+                onContinue: { step = 2 }
+            )
+        case 2:
             LanguageSelectionView(
-                step: 1, totalSteps: 5,
+                step: 2, totalSteps: 5,
                 selectedLanguage: $selectedLanguage,
-                onBack: {},
-                onSkip: { step = 2 },
+                onBack: { step = 1 },
+                onSkip: { step = 3 },
                 onContinue: {
-                    // Write language to App Group IMMEDIATELY — before anything else.
-                    // This ensures talkswitch_target_lang is set even if onboarding is abandoned.
                     if let lang = selectedLanguage {
                         LanguageManager.shared.setTargetLang(lang.code)
                     }
-                    step = 2
-                }
-            )
-        case 2:
-            // Self-assessment — skippable, one tap
-            LevelAssessmentView(
-                isSkippable: true,
-                onComplete: {
-                    // Lightning Round pre-gen disabled (shelved for v1.1)
                     step = 3
                 }
             )
         case 3:
-            OnboardingGoalsView(
-                step: 3, totalSteps: 6,
-                onBack: { step = 2 },
-                onSkip: { step = 4 },
-                onContinue: { step = 4 }
+            LevelAssessmentView(
+                isSkippable: true,
+                onComplete: { step = 4 }
             )
-            .background(
-                // Hidden text field to pre-warm the iOS keyboard process.
-                // First keyboard appearance takes 0.5-1.5s — doing it here means
-                // the city search field on step 3 opens instantly.
-                KeyboardPreWarmer(triggered: $keyboardPreWarmed)
-                    .frame(width: 0, height: 0)
-                    .opacity(0)
-            )
-            .onAppear {
-                // Pre-warm keyboard on this step so step 3's search field is instant
-                if !keyboardPreWarmed {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        keyboardPreWarmed = true
-                    }
-                }
-
-                // Start WhisperKit download in background while user continues onboarding.
-                // By the time they finish setup + add the keyboard, the model is ready.
-                if !preloadStarted {
-                    preloadStarted = true
-                    DictateViewController.preloadWhisperKit()
-                }
-            }
         case 4:
             OnboardingLocationView(
                 step: 4, totalSteps: 6,
@@ -74,6 +42,22 @@ struct OnboardingView: View {
                 onSkip: { step = 5 },
                 onContinue: { step = 5 }
             )
+            .background(
+                KeyboardPreWarmer(triggered: $keyboardPreWarmed)
+                    .frame(width: 0, height: 0)
+                    .opacity(0)
+            )
+            .onAppear {
+                if !keyboardPreWarmed {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        keyboardPreWarmed = true
+                    }
+                }
+                if !preloadStarted {
+                    preloadStarted = true
+                    DictateViewController.preloadWhisperKit()
+                }
+            }
         case 5:
             OnboardingStatusView(
                 onBack: { step = 4 },
@@ -83,8 +67,6 @@ struct OnboardingView: View {
             OnboardingInterestsView(
                 onBack: { step = 5 },
                 onContinue: {
-                    // Fire Gemini conversation pool seed in background.
-                    // By the time they finish onboarding, Sol has deep local references.
                     seedConversationPool()
                     step = 7
                 }
@@ -93,7 +75,7 @@ struct OnboardingView: View {
             OnboardingPlanView(
                 onBack: { step = 6 },
                 onFreePlan: { step = 9 },
-                onProTrial: { step = 9 }  // paywall hidden for now — re-enable by routing to step 8
+                onProTrial: { step = 9 }
             )
         case 8:
             OnboardingPaywallView(
@@ -110,20 +92,14 @@ struct OnboardingView: View {
     }
 
     private func seedConversationPool() {
-        // Read interests the user just saved
         let interestsRaw = UserDefaults.standard.string(forKey: "user_interests") ?? ""
         let interests = interestsRaw.split(separator: ",").map(String.init)
         guard !interests.isEmpty else { return }
 
-        // Read their primary location from UserLocationsStore (free-text city search)
         let cityName = UserLocationsStore.shared.locations.first?.displayName ?? "their city"
 
-        // Read goals (Work, Flirty, Family, etc.) — shapes the angle of references
-        let goalsRaw = UserDefaults.standard.string(forKey: "user_goals") ?? ""
-        let goals = goalsRaw.split(separator: ",").map(String.init)
-
         DispatchQueue.global(qos: .utility).async {
-            ConversationPoolManager.shared.seedPool(city: cityName, interests: interests, goals: goals) { success in
+            ConversationPoolManager.shared.seedPool(city: cityName, interests: interests) { success in
                 NSLog("🌐 [Onboarding] Conversation pool seed: \(success ? "success" : "failed")")
             }
         }
@@ -132,11 +108,8 @@ struct OnboardingView: View {
     private func completeOnboarding() {
         UserDefaults.standard.set(true, forKey: "onboarding_complete")
 
-        // Write language via LanguageManager (may already be set from step 1,
-        // but we write again in case they changed it during onboarding)
         if let lang = selectedLanguage {
             LanguageManager.shared.setTargetLang(lang.code)
-            // Also write talkswitch_lang for keyboard's active language
             UserDefaults(suiteName: "group.com.jeff.translatehelper")?.set(lang.code, forKey: "talkswitch_lang")
             UserDefaults(suiteName: "group.com.jeff.translatehelper")?.synchronize()
         }
@@ -144,9 +117,6 @@ struct OnboardingView: View {
 }
 
 // MARK: - Keyboard Pre-Warmer
-// A hidden UITextField that briefly becomes first responder to force iOS
-// to load the keyboard process. This eliminates the 1-1.5s delay when the
-// user first taps a text field (like the city search on step 3).
 
 struct KeyboardPreWarmer: UIViewRepresentable {
     @Binding var triggered: Bool
@@ -160,7 +130,6 @@ struct KeyboardPreWarmer: UIViewRepresentable {
 
     func updateUIView(_ uiView: UITextField, context: Context) {
         if triggered && !uiView.isFirstResponder {
-            // Briefly grab focus to warm the keyboard, then resign
             uiView.becomeFirstResponder()
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 uiView.resignFirstResponder()

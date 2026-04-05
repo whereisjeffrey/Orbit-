@@ -68,7 +68,7 @@ struct OnboardingInterestsView: View {
                                 .font(.custom("HelveticaNeue-Bold", size: 30))
                                 .foregroundColor(.tsLabel)
                                 .multilineTextAlignment(.center)
-                            Text("We\'ll personalise your community feed\nand suggestions. Pick as many as you want.")
+                            Text("Your speaking coach will weave these\ninto your conversations. Pick as many as you want.")
                                 .font(.custom("HelveticaNeue", size: 16))
                                 .foregroundColor(.tsSecondary)
                                 .multilineTextAlignment(.center)

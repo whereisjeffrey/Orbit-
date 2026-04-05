@@ -154,7 +154,7 @@ struct LevelAssessmentView: View {
                 HStack {
                     Color.clear.frame(width: 40, height: 40)
                     Spacer()
-                    OnboardingProgressBar(currentStep: 2, totalSteps: 8)
+                    OnboardingProgressBar(currentStep: 3, totalSteps: 8)
                     Spacer()
                     Color.clear.frame(width: 40, height: 40)
                 }
@@ -176,11 +176,12 @@ struct LevelAssessmentView: View {
                         .foregroundColor(.tsLabel)
                         .multilineTextAlignment(.center)
 
-                    Text(contextMessage ?? "This helps Orbit match your level from the start. You can't get this wrong — we'll fine-tune it as you go.")
+                    Text(contextMessage ?? "This helps Orbit match your level from the start.\nYou can't get this wrong — we'll fine-tune it as you go.")
                         .font(.custom("HelveticaNeue", size: 14))
                         .foregroundColor(.tsSecondary)
                         .multilineTextAlignment(.center)
-                        .padding(.horizontal, 32)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, 24)
                 }
                 .padding(.bottom, 28)
 

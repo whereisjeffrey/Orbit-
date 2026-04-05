@@ -45,7 +45,7 @@ struct KeyboardSetupSplashView: View {
                         .font(.museoModerno(32))
                         .foregroundColor(.white)
                         .kerning(1.2)
-                        .padding(.top, -16)
+                        .padding(.top, -22)
                 }
                 .onAppear { iconBounce = true }
 
@@ -141,10 +141,10 @@ struct KeyboardSetupSplashView: View {
                 }
                 .background(
                     RoundedRectangle(cornerRadius: cardCorner)
-                        .fill(Color.clear)
+                        .fill(Color.white.opacity(0.08))
                         .overlay(
                             RoundedRectangle(cornerRadius: cardCorner)
-                                .stroke(Color.tsBorder, lineWidth: 1)
+                                .stroke(Color.white.opacity(0.2), lineWidth: 1)
                         )
                 )
                 .padding(.horizontal, 20)

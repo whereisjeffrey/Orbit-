@@ -87,7 +87,7 @@ struct LanguageSelectionView: View {
 
                     Spacer()
 
-                    OnboardingProgressBar(currentStep: 1, totalSteps: 8)
+                    OnboardingProgressBar(currentStep: 2, totalSteps: 8)
 
                     Spacer()
 

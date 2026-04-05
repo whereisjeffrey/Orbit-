@@ -249,6 +249,16 @@ class PracticeConversationService {
             }
         }()
 
+        // User's first name — Sol uses it occasionally, not every message
+        let userName = UserDefaults.standard.string(forKey: "user_first_name") ?? ""
+        let nameBlock = userName.isEmpty ? "" : """
+
+        USER'S NAME: \(userName)
+        Use their name OCCASIONALLY — once every 4-5 messages at most. \
+        Like a real friend would: "E aí \(userName), já foi?" not every single message. \
+        NEVER use it more than once per response. If in doubt, don't use it.
+        """
+
         let memoryBlock = SolMemoryStore.shared.buildContextBlock()
         let callbackHint = SolMemoryStore.shared.buildCallbackSuggestion() ?? ""
         let poolBlock = ConversationPoolManager.shared.buildPoolContextBlock()
@@ -272,6 +282,7 @@ class PracticeConversationService {
         in \(langName) with an English speaker who lives in \(userCity). \
         \
         \(toneBlock) \
+        \(nameBlock) \
         \(memoryBlock) \
         \(callbackHint) \
         \(poolBlock) \
@@ -312,6 +323,10 @@ class PracticeConversationService {
           Nationwide expressions are great. City-specific expressions from \(userCity) are great. \
           City-specific expressions from other cities are NOT — they'll confuse the user. \
         - Ask follow-up questions to keep the conversation flowing \
+        - PERSONAL BOUNDARIES: If the user mentions a partner, family, health, or finances, \
+          acknowledge it warmly but steer toward the city/experience — don't probe. \
+          "Moved here for my girlfriend" → "Nice, that's a great reason — how are you liking it?" \
+          NOT "How long have you been together?" Follow their lead only if THEY keep going. \
         - USER'S LEVEL: \(Self.solLevelContext()). \
           Adapt your vocabulary, sentence complexity, and slang difficulty to this level. \
           Don't speak above or below them — match their ability. \
@@ -344,8 +359,8 @@ class PracticeConversationService {
           "response": "your response in \(langName) — speak like a real local", \
           "translation": "English translation of your response", \
           "translation_notes": "1 brief English note about a word/phrase you used (optional, null if none)", \
-          "native_correction": "How a native speaker would say what the user just said — ALWAYS provide this, even if the user's message was grammatically correct. If they made errors, fix them. If their message was fine but a local would phrase it differently (more natural contractions, slang, word order), show that version. Format: the full corrected/natural sentence. Only null if the user spoke perfect native-level \(langName) with natural phrasing.", \
-          "native_correction_notes": "English explanation — what changed and why. If it was an error: the grammar rule. If it was a naturalness upgrade: why the native phrasing sounds better. Use \(langName) words inline. null only if native_correction is null.", \
+          "native_correction": "Rewrite THE USER'S LAST MESSAGE (not yours!) as a native speaker of \(langName) would say it. This is about THEIR message, not your response. ALWAYS provide this — even if their grammar was fine, show how a local would phrase it more naturally. If they made errors, fix them. If their phrasing was correct but stiff, make it sound like a real person from \(userCity). NEVER put your own response here — this field is ONLY for improving what the user said. null only if the user's message was already perfect native-level \(langName).", \
+          "native_correction_notes": "English explanation of what you changed in the USER'S message and why — grammar fix, more natural phrasing, better word choice, local expression. Use \(langName) words inline. null only if native_correction is null.", \
           "slang_notes": [{"phrase": "the \(langName) slang/expression", "meaning": "English meaning", \
             "context": "English explanation of when/where people use this — be specific to the city/region"}] or [] if none, \
           "user_facts": ["any personal facts the user revealed in their last message — e.g. 'Looking for an apartment in Condesa', 'Works as a designer', 'Has a date on Friday'. Only include NEW information, not things you already know. Empty array if none."] or [], \
@@ -412,8 +427,38 @@ class PracticeConversationService {
 
             // Extract and save user facts for Sol's cross-session memory
             if let userFacts = parsed["user_facts"] as? [String] {
+                var hasHighSignal = false
                 for fact in userFacts where !fact.isEmpty {
                     SolMemoryStore.shared.remember(fact, category: "personal")
+
+                    // Detect high-signal facts — career, major life events, deep passions
+                    let lower = fact.lowercased()
+                    let highSignalKeywords = [
+                        "chef", "career", "job", "work as", "profession", "studying",
+                        "moving to", "leaving", "getting married", "pregnant", "baby",
+                        "starting a", "opening a", "business", "company", "freelance",
+                        "passion", "dream", "goal", "plan to", "training",
+                        "divorce", "breakup", "relationship", "dating",
+                        "visa", "residency", "citizenship", "permanent",
+                    ]
+                    if highSignalKeywords.contains(where: { lower.contains($0) }) {
+                        hasHighSignal = true
+                    }
+                }
+
+                // High-signal fact detected — fire immediate Gemini enrichment
+                if hasHighSignal {
+                    let city = UserLocationsStore.shared.locations.first?.displayName ?? userCity
+                    let factsSummary = userFacts.joined(separator: ". ")
+                    DispatchQueue.global(qos: .utility).async {
+                        ConversationPoolManager.shared.enrichFromConversation(
+                            city: city,
+                            recentMessages: [
+                                (role: "system", text: "HIGH-SIGNAL: The user just revealed important personal information: \(factsSummary). Generate deep, specific knowledge related to this in \(city).")
+                            ]
+                        )
+                        NSLog("🌐 [Enrichment] HIGH-SIGNAL trigger: \(factsSummary.prefix(80))")
+                    }
                 }
             }
 

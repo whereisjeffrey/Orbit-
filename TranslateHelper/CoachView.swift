@@ -320,15 +320,9 @@ struct CoachPopulatedView: View {
                     .padding(.horizontal, 20)
                     .padding(.bottom, 20)
                     .onAppear {
-                        let lang = LanguageManager.shared.targetLangRequired
-
-                        // Seed starter mistakes if none exist for this language
-                        if !MistakeProfileStore.shared.hasMistakes(for: lang) {
-                            MistakeProfileStore.shared.seedStarterMistakes(language: lang) {
-                                refreshWeeklyData()
-                            }
-                        }
-
+                        // Target areas start at zero — they fill organically
+                        // from keyboard corrections and Sol conversations.
+                        // No pre-seeding.
                         refreshWeeklyData()
                     }
 
@@ -832,20 +826,32 @@ extension CoachPopulatedView {
                     )
                 }
 
-                // Hint card
-                HStack(spacing: 10) {
+                // Guidance card — explains what target areas are
+                HStack(alignment: .top, spacing: 12) {
                     Image(systemName: "target")
-                        .font(.system(size: 16))
+                        .font(.system(size: 18, weight: .medium))
                         .foregroundColor(.tsAccent)
-                    Text("Start using the keyboard or talk with Sol to begin tracking your target areas.")
-                        .font(.custom("HelveticaNeue", size: 13))
-                        .foregroundColor(.tsSecondary)
-                        .lineSpacing(2)
+                        .padding(.top, 2)
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("These fill up as you go")
+                            .font(.custom("HelveticaNeue-Bold", size: 14))
+                            .foregroundColor(.tsLabel)
+                        Text("Every time you use the keyboard or practice with your coach, Orbit spots patterns in your mistakes and tracks them here. The more you use it, the sharper this gets.")
+                            .font(.custom("HelveticaNeue", size: 13))
+                            .foregroundColor(.tsSecondary)
+                            .lineSpacing(3)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
-                .padding(14)
+                .padding(16)
                 .background(
-                    RoundedRectangle(cornerRadius: 12)
+                    RoundedRectangle(cornerRadius: 14)
                         .fill(Color.tsAccent.opacity(0.06))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14)
+                                .stroke(Color.tsAccent.opacity(0.15), lineWidth: 1)
+                        )
                 )
             } else {
                 // Expandable category sub-cards
@@ -2945,11 +2951,15 @@ struct PracticeSessionView: View {
         }
         isLoadingTopic = true
 
-        // Read user's city and interests from settings
-        // targetLang comes from @AppStorage — single source of truth
+        // Read user's city — prefer UserLocationsStore (free-text), fall back to selected_city_id
         let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper")
-        let cityId = defaults?.string(forKey: "selected_city_id") ?? ""
-        let userCity = Self.resolveCityName(cityId)
+        let userCity: String = {
+            if let loc = UserLocationsStore.shared.locations.first {
+                return loc.displayName
+            }
+            let cityId = defaults?.string(forKey: "selected_city_id") ?? ""
+            return Self.resolveCityName(cityId)
+        }()
 
         // Load interest profile for personalization
         let appGroup = "group.com.jeff.translatehelper"
@@ -2989,27 +2999,27 @@ struct PracticeSessionView: View {
         for msg in messages { revealedText.insert(msg.id) }
         messageCount = 0
 
-        // Fully generative topic — GPT invents a fresh conversation starter.
-        // Early sessions prioritize city-specific, hyper-local topics to hook the user.
+        // Script-driven opener — picks from the user's status/interests/city context.
+        // Falls back to fully generative if all scripts are exhausted.
+        let scriptBlock = ConversationScriptEngine.shared.buildScriptBlock()
+        let hasScript = !scriptBlock.isEmpty
+
         let sessionCount = PracticeStatsStore.shared.totalSessionCount
         let isEarlyUser = sessionCount < 10
 
-        let earlyUserBoost = isEarlyUser ? """
+        let earlyUserBoost = (isEarlyUser && !hasScript) ? """
         IMPORTANT — THIS IS AN EARLY SESSION. Make a STRONG first impression:
         - Reference a SPECIFIC real place, restaurant, landmark, neighbourhood, or local experience in \(userCity).
           Not generic — use actual names. "Have you tried the tacos al pastor at El Huequito?" not "Do you like tacos?"
         - Use a local expression or slang that would surprise them — something they won't find in textbooks.
         - Make them feel like they're talking to someone who LIVES there and knows the hidden gems.
-        - If you know their interests, connect the city to those interests specifically.
-          A food lover? Talk about a specific market or street food spot.
-          Into nightlife? Ask about a specific neighbourhood for going out.
-          Remote worker? Reference a specific café or cowork space locals love.
-        - The goal is to make them think "wow, this actually knows my city" — not "this is a generic language exercise."
         """ : ""
 
         let openingPrompt = """
         Generate a casual, warm opening message for a practice conversation.
+        \(scriptBlock)
 
+        \(hasScript ? "Use the CONVERSATION OPENER direction above as your starting point." : """
         Be CREATIVE and SPECIFIC — never generic. Think about:
         - Real places, restaurants, bars, markets, landmarks in \(userCity)
         - Local cultural events, traditions, or seasonal things happening
@@ -3018,6 +3028,7 @@ struct PracticeSessionView: View {
         - Food, music, nightlife, dating culture specific to \(userCity)
         - Funny observations about daily life that only someone living there would notice
         - Hypothetical questions, unpopular opinions, childhood memories, travel stories
+        """)
 
         \(earlyUserBoost)
         \(interestContext)
@@ -3709,8 +3720,8 @@ struct PracticeSessionView: View {
                         )
                         messages.append(noteMsg)
 
-                        // Show save hint after 5+ messages, on first coaching tip
-                        if totalMessagesThisSession >= 5 && !saveValidated && saveHintShownForMessage == nil {
+                        // Show save hint on first coaching tip (slang note)
+                        if !saveValidated && saveHintShownForMessage == nil {
                             saveHintShownForMessage = noteMsg.id
                             withAnimation(.easeIn(duration: 0.3).delay(0.3)) {
                                 showSaveHint = true
