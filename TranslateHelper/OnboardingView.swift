@@ -71,18 +71,12 @@ struct OnboardingView: View {
                     step = 7
                 }
             )
+        // Plan + Paywall hidden for beta — all users get full access
+        // case 7:
+        //     OnboardingPlanView(...)
+        // case 8:
+        //     OnboardingPaywallView(...)
         case 7:
-            OnboardingPlanView(
-                onBack: { step = 6 },
-                onFreePlan: { step = 9 },
-                onProTrial: { step = 9 }
-            )
-        case 8:
-            OnboardingPaywallView(
-                onBack: { step = 7 },
-                onComplete: { step = 9 }
-            )
-        case 9:
             KeyboardSetupSplashView(
                 onSkip: { completeOnboarding() }
             )

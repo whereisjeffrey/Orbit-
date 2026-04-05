@@ -408,8 +408,21 @@ final class MistakeProfileStore: ObservableObject {
         entries = []
         guard let defaults = UserDefaults(suiteName: Self.appGroup) else { return }
         defaults.removeObject(forKey: Self.storageKey)
+        defaults.synchronize()
+        NSLog("🎯 [MistakeProfile] cleared all entries")
     }
     #endif
+
+    /// Wipe all pre-seeded data so target areas start at zero.
+    /// Called once on upgrade from pre-seed builds.
+    func resetToZero() {
+        entries = []
+        guard let defaults = UserDefaults(suiteName: Self.appGroup) else { return }
+        defaults.removeObject(forKey: Self.storageKey)
+        defaults.synchronize()
+        objectWillChange.send()
+        NSLog("🎯 [MistakeProfile] reset to zero — target areas cleared")
+    }
 
     // MARK: - Starter Mistakes (Production)
 

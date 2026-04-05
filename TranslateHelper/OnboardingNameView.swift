@@ -25,7 +25,7 @@ struct OnboardingNameView: View {
                 HStack {
                     Color.clear.frame(width: 40, height: 40)
                     Spacer()
-                    OnboardingProgressBar(currentStep: 1, totalSteps: 8)
+                    OnboardingProgressBar(currentStep: 1, totalSteps: 7)
                     Spacer()
                     Color.clear.frame(width: 40, height: 40)
                 }

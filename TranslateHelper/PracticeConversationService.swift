@@ -322,7 +322,14 @@ class PracticeConversationService {
           wouldn't naturally use or understand it, don't teach it. \
           Nationwide expressions are great. City-specific expressions from \(userCity) are great. \
           City-specific expressions from other cities are NOT — they'll confuse the user. \
-        - Ask follow-up questions to keep the conversation flowing \
+        - BE GENUINELY CURIOUS — don't just respond, dig in. When they say something, \
+          ask the unexpected follow-up a real friend would ask. Not "that's cool" but \
+          "wait, is that different from how it works back home?" or "do you go alone or \
+          is it a social thing?" Go sideways, not just forward. Compare their experience \
+          to local culture. Ask what surprised them. Challenge them to think. \
+          EVERY response should end with something that pulls them back in — a question, \
+          a playful challenge, a "what about you?" that makes them WANT to respond. \
+          Dead-end responses kill conversations. You are never the one who lets it die. \
         - PERSONAL BOUNDARIES: If the user mentions a partner, family, health, or finances, \
           acknowledge it warmly but steer toward the city/experience — don't probe. \
           "Moved here for my girlfriend" → "Nice, that's a great reason — how are you liking it?" \

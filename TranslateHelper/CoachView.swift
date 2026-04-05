@@ -322,7 +322,15 @@ struct CoachPopulatedView: View {
                     .onAppear {
                         // Target areas start at zero — they fill organically
                         // from keyboard corrections and Sol conversations.
-                        // No pre-seeding.
+                        // One-time wipe of old pre-seeded data from dev builds.
+                        let wipeKey = "target_areas_wiped_v3"
+                        if !UserDefaults.standard.bool(forKey: wipeKey) {
+                            MistakeProfileStore.shared.resetToZero()
+                            UserDefaults.standard.set(true, forKey: wipeKey)
+                            // Force a fresh backup so old backup file no longer has mistake data
+                            ProfileBackupManager.shared.backup()
+                            NSLog("🎯 [TargetAreas] Wiped + backup refreshed")
+                        }
                         refreshWeeklyData()
                     }
 
@@ -377,13 +385,7 @@ struct CoachPopulatedView: View {
         }
         .onAppear {
             #if DEBUG
-            // DEV ONLY: seed ALL 8 categories so we can review them.
-            // Clear and re-seed every launch during development.
-            let profile = MistakeProfileStore.shared
-            let lang = LanguageManager.shared.targetLangRequired
-            profile.clearAll()
-            profile.seedTestData(language: lang)
-            NSLog("⚡ [DEBUG] Force re-seeded all 8 categories for \(lang)")
+            // DEBUG seed removed — target areas fill organically now
             #endif
 
             // Lightning Round pre-gen disabled (shelved for v1.1)
@@ -2011,6 +2013,9 @@ struct PracticeSessionView: View {
     @AppStorage("practice_save_validated") private var saveValidated = false
     @State private var showSettingsHint = false
     @AppStorage("practice_settings_hint_shown") private var settingsHintShown = false
+    @State private var showWordSaveHint = false
+    @AppStorage("practice_word_save_hint_shown") private var wordSaveHintShown = false
+    @State private var wordSaveMessage: PracticeMessage? = nil  // triggers the zoomed overlay
     @State private var totalMessagesThisSession = 0
     @State private var sessionSeconds = 0
     @State private var sessionTimer: Timer?
@@ -2174,6 +2179,12 @@ struct PracticeSessionView: View {
                                         .transition(.opacity.combined(with: .scale(scale: 0.95)))
                                 }
 
+                                // Show word save hint after Sol's 2nd message
+                                if index == 0 && showWordSaveHint {
+                                    wordSaveHintCard
+                                        .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                                }
+
                                 // Show settings hint after 8+ messages (once per user)
                                 if index == 0 && showSettingsHint {
                                     settingsHintCard
@@ -2330,6 +2341,18 @@ struct PracticeSessionView: View {
         }
         .sheet(isPresented: $showSettings) {
             practiceSettingsSheet
+        }
+        .overlay {
+            if let msg = wordSaveMessage {
+                WordSaveOverlay(
+                    messageText: msg.text,
+                    onSave: { phrase, meaning, notes in
+                        saveWordToLibrary(phrase: phrase, meaning: meaning, notes: notes)
+                    },
+                    onDismiss: { wordSaveMessage = nil }
+                )
+                .transition(.opacity)
+            }
         }
     }
 
@@ -2637,6 +2660,47 @@ struct PracticeSessionView: View {
 
     // MARK: - Settings Hint Card
 
+    private var wordSaveHintCard: some View {
+        HStack(spacing: 12) {
+            Text("📖")
+                .font(.system(size: 20))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("See a word you don't know?")
+                    .font(.custom("HelveticaNeue-Bold", size: 13))
+                    .foregroundColor(.tsLabel)
+                Text("Hold down on any word in Sol's messages and slide to select it. We'll look it up and you can save it to your Library.")
+                    .font(.custom("HelveticaNeue", size: 12))
+                    .foregroundColor(.tsSecondary)
+                    .lineSpacing(1)
+            }
+
+            Spacer()
+
+            Button {
+                withAnimation(.easeOut(duration: 0.2)) {
+                    showWordSaveHint = false
+                    wordSaveHintShown = true
+                }
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.tsSecondary)
+                    .padding(6)
+                    .background(Circle().fill(Color.tsSecondary.opacity(0.1)))
+            }
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.tsAccent.opacity(0.08))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.tsAccent.opacity(0.15), lineWidth: 0.5)
+        )
+    }
+
     private var settingsHintCard: some View {
         HStack(spacing: 12) {
             Text("⚙️")
@@ -2838,6 +2902,20 @@ struct PracticeSessionView: View {
                         }
                     }
                 }
+                .onLongPressGesture(minimumDuration: 0.5) {
+                    // Long press on Sol's message → open word save overlay
+                    if message.role == .sol && textVisible && message.text != "..." {
+                        let generator = UIImpactFeedbackGenerator(style: .medium)
+                        generator.impactOccurred()
+                        wordSaveMessage = message
+
+                        // Dismiss word save hint if showing
+                        if showWordSaveHint {
+                            showWordSaveHint = false
+                            wordSaveHintShown = true
+                        }
+                    }
+                }
 
                 // Translation card — Sol's messages (English)
                 if isRevealed, let translation = message.translation {
@@ -2996,6 +3074,19 @@ struct PracticeSessionView: View {
         messages = [
             PracticeMessage(role: .coaching, text: hintText),
         ]
+
+        // First session ever — let them know they can respond in English
+        let englishHintKey = "practice_english_hint_shown"
+        if !UserDefaults.standard.bool(forKey: englishHintKey) {
+            UserDefaults.standard.set(true, forKey: englishHintKey)
+            let langName = LanguageManager.shared.targetLangName ?? "the target language"
+            let englishHint = PracticeMessage(
+                role: .coaching,
+                text: "💬 Not sure what to say? You can respond in English anytime — your answers will be tracked in \(langName), and the conversation keeps going."
+            )
+            messages.append(englishHint)
+        }
+
         for msg in messages { revealedText.insert(msg.id) }
         messageCount = 0
 
@@ -3336,6 +3427,41 @@ struct PracticeSessionView: View {
         NSLog("🎯 [Practice] saved phrase: \(phrase) → \(meaning)")
     }
 
+    /// Save a word/phrase selected from Sol's message via tap-hold-slide
+    private func saveWordToLibrary(phrase: String, meaning: String, notes: String) {
+        let appGroup = "group.com.jeff.translatehelper"
+        guard let defaults = UserDefaults(suiteName: appGroup) else { return }
+
+        let key = "talkswitch_saved_phrases"
+        let existing = defaults.array(forKey: key) as? [[String: String]] ?? []
+
+        // Check duplicate
+        let isDuplicate = existing.contains { entry in
+            entry["sourceText"]?.lowercased() == phrase.lowercased()
+        }
+        guard !isDuplicate else { return }
+
+        let newEntry: [String: String] = [
+            "id":          UUID().uuidString,
+            "sourceText":  phrase,
+            "translation": meaning,
+            "sourceLang":  targetLang,
+            "targetLang":  "en",
+            "savedAt":     ISO8601DateFormatter().string(from: Date()),
+            "notes":       notes
+        ]
+
+        var allPhrases = existing
+        allPhrases.append(newEntry)
+        defaults.set(allPhrases, forKey: key)
+        defaults.synchronize()
+
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
+
+        NSLog("📖 [WordSave] saved: \(phrase) → \(meaning)")
+    }
+
     /// Checks if a phrase is already in the user's library (saved or graduated)
     private func isPhraseAlreadyKnown(_ phrase: String) -> Bool {
         let appGroup = "group.com.jeff.translatehelper"
@@ -3671,6 +3797,15 @@ struct PracticeSessionView: View {
             messages.append(solMsg)
             messageCount += 1
             totalMessagesThisSession += 1
+
+            // Show word save hint after Sol's 2nd message (first session only)
+            if totalMessagesThisSession == 2 && !wordSaveHintShown && !showWordSaveHint {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                    withAnimation(.easeIn(duration: 0.3)) {
+                        showWordSaveHint = true
+                    }
+                }
+            }
 
             // Show settings hint after 8+ messages (once per user, ever)
             if totalMessagesThisSession >= 8 && !settingsHintShown && !showSettingsHint {

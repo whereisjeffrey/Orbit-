@@ -47,7 +47,7 @@ struct OnboardingInterestsView: View {
 
                     Spacer()
 
-                    OnboardingProgressBar(currentStep: 6, totalSteps: 8)
+                    OnboardingProgressBar(currentStep: 6, totalSteps: 7)
 
                     Spacer()
                     if !selected.isEmpty {
@@ -64,7 +64,7 @@ struct OnboardingInterestsView: View {
 
                         // ── Header ─────────────────────────────────
                         VStack(spacing: 12) {
-                            Text("What are you\ninto?")
+                            Text("What are you into?")
                                 .font(.custom("HelveticaNeue-Bold", size: 30))
                                 .foregroundColor(.tsLabel)
                                 .multilineTextAlignment(.center)

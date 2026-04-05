@@ -21,7 +21,7 @@ class ProfileBackupManager {
         "talkswitch_native_lang",
         "talkswitch_lang",
         "talkswitch_saved_phrases",
-        "ts_mistake_profile_v1",
+        // "ts_mistake_profile_v1",  // Removed — target areas rebuild organically
         "ts_practice_sessions_v1",
         "ts_practice_dates",
         "ts_self_reported_level",
