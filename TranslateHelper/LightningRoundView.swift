@@ -781,9 +781,8 @@ struct LightningRoundView: View {
                 // Slang cards — clipboard → checkmark animation
                 if card.type == .slangInContext && savedToClipboard {
                     if clipboardCheckmark {
-                        Image(systemName: "checkmark.circle.fill")
+                        Text("✅")
                             .font(.system(size: 16))
-                            .foregroundColor(Color(hex: "#34C759"))
                             .padding(.top, 4)
                             .transition(.opacity.combined(with: .scale(scale: 0.8)))
                     } else {
@@ -1117,7 +1116,7 @@ struct LightningRoundView: View {
         guard let url = URL(string: "\(APIConfig.anthropicBaseURL)/messages") else { return }
 
         let body: [String: Any] = [
-            "model": "claude-sonnet-4-20250514",
+            "model": "claude-haiku-4-5-20251001",
             "max_tokens": 2000,
             "messages": [
                 ["role": "user", "content": "You generate quiz cards for language learners. Respond ONLY with valid JSON.\n\n\(prompt)"],
