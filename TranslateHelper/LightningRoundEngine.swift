@@ -621,23 +621,23 @@ final class LightningRoundEngine {
             cardInstructions += "Card \(i+1): type=\"\(type.rawValue)\"\n"
             switch type {
             case .speakIt:
-                cardInstructions += "  → Natural sentence the user must say in \(langName).\n"
+                cardInstructions += "  → prompt: \"Say in \(langName):\\n[English sentence to translate]\". audio_text: the correct \(langName) sentence (MUST be a full sentence, 5+ words). correct_answer: same as audio_text. options: null.\n"
             case .echo:
-                cardInstructions += "  → Natural \(langName) sentence to hear and repeat.\n"
+                cardInstructions += "  → prompt: \"Listen and repeat:\\n[full \(langName) sentence]\". audio_text: the \(langName) sentence (MUST be a full sentence, 5+ words). correct_answer: same as audio_text. options: null.\n"
             case .speedConjugation:
-                cardInstructions += "  → Verb conjugation question, 4 options.\n"
+                cardInstructions += "  → prompt: fill-in-the-blank sentence with ___. options: EXACTLY 4 verb forms. correct_answer: MUST be one of the 4 options (exact match).\n"
             case .whatDidSheSay:
-                cardInstructions += "  → \(langName) sentence spoken aloud, 4 written options.\n"
+                cardInstructions += "  → prompt: \(langName) sentence. audio_text: same sentence. options: EXACTLY 4 written translations. correct_answer: MUST be one of the 4 options.\n"
             case .minimalPairs:
-                cardInstructions += "  → Two similar-sounding words, pick which matches the meaning.\n"
+                cardInstructions += "  → prompt: \"Which word means '[meaning]'?\". options: EXACTLY 2 similar-sounding \(langName) words. correct_answer: MUST be one of the 2 options (the FULL WORD, not just an article).\n"
             case .quickPick:
-                cardInstructions += "  → Fill-in-the-blank or grammar question, 4 options.\n"
+                cardInstructions += "  → prompt: fill-in-the-blank or grammar question. options: EXACTLY 4 choices. correct_answer: MUST be one of the 4 options (exact match, full phrase).\n"
             case .trueOrFalse:
-                cardInstructions += "  → Sentence that is correct or has one mistake. True/False.\n"
+                cardInstructions += "  → prompt: a \(langName) sentence that is either correct or has one mistake, then \"\\nIs this correct?\". options: [\"True\", \"False\"]. correct_answer: MUST be exactly \"True\" or \"False\" (nothing else — not the sentence, not an explanation).\n"
             case .thisOrThat:
-                cardInstructions += "  → Binary choice (e.g., a/o, ser/estar). Exactly 2 options.\n"
+                cardInstructions += "  → prompt: binary choice question. options: EXACTLY 2 items (e.g., [\"a\", \"o\"] or [\"ser\", \"estar\"]). NEVER 3 or 4 — ALWAYS exactly 2. correct_answer: MUST be one of the 2 options.\n"
             case .slangInContext:
-                cardInstructions += "  → Show the slang expression used in a natural sentence. Ask what it means with 3 options.\n"
+                cardInstructions += "  → prompt: natural sentence using a slang expression in quotes. options: EXACTLY 3 meanings. correct_answer: MUST be one of the 3 options.\n"
             }
         }
 
@@ -860,7 +860,7 @@ final class LightningRoundEngine {
         }
 
         let body: [String: Any] = [
-            "model": "claude-haiku-4-5-20251001",
+            "model": "claude-sonnet-4-20250514",
             "max_tokens": 4000,
             "messages": [
                 ["role": "user", "content": "You generate quiz cards for language learners. Respond ONLY with valid JSON.\n\n\(prompt)"],

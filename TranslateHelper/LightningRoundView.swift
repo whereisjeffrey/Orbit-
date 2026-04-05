@@ -1116,7 +1116,7 @@ struct LightningRoundView: View {
         guard let url = URL(string: "\(APIConfig.anthropicBaseURL)/messages") else { return }
 
         let body: [String: Any] = [
-            "model": "claude-haiku-4-5-20251001",
+            "model": "claude-sonnet-4-20250514",
             "max_tokens": 4000,
             "messages": [
                 ["role": "user", "content": "You generate quiz cards for language learners. Respond ONLY with valid JSON.\n\n\(prompt)"],
