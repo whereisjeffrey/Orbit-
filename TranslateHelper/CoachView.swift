@@ -315,8 +315,22 @@ struct CoachPopulatedView: View {
                     .padding(.horizontal, 20)
                     .padding(.bottom, 20)
 
-                // Target Areas + Lightning Round — shelved for v1.1
-                // Kept in code but hidden from UI. Mistake seeding disabled to save API calls.
+                // ── 4. Target Areas ─────────────────────────────
+                targetAreas
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 20)
+                    .onAppear {
+                        let lang = LanguageManager.shared.targetLangRequired
+
+                        // Seed starter mistakes if none exist for this language
+                        if !MistakeProfileStore.shared.hasMistakes(for: lang) {
+                            MistakeProfileStore.shared.seedStarterMistakes(language: lang) {
+                                refreshWeeklyData()
+                            }
+                        }
+
+                        refreshWeeklyData()
+                    }
 
                 // Milestones removed — lives in weekly/monthly reports now
                 // Talk card removed — pronunciation drills covered by Lightning Round

@@ -26,10 +26,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         win.makeKeyAndVisible()
         window = win
 
-        // Validate language is set — log warning if not (user may have abandoned onboarding)
-        if !LanguageManager.shared.hasTargetLanguage {
+        // Auto-restore profile if data is missing (e.g., after app deletion + reinstall)
+        if !LanguageManager.shared.hasTargetLanguage && ProfileBackupManager.shared.hasBackup {
+            ProfileBackupManager.shared.restore()
+            NSLog("💾 Auto-restored profile from backup after reinstall")
+        } else if !LanguageManager.shared.hasTargetLanguage {
             NSLog("⚠️ LanguageManager: no target language set — user may not have completed onboarding")
         }
+
+        // Auto-backup profile on every launch (lightweight — just writes a JSON file)
+        ProfileBackupManager.shared.autoBackupIfNeeded()
 
         // ── All non-critical work deferred to background ──
         // Nothing here blocks the UI from appearing. The user sees the app instantly.
