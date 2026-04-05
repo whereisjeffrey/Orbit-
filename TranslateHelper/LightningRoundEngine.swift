@@ -222,6 +222,89 @@ final class LightningRoundEngine {
         defaults.removeObject(forKey: Self.diskCacheLangKey)
     }
 
+    // MARK: - Claude JSON Extraction
+
+    /// Robustly extracts JSON from Claude's text response.
+    /// Handles: pure JSON, markdown fences, preamble text, any wrapping.
+    /// Strategy: find the first { or [ and the matching closing bracket using depth tracking.
+    static func extractJSON(from text: String) -> [String: Any]? {
+        // Step 1: Try the raw text first (in case it's already clean JSON)
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let data = trimmed.data(using: .utf8),
+           let obj = try? JSONSerialization.jsonObject(with: data) {
+            if let dict = obj as? [String: Any] { return dict }
+            if let arr = obj as? [[String: Any]] { return ["cards": arr] }
+        }
+
+        // Step 2: Find the first { in the text and extract the object using depth tracking.
+        // This ignores ALL preamble text, markdown fences, etc. — we just find the JSON.
+        if let result = extractBalanced(from: text, open: "{", close: "}") {
+            if let data = result.data(using: .utf8),
+               let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                return dict
+            }
+            // If that didn't parse, maybe there are trailing fences — try trimming non-JSON chars
+            let reTrimmed = result.trimmingCharacters(in: CharacterSet(charactersIn: "`\n\r\t "))
+            if let data = reTrimmed.data(using: .utf8),
+               let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                return dict
+            }
+        }
+
+        // Step 3: Find the first [ in the text and extract the array
+        if let result = extractBalanced(from: text, open: "[", close: "]") {
+            if let data = result.data(using: .utf8),
+               let arr = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] {
+                return ["cards": arr]
+            }
+            let reTrimmed = result.trimmingCharacters(in: CharacterSet(charactersIn: "`\n\r\t "))
+            if let data = reTrimmed.data(using: .utf8),
+               let arr = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] {
+                return ["cards": arr]
+            }
+        }
+
+        // Step 4: Brute force — strip everything that's not JSON and try again
+        // Remove all lines that start with ``` (fence lines)
+        let lines = text.components(separatedBy: .newlines)
+            .filter { !$0.trimmingCharacters(in: .whitespaces).hasPrefix("```") }
+        let joined = lines.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+        if let data = joined.data(using: .utf8),
+           let obj = try? JSONSerialization.jsonObject(with: data) {
+            if let dict = obj as? [String: Any] { return dict }
+            if let arr = obj as? [[String: Any]] { return ["cards": arr] }
+        }
+
+        NSLog("⚡ [extractJSON] All 4 extraction methods failed")
+        return nil
+    }
+
+    /// Finds a balanced pair of brackets in text using depth tracking.
+    /// Returns the substring from the first `open` to its matching `close`, inclusive.
+    private static func extractBalanced(from text: String, open: Character, close: Character) -> String? {
+        guard let start = text.firstIndex(of: open) else { return nil }
+        var depth = 0
+        var inString = false
+        var escaped = false
+
+        for i in text.indices[start...] {
+            let c = text[i]
+
+            // Handle string escaping — don't count brackets inside JSON strings
+            if escaped { escaped = false; continue }
+            if c == "\\" { escaped = true; continue }
+            if c == "\"" { inString = !inString; continue }
+            if inString { continue }
+
+            if c == open { depth += 1 }
+            if c == close { depth -= 1 }
+            if depth == 0 {
+                return String(text[start...i])
+            }
+        }
+        return nil
+    }
+
     // MARK: - Card Validation
 
     /// Validates and cleans generated cards. Discards any card that:
@@ -696,7 +779,7 @@ final class LightningRoundEngine {
         - Wrong options must be PLAUSIBLE — things an English speaker would actually pick
         - The correct_answer must ACTUALLY be correct. Double-check grammar, gender, and meaning.
         - Options must make sense as answers to the prompt. Don't include random unrelated words.
-        - Explanations: 1 sentence max, 15 words max. Just say WHY the answer is correct.
+        - Explanations: STRICTLY 1 sentence, under 15 words. Example: "Age uses 'ter' not 'ser' in Portuguese." NEVER write more than one sentence — the JSON will be cut off if explanations are too long.
         - For voice cards (speakIt, echo), include the full sentence as "audio_text"
         - For speakIt, the "target_word" is the specific word/pattern being tested
         - Options array: always include the correct answer, shuffled randomly among the options
@@ -778,7 +861,7 @@ final class LightningRoundEngine {
 
         let body: [String: Any] = [
             "model": "claude-haiku-4-5-20251001",
-            "max_tokens": 2000,
+            "max_tokens": 4000,
             "messages": [
                 ["role": "user", "content": "You generate quiz cards for language learners. Respond ONLY with valid JSON.\n\n\(prompt)"],
             ],
@@ -816,33 +899,13 @@ final class LightningRoundEngine {
                 return
             }
 
-            // Extract JSON from Claude's response (may have markdown fences)
-            let jsonString: String
-            if let start = content.range(of: "["), let end = content.range(of: "]", options: .backwards) {
-                jsonString = String(content[start.lowerBound...end.upperBound])
-            } else if let start = content.range(of: "{"), let end = content.range(of: "}", options: .backwards) {
-                jsonString = String(content[start.lowerBound...end.upperBound])
-            } else {
-                jsonString = content
-            }
-
-            guard let contentData = jsonString.data(using: .utf8),
-                  let rawParsed = try? JSONSerialization.jsonObject(with: contentData)
-            else {
-                NSLog("⚡ [PreGen] FAILED: couldn't parse JSON from Claude")
+            // Extract JSON from Claude's response — handles all formatting variations
+            guard let parsed = Self.extractJSON(from: content) else {
+                NSLog("⚡ [PreGen] FAILED: couldn't extract JSON from Claude. Content: \(content.prefix(500))")
                 engine.notifyWaiters(cards: [])
                 return
             }
-
-            let parsed: [String: Any]
-            if let dict = rawParsed as? [String: Any] {
-                parsed = dict
-            } else if let arr = rawParsed as? [[String: Any]] {
-                parsed = ["cards": arr]
-            } else {
-                engine.notifyWaiters(cards: [])
-                return
-            }
+            NSLog("⚡ [PreGen] Successfully parsed JSON with \(parsed.count) keys")
 
             // Parse cards
             let cardsArray: [[String: Any]]

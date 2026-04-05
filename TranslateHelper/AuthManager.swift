@@ -21,6 +21,7 @@ class AuthManager: ObservableObject {
     private var currentNonce: String?
 
     init() {
+        self.user = Auth.auth().currentUser
         handle = Auth.auth().addStateDidChangeListener { [weak self] _, user in
             Task { @MainActor in self?.user = user }
         }

@@ -1117,7 +1117,7 @@ struct LightningRoundView: View {
 
         let body: [String: Any] = [
             "model": "claude-haiku-4-5-20251001",
-            "max_tokens": 2000,
+            "max_tokens": 4000,
             "messages": [
                 ["role": "user", "content": "You generate quiz cards for language learners. Respond ONLY with valid JSON.\n\n\(prompt)"],
             ],
@@ -1131,59 +1131,68 @@ struct LightningRoundView: View {
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
         request.timeoutInterval = 30
 
-        URLSession.shared.dataTask(with: request) { data, _, _ in
+        URLSession.shared.dataTask(with: request) { data, response, error in
             DispatchQueue.main.async {
                 self.isGenerating = false
 
+                // FAILURE POINT 1: API call itself failed
+                if let error = error {
+                    NSLog("⚡ [LR-FAIL-1] API error: \(error.localizedDescription)")
+                    self.cards = self.generateFallbackCards(types: cardTypes, mistakes: mistakes)
+                    self.startRound()
+                    return
+                }
+
+                // Log HTTP status code
+                if let httpResponse = response as? HTTPURLResponse {
+                    NSLog("⚡ [LR] HTTP status: \(httpResponse.statusCode)")
+                    if httpResponse.statusCode != 200 {
+                        if let data = data, let body = String(data: data, encoding: .utf8) {
+                            NSLog("⚡ [LR-FAIL-1b] Non-200 response: \(body.prefix(500))")
+                        }
+                        self.cards = self.generateFallbackCards(types: cardTypes, mistakes: mistakes)
+                        self.startRound()
+                        return
+                    }
+                }
+
+                // FAILURE POINT 1c: Parse Claude response structure
                 guard let data = data,
                       let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                       let contentArray = json["content"] as? [[String: Any]],
                       let firstContent = contentArray.first,
                       let content = firstContent["text"] as? String
                 else {
+                    let raw = data.flatMap { String(data: $0, encoding: .utf8) } ?? "nil"
+                    NSLog("⚡ [LR-FAIL-1c] Can't parse Claude structure. Raw: \(raw.prefix(500))")
                     self.cards = self.generateFallbackCards(types: cardTypes, mistakes: mistakes)
                     self.startRound()
                     return
                 }
 
-                // Extract JSON from Claude's response
-                let jsonString: String
-                if let start = content.range(of: "["), let end = content.range(of: "]", options: .backwards) {
-                    jsonString = String(content[start.lowerBound...end.upperBound])
-                } else if let start = content.range(of: "{"), let end = content.range(of: "}", options: .backwards) {
-                    jsonString = String(content[start.lowerBound...end.upperBound])
-                } else {
-                    jsonString = content
-                }
+                NSLog("⚡ [LR] Claude returned \(content.count) chars")
 
-                guard let contentData = jsonString.data(using: .utf8),
-                      let rawParsed = try? JSONSerialization.jsonObject(with: contentData)
-                else {
+                // Extract JSON using the robust parser (handles markdown fences, preamble, etc.)
+                guard let parsed = LightningRoundEngine.extractJSON(from: content) else {
+                    NSLog("⚡ [LR-FAIL-2] Can't extract JSON. Content: \(content.prefix(500))")
                     self.cards = self.generateFallbackCards(types: cardTypes, mistakes: mistakes)
                     self.startRound()
                     return
                 }
 
-                let parsed: [String: Any]
-                if let dict = rawParsed as? [String: Any] {
-                    parsed = dict
-                } else if let arr = rawParsed as? [[String: Any]] {
-                    parsed = ["cards": arr]
-                } else {
-                    self.cards = self.generateFallbackCards(types: cardTypes, mistakes: mistakes)
-                    self.startRound()
-                    return
-                }
-
-                // Parse cards from GPT response — handle both {cards: [...]} and raw [...]
+                // FAILURE POINT 6: Find the cards array
                 let cardsArray: [[String: Any]]
                 if let arr = parsed["cards"] as? [[String: Any]] {
                     cardsArray = arr
-                } else if let directArray = try? JSONSerialization.jsonObject(with: contentData) as? [[String: Any]] {
-                    cardsArray = directArray
+                    NSLog("⚡ [LR] Found \(arr.count) cards under 'cards' key")
                 } else {
-                    // Try any array-valued key
-                    cardsArray = parsed.values.compactMap { $0 as? [[String: Any]] }.first ?? []
+                    let fallbackArr = parsed.values.compactMap { $0 as? [[String: Any]] }.first ?? []
+                    cardsArray = fallbackArr
+                    if fallbackArr.isEmpty {
+                        NSLog("⚡ [LR-FAIL-6] No 'cards' key and no array found. Keys: \(parsed.keys.joined(separator: ", "))")
+                    } else {
+                        NSLog("⚡ [LR] Found \(fallbackArr.count) cards under alternate key")
+                    }
                 }
 
                 var generatedCards: [LightningCard] = []
@@ -1237,7 +1246,8 @@ struct LightningRoundView: View {
                     generatedCards.append(card)
                 }
 
-                // Fill any missing cards with fallback
+                // FAILURE POINT 4: Fill any missing cards with fallback
+                let haikuCount = generatedCards.count
                 while generatedCards.count < cardTypes.count {
                     let i = generatedCards.count
                     let fallback = self.generateFallbackCard(
@@ -1246,17 +1256,24 @@ struct LightningRoundView: View {
                     )
                     generatedCards.append(fallback)
                 }
+                if haikuCount < cardTypes.count {
+                    NSLog("⚡ [LR-FAIL-4] Haiku returned \(haikuCount)/\(cardTypes.count) cards — padded \(cardTypes.count - haikuCount) with fallback")
+                }
 
-                // Validate — discard bad cards. NEVER fall back to unvalidated.
+                // FAILURE POINT 5: Validate — discard bad cards
                 let validated = self.engine.validateCards(generatedCards, language: self.targetLang)
+                let discarded = generatedCards.count - validated.count
+                if discarded > 0 {
+                    NSLog("⚡ [LR-FAIL-5] Validation discarded \(discarded)/\(generatedCards.count) cards")
+                }
                 if validated.isEmpty {
-                    NSLog("⚡ [LightningRound] ALL cards failed validation — using fallback cards")
-                    // Build fallback cards from the mistake data we already have
+                    NSLog("⚡ [LR-FAIL-5] ALL cards failed validation — entire round is fallback")
                     let fallbacks = cardTypes.enumerated().map { (i, type) in
                         self.generateFallbackCard(type: type, mistake: mistakes[i % mistakes.count])
                     }
                     self.cards = fallbacks
                 } else {
+                    NSLog("⚡ [LR] Starting round with \(validated.count) valid cards")
                     self.cards = validated
                 }
                 self.startRound()

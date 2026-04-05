@@ -197,6 +197,10 @@ struct KeyboardSetupSplashView: View {
     }
 
     private func openKeyboardSettings() {
+        // Mark onboarding complete now so if iOS kills the app while in Settings,
+        // it starts in the MainTabView upon next launch.
+        onSkip()
+
         // Opens the Orbit settings page — user taps Keyboards → enables Orbit Keyboard
         if let url = URL(string: UIApplication.openSettingsURLString) {
             UIApplication.shared.open(url)
