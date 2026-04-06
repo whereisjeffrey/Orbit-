@@ -49,7 +49,7 @@ struct SplashScreenView: View {
                     .font(.system(size: 16, weight: .regular, design: .default))
                     .foregroundColor(.white.opacity(0.72))
                     .kerning(0.3)
-                    .padding(.top, 8)
+                    .padding(.top, 2)
 
                 Spacer()
             }

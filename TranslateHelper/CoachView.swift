@@ -58,8 +58,10 @@ struct CoachEmptyView: View {
                     .clipShape(Circle())
                     .overlay(
                         Circle()
-                            .stroke(Color.tsAccent.opacity(0.2), lineWidth: 1)
+                            .stroke(Color.tsAccent.opacity(0.3), lineWidth: 1.5)
                     )
+                    .shadow(color: Color.tsAccent.opacity(0.3), radius: 16, x: 0, y: 0)
+                    .shadow(color: Color.tsAccent.opacity(0.15), radius: 32, x: 0, y: 0)
                     .padding(.top, 48)
                     .padding(.bottom, 16)
 
@@ -232,12 +234,12 @@ struct CoachPopulatedView: View {
     @State private var cachedMasteredCount: Int = 0
     @State private var cachedWeakestCategory: MistakeCategory?
 
-    /// Profile unlocks after 3 data sources: self-assessment + Lightning Round + keyboard corrections
+    /// Profile unlocks after 3 data sources: self-assessment + Sol conversation + corrections
     private var isProfileUnlocked: Bool {
         let hasAssessment = SelfReportedLevel.hasCompleted
-        let hasRound = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.bool(forKey: "ts_first_round_complete") ?? false
+        let hasSolSession = PracticeStatsStore.shared.totalSessionCount >= 1
         let hasCorrections = MistakeProfileStore.shared.entries.count >= 5
-        let sources = [hasAssessment, hasRound, hasCorrections].filter { $0 }.count
+        let sources = [hasAssessment, hasSolSession, hasCorrections].filter { $0 }.count
         return sources >= 3
     }
 
@@ -262,7 +264,7 @@ struct CoachPopulatedView: View {
             // Progress indicators
             HStack(spacing: 16) {
                 calibrationDot(label: "Assessment", done: SelfReportedLevel.hasCompleted)
-                calibrationDot(label: "Lightning Round", done: UserDefaults(suiteName: "group.com.jeff.translatehelper")?.bool(forKey: "ts_first_round_complete") ?? false)
+                calibrationDot(label: "Sol Conversation", done: PracticeStatsStore.shared.totalSessionCount >= 1)
                 calibrationDot(label: "Corrections", done: MistakeProfileStore.shared.entries.count >= 5)
             }
             .padding(.top, 4)
@@ -270,11 +272,11 @@ struct CoachPopulatedView: View {
         .padding(18)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.tsCard)
+                .fill(Color.white)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.tsAccent.opacity(0.15), lineWidth: 1)
+                .stroke(Color.tsBorder, lineWidth: 1)
         )
     }
 
@@ -652,11 +654,6 @@ extension CoachPopulatedView {
 
                 if stats.currentStreak > 0 {
                     weeklyRow(emoji: "🔥", text: "\(stats.currentStreak)-day streak — keep it going")
-                } else if !cachedRoundHistory.isEmpty {
-                    let thisWeek = cachedRoundHistory.filter { Calendar.current.isDate($0.date, equalTo: Date(), toGranularity: .weekOfYear) }
-                    if !thisWeek.isEmpty {
-                        weeklyRow(emoji: "🎯", text: "\(thisWeek.count) Lightning Round\(thisWeek.count == 1 ? "" : "s") completed")
-                    }
                 }
             }
 
@@ -669,7 +666,7 @@ extension CoachPopulatedView {
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.tsCard)
+                .fill(Color.white)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
@@ -1590,7 +1587,7 @@ struct WeeklyFullReportView: View {
                                         .font(.custom("HelveticaNeue", size: 14))
                                         .foregroundColor(.tsLabel)
                                         .lineSpacing(2)
-                                    Text("Try a Lightning Round targeting these patterns.")
+                                    Text("Practice with Sol to work through these patterns.")
                                         .font(.custom("HelveticaNeue", size: 13))
                                         .foregroundColor(.tsSecondary)
                                         .italic()
@@ -1636,7 +1633,7 @@ struct WeeklyFullReportView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.tsCard)
+                .fill(Color.white)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
@@ -1671,6 +1668,10 @@ struct WeeklyFullReportView: View {
         .background(
             RoundedRectangle(cornerRadius: 8)
                 .fill(Color.white)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(Color.tsBorder, lineWidth: 1)
         )
     }
 
@@ -2274,6 +2275,24 @@ struct PracticeSessionView: View {
                         if let last = messages.last {
                             withAnimation {
                                 proxy.scrollTo(last.id, anchor: .bottom)
+                            }
+                        }
+                    }
+                    .onChange(of: revealedTranslations.count) {
+                        if let last = messages.last {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                                withAnimation {
+                                    proxy.scrollTo(last.id, anchor: .bottom)
+                                }
+                            }
+                        }
+                    }
+                    .onChange(of: revealedNative.count) {
+                        if let last = messages.last {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                                withAnimation {
+                                    proxy.scrollTo(last.id, anchor: .bottom)
+                                }
                             }
                         }
                     }

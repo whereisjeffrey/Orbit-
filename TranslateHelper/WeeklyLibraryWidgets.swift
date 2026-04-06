@@ -94,7 +94,7 @@ struct WeeklyClipboardWidget: View {
             .padding(.horizontal, 16)
             .padding(.top, 14)
             .padding(.bottom, 10)
-            .background(colorScheme == .dark ? Color.tsInputBg : Color(hex: "#F2F8FA"))
+            .background(colorScheme == .dark ? Color.tsInputBg : Color(hex: "#D2B48C").opacity(0.15))
 
 
             // ── Lined paper word list ────────────────────────
@@ -106,8 +106,23 @@ struct WeeklyClipboardWidget: View {
                     .padding(.leading, 36)
 
                 if displayPhrases.isEmpty {
-                    HStack {
-                        Spacer()
+                    ZStack {
+                        // Blue ruled lines on empty notebook paper
+                        VStack(spacing: 0) {
+                            ForEach(0..<7, id: \.self) { _ in
+                                Rectangle()
+                                    .fill(Color.clear)
+                                    .frame(height: 28)
+                                    .overlay(
+                                        Rectangle()
+                                            .fill(Color(hex: "#A8D4F0").opacity(0.35))
+                                            .frame(height: 0.5),
+                                        alignment: .bottom
+                                    )
+                            }
+                        }
+
+                        // Empty state text on top of lines
                         VStack(spacing: 6) {
                             Text("📋").font(.system(size: 28))
                             Text("No phrases added yet")
@@ -118,7 +133,6 @@ struct WeeklyClipboardWidget: View {
                                 .foregroundColor(.tsSecondary.opacity(0.6))
                         }
                         .padding(.vertical, 24)
-                        Spacer()
                     }
                 } else if displayPhrases.count > Self.scrollThreshold {
                     // Scrollable when > 7 words
@@ -149,11 +163,11 @@ struct WeeklyClipboardWidget: View {
                 }
             }
             .padding(.horizontal, 16).padding(.vertical, 10)
-            .background(colorScheme == .dark ? Color.tsInputBg : Color(hex: "#F2F8FA"))
+            .background(colorScheme == .dark ? Color.tsInputBg : Color(hex: "#D2B48C").opacity(0.15))
         }
         .background(Color.tsCard)
         .cornerRadius(20)
-        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
+        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color(hex: "#D2B48C").opacity(0.25), lineWidth: 1))
     }
 
     @ViewBuilder
@@ -537,7 +551,7 @@ struct DeckClipboardWidget: View {
             .padding(.horizontal, 16)
             .padding(.top, 12)
             .padding(.bottom, 10)
-            .background(colorScheme == .dark ? Color.tsInputBg : Color(hex: "#F2F8FA"))
+            .background(colorScheme == .dark ? Color.tsInputBg : Color(hex: "#D2B48C").opacity(0.15))
 
             // ── Lined paper word list ──────────────────────
             ZStack(alignment: .topLeading) {
@@ -547,8 +561,21 @@ struct DeckClipboardWidget: View {
                     .padding(.leading, 36)
 
                 if displayCards.isEmpty {
-                    HStack {
-                        Spacer()
+                    ZStack {
+                        // Blue ruled lines on empty notebook paper
+                        VStack(spacing: 0) {
+                            ForEach(0..<7, id: \.self) { _ in
+                                Rectangle()
+                                    .fill(Color.clear)
+                                    .frame(height: 28)
+                                    .overlay(
+                                        Rectangle()
+                                            .fill(Color(hex: "#A8D4F0").opacity(0.35))
+                                            .frame(height: 0.5),
+                                        alignment: .bottom
+                                    )
+                            }
+                        }
                         VStack(spacing: 6) {
                             Text("\u{1F4DA}").font(.system(size: 28))
                             Text("No cards in this deck")
@@ -556,7 +583,6 @@ struct DeckClipboardWidget: View {
                                 .foregroundColor(.tsSecondary)
                         }
                         .padding(.vertical, 24)
-                        Spacer()
                     }
                 } else if displayCards.count > Self.scrollThreshold {
                     ScrollView(.vertical, showsIndicators: false) {
@@ -579,11 +605,11 @@ struct DeckClipboardWidget: View {
                 Spacer()
             }
             .padding(.horizontal, 16).padding(.vertical, 10)
-            .background(colorScheme == .dark ? Color.tsInputBg : Color(hex: "#F2F8FA"))
+            .background(colorScheme == .dark ? Color.tsInputBg : Color(hex: "#D2B48C").opacity(0.15))
         }
         .background(Color.tsCard)
         .cornerRadius(20)
-        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
+        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color(hex: "#D2B48C").opacity(0.25), lineWidth: 1))
     }
 
     @ViewBuilder
@@ -614,9 +640,14 @@ struct DeckClipboardWidget: View {
                 }
                 .frame(height: 44)
                 .padding(.horizontal, 12)
+                .overlay(
+                    Rectangle()
+                        .fill(Color(hex: "#A8D4F0").opacity(0.4))
+                        .frame(height: 0.5),
+                    alignment: .bottom
+                )
                 if idx < cards.count - 1 {
-                    Divider()
-                        .background(Color.tsBorder.opacity(0.3))
+                    EmptyView()
                         .padding(.leading, 44)
                 }
             }

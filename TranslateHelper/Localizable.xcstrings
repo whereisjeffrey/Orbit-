@@ -6901,6 +6901,9 @@
         }
       }
     },
+    "Practice with Sol to work through these patterns." : {
+
+    },
     "Premium" : {
       "localizations" : {
         "ar" : {
@@ -9463,6 +9466,7 @@
       }
     },
     "Try a Lightning Round targeting these patterns." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
