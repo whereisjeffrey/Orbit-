@@ -23,13 +23,15 @@ struct WordSaveOverlay: View {
     @State private var isSaved = false
     @State private var appeared = false
     @State private var lookupWorkItem: DispatchWorkItem? = nil
-    @State private var copiedToClipboard = false
+    @AppStorage("word_lookup_done_once") private var hasLookedUpBefore = false
+    @AppStorage("word_drag_done_once") private var hasDraggedBefore = false
 
     var body: some View {
         ZStack {
-            // Light backdrop — white-ish so the blue card looks right
-            Color.white.opacity(appeared ? 0.92 : 0)
+            // Gradient backdrop — same as the rest of the app
+            TSGradientBackground()
                 .ignoresSafeArea()
+                .opacity(appeared ? 1 : 0)
                 .onTapGesture { dismissWithAnimation() }
 
             VStack(spacing: 0) {
@@ -45,20 +47,28 @@ struct WordSaveOverlay: View {
                     .padding(.top, 12)
                 }
 
+                // ── Sol avatar ────────────────────────────────
+                HStack {
+                    Image("SolAvaatar")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 28, height: 28)
+                        .clipShape(Circle())
+                    Text("Sol")
+                        .font(.custom("HelveticaNeue-Bold", size: 12))
+                        .foregroundColor(.tsSecondary)
+                    Spacer()
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 4)
+
                 // ── TEXT CARD: Pinned, fixed size, never moves ───
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Tap a word or drag to select")
-                        .font(.custom("HelveticaNeue-Medium", size: 12))
-                        .foregroundColor(.tsAccent)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 5)
-                        .background(Capsule().fill(Color.tsAccent.opacity(0.1)))
-
                     SelectableTextView(
                         text: messageText,
                         selectedText: $selectedText
                     )
-                    .frame(height: 160)
+                    .frame(height: min(max(CGFloat(messageText.count) * 0.7, 80), 250))
                 }
                 .padding(16)
                 .background(
@@ -76,19 +86,34 @@ struct WordSaveOverlay: View {
                 // ── RESULT CARD: Below text, grows as needed ─────
                 VStack(alignment: .leading, spacing: 10) {
                     if selectedText.isEmpty {
-                        HStack {
+                        HStack(spacing: 6) {
                             Spacer()
-                            Text("Select a word or phrase above")
-                                .font(.custom("HelveticaNeue", size: 13))
-                                .foregroundColor(.tsAccent.opacity(0.4))
+                            if hasDraggedBefore {
+                                // They know both features — clean empty state
+                                EmptyView()
+                            } else if hasLookedUpBefore {
+                                Text("💡")
+                                    .font(.system(size: 22))
+                                Text("You can also hold and drag to select a full phrase")
+                                    .font(.custom("HelveticaNeue", size: 13))
+                                    .foregroundColor(.tsLabel)
+                            } else {
+                                Text("👆 Tap a word above to look it up")
+                                    .font(.custom("HelveticaNeue", size: 13))
+                                    .foregroundColor(.tsLabel)
+                            }
                             Spacer()
                         }
-                        .padding(.vertical, 16)
+                        .padding(.vertical, hasDraggedBefore ? 8 : 16)
                     } else {
                         // Selected phrase in bold
-                        Text(selectedText)
-                            .font(.custom("HelveticaNeue-Bold", size: 17))
-                            .foregroundColor(.tsLabel)
+                        HStack(spacing: 8) {
+                            Text("📌")
+                                .font(.system(size: 16))
+                            Text(selectedText)
+                                .font(.custom("HelveticaNeue-Bold", size: 17))
+                                .foregroundColor(.tsLabel)
+                        }
 
                         if isLookingUp {
                             HStack(spacing: 8) {
@@ -122,17 +147,17 @@ struct WordSaveOverlay: View {
                                 Spacer()
                                 Button(action: saveAndDismiss) {
                                     HStack(spacing: 6) {
-                                        Image(systemName: isSaved ? "checkmark.circle.fill" : "square.and.arrow.down")
-                                            .font(.system(size: 13, weight: .medium))
+                                        Text(isSaved ? "✅" : "📋")
+                                            .font(.system(size: 14))
                                         Text(isSaved ? "Saved!" : "Save to Library")
                                             .font(.custom("HelveticaNeue-Bold", size: 13))
                                     }
-                                    .foregroundColor(isSaved ? Color(hex: "#34C759") : .white)
+                                    .foregroundColor(isSaved ? Color(hex: "#34C759") : .tsLabel)
                                     .padding(.horizontal, 18)
                                     .padding(.vertical, 10)
                                     .background(
                                         Capsule().fill(
-                                            isSaved ? Color(hex: "#34C759").opacity(0.15) : Color.tsAccent
+                                            isSaved ? Color(hex: "#34C759").opacity(0.1) : Color(hex: "#FF9500").opacity(0.09)
                                         )
                                     )
                                 }
@@ -146,11 +171,11 @@ struct WordSaveOverlay: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(
                     RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.tsAccent.opacity(0.06))
+                        .fill(Color(hex: "#FF9500").opacity(0.1))
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 20)
-                        .stroke(Color.tsAccent.opacity(0.15), lineWidth: 1)
+                        .stroke(Color(hex: "#FF9500").opacity(0.15), lineWidth: 0.5)
                 )
                 .padding(.horizontal, 16)
                 .padding(.top, 12)
@@ -174,6 +199,11 @@ struct WordSaveOverlay: View {
             if !newValue.isEmpty {
                 lookupResult = nil
                 isSaved = false
+
+                // Mark drag hint as done if they selected multiple words
+                if newValue.contains(" ") {
+                    hasDraggedBefore = true
+                }
 
                 let item = DispatchWorkItem {
                     lookupSelectedText()
@@ -287,6 +317,12 @@ struct WordSaveOverlay: View {
             NSLog("📖 [WordLookup] success: \(phrase) → \(meaning)")
             DispatchQueue.main.async {
                 lookupResult = (meaning: meaning, notes: notes)
+                // Track which features they've used
+                if phrase.contains(" ") {
+                    hasDraggedBefore = true
+                } else {
+                    hasLookedUpBefore = true
+                }
             }
         }.resume()
     }
@@ -313,7 +349,7 @@ struct SelectableTextView: UIViewRepresentable {
     func makeUIView(context: Context) -> NoMenuTextView {
         let tv = NoMenuTextView()
         tv.text = text
-        tv.font = UIFont(name: "HelveticaNeue", size: 22)
+        tv.font = UIFont(name: "HelveticaNeue", size: 18)
         tv.textColor = UIColor.label
         tv.backgroundColor = .clear
         tv.isEditable = false

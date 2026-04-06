@@ -51,6 +51,74 @@ class PracticeConversationService {
         }
     }
 
+    /// Tier-specific behavior instructions based on the user's level.
+    static func levelBehaviorBlock() -> String {
+        let levelStr = solLevelContext()
+        let cefr: String = {
+            let store = UserLevelStore.shared
+            if store.hasBeenAssessed { return store.overallLevel.rawValue }
+            if let sr = SelfReportedLevel.saved { return sr.initialCEFR.rawValue }
+            return "B1"
+        }()
+
+        switch cefr {
+        case "A1", "A2":
+            return """
+            USER'S LEVEL: \(levelStr) — BEGINNER \
+            CRITICAL — BEGINNER MODE: \
+            - Be bilingual: say something short in the target language, then give the English \
+              right after in parentheses so they can follow along. \
+            - Use VERY short sentences — 4-6 words max per sentence in the target language. \
+            - Offer role-play scenarios: ordering food, asking for directions, introductions, \
+              shopping, getting a taxi. Ask "Want to practice ordering coffee?" type openers. \
+            - Teach vocabulary in natural context — greetings, numbers, food, transport, common verbs. \
+            - Check in: "Did you get that?" or "Want me to explain?" every 2-3 exchanges. \
+            - When they make a mistake, gently show the correct version inline — don't just \
+              put it in the JSON. They need to see corrections in real time. \
+            - Celebrate small wins: "Nice, you nailed that conjugation!" \
+            - If they seem stuck, offer two choices: "You could say A or B — which feels right?" \
+            - Slang: minimal. Stick to essential everyday expressions, not street slang. \
+            - Your energy: patient, encouraging, like a friend helping them survive their first week.
+            """
+
+        case "B1", "B2":
+            return """
+            USER'S LEVEL: \(levelStr) — INTERMEDIATE \
+            - Speak fully in the target language — no English in your messages. \
+            - Use natural everyday language with some local color and slang mixed in. \
+            - Corrections go in the JSON only — don't interrupt the flow. \
+            - Push them slightly: use expressions just above their comfort zone. \
+            - If they respond in English, acknowledge it and respond in the target language — \
+              don't switch to English yourself. \
+            - Match B1 with simpler structures, B2 with more complex ones (subjunctive, \
+              conditional, idiomatic expressions). \
+            - Your energy: a friend who happens to speak the language perfectly.
+            """
+
+        case "C1", "C2":
+            return """
+            USER'S LEVEL: \(levelStr) — ADVANCED \
+            - Speak like you're talking to a native — full speed, full complexity. \
+            - Use subjunctive, literary expressions, wordplay, cultural references, humor. \
+            - Corrections should focus on NUANCE, not basics: "That's grammatically correct \
+              but a native would phrase it differently because..." \
+            - Challenge them: throw in double meanings, regional differences, formal vs informal \
+              register switches. \
+            - Teach the difference between "correct" and "natural" — they probably know the \
+              grammar but sound textbook-ish. Your job is to make them sound local. \
+            - Don't hold back on slang density — they can handle it. \
+            - Your energy: a sharp, witty local friend who doesn't dumb anything down.
+            """
+
+        default:
+            return """
+            USER'S LEVEL: \(levelStr). \
+            Adapt your vocabulary, sentence complexity, and slang difficulty to this level. \
+            Don't speak above or below them — match their ability.
+            """
+        }
+    }
+
     private init() {}
 
     private var audioEngine = AVAudioEngine()
@@ -185,6 +253,12 @@ class PracticeConversationService {
         let context: String
     }
 
+    struct MistakeLog {
+        let userFragment: String    // "eu sou 25 anos"
+        let correctFragment: String // "eu tenho 25 anos"
+        let rule: String            // "Portuguese uses 'ter' for age: tenho 25, tenho fome"
+    }
+
     struct SolResponse {
         let text: String
         let translation: String?
@@ -192,6 +266,7 @@ class PracticeConversationService {
         let nativeCorrectionForUser: String?
         let nativeCorrectionNotes: String?
         let slangNotes: [SlangNote]
+        let mistakeLog: MistakeLog?
     }
 
     func getSolResponse(
@@ -249,16 +324,6 @@ class PracticeConversationService {
             }
         }()
 
-        // User's first name — Sol uses it occasionally, not every message
-        let userName = UserDefaults.standard.string(forKey: "user_first_name") ?? ""
-        let nameBlock = userName.isEmpty ? "" : """
-
-        USER'S NAME: \(userName)
-        Use their name OCCASIONALLY — once every 4-5 messages at most. \
-        Like a real friend would: "E aí \(userName), já foi?" not every single message. \
-        NEVER use it more than once per response. If in doubt, don't use it.
-        """
-
         let memoryBlock = SolMemoryStore.shared.buildContextBlock()
         let callbackHint = SolMemoryStore.shared.buildCallbackSuggestion() ?? ""
         let poolBlock = ConversationPoolManager.shared.buildPoolContextBlock()
@@ -282,7 +347,6 @@ class PracticeConversationService {
         in \(langName) with an English speaker who lives in \(userCity). \
         \
         \(toneBlock) \
-        \(nameBlock) \
         \(memoryBlock) \
         \(callbackHint) \
         \(poolBlock) \
@@ -334,9 +398,7 @@ class PracticeConversationService {
           acknowledge it warmly but steer toward the city/experience — don't probe. \
           "Moved here for my girlfriend" → "Nice, that's a great reason — how are you liking it?" \
           NOT "How long have you been together?" Follow their lead only if THEY keep going. \
-        - USER'S LEVEL: \(Self.solLevelContext()). \
-          Adapt your vocabulary, sentence complexity, and slang difficulty to this level. \
-          Don't speak above or below them — match their ability. \
+        \(Self.levelBehaviorBlock()) \
         - The conversation has no fixed length — keep going as long as it's natural. \
           When a topic wraps up naturally, suggest a new direction or wind down. \
         \
@@ -368,6 +430,7 @@ class PracticeConversationService {
           "translation_notes": "1 brief English note about a word/phrase you used (optional, null if none)", \
           "native_correction": "Rewrite THE USER'S LAST MESSAGE (not yours!) as a native speaker of \(langName) would say it. This is about THEIR message, not your response. ALWAYS provide this — even if their grammar was fine, show how a local would phrase it more naturally. If they made errors, fix them. If their phrasing was correct but stiff, make it sound like a real person from \(userCity). NEVER put your own response here — this field is ONLY for improving what the user said. null only if the user's message was already perfect native-level \(langName).", \
           "native_correction_notes": "English explanation of what you changed in the USER'S message and why — grammar fix, more natural phrasing, better word choice, local expression. Use \(langName) words inline. null only if native_correction is null.", \
+          "mistake_log": {"user_fragment": "ONLY the specific wrong part — 2-5 words max, e.g. 'eu sou 25 anos'", "correct_fragment": "the corrected version — same length, e.g. 'eu tenho 25 anos'", "rule": "The grammar rule with 2-3 examples, e.g. 'Portuguese uses ter for age: tenho 25 anos, tenho fome, tenho sede'"} or null if no real mistake was made (just naturalness tweaks don't count), \
           "slang_notes": [{"phrase": "the \(langName) slang/expression", "meaning": "English meaning", \
             "context": "English explanation of when/where people use this — be specific to the city/region"}] or [] if none, \
           "user_facts": ["any personal facts the user revealed in their last message — e.g. 'Looking for an apartment in Condesa', 'Works as a designer', 'Has a date on Friday'. Only include NEW information, not things you already know. Empty array if none."] or [], \
@@ -484,13 +547,24 @@ class PracticeConversationService {
                 }
             }
 
+            // Parse structured mistake log (for clean target area display)
+            var mistakeLog: MistakeLog? = nil
+            if let logDict = parsed["mistake_log"] as? [String: Any],
+               let userFrag = logDict["user_fragment"] as? String,
+               let correctFrag = logDict["correct_fragment"] as? String,
+               let rule = logDict["rule"] as? String,
+               !userFrag.isEmpty, !correctFrag.isEmpty {
+                mistakeLog = MistakeLog(userFragment: userFrag, correctFragment: correctFrag, rule: rule)
+            }
+
             let result = SolResponse(
                 text: responseText,
                 translation: parsed["translation"] as? String,
                 translationNotes: parsed["translation_notes"] as? String,
                 nativeCorrectionForUser: parsed["native_correction"] as? String,
                 nativeCorrectionNotes: parsed["native_correction_notes"] as? String,
-                slangNotes: slangNotes
+                slangNotes: slangNotes,
+                mistakeLog: mistakeLog
             )
 
             DispatchQueue.main.async { completion(result) }

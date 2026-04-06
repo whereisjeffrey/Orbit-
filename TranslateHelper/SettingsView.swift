@@ -342,6 +342,22 @@ struct SettingsView: View {
                             // Wipe all existing decks for a clean new-user experience
                             let deckStore = DeckStore.shared
                             for deck in deckStore.decks { deckStore.deleteDeck(deck) }
+                            // Reset all Sol conversation hints so they fire fresh
+                            UserDefaults.standard.removeObject(forKey: "practice_doubletap_validated")
+                            UserDefaults.standard.removeObject(forKey: "practice_doubletap_dismiss_count")
+                            UserDefaults.standard.removeObject(forKey: "practice_native_validated")
+                            UserDefaults.standard.removeObject(forKey: "practice_native_dismiss_count")
+                            UserDefaults.standard.removeObject(forKey: "practice_playback_validated")
+                            UserDefaults.standard.removeObject(forKey: "practice_swipe_right_done")
+                            UserDefaults.standard.removeObject(forKey: "practice_swipe_left_done")
+                            UserDefaults.standard.removeObject(forKey: "practice_save_validated")
+                            UserDefaults.standard.removeObject(forKey: "practice_settings_hint_shown")
+                            UserDefaults.standard.removeObject(forKey: "practice_english_hint_shown")
+                            UserDefaults.standard.removeObject(forKey: "practice_word_save_hint_shown")
+                            UserDefaults.standard.removeObject(forKey: "word_lookup_done_once")
+                            UserDefaults.standard.removeObject(forKey: "word_drag_done_once")
+                            // Reset conversation scripts
+                            ConversationScriptEngine.shared.resetAll()
                         }) {
                             HStack {
                                 Image(systemName: "arrow.counterclockwise")

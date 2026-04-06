@@ -24,7 +24,7 @@ struct KeyboardSetupSplashView: View {
 
             VStack(spacing: 0) {
 
-                OnboardingProgressBar(currentStep: 7, totalSteps: 7)
+                OnboardingProgressBar(currentStep: 6, totalSteps: 6)
                     .padding(.top, 16)
 
                 Spacer(minLength: 8)

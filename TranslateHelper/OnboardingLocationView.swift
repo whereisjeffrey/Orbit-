@@ -40,7 +40,7 @@ struct OnboardingLocationView: View {
 
                     Spacer()
 
-                    OnboardingProgressBar(currentStep: 4, totalSteps: 7)
+                    OnboardingProgressBar(currentStep: 3, totalSteps: 6)
 
                     Spacer()
 

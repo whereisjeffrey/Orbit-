@@ -107,18 +107,10 @@ class ConversationScriptEngine {
         lastCategory = categoryKey(picked)
         saveUsed()
 
-        // Build the direction with city name and user name
-        let userName = UserDefaults.standard.string(forKey: "user_first_name") ?? ""
+        // Build the direction with city name
         var direction = picked.direction
         if !cityName.isEmpty {
             direction = direction.replacingOccurrences(of: "{city}", with: cityName)
-        }
-        if !userName.isEmpty {
-            direction = direction.replacingOccurrences(of: "{name}", with: userName)
-        } else {
-            // No name — remove the name placeholder gracefully
-            direction = direction.replacingOccurrences(of: "{name}, ", with: "")
-            direction = direction.replacingOccurrences(of: "{name}", with: "")
         }
 
         NSLog("🎬 [Script] picked: \(picked.id) (layer: \(picked.layer.rawValue))")
@@ -191,7 +183,7 @@ class ConversationScriptEngine {
             ConversationScript(
                 id: "visiting_party_opener",
                 layer: .status, status: "visiting", interest: nil,
-                direction: "First ever conversation. Use their name and city. Think of it like meeting them at a party: 'So {name}, what brings you to {city}? How are you liking it so far?' Keep it exactly this open-ended — one natural question that lets them take it anywhere. Don't ask about specific topics yet.",
+                direction: "First ever conversation. Use their city. Think of it like meeting them at a party: 'So, what brings you to {city}? How are you liking it so far?' Keep it exactly this open-ended — one natural question that lets them take it anywhere. Don't ask about specific topics yet.",
                 requiresCity: true, priority: 10
             ),
             ConversationScript(
@@ -249,7 +241,7 @@ class ConversationScriptEngine {
             ConversationScript(
                 id: "arrived_party_opener",
                 layer: .status, status: "just_arrived", interest: nil,
-                direction: "First ever conversation. Use their name and city. Like meeting them at a party: 'So {name}, you just got to {city} — how's it been? What made you come here?' One open-ended question. Let them tell their story. Don't ask about specific topics yet.",
+                direction: "First ever conversation. Use their city. Like meeting them at a party: 'So, you just got to {city} — how's it been? What made you come here?' One open-ended question. Let them tell their story. Don't ask about specific topics yet.",
                 requiresCity: true, priority: 10
             ),
             ConversationScript(
@@ -313,7 +305,7 @@ class ConversationScriptEngine {
             ConversationScript(
                 id: "settling_party_opener",
                 layer: .status, status: "settling", interest: nil,
-                direction: "First ever conversation. Use their name and city. Like meeting them at a party: 'So {name}, what brings you to {city}? How are you liking it so far?' Same open-ended energy as meeting someone new. Let them take it wherever they want — work, lifestyle, adventure. Don't ask about specific topics yet.",
+                direction: "First ever conversation. Use their city. Like meeting them at a party: 'So, what brings you to {city}? How are you liking it so far?' Same open-ended energy as meeting someone new. Let them take it wherever they want — work, lifestyle, adventure. Don't ask about specific topics yet.",
                 requiresCity: true, priority: 10
             ),
             ConversationScript(
@@ -383,7 +375,7 @@ class ConversationScriptEngine {
             ConversationScript(
                 id: "local_party_opener",
                 layer: .status, status: "local", interest: nil,
-                direction: "First ever conversation. Use their name and city. Like meeting them at a party: 'So {name}, you're living in {city} — what's the story? What brought you here originally?' Open-ended — let them share their journey. Don't ask about specific topics yet.",
+                direction: "First ever conversation. Use their city. Like meeting them at a party: 'So, you're living in {city} — what's the story? What brought you here originally?' Open-ended — let them share their journey. Don't ask about specific topics yet.",
                 requiresCity: true, priority: 10
             ),
             ConversationScript(
@@ -453,7 +445,7 @@ class ConversationScriptEngine {
             ConversationScript(
                 id: "planning_party_opener",
                 layer: .status, status: "planning", interest: nil,
-                direction: "First ever conversation. Use their name and city. Like meeting them at a party: 'So {name}, you're thinking about moving to {city} — what's pulling you there?' Open-ended — could be work, love, adventure, a fresh start. Let them tell you. Don't ask about specific topics yet.",
+                direction: "First ever conversation. Use their city. Like meeting them at a party: 'So, you're thinking about moving to {city} — what's pulling you there?' Open-ended — could be work, love, adventure, a fresh start. Let them tell you. Don't ask about specific topics yet.",
                 requiresCity: true, priority: 10
             ),
             ConversationScript(
@@ -641,6 +633,20 @@ class ConversationScriptEngine {
                 layer: .interest, status: nil, interest: "language",
                 direction: "Ask about their approach to learning the language — conversation practice, apps, reading, podcasts, tandem partners? What's working best for them so far?",
                 requiresCity: false, priority: 7
+            ),
+
+            // News & Events
+            ConversationScript(
+                id: "interest_news_following",
+                layer: .interest, status: nil, interest: "news",
+                direction: "Ask if they follow local news in {city} — do they know what's going on, or do they mostly hear about things through friends? Have any local holidays or events caught them off guard? Ask about upcoming holidays they might not know about.",
+                requiresCity: true, priority: 7
+            ),
+            ConversationScript(
+                id: "interest_news_neighbourhoods",
+                layer: .interest, status: nil, interest: "news",
+                direction: "Ask if they've noticed any neighbourhoods in {city} that are changing fast — gentrification, new restaurants popping up, areas getting more expensive. What do they think about it? Have they explored any up-and-coming areas?",
+                requiresCity: true, priority: 6
             ),
         ])
 

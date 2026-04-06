@@ -50,10 +50,12 @@ struct CoachEmptyView: View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 0) {
 
-                // ── Sol avatar placeholder ──────────────────────
-                Circle()
-                    .fill(Color.tsAccent.opacity(0.12))
+                // ── Sol avatar ──────────────────────
+                Image("SolAvaatar")
+                    .resizable()
+                    .scaledToFill()
                     .frame(width: 80, height: 80)
+                    .clipShape(Circle())
                     .overlay(
                         Circle()
                             .stroke(Color.tsAccent.opacity(0.2), lineWidth: 1)
@@ -62,7 +64,7 @@ struct CoachEmptyView: View {
                     .padding(.bottom, 16)
 
                 // ── Greeting ────────────────────────────────────
-                Text("Hey, I'm Sol. 👋")
+                Text("Hey, I'm Sol.")
                     .font(.custom("HelveticaNeue-Bold", size: 24))
                     .foregroundColor(.tsLabel)
                     .padding(.bottom, 8)
@@ -323,7 +325,7 @@ struct CoachPopulatedView: View {
                         // Target areas start at zero — they fill organically
                         // from keyboard corrections and Sol conversations.
                         // One-time wipe of old pre-seeded data from dev builds.
-                        let wipeKey = "target_areas_wiped_v3"
+                        let wipeKey = "target_areas_wiped_v4"
                         if !UserDefaults.standard.bool(forKey: wipeKey) {
                             MistakeProfileStore.shared.resetToZero()
                             UserDefaults.standard.set(true, forKey: wipeKey)
@@ -626,9 +628,9 @@ extension CoachPopulatedView {
 
             // ── Stats row (real data) ───────────────────────
             HStack(spacing: 16) {
-                statPill(value: "\(stats.weeklyMessageCount)", label: "messages")
+                statPill(value: "\(stats.weeklySessionCount)", label: "sessions")
                 statPill(value: "\(stats.weeklyPracticeMinutes)", label: "min practice")
-                statPill(value: avgScore > 0 ? "\(avgScore)" : "—", label: "avg score")
+                statPill(value: "\(stats.weeklyMessageCount)", label: "messages")
             }
 
             Divider().opacity(0.3)
@@ -847,6 +849,7 @@ extension CoachPopulatedView {
                     }
                 }
                 .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .background(
                     RoundedRectangle(cornerRadius: 14)
                         .fill(Color.tsAccent.opacity(0.06))
@@ -948,8 +951,8 @@ extension CoachPopulatedView {
                                                         .foregroundColor(Color(hex: "#FF3B30").opacity(0.7))
                                                 }
 
-                                                // Explanation
-                                                Text(mistake.explanation)
+                                                // Explanation — truncated to 2 lines max
+                                                Text(truncateExplanation(mistake.explanation))
                                                     .font(.custom("HelveticaNeue", size: 12))
                                                     .foregroundColor(.tsSecondary)
                                                     .lineSpacing(2)
@@ -1036,10 +1039,35 @@ extension CoachPopulatedView {
 
     /// Truncates long phrases to keep cards readable — shows just the key part.
     private func truncatePhrase(_ text: String) -> String {
-        text.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        // If it's already short, show it all
+        if trimmed.count <= 40 { return trimmed }
+        // Truncate to first ~40 chars at a word boundary
+        let words = trimmed.split(separator: " ")
+        var result = ""
+        for word in words {
+            if result.count + word.count + 1 > 40 { break }
+            result += (result.isEmpty ? "" : " ") + word
+        }
+        return result + "…"
     }
 
-    /// Shortens explanation and strips repetitive "In Portuguese" phrasing.
+    private func truncateExplanation(_ text: String) -> String {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.count <= 100 { return trimmed }
+        // Take first sentence or first ~100 chars
+        if let dotRange = trimmed.range(of: ".", range: trimmed.startIndex..<trimmed.index(trimmed.startIndex, offsetBy: min(120, trimmed.count))) {
+            return String(trimmed[...dotRange.lowerBound]) + "."
+        }
+        let words = trimmed.split(separator: " ")
+        var result = ""
+        for word in words {
+            if result.count + word.count + 1 > 100 { break }
+            result += (result.isEmpty ? "" : " ") + word
+        }
+        return result + "…"
+    }
+
     /// Generates a rule-based insight for each category based on the actual mistakes.
     private func categoryInsight(_ category: MistakeCategory, mistakes: [MistakeEntry]) -> String {
         let langName = LanguageManager.shared.targetLangName ?? "the target language"
@@ -2318,6 +2346,25 @@ struct PracticeSessionView: View {
                 sessionSeconds += 1
             }
 
+            // Pause timer when app goes to background, resume on foreground
+            NotificationCenter.default.addObserver(
+                forName: UIApplication.willResignActiveNotification,
+                object: nil, queue: .main
+            ) { _ in
+                sessionTimer?.invalidate()
+                sessionTimer = nil
+            }
+            NotificationCenter.default.addObserver(
+                forName: UIApplication.didBecomeActiveNotification,
+                object: nil, queue: .main
+            ) { _ in
+                if sessionTimer == nil {
+                    sessionTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+                        sessionSeconds += 1
+                    }
+                }
+            }
+
             // TODO: Remove reset lines before shipping — forces hints to show during dev
             doubleTapValidated = false
             doubleTapDismissCount = 0
@@ -2749,14 +2796,21 @@ struct PracticeSessionView: View {
         let isNativeRevealed = revealedNative.contains(message.id)
 
         return HStack(alignment: .top, spacing: 10) {
-            if message.role == .sol || message.role == .coaching {
+            if message.role == .sol {
                 // Sol avatar
+                Image("SolAvaatar")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 32, height: 32)
+                    .clipShape(Circle())
+            } else if message.role == .coaching {
+                // Coaching tip icon — lightbulb in orange circle
                 Circle()
-                    .fill(Color.tsAccent.opacity(0.12))
+                    .fill(Color(hex: "#FF9500").opacity(0.15))
                     .frame(width: 32, height: 32)
                     .overlay(
-                        Circle()
-                            .stroke(Color.tsAccent.opacity(0.2), lineWidth: 0.5)
+                        Text("💡")
+                            .font(.system(size: 16))
                     )
             }
 
@@ -3818,12 +3872,23 @@ struct PracticeSessionView: View {
 
             // Ingest correction into mistake profile (outside the array mutation)
             if let nativeVersion = sol.nativeCorrectionForUser, !userText.isEmpty {
-                MistakeIngestion.ingestFromSol(
-                    userSaid: userText,
-                    nativeCorrection: nativeVersion,
-                    notes: sol.nativeCorrectionNotes,
-                    language: targetLang
-                )
+                // Use structured mistake_log if available (clean short fragments)
+                // Otherwise fall back to raw correction text
+                if let log = sol.mistakeLog {
+                    MistakeIngestion.ingestFromSol(
+                        userSaid: log.userFragment,
+                        nativeCorrection: log.correctFragment,
+                        notes: log.rule,
+                        language: targetLang
+                    )
+                } else {
+                    MistakeIngestion.ingestFromSol(
+                        userSaid: userText,
+                        nativeCorrection: nativeVersion,
+                        notes: sol.nativeCorrectionNotes,
+                        language: targetLang
+                    )
+                }
             }
 
             // Fire background Gemini enrichment for the NEXT turn.

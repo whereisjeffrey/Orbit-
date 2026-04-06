@@ -14,33 +14,29 @@ struct OnboardingView: View {
     var body: some View {
         switch step {
         case 1:
-            OnboardingNameView(
-                onContinue: { step = 2 }
-            )
-        case 2:
             LanguageSelectionView(
-                step: 2, totalSteps: 5,
+                step: 1, totalSteps: 5,
                 selectedLanguage: $selectedLanguage,
-                onBack: { step = 1 },
-                onSkip: { step = 3 },
+                onBack: {},
+                onSkip: { step = 2 },
                 onContinue: {
                     if let lang = selectedLanguage {
                         LanguageManager.shared.setTargetLang(lang.code)
                     }
-                    step = 3
+                    step = 2
                 }
             )
-        case 3:
+        case 2:
             LevelAssessmentView(
                 isSkippable: true,
-                onComplete: { step = 4 }
+                onComplete: { step = 3 }
             )
-        case 4:
+        case 3:
             OnboardingLocationView(
-                step: 4, totalSteps: 6,
-                onBack: { step = 3 },
-                onSkip: { step = 5 },
-                onContinue: { step = 5 }
+                step: 3, totalSteps: 6,
+                onBack: { step = 2 },
+                onSkip: { step = 4 },
+                onContinue: { step = 4 }
             )
             .background(
                 KeyboardPreWarmer(triggered: $keyboardPreWarmed)
@@ -58,25 +54,20 @@ struct OnboardingView: View {
                     DictateViewController.preloadWhisperKit()
                 }
             }
-        case 5:
+        case 4:
             OnboardingStatusView(
-                onBack: { step = 4 },
-                onContinue: { step = 6 }
+                onBack: { step = 3 },
+                onContinue: { step = 5 }
             )
-        case 6:
+        case 5:
             OnboardingInterestsView(
-                onBack: { step = 5 },
+                onBack: { step = 4 },
                 onContinue: {
                     seedConversationPool()
-                    step = 7
+                    step = 6
                 }
             )
-        // Plan + Paywall hidden for beta — all users get full access
-        // case 7:
-        //     OnboardingPlanView(...)
-        // case 8:
-        //     OnboardingPaywallView(...)
-        case 7:
+        case 6:
             KeyboardSetupSplashView(
                 onSkip: { completeOnboarding() }
             )
@@ -101,6 +92,9 @@ struct OnboardingView: View {
 
     private func completeOnboarding() {
         UserDefaults.standard.set(true, forKey: "onboarding_complete")
+
+        // Reset conversation scripts so party opener fires on first Sol session
+        ConversationScriptEngine.shared.resetAll()
 
         if let lang = selectedLanguage {
             LanguageManager.shared.setTargetLang(lang.code)

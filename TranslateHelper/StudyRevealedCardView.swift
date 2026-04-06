@@ -170,6 +170,7 @@ struct StudyRevealedCardView: View {
                                     .lineSpacing(4)
                             }
                             .padding(20)
+                            .frame(maxWidth: .infinity, minHeight: 100, alignment: .topLeading)
                             .background(
                                 Color(UIColor { trait in
                                     trait.userInterfaceStyle == .dark

@@ -154,7 +154,7 @@ struct LevelAssessmentView: View {
                 HStack {
                     Color.clear.frame(width: 40, height: 40)
                     Spacer()
-                    OnboardingProgressBar(currentStep: 3, totalSteps: 7)
+                    OnboardingProgressBar(currentStep: 2, totalSteps: 6)
                     Spacer()
                     Color.clear.frame(width: 40, height: 40)
                 }

@@ -16,7 +16,8 @@ let allInterests: [Interest] = [
     Interest(id: "outdoors",     emoji: "🏃", label: "Outdoor activities"),
     Interest(id: "wellness",     emoji: "🧘", label: "Wellness"),
     Interest(id: "music",        emoji: "🎵", label: "Live music"),
-    Interest(id: "history",      emoji: "🏛️", label: "History & heritage"),
+    Interest(id: "history",      emoji: "🏛️", label: "History"),
+    Interest(id: "news",         emoji: "📰", label: "News & events"),
     Interest(id: "family",       emoji: "🏡", label: "Family life"),
     Interest(id: "markets",      emoji: "🛍️", label: "Markets"),
     Interest(id: "language",     emoji: "💬", label: "Language learning"),
@@ -47,7 +48,7 @@ struct OnboardingInterestsView: View {
 
                     Spacer()
 
-                    OnboardingProgressBar(currentStep: 6, totalSteps: 7)
+                    OnboardingProgressBar(currentStep: 5, totalSteps: 6)
 
                     Spacer()
                     if !selected.isEmpty {

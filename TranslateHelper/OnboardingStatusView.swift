@@ -62,7 +62,7 @@ struct OnboardingStatusView: View {
 
                     Spacer()
 
-                    OnboardingProgressBar(currentStep: 5, totalSteps: 7)
+                    OnboardingProgressBar(currentStep: 4, totalSteps: 6)
 
                     Spacer()
 

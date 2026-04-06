@@ -27,6 +27,7 @@ struct Language: Identifiable, Hashable, Codable {
 // MVP: 10 languages — the most studied by English speakers with the best AI support.
 // All 39 remain in LanguageManager/keyboard for future expansion.
 let allLanguages: [Language] = [
+    Language(flag: "🇺🇸", name: "English",    code: "en"),
     Language(flag: "🇪🇸", name: "Spanish",    code: "es"),
     Language(flag: "🇫🇷", name: "French",     code: "fr"),
     Language(flag: "🇮🇹", name: "Italian",    code: "it"),
@@ -56,11 +57,16 @@ struct LanguageSelectionView: View {
 
     @State private var searchText: String = ""
 
+    /// Languages available to learn — excludes English (the user's native language)
+    private var selectableLanguages: [Language] {
+        allLanguages.filter { $0.code != "en" }
+    }
+
     var filteredLanguages: [Language] {
         if searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return allLanguages
+            return selectableLanguages
         }
-        return allLanguages.filter {
+        return selectableLanguages.filter {
             $0.name.localizedCaseInsensitiveContains(searchText)
         }
     }
@@ -87,7 +93,7 @@ struct LanguageSelectionView: View {
 
                     Spacer()
 
-                    OnboardingProgressBar(currentStep: 2, totalSteps: 7)
+                    OnboardingProgressBar(currentStep: 1, totalSteps: 6)
 
                     Spacer()
 
