@@ -324,6 +324,20 @@ class PracticeConversationService {
             }
         }()
 
+        // Discovery phase — Sol actively learns about the user in early conversations
+        let factCount = SolMemoryStore.shared.facts.count
+        let discoveryBlock: String = factCount < 5 ? """
+
+        DISCOVERY PHASE — You don't know much about this person yet. \
+        Your priority right now is to understand who they are — not by \
+        interrogating them, but by being genuinely curious through natural \
+        conversation. Try to learn: what brought them here, what they do, \
+        how they're finding it, what their daily life looks like, and what \
+        they need. Save everything they share in user_facts. Once you know \
+        them well, this phase ends and you shift to being a knowledgeable \
+        friend who references what you know about them.
+        """ : ""
+
         let memoryBlock = SolMemoryStore.shared.buildContextBlock()
         let callbackHint = SolMemoryStore.shared.buildCallbackSuggestion() ?? ""
         let poolBlock = ConversationPoolManager.shared.buildPoolContextBlock()
@@ -347,6 +361,7 @@ class PracticeConversationService {
         in \(langName) with an English speaker who lives in \(userCity). \
         \
         \(toneBlock) \
+        \(discoveryBlock) \
         \(memoryBlock) \
         \(callbackHint) \
         \(poolBlock) \
@@ -419,9 +434,11 @@ class PracticeConversationService {
         \
         NOTES LANGUAGE RULE: \
         All notes fields (translation_notes, native_correction_notes, slang meaning/context) \
-        MUST be written in English. When referencing \(langName) words or phrases inline, \
+        MUST be written in \(LanguageManager.languageName(for: LanguageManager.shared.nativeLang)). \
+        When referencing \(langName) words or phrases inline, \
         keep them in \(langName) — e.g. "Use 'cara' instead of 'pessoa' — it sounds more casual." \
-        The user reads English. The \(langName) words teach them vocabulary in context. \
+        The user reads \(LanguageManager.languageName(for: LanguageManager.shared.nativeLang)). \
+        The \(langName) words teach them vocabulary in context. \
         \
         Respond ONLY with valid JSON: \
         { \
@@ -430,7 +447,7 @@ class PracticeConversationService {
           "translation_notes": "1 brief English note about a word/phrase you used (optional, null if none)", \
           "native_correction": "Rewrite THE USER'S LAST MESSAGE (not yours!) as a native speaker of \(langName) would say it. This is about THEIR message, not your response. ALWAYS provide this — even if their grammar was fine, show how a local would phrase it more naturally. If they made errors, fix them. If their phrasing was correct but stiff, make it sound like a real person from \(userCity). NEVER put your own response here — this field is ONLY for improving what the user said. null only if the user's message was already perfect native-level \(langName).", \
           "native_correction_notes": "English explanation of what you changed in the USER'S message and why — grammar fix, more natural phrasing, better word choice, local expression. Use \(langName) words inline. null only if native_correction is null.", \
-          "mistake_log": {"user_fragment": "ONLY the specific wrong part — 2-5 words max, e.g. 'eu sou 25 anos'", "correct_fragment": "the corrected version — same length, e.g. 'eu tenho 25 anos'", "rule": "The grammar rule with 2-3 examples, e.g. 'Portuguese uses ter for age: tenho 25 anos, tenho fome, tenho sede'"} or null if no real mistake was made (just naturalness tweaks don't count), \
+          "mistake_log": {"user_fragment": "ONLY the exact wrong word or 2-3 word phrase — NOT the surrounding sentence. Max 25 characters. e.g. 'a prédio' or 'eu sou 25'", "correct_fragment": "the corrected version, same length as user_fragment. e.g. 'o prédio' or 'eu tenho 25'", "rule": "One sentence: the grammar pattern + 2-3 examples of the same pattern. Max 120 chars. e.g. 'Words ending in -agem are feminine: viagem, garagem, paisagem.'"} or null if no real mistake was made (just naturalness tweaks don't count), \
           "slang_notes": [{"phrase": "the \(langName) slang/expression", "meaning": "English meaning", \
             "context": "English explanation of when/where people use this — be specific to the city/region"}] or [] if none, \
           "user_facts": ["any personal facts the user revealed in their last message — e.g. 'Looking for an apartment in Condesa', 'Works as a designer', 'Has a date on Friday'. Only include NEW information, not things you already know. Empty array if none."] or [], \

@@ -85,6 +85,9 @@ enum MistakeIngestion {
             )
         }
 
+        // Record engagement for streak tracking
+        PracticeStatsStore.shared.recordEngagement()
+
         // Clear queue
         defaults.removeObject(forKey: queueKey)
         defaults.synchronize()

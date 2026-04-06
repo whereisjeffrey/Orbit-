@@ -320,7 +320,7 @@ struct LibraryView: View {
         }
         .onAppear {
             store.load()
-            store.seedDemoPhrasesIfNeeded()
+            // Demo seed disabled — clipboard fills from real keyboard + Sol usage
             rebuildSearchablePhrases()
 
             // Seed language-specific starter decks whenever the target language changes

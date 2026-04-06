@@ -261,6 +261,9 @@ struct StudySourceWordView: View {
         }
         UserDefaults.standard.set(UserDefaults.standard.integer(forKey: todayKey) + 1, forKey: todayKey)
 
+        // Record engagement for streak tracking
+        PracticeStatsStore.shared.recordEngagement()
+
         // Track study day for streak widget (same AppStorage keys it reads)
         let cal = Calendar.current
         let y = cal.component(.yearForWeekOfYear, from: Date())

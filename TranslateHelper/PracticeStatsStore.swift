@@ -49,6 +49,17 @@ class PracticeStatsStore {
         save()
     }
 
+    /// Record any meaningful engagement — marks today as active for streak.
+    /// Call from: study card session, keyboard translation, or Sol conversation.
+    func recordEngagement() {
+        let dateStr = Self.dateFormatter.string(from: Date())
+        if !practiceDates.contains(dateStr) {
+            practiceDates.insert(dateStr)
+            save()
+            NSLog("🔥 [Streak] day recorded: \(dateStr)")
+        }
+    }
+
     /// Increment keyboard correction count (called from App Group queue processing).
     func incrementKeyboardCorrections(count: Int = 1) {
         guard let defaults = UserDefaults(suiteName: Self.appGroup) else { return }

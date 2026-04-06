@@ -325,7 +325,7 @@ struct CoachPopulatedView: View {
                         // Target areas start at zero — they fill organically
                         // from keyboard corrections and Sol conversations.
                         // One-time wipe of old pre-seeded data from dev builds.
-                        let wipeKey = "target_areas_wiped_v4"
+                        let wipeKey = "target_areas_wiped_v5"
                         if !UserDefaults.standard.bool(forKey: wipeKey) {
                             MistakeProfileStore.shared.resetToZero()
                             UserDefaults.standard.set(true, forKey: wipeKey)
@@ -912,7 +912,7 @@ extension CoachPopulatedView {
                                     let isMistakeExpanded = expandedMistakes.contains(mistake.id)
 
                                     VStack(alignment: .leading, spacing: 0) {
-                                        // Tap row — shows target language word + chevron
+                                        // Tap row — correction pair + seen count
                                         Button {
                                             withAnimation(.easeInOut(duration: 0.2)) {
                                                 if isMistakeExpanded {
@@ -926,10 +926,18 @@ extension CoachPopulatedView {
                                                 Circle()
                                                     .fill(color)
                                                     .frame(width: 6, height: 6)
-                                                Text(truncatePhrase(mistake.correctForm))
-                                                    .font(.custom("HelveticaNeue-Medium", size: 14))
+                                                // Show correction pair: wrong → right
+                                                Text("\(truncatePhrase(mistake.userSaid)) → \(truncatePhrase(mistake.correctForm))")
+                                                    .font(.custom("HelveticaNeue-Medium", size: 13))
                                                     .foregroundColor(.tsLabel)
+                                                    .lineLimit(1)
                                                 Spacer()
+                                                // Show seen count if repeated
+                                                if mistake.seenCount > 1 {
+                                                    Text("×\(mistake.seenCount)")
+                                                        .font(.custom("HelveticaNeue-Bold", size: 10))
+                                                        .foregroundColor(color.opacity(0.7))
+                                                }
                                                 Image(systemName: isMistakeExpanded ? "chevron.up" : "chevron.down")
                                                     .font(.system(size: 9, weight: .semibold))
                                                     .foregroundColor(.tsSecondary.opacity(0.5))
@@ -938,25 +946,27 @@ extension CoachPopulatedView {
                                             .padding(.horizontal, 14)
                                         }
 
-                                        // Expanded detail — what went wrong + explanation
+                                        // Expanded detail — rule + pattern reinforcement
                                         if isMistakeExpanded {
-                                            VStack(alignment: .leading, spacing: 6) {
-                                                // What they said wrong
-                                                HStack(spacing: 6) {
-                                                    Text("You said:")
-                                                        .font(.custom("HelveticaNeue", size: 12))
-                                                        .foregroundColor(.tsSecondary)
-                                                    Text(truncatePhrase(mistake.userSaid))
-                                                        .font(.custom("HelveticaNeue", size: 12))
-                                                        .foregroundColor(Color(hex: "#FF3B30").opacity(0.7))
-                                                }
-
-                                                // Explanation — truncated to 2 lines max
+                                            VStack(alignment: .leading, spacing: 8) {
+                                                // Rule explanation
                                                 Text(truncateExplanation(mistake.explanation))
                                                     .font(.custom("HelveticaNeue", size: 12))
                                                     .foregroundColor(.tsSecondary)
                                                     .lineSpacing(2)
                                                     .fixedSize(horizontal: false, vertical: true)
+
+                                                // Pattern reinforcement for repeated mistakes
+                                                if mistake.seenCount >= 3 {
+                                                    HStack(spacing: 6) {
+                                                        Image(systemName: "exclamationmark.triangle.fill")
+                                                            .font(.system(size: 10))
+                                                            .foregroundColor(Color(hex: "#FF9500"))
+                                                        Text("You've made this mistake \(mistake.seenCount) times — focus on this pattern.")
+                                                            .font(.custom("HelveticaNeue-Medium", size: 11))
+                                                            .foregroundColor(Color(hex: "#FF9500"))
+                                                    }
+                                                }
                                             }
                                             .padding(.horizontal, 30)
                                             .padding(.bottom, 8)
@@ -983,6 +993,45 @@ extension CoachPopulatedView {
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
                             .stroke(color.opacity(0.12), lineWidth: 0.5)
+                    )
+                }
+
+                // Recently graduated — celebration
+                let recentlyMastered = profile.entries.filter {
+                    guard let mastered = $0.masteredAt else { return false }
+                    return Date().timeIntervalSince(mastered) < 7 * 86400  // last 7 days
+                }
+                if !recentlyMastered.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(spacing: 6) {
+                            Text("🎓")
+                                .font(.system(size: 16))
+                            Text("GRADUATED")
+                                .font(.custom("HelveticaNeue-Bold", size: 11))
+                                .foregroundColor(Color(hex: "#34C759"))
+                                .kerning(1.2)
+                        }
+                        ForEach(recentlyMastered.prefix(3)) { item in
+                            HStack(spacing: 8) {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(Color(hex: "#34C759"))
+                                Text("\(truncatePhrase(item.userSaid)) → \(truncatePhrase(item.correctForm))")
+                                    .font(.custom("HelveticaNeue", size: 12))
+                                    .foregroundColor(.tsLabel)
+                                    .strikethrough(true, color: .tsSecondary.opacity(0.4))
+                            }
+                        }
+                    }
+                    .padding(14)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(hex: "#34C759").opacity(0.06))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color(hex: "#34C759").opacity(0.15), lineWidth: 0.5)
                     )
                 }
 
@@ -1040,13 +1089,11 @@ extension CoachPopulatedView {
     /// Truncates long phrases to keep cards readable — shows just the key part.
     private func truncatePhrase(_ text: String) -> String {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        // If it's already short, show it all
-        if trimmed.count <= 40 { return trimmed }
-        // Truncate to first ~40 chars at a word boundary
+        if trimmed.count <= 25 { return trimmed }
         let words = trimmed.split(separator: " ")
         var result = ""
         for word in words {
-            if result.count + word.count + 1 > 40 { break }
+            if result.count + word.count + 1 > 25 { break }
             result += (result.isEmpty ? "" : " ") + word
         }
         return result + "…"

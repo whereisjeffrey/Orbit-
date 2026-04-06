@@ -126,6 +126,15 @@ class SharedPhraseStore: ObservableObject {
         }
     }
 
+    /// Wipe all saved phrases from memory and disk.
+    func clearAll() {
+        phrases = []
+        defaults?.removeObject(forKey: SavedPhrase.userDefaultsKey)
+        defaults?.synchronize()
+        objectWillChange.send()
+        NSLog("📋 [PhraseStore] cleared all phrases")
+    }
+
     func save(source: String, translation: String, sourceLang: String, targetLang: String, notes: String? = nil, localityTag: String? = nil) {
         let phrase = SavedPhrase(
             id: UUID(),

@@ -231,19 +231,19 @@ struct SettingsView: View {
                     .padding(.horizontal, 16)
                     .padding(.bottom, 32)
                     
-                    // Social Section
-                    SectionHeader(title: "Social")
-                    VStack(spacing: 0) {
-                        SocialConnectRow(platform: .instagram, handle: $instagramHandle)
-                        Divider().background(Color.tsBorder).padding(.leading, 56)
-                        SocialConnectRow(platform: .linkedin,  handle: $linkedinHandle)
-                        Divider().background(Color.tsBorder).padding(.leading, 56)
-                        SocialConnectRow(platform: .facebook,  handle: $facebookHandle)
-                    }
-                    .background(Color.tsGrayCard)
-                    .cornerRadius(12)
-                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
-                    .padding(.horizontal, 16)
+                    // Social Section — hidden for beta (community not active yet)
+                    // SectionHeader(title: "Social")
+                    // VStack(spacing: 0) {
+                    //     SocialConnectRow(platform: .instagram, handle: $instagramHandle)
+                    //     Divider().background(Color.tsBorder).padding(.leading, 56)
+                    //     SocialConnectRow(platform: .linkedin,  handle: $linkedinHandle)
+                    //     Divider().background(Color.tsBorder).padding(.leading, 56)
+                    //     SocialConnectRow(platform: .facebook,  handle: $facebookHandle)
+                    // }
+                    // .background(Color.tsGrayCard)
+                    // .cornerRadius(12)
+                    // .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
+                    // .padding(.horizontal, 16)
                     .padding(.bottom, 32)
 
                     // Log Out Button
@@ -358,6 +358,26 @@ struct SettingsView: View {
                             UserDefaults.standard.removeObject(forKey: "word_drag_done_once")
                             // Reset conversation scripts
                             ConversationScriptEngine.shared.resetAll()
+                            // Clear saved phrases (clipboard) — both in-memory and on disk
+                            SharedPhraseStore.shared.clearAll()
+                            let appGroup = UserDefaults(suiteName: "group.com.jeff.translatehelper")
+                            appGroup?.removeObject(forKey: "ts_sol_memory_v1")
+                            appGroup?.removeObject(forKey: "ts_practice_sessions_v1")
+                            appGroup?.removeObject(forKey: "ts_practice_dates")
+                            appGroup?.removeObject(forKey: "ts_conversation_pool_v1")
+                            appGroup?.removeObject(forKey: "ts_interest_refinements_v1")
+                            appGroup?.removeObject(forKey: "ts_mistake_profile_v1")
+                            MistakeProfileStore.shared.resetToZero()
+                            appGroup?.synchronize()
+                            // Reset target areas wipe key so it doesn't re-wipe on next launch
+                            UserDefaults.standard.removeObject(forKey: "target_areas_wiped_v5")
+                            // Delete backup files so old data doesn't get restored
+                            if let backupDir = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.com.jeff.translatehelper") {
+                                try? FileManager.default.removeItem(at: backupDir.appendingPathComponent("profile_backup.json"))
+                            }
+                            if let docsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+                                try? FileManager.default.removeItem(at: docsDir.appendingPathComponent("orbit_profile_backup.json"))
+                            }
                         }) {
                             HStack {
                                 Image(systemName: "arrow.counterclockwise")

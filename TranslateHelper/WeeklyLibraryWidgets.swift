@@ -179,11 +179,13 @@ struct WeeklyClipboardWidget: View {
                 }
                 .frame(height: 44)
                 .padding(.horizontal, 12)
-                if idx < phrases.count - 1 {
-                    Divider()
-                        .background(Color.tsBorder.opacity(0.3))
-                        .padding(.leading, 44)
-                }
+                .overlay(
+                    // Blue notebook ruled line at the bottom of each row
+                    Rectangle()
+                        .fill(Color(hex: "#A8D4F0").opacity(0.4))
+                        .frame(height: 0.5),
+                    alignment: .bottom
+                )
             }
         }
     }
