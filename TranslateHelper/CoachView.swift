@@ -3454,7 +3454,8 @@ struct PracticeSessionView: View {
                 city: cityName,
                 topic: categoryResult?.category.label ?? "general",
                 userProfile: profileForGemini,
-                interests: userInterests
+                interests: userInterests,
+                alreadyMentioned: loadMentionedPlaces()
             ) { [self] liveRef in
                 var geminiPrompt = openingPrompt
                 if let ref = liveRef {
@@ -3596,7 +3597,8 @@ struct PracticeSessionView: View {
                 city: cityName,
                 topic: result?.category.label ?? "general",
                 userProfile: profile,
-                interests: interests
+                interests: interests,
+                alreadyMentioned: loadMentionedPlaces()
             ) { [self] ref in
                 var geminiPrompt = prompt
                 if let r = ref {

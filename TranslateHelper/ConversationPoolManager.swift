@@ -507,13 +507,16 @@ class ConversationPoolManager {
         topic: String,
         userProfile: String,
         interests: [String],
+        alreadyMentioned: [String] = [],
         completion: @escaping (ConversationReference?) -> Void
     ) {
         let langName = LanguageManager.shared.targetLangName ?? "the local language"
 
-        // Rotate which interest to research this session
-        let sessionCount = defaults?.integer(forKey: Self.sessionCountKey) ?? 0
-        let targetInterest = interests.isEmpty ? "general" : interests[sessionCount % interests.count]
+        // Rotate which interest to research — increments every call, not tied to session count
+        let liveRefCountKey = "ts_live_ref_counter"
+        let callCount = (defaults?.integer(forKey: liveRefCountKey) ?? 0)
+        defaults?.set(callCount + 1, forKey: liveRefCountKey)
+        let targetInterest = interests.isEmpty ? "general" : interests[callCount % interests.count]
 
         let prompt = """
         You are a local expert for \(city). Generate exactly 1 deep, SPECIFIC reference \
@@ -525,6 +528,9 @@ class ConversationPoolManager {
         USER PROFILE (for context — frame the reference through their life):
         \(userProfile.isEmpty ? "No profile yet" : userProfile)
 
+        PLACES/TOPICS ALREADY MENTIONED — do NOT suggest these again:
+        \(alreadyMentioned.suffix(20).joined(separator: ", "))
+
         CRITICAL RULES:
         - The reference must be a REAL place, event, tradition, or experience in \(city).
         - NEVER invent something. If you're not sure it exists, pick something you ARE sure about.
@@ -532,6 +538,9 @@ class ConversationPoolManager {
         - Not "a festival" but "the Festa de São João in June with forró dancing."
         - Include details only a local would know — insider tips, best times, hidden aspects.
         - Make it something that sparks a CONVERSATION, not just a fact dump.
+        - NEVER suggest the same type of thing twice in a row. If the last reference was about
+          food, this one MUST be about something completely different (a park, an event, a market,
+          a neighborhood, a cultural experience, a class, a sport, a view, anything BUT food).
 
         Respond with JSON only — no markdown, no fences:
         {
