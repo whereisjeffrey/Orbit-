@@ -3056,19 +3056,6 @@ struct PracticeSessionView: View {
                             }
                         }
                     }
-                .onTapGesture(count: 1) {
-                    // Single tap on Sol's message → replay audio
-                    if message.role == .sol && textVisible && message.text != "..." {
-                        playSolAudio(message: message)
-                        // Validate playback hint
-                        if !playbackValidated {
-                            playbackValidated = true
-                            withAnimation(.easeOut(duration: 0.2)) {
-                                showPlaybackHint = false
-                            }
-                        }
-                    }
-                }
                 .onLongPressGesture(minimumDuration: 0.5) {
                     // Long press on Sol's message → open word save overlay
                     if message.role == .sol && textVisible && message.text != "..." {
@@ -3080,6 +3067,19 @@ struct PracticeSessionView: View {
                         if showWordSaveHint {
                             showWordSaveHint = false
                             wordSaveHintShown = true
+                        }
+                    }
+                }
+                .onTapGesture(count: 1) {
+                    // Single tap on Sol's message → replay audio
+                    if message.role == .sol && textVisible && message.text != "..." {
+                        playSolAudio(message: message)
+                        // Validate playback hint
+                        if !playbackValidated {
+                            playbackValidated = true
+                            withAnimation(.easeOut(duration: 0.2)) {
+                                showPlaybackHint = false
+                            }
                         }
                     }
                 }

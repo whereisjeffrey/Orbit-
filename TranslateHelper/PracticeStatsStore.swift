@@ -51,12 +51,31 @@ class PracticeStatsStore {
 
     /// Record any meaningful engagement — marks today as active for streak.
     /// Call from: study card session, keyboard translation, or Sol conversation.
+    /// Updates BOTH the PracticeStatsStore dates AND the WeeklyStreakCard widget keys.
     func recordEngagement() {
         let dateStr = Self.dateFormatter.string(from: Date())
         if !practiceDates.contains(dateStr) {
             practiceDates.insert(dateStr)
             save()
             NSLog("🔥 [Streak] day recorded: \(dateStr)")
+        }
+
+        // Also update the WeeklyStreakCard's AppStorage keys
+        let cal = Calendar.current
+        let y = cal.component(.yearForWeekOfYear, from: Date())
+        let w = cal.component(.weekOfYear, from: Date())
+        let currentWeek = "\(y)-\(w)"
+        let storedWeek = UserDefaults.standard.string(forKey: "study_week_id") ?? ""
+        if storedWeek != currentWeek {
+            UserDefaults.standard.set(currentWeek, forKey: "study_week_id")
+            UserDefaults.standard.set("", forKey: "study_days_this_week")
+        }
+        let dayOfWeek = cal.component(.weekday, from: Date())
+        let existingDays = UserDefaults.standard.string(forKey: "study_days_this_week") ?? ""
+        var daySet = Set(existingDays.split(separator: ",").compactMap { Int($0) })
+        if !daySet.contains(dayOfWeek) {
+            daySet.insert(dayOfWeek)
+            UserDefaults.standard.set(daySet.map { "\($0)" }.joined(separator: ","), forKey: "study_days_this_week")
         }
     }
 
