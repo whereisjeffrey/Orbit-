@@ -3426,12 +3426,21 @@ struct PracticeSessionView: View {
 
         \(profileBlock)
 
+        HONESTY RULE — CRITICAL:
+        ONLY reference details you ACTUALLY know about this person from the profile above.
+        If you don't know their neighborhood, don't say "near your house" or "in your area."
+        If you don't know their routine, don't say "after your usual morning walk."
+        It's MUCH better to ask a genuine question than to fake knowing something.
+        Guessing wrong destroys trust instantly.
+
         Be CREATIVE and SPECIFIC — never generic. Think about:
-        - Real experiences, situations, and observations related to today's category
-        - Local cultural context specific to \(userCity)
+        - Reference a REAL, SPECIFIC thing about \(userCity) — a named place, a known event,
+          a cultural detail that actually exists. Not "the sunset" or "the weather."
+        - If today's category is culture, name a specific festival or tradition.
+        - If today's category is lifestyle, reference a real neighborhood or routine.
         - Questions that make the person reflect on their own experience
         - Slang or expressions that fit this topic naturally
-        - NOT just "have you been to [place]" — think deeper
+        - NEVER ask about weather, sunsets, or "how's your day" — those are lazy openers
         """)
 
         \(earlyUserBoost)
