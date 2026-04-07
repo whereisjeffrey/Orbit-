@@ -3313,21 +3313,43 @@ struct PracticeSessionView: View {
         - Make them feel like they're talking to someone who LIVES there and knows the hidden gems.
         """ : ""
 
-        // Rotating topic categories — pick one that hasn't been used recently
-        let topicCategories = [
-            "practical life — transport, housing, banking, visa, SIM cards, daily logistics",
-            "culture & traditions — holidays, local customs, festivals, etiquette, superstitions",
-            "social life — making friends, dating, social norms, going out, meeting locals",
-            "language moments — funny misunderstandings, slang discoveries, language milestones",
-            "current events — what's happening in the city right now, news, local buzz",
-            "nostalgia & comparison — home vs here, things you miss, things that are better",
-            "opinions & debates — unpopular opinions about the city, hot takes, local controversies",
-            "lifestyle — routines, fitness, food habits, work-life balance, weekend plans",
-            "hidden gems — spots only locals know, off-the-beaten-path experiences",
-            "personal growth — how living abroad changed you, challenges, breakthroughs",
+        // Rotating topic categories — weighted by user's expat status
+        let allTopicCategories: [(category: String, newWeight: Int, settlingWeight: Int, localWeight: Int)] = [
+            ("practical life — transport, housing, banking, visa, SIM cards, daily logistics",      5, 2, 1),
+            ("culture & traditions — holidays, local customs, festivals, etiquette, superstitions", 2, 4, 5),
+            ("social life — making friends, dating, social norms, going out, meeting locals",       4, 5, 3),
+            ("language moments — funny misunderstandings, slang discoveries, language milestones",  3, 4, 4),
+            ("current events — what's happening in the city right now, news, local buzz",           1, 3, 5),
+            ("nostalgia & comparison — home vs here, things you miss, things that are better",      1, 2, 5),
+            ("opinions & debates — unpopular opinions about the city, hot takes, local controversies", 1, 2, 4),
+            ("lifestyle — routines, fitness, food habits, work-life balance, weekend plans",        4, 5, 3),
+            ("hidden gems — spots only locals know, off-the-beaten-path experiences",               5, 3, 1),
+            ("personal growth — how living abroad changed you, challenges, breakthroughs",          1, 2, 5),
         ]
-        let categoryIndex = PracticeStatsStore.shared.totalSessionCount % topicCategories.count
-        let todaysCategory = topicCategories[categoryIndex]
+
+        let status = UserDefaults.standard.string(forKey: "user_expat_status") ?? "settling"
+
+        // Build weighted pool based on status
+        var weightedPool: [String] = []
+        for cat in allTopicCategories {
+            let weight: Int
+            switch status {
+            case "visiting", "just_arrived", "planning":
+                weight = cat.newWeight
+            case "settling":
+                weight = cat.settlingWeight
+            default: // "local" or anything else
+                weight = cat.localWeight
+            }
+            for _ in 0..<weight {
+                weightedPool.append(cat.category)
+            }
+        }
+
+        // Pick from weighted pool using session count for deterministic rotation
+        // but shuffle within the pool so same-weight categories vary
+        let seed = PracticeStatsStore.shared.totalSessionCount
+        let todaysCategory = weightedPool[seed % weightedPool.count]
 
         // Pull user profile from SolMemoryStore for personalized framing
         let userProfile = SolMemoryStore.shared.facts
