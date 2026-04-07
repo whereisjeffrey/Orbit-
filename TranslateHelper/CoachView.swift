@@ -88,6 +88,7 @@ struct CoachEmptyView: View {
 
                     howItWorksRow(icon: "bubble.left.and.bubble.right.fill", color: Color.tsAccent, text: "Practice conversations with me — I'll speak like a local and coach you in real time")
                     howItWorksRow(icon: "keyboard", color: Color(hex: "#34C759"), text: "Use the Orbit keyboard on WhatsApp — I'll give you tips as you text")
+                    howItWorksRow(icon: "target", color: Color(hex: "#FF3B30"), text: "I spot your weak areas and keep working on them with you until they stick")
                     howItWorksRow(icon: "chart.line.uptrend.xyaxis", color: Color(hex: "#FF9500"), text: "I track your patterns and show you exactly where you're improving")
                     howItWorksRow(icon: "brain.head.profile", color: Color(hex: "#AF52DE"), text: "Your native language brain will trick you — I'll help you untrain those habits")
                 }
@@ -3081,19 +3082,22 @@ struct PracticeSessionView: View {
                         }
                     }
                 }
-                .onLongPressGesture(minimumDuration: 0.5) {
-                    // Long press on Sol's message → open word save overlay
-                    if message.role == .sol && textVisible && message.text != "..." {
-                        let generator = UIImpactFeedbackGenerator(style: .medium)
-                        generator.impactOccurred()
-                        wordSaveMessage = message
+                .simultaneousGesture(
+                    LongPressGesture(minimumDuration: 0.6)
+                        .onEnded { _ in
+                            // Long press on Sol's message → open word save overlay
+                            if message.role == .sol && textVisible && message.text != "..." {
+                                let generator = UIImpactFeedbackGenerator(style: .medium)
+                                generator.impactOccurred()
+                                wordSaveMessage = message
 
-                        if showWordSaveHint {
-                            showWordSaveHint = false
-                            wordSaveHintShown = true
+                                if showWordSaveHint {
+                                    showWordSaveHint = false
+                                    wordSaveHintShown = true
+                                }
+                            }
                         }
-                    }
-                }
+                )
 
                 // Translation card — Sol's messages (English)
                 if isRevealed, let translation = message.translation {
@@ -4030,31 +4034,23 @@ struct PracticeSessionView: View {
             var userText = ""
             if let idx = messages.firstIndex(where: { $0.id == userMessageId }) {
                 userText = messages[idx].text
-                if let nativeVersion = sol.nativeCorrectionForUser {
-                    NSLog("🔬 [Correction] Sol provided correction: \(nativeVersion.prefix(80))")
-                    messages[idx].nativeVersion = nativeVersion
-                    messages[idx].nativeNotes = sol.nativeCorrectionNotes
-                } else {
-                    NSLog("🔬 [Correction] Sol returned NULL — firing Gemini fallback for: \(messages[idx].text.prefix(60))")
-                    // Sol returned null — provide a naturalness note so double-tap always works
-                    // Fire a quick Gemini call for a more natural version
-                    let userMsg = messages[idx].text
-                    let msgIdx = idx
-                    let lang = targetLang
-                    DispatchQueue.global(qos: .utility).async {
-                        self.fetchNaturalVersion(text: userMsg, language: lang) { natural, notes in
-                            NSLog("🔬 [Correction] Gemini fallback returned: \(natural.prefix(80))")
-                            DispatchQueue.main.async {
-                                if msgIdx < self.messages.count {
-                                    self.messages[msgIdx].nativeVersion = natural
-                                    self.messages[msgIdx].nativeNotes = notes
-                                }
-                            }
+            }
+            messages.append(solMsg)
+
+            // Fire dedicated local phrasing call in parallel (separate from Sol's response)
+            if !userText.isEmpty {
+                let msgId = userMessageId
+                let city = fetchCity
+                let lang = self.targetLang
+                self.conversationService.getLocalPhrasing(userText: userText, city: city, language: lang) { local, notes in
+                    DispatchQueue.main.async {
+                        if let idx = self.messages.firstIndex(where: { $0.id == msgId }) {
+                            self.messages[idx].nativeVersion = local ?? "✓ Sounds natural"
+                            self.messages[idx].nativeNotes = notes ?? "Your phrasing was good here."
                         }
                     }
                 }
             }
-            messages.append(solMsg)
             messageCount += 1
             totalMessagesThisSession += 1
 

@@ -649,4 +649,73 @@ class PracticeConversationService {
 
         executeRequest()
     }
+
+    // MARK: - Dedicated Local Phrasing Call (separate from conversation)
+
+    /// Rewrites the user's message as a local would say it.
+    /// Fires independently from Sol's conversation response — same approach as keyboard.
+    func getLocalPhrasing(
+        userText: String,
+        city: String,
+        language: String,
+        completion: @escaping (String?, String?) -> Void  // (localVersion, notes)
+    ) {
+        let apiKey = APIConfig.openAIAPIKey
+        guard let url = URL(string: "\(APIConfig.openAIBaseURL)/chat/completions") else {
+            completion(nil, nil)
+            return
+        }
+
+        let langName = LanguageManager.languageName(for: language)
+
+        let prompt = """
+        Take this message from a language learner and rewrite it as a native speaker from \(city) would say it.
+        Use local phrasing, contractions, slang where natural. Fix any grammar errors.
+
+        User said: "\(userText)"
+
+        Respond in JSON only:
+        {
+          "local": "the full message rewritten as a local from \(city) would say it",
+          "notes": "IN ENGLISH: 1-2 sentences explaining what you changed — frame it as 'Locals say X' or 'On the street you'd hear X', with \(langName) words inline"
+        }
+        """
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.timeoutInterval = 15
+
+        let body: [String: Any] = [
+            "model": "gpt-4o-mini",
+            "messages": [
+                ["role": "user", "content": prompt]
+            ],
+            "temperature": 0.7,
+            "max_tokens": 400,
+            "response_format": ["type": "json_object"]
+        ]
+
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            guard let data = data,
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let choices = json["choices"] as? [[String: Any]],
+                  let message = choices.first?["message"] as? [String: Any],
+                  let content = message["content"] as? String,
+                  let responseData = content.data(using: .utf8),
+                  let parsed = try? JSONSerialization.jsonObject(with: responseData) as? [String: Any],
+                  let local = parsed["local"] as? String else {
+                NSLog("🔬 [LocalPhrasing] failed to get local version")
+                completion(nil, nil)
+                return
+            }
+
+            let notes = parsed["notes"] as? String
+            NSLog("🔬 [LocalPhrasing] success: \(local.prefix(60))")
+            completion(local, notes)
+        }.resume()
+    }
 }
