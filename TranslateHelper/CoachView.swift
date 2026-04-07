@@ -2146,7 +2146,8 @@ struct PracticeSessionView: View {
     @AppStorage("practice_settings_hint_shown") private var settingsHintShown = false
     @State private var showWordSaveHint = false
     @AppStorage("practice_word_save_hint_shown") private var wordSaveHintShown = false
-    @State private var wordSaveMessage: PracticeMessage? = nil  // triggers the zoomed overlay
+    @State private var wordSaveMessage: PracticeMessage? = nil  // triggers the zoomed overlay for Sol
+    @State private var localSaveText: String? = nil  // triggers the zoomed overlay for LOCAL card
     @State private var totalMessagesThisSession = 0
     @State private var sessionSeconds = 0
     @State private var sessionTimer: Timer?
@@ -2518,6 +2519,18 @@ struct PracticeSessionView: View {
                         saveWordToLibrary(phrase: phrase, meaning: meaning, notes: notes)
                     },
                     onDismiss: { wordSaveMessage = nil }
+                )
+                .transition(.opacity)
+            } else if let localText = localSaveText {
+                WordSaveOverlay(
+                    messageText: localText,
+                    headerIcon: langFlag,
+                    headerLabel: "Local",
+                    headerColor: langAccentColor,
+                    onSave: { phrase, meaning, notes in
+                        saveWordToLibrary(phrase: phrase, meaning: meaning, notes: notes)
+                    },
+                    onDismiss: { localSaveText = nil }
                 )
                 .transition(.opacity)
             }
@@ -3180,6 +3193,14 @@ struct PracticeSessionView: View {
                             .stroke(langAccentColor.opacity(0.12), lineWidth: 0.5)
                     )
                     .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                    .simultaneousGesture(
+                        LongPressGesture(minimumDuration: 0.6)
+                            .onEnded { _ in
+                                let generator = UIImpactFeedbackGenerator(style: .medium)
+                                generator.impactOccurred()
+                                localSaveText = native
+                            }
+                    )
                 }
             }
 

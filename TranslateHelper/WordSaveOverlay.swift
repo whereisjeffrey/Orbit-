@@ -14,6 +14,9 @@ import UIKit
 
 struct WordSaveOverlay: View {
     let messageText: String
+    var headerIcon: String? = nil     // e.g. flag emoji for Local mode
+    var headerLabel: String? = nil    // e.g. "Local" instead of "Sol"
+    var headerColor: Color? = nil     // accent color for the header
     let onSave: (String, String, String) -> Void
     let onDismiss: () -> Void
 
@@ -49,14 +52,19 @@ struct WordSaveOverlay: View {
 
                 // ── Sol avatar ────────────────────────────────
                 HStack {
-                    Image("SolAvaatar")
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 28, height: 28)
-                        .clipShape(Circle())
-                    Text("Sol")
+                    if let icon = headerIcon {
+                        Text(icon)
+                            .font(.system(size: 22))
+                    } else {
+                        Image("SolAvaatar")
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 28, height: 28)
+                            .clipShape(Circle())
+                    }
+                    Text(headerLabel ?? "Sol")
                         .font(.custom("HelveticaNeue-Bold", size: 12))
-                        .foregroundColor(.tsSecondary)
+                        .foregroundColor(headerColor ?? .tsSecondary)
                     Spacer()
                 }
                 .padding(.horizontal, 20)
