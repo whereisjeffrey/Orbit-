@@ -3326,8 +3326,8 @@ struct PracticeSessionView: View {
         let hasScript: Bool
 
         if hasEnoughProfile {
-            // 70% personalized, 30% scripts
-            let usePersonalized = (PracticeStatsStore.shared.totalSessionCount % 10) < 7
+            // 100% personalized for testing — revert to 70/30 blend later
+            let usePersonalized = true // (PracticeStatsStore.shared.totalSessionCount % 10) < 7
             if usePersonalized {
                 scriptBlock = ""
                 hasScript = false
@@ -3447,12 +3447,7 @@ struct PracticeSessionView: View {
           pull details out of you — give them upfront like an excited friend would.
         """)
 
-        \(ConversationPoolManager.shared.buildPoolContextBlock())
-
-        If the pool above has a reference that fits today's topic category, USE IT.
-        Reference it by name, with specific details. Don't make things up — use the
-        real data from the pool. If nothing in the pool fits, ask a genuine question
-        about the category instead of inventing a fake event or place.
+        LIVE_REFERENCE_PLACEHOLDER
 
         \(earlyUserBoost)
         \(interestContext)
@@ -3519,54 +3514,101 @@ struct PracticeSessionView: View {
         }
 
         // No preloaded topic — generate now (first load)
-        // Show "..." placeholder but do NOT add to revealedText — it stays as the
-        // "Thinking..." indicator naturally (line 2284 checks text == "...").
+        // Show "..." placeholder while loading
         let loadingMsg = PracticeMessage(role: .sol, text: "...")
         messages.insert(loadingMsg, at: 0)
 
+        // Fire live Gemini reference, then use it in the GPT prompt
+        let interestsRaw = UserDefaults.standard.string(forKey: "user_interests") ?? ""
+        let userInterests = interestsRaw.split(separator: ",").map(String.init)
+        let profileForGemini = SolMemoryStore.shared.facts
+            .sorted { $0.relevanceScore > $1.relevanceScore }
+            .prefix(5)
+            .map { $0.fact }
+            .joined(separator: ". ")
+
+        // If personalized mode, fire Gemini first for a real reference
+        if hasEnoughProfile && !hasScript {
+            ConversationPoolManager.shared.generateLiveReference(
+                city: userCity,
+                topic: todaysCategory,
+                userProfile: profileForGemini,
+                interests: userInterests
+            ) { [self] liveRef in
+                // Build the final prompt with or without the live reference
+                let refBlock: String
+                if let ref = liveRef {
+                    refBlock = """
+                    USE THIS SPECIFIC REFERENCE IN YOUR OPENER — it is REAL and verified:
+                    Name: \(ref.title)
+                    What it is: \(ref.whatItIs)
+                    Why interesting: \(ref.whyInteresting)
+                    Connection: \(ref.interestConnection)
+                    Nearby: \(ref.whatsNearby)
+                    Hooks: \(ref.conversationHooks.prefix(2).joined(separator: " / "))
+
+                    Work this into your opening naturally. Use the actual name "\(ref.title)".
+                    """
+                } else {
+                    refBlock = "No verified reference available — ask a genuine question about today's topic category."
+                }
+
+                let finalPrompt = openingPrompt.replacingOccurrences(of: "LIVE_REFERENCE_PLACEHOLDER", with: refBlock)
+
+                conversationService.getSolResponse(
+                    conversationHistory: [(role: "user", text: finalPrompt)],
+                    userCity: userCity,
+                    targetLanguage: targetLang,
+                    tone: practiceTone
+                ) { [self] response in
+                    self.handleTopicResponse(response: response, loadingMsg: loadingMsg)
+                }
+            }
+            return
+        }
+
+        // Script mode or early sessions — no Gemini call needed
+        let finalPrompt = openingPrompt.replacingOccurrences(of: "LIVE_REFERENCE_PLACEHOLDER", with: "")
         conversationService.getSolResponse(
-            conversationHistory: [(role: "user", text: openingPrompt)],
+            conversationHistory: [(role: "user", text: finalPrompt)],
             userCity: userCity,
             targetLanguage: targetLang,
             tone: practiceTone
         ) { [self] response in
-            isLoadingTopic = false
+            self.handleTopicResponse(response: response, loadingMsg: loadingMsg)
+        }
+    }
 
-            let solMsg = buildSolMessage(from: response)
+    private func handleTopicResponse(response: PracticeConversationService.SolResponse?, loadingMsg: PracticeMessage) {
+        isLoadingTopic = false
 
-            // Replace placeholder with real message
-            if let idx = messages.firstIndex(where: { $0.id == loadingMsg.id }) {
-                messages[idx] = solMsg
-            } else {
-                messages.insert(solMsg, at: 0)
-            }
+        let solMsg = buildSolMessage(from: response)
 
-            // Text is NOT in revealedText yet, so it starts hidden (waveform shows).
-            // playSolAudioThenReveal handles the single reveal after audio.
-            playSolAudioThenReveal(message: solMsg)
+        if let idx = messages.firstIndex(where: { $0.id == loadingMsg.id }) {
+            messages[idx] = solMsg
+        } else {
+            messages.insert(solMsg, at: 0)
+        }
 
-            // Log specific place names from Sol's opening message
-            logMentionedPlaces(from: solMsg.text)
+        playSolAudioThenReveal(message: solMsg)
+        logMentionedPlaces(from: solMsg.text)
 
-            // Add slang notes after a delay (skip already-known phrases)
-            if let sol = response, !sol.slangNotes.isEmpty {
-                let notes = sol.slangNotes
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                    for note in notes {
-                        guard !isPhraseAlreadyKnown(note.phrase) else { continue }
-                        messages.append(PracticeMessage(
-                            role: .coaching,
-                            text: "📖 \"\(note.phrase)\" — \(note.meaning). \(note.context)",
-                            saveablePhrase: note.phrase,
-                            saveableMeaning: note.meaning
-                        ))
-                    }
+        if let sol = response, !sol.slangNotes.isEmpty {
+            let notes = sol.slangNotes
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                for note in notes {
+                    guard !isPhraseAlreadyKnown(note.phrase) else { continue }
+                    messages.append(PracticeMessage(
+                        role: .coaching,
+                        text: "📖 \"\(note.phrase)\" — \(note.meaning). \(note.context)",
+                        saveablePhrase: note.phrase,
+                        saveableMeaning: note.meaning
+                    ))
                 }
             }
-
-            // Pre-generate the next topic in background
-            preGenerateNextTopic()
         }
+
+        preGenerateNextTopic()
     }
 
     private func buildSolMessage(from response: PracticeConversationService.SolResponse?) -> PracticeMessage {

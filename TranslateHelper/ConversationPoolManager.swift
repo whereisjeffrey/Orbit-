@@ -498,6 +498,101 @@ class ConversationPoolManager {
         """
     }
 
+    // MARK: - Live Reference Generation (per-session, on demand)
+
+    /// Generate a single specific reference for TODAY's opener.
+    /// Uses the user's full profile + a specific topic from the rotation.
+    func generateLiveReference(
+        city: String,
+        topic: String,
+        userProfile: String,
+        interests: [String],
+        completion: @escaping (ConversationReference?) -> Void
+    ) {
+        let langName = LanguageManager.shared.targetLangName ?? "the local language"
+
+        // Rotate which interest to research this session
+        let sessionCount = defaults?.integer(forKey: Self.sessionCountKey) ?? 0
+        let targetInterest = interests.isEmpty ? "general" : interests[sessionCount % interests.count]
+
+        let prompt = """
+        You are a local expert for \(city). Generate exactly 1 deep, SPECIFIC reference \
+        for a language coach to use with an English-speaking expat learning \(langName).
+
+        TODAY'S TOPIC CATEGORY: \(topic)
+        INTEREST TO FOCUS ON: \(targetInterest)
+
+        USER PROFILE (for context — frame the reference through their life):
+        \(userProfile.isEmpty ? "No profile yet" : userProfile)
+
+        CRITICAL RULES:
+        - The reference must be a REAL place, event, tradition, or experience in \(city).
+        - NEVER invent something. If you're not sure it exists, pick something you ARE sure about.
+        - Be HYPER-SPECIFIC: not "a museum" but "the Museu de Arte do Rio in Praça Mauá."
+        - Not "a festival" but "the Festa de São João in June with forró dancing."
+        - Include details only a local would know — insider tips, best times, hidden aspects.
+        - Make it something that sparks a CONVERSATION, not just a fact dump.
+
+        Respond with JSON only — no markdown, no fences:
+        {
+          "topic": "\(targetInterest)",
+          "subtopic": "specific_thing_snake_case",
+          "title": "The Exact Name",
+          "what_it_is": "2-3 sentences: what this is, specific details",
+          "why_interesting": "why someone into \(targetInterest) would care",
+          "interest_connection": "how it ties to their life",
+          "whats_nearby": "surrounding area, neighbourhood vibe",
+          "conversation_hooks": ["hook 1 — surface opener", "hook 2 — goes deeper", "hook 3 — personal"],
+          "deep_facts": ["surprising fact 1", "surprising fact 2", "surprising fact 3"],
+          "source": "gemini_inferred"
+        }
+        """
+
+        let apiKey = APIConfig.geminiAPIKey
+        guard let url = URL(string: "\(APIConfig.geminiBaseURL)?key=\(apiKey)") else {
+            completion(nil)
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.timeoutInterval = 12
+
+        let body: [String: Any] = [
+            "contents": [["parts": [["text": prompt]]]],
+            "generationConfig": [
+                "temperature": 0.8,
+                "maxOutputTokens": 2048,
+                "responseMimeType": "application/json",
+                "thinkingConfig": ["thinkingBudget": 0]
+            ]
+        ]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+
+        URLSession.shared.dataTask(with: request) { [weak self] data, _, error in
+            guard let data = data,
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let candidates = json["candidates"] as? [[String: Any]],
+                  let content = candidates.first?["content"] as? [String: Any],
+                  let parts = content["parts"] as? [[String: Any]],
+                  let text = parts.first?["text"] as? String else {
+                NSLog("🌐 [LiveRef] Gemini request failed: \(error?.localizedDescription ?? "parse error")")
+                completion(nil)
+                return
+            }
+
+            let references = self?.parseReferences(from: text) ?? []
+            if let ref = references.first {
+                NSLog("🌐 [LiveRef] Generated: \(ref.title) [\(ref.topic)]")
+                DispatchQueue.main.async { completion(ref) }
+            } else {
+                NSLog("🌐 [LiveRef] Failed to parse reference")
+                DispatchQueue.main.async { completion(nil) }
+            }
+        }.resume()
+    }
+
     // MARK: - Gemini API Call
 
     private func callGemini(prompt: String, completion: @escaping ([ConversationReference]?) -> Void) {
