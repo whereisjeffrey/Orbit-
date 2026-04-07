@@ -220,6 +220,7 @@ struct CoachPopulatedView: View {
     @State private var showLightningRound = false
     @State private var expandedCategories: Set<MistakeCategory> = []
     @State private var expandedMistakes: Set<UUID> = []  // individual mistake rows
+    @State private var revealedAnswers: Set<UUID> = []  // quiz answers revealed
 
     // Cached data — computed once on appear, not every frame
     @State private var cachedRoundHistory: [LightningRoundResult] = []
@@ -320,7 +321,7 @@ struct CoachPopulatedView: View {
                         // Target areas start at zero — they fill organically
                         // from keyboard corrections and Sol conversations.
                         // One-time wipe of old pre-seeded data from dev builds.
-                        let wipeKey = "target_areas_wiped_v5"
+                        let wipeKey = "target_areas_wiped_v6"
                         if !UserDefaults.standard.bool(forKey: wipeKey) {
                             MistakeProfileStore.shared.resetToZero()
                             UserDefaults.standard.set(true, forKey: wipeKey)
@@ -893,73 +894,11 @@ extension CoachPopulatedView {
 
                                 Divider().opacity(0.15).padding(.horizontal, 14)
 
-                                // Individual mistake rows — expandable
+                                // Individual mistake rows — mini quiz
                                 ForEach(mistakes.prefix(5)) { mistake in
-                                    let isMistakeExpanded = expandedMistakes.contains(mistake.id)
-
-                                    VStack(alignment: .leading, spacing: 0) {
-                                        // Tap row — correction pair + seen count
-                                        Button {
-                                            withAnimation(.easeInOut(duration: 0.2)) {
-                                                if isMistakeExpanded {
-                                                    expandedMistakes.remove(mistake.id)
-                                                } else {
-                                                    expandedMistakes.insert(mistake.id)
-                                                }
-                                            }
-                                        } label: {
-                                            HStack(spacing: 10) {
-                                                Circle()
-                                                    .fill(color)
-                                                    .frame(width: 6, height: 6)
-                                                // Show correction pair: wrong → right
-                                                Text("\(truncatePhrase(mistake.userSaid)) → \(truncatePhrase(mistake.correctForm))")
-                                                    .font(.custom("HelveticaNeue-Medium", size: 13))
-                                                    .foregroundColor(.tsLabel)
-                                                    .lineLimit(1)
-                                                Spacer()
-                                                // Show seen count if repeated
-                                                if mistake.seenCount > 1 {
-                                                    Text("×\(mistake.seenCount)")
-                                                        .font(.custom("HelveticaNeue-Bold", size: 10))
-                                                        .foregroundColor(color.opacity(0.7))
-                                                }
-                                                Image(systemName: isMistakeExpanded ? "chevron.up" : "chevron.down")
-                                                    .font(.system(size: 9, weight: .semibold))
-                                                    .foregroundColor(.tsSecondary.opacity(0.5))
-                                            }
-                                            .padding(.vertical, 8)
-                                            .padding(.horizontal, 14)
-                                        }
-
-                                        // Expanded detail — rule + pattern reinforcement
-                                        if isMistakeExpanded {
-                                            VStack(alignment: .leading, spacing: 8) {
-                                                // Rule explanation
-                                                Text(truncateExplanation(mistake.explanation))
-                                                    .font(.custom("HelveticaNeue", size: 12))
-                                                    .foregroundColor(.tsSecondary)
-                                                    .lineSpacing(2)
-                                                    .fixedSize(horizontal: false, vertical: true)
-
-                                                // Pattern reinforcement for repeated mistakes
-                                                if mistake.seenCount >= 3 {
-                                                    HStack(spacing: 6) {
-                                                        Image(systemName: "exclamationmark.triangle.fill")
-                                                            .font(.system(size: 10))
-                                                            .foregroundColor(Color(hex: "#FF9500"))
-                                                        Text("You've made this mistake \(mistake.seenCount) times — focus on this pattern.")
-                                                            .font(.custom("HelveticaNeue-Medium", size: 11))
-                                                            .foregroundColor(Color(hex: "#FF9500"))
-                                                    }
-                                                }
-                                            }
-                                            .padding(.horizontal, 30)
-                                            .padding(.bottom, 8)
-                                            .transition(.opacity)
-                                        }
-                                    }
+                                    mistakeQuizRow(mistake: mistake, color: color)
                                 }
+
 
                                 if mistakes.count > 5 {
                                     Text("+ \(mistakes.count - 5) more")
@@ -1072,6 +1011,139 @@ extension CoachPopulatedView {
         .padding(.vertical, 4)
     }
 
+    // MARK: - Mistake Quiz Row
+
+    @ViewBuilder
+    private func mistakeQuizRow(mistake: MistakeEntry, color: Color) -> some View {
+        let isMistakeExpanded = expandedMistakes.contains(mistake.id)
+
+        VStack(alignment: .leading, spacing: 0) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    if isMistakeExpanded {
+                        expandedMistakes.remove(mistake.id)
+                    } else {
+                        expandedMistakes.insert(mistake.id)
+                    }
+                }
+            } label: {
+                HStack(spacing: 10) {
+                    Circle()
+                        .fill(color)
+                        .frame(width: 6, height: 6)
+                    Text(truncatePhrase(mistake.userSaid))
+                        .font(.custom("HelveticaNeue-Medium", size: 13))
+                        .foregroundColor(.tsLabel)
+                        .lineLimit(1)
+                    Spacer()
+                    if mistake.seenCount > 1 {
+                        Text("×\(mistake.seenCount)")
+                            .font(.custom("HelveticaNeue-Bold", size: 10))
+                            .foregroundColor(color.opacity(0.7))
+                    }
+                    Image(systemName: isMistakeExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundColor(.tsSecondary.opacity(0.5))
+                }
+                .padding(.vertical, 8)
+                .padding(.horizontal, 14)
+            }
+
+            if isMistakeExpanded {
+                mistakeQuizContent(mistake: mistake, color: color)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func mistakeQuizContent(mistake: MistakeEntry, color: Color) -> some View {
+        let isRevealed = revealedAnswers.contains(mistake.id)
+
+        VStack(alignment: .leading, spacing: 10) {
+            if !isRevealed {
+                Text("What's the correction?")
+                    .font(.custom("HelveticaNeue", size: 12))
+                    .foregroundColor(.tsSecondary)
+                    .italic()
+
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        _ = revealedAnswers.insert(mistake.id)
+                    }
+                } label: {
+                    Text("Show Answer")
+                        .font(.custom("HelveticaNeue-Medium", size: 13))
+                        .foregroundColor(.tsAccent)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 6)
+                        .background(
+                            Capsule()
+                                .stroke(Color.tsAccent.opacity(0.3), lineWidth: 1)
+                        )
+                }
+            } else {
+                HStack(spacing: 6) {
+                    Text(truncatePhrase(mistake.userSaid))
+                        .font(.custom("HelveticaNeue", size: 13))
+                        .foregroundColor(Color(hex: "#FF3B30").opacity(0.7))
+                        .strikethrough()
+                    Text("→")
+                        .font(.custom("HelveticaNeue", size: 13))
+                        .foregroundColor(.tsSecondary)
+                    Text(truncatePhrase(mistake.correctForm))
+                        .font(.custom("HelveticaNeue-Bold", size: 13))
+                        .foregroundColor(Color(hex: "#34C759"))
+                }
+
+                Text(truncateExplanation(mistake.explanation))
+                    .font(.custom("HelveticaNeue", size: 12))
+                    .foregroundColor(.tsSecondary)
+                    .lineSpacing(2)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                HStack(spacing: 12) {
+                    Button {
+                        MistakeProfileStore.shared.markCorrect(id: mistake.id)
+                        withAnimation { expandedMistakes.remove(mistake.id) }
+                    } label: {
+                        Text("Got it ✓")
+                            .font(.custom("HelveticaNeue-Medium", size: 12))
+                            .foregroundColor(Color(hex: "#34C759"))
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 5)
+                            .background(Capsule().fill(Color(hex: "#34C759").opacity(0.1)))
+                    }
+                    Button {
+                        MistakeProfileStore.shared.markIncorrect(id: mistake.id)
+                        withAnimation { expandedMistakes.remove(mistake.id) }
+                    } label: {
+                        Text("Still learning")
+                            .font(.custom("HelveticaNeue-Medium", size: 12))
+                            .foregroundColor(Color(hex: "#FF9500"))
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 5)
+                            .background(Capsule().fill(Color(hex: "#FF9500").opacity(0.1)))
+                    }
+                }
+                .padding(.top, 4)
+
+                if mistake.seenCount >= 3 {
+                    HStack(spacing: 6) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 10))
+                            .foregroundColor(Color(hex: "#FF9500"))
+                        Text("You've made this mistake \(mistake.seenCount) times.")
+                            .font(.custom("HelveticaNeue-Medium", size: 11))
+                            .foregroundColor(Color(hex: "#FF9500"))
+                    }
+                }
+            }
+        }
+        .padding(.horizontal, 30)
+        .padding(.bottom, 10)
+        .transition(.opacity)
+    }
+
     /// Truncates long phrases to keep cards readable — shows just the key part.
     private func truncatePhrase(_ text: String) -> String {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -1101,50 +1173,34 @@ extension CoachPopulatedView {
         return result + "…"
     }
 
-    /// Generates a rule-based insight for each category based on the actual mistakes.
+    /// Generates a short insight for each category.
     private func categoryInsight(_ category: MistakeCategory, mistakes: [MistakeEntry]) -> String {
         let langName = LanguageManager.shared.targetLangName ?? "the target language"
-        let examples = mistakes.prefix(3).map { "'\($0.correctForm)'" }.joined(separator: ", ")
 
         switch category {
         case .grammar:
-            let hasDeError = mistakes.contains { $0.explanation.lowercased().contains("de") || $0.userSaid.lowercased().contains("gosto") }
-            if hasDeError {
-                return "Some \(langName) verbs require a preposition after them that English doesn't. Verbs like the ones below need specific prepositions — your brain skips them because English doesn't have this pattern."
-            }
-            return "You're making structural errors that come from thinking in English. The rules below work differently in \(langName) — focus on the pattern, not just the correction."
+            return "Structural patterns your English brain defaults to incorrectly."
 
         case .pronunciation:
-            let sounds = mistakes.prefix(3).map { "'\($0.correctForm)'" }.joined(separator: ", ")
-            return "You're working on sounds that don't exist in English. Words like \(sounds) use sounds your mouth isn't used to making — practice them slowly and exaggerate at first."
+            return "Sounds that don't exist in English — practice slowly."
 
         case .vocabulary:
-            return "These are false friends — words that look or sound like English but mean something completely different. They're the most embarrassing mistakes to make, so worth memorizing."
+            return "False friends — words that look like English but mean something different."
 
         case .gender:
-            let femExamples = mistakes.filter { $0.correctForm.hasPrefix("a ") }.prefix(2).map { "'\($0.correctForm)'" }.joined(separator: ", ")
-            let mascExamples = mistakes.filter { $0.correctForm.hasPrefix("o ") }.prefix(2).map { "'\($0.correctForm)'" }.joined(separator: ", ")
-            var insight = "English has no grammatical gender, so your brain guesses. Look for patterns: "
-            if !femExamples.isEmpty { insight += "feminine: \(femExamples). " }
-            if !mascExamples.isEmpty { insight += "masculine: \(mascExamples)." }
-            if femExamples.isEmpty && mascExamples.isEmpty { insight += "words like \(examples) follow rules based on their endings." }
-            return insight
+            return "English has no grammatical gender, so your brain guesses. Learn the patterns."
 
         case .conjugation:
-            let hasTerSer = mistakes.contains { $0.explanation.lowercased().contains("ter") || $0.explanation.lowercased().contains("ser") }
-            if hasTerSer {
-                return "English uses 'to be' for everything. \(langName) splits this across different verbs — age, feelings, and states each use a specific verb. The ones below trip you up."
-            }
-            return "Verb forms are where English speakers struggle most. The patterns below are the ones your brain keeps defaulting to the wrong form on."
+            return "Verb forms your brain keeps defaulting to the wrong way."
 
         case .wordOrder:
-            return "English puts adjectives before nouns. \(langName) usually puts them after. Your brain will fight this — it takes repetition to override the English word order instinct."
+            return "Word order that works in English but not in \(langName)."
 
         case .preposition:
-            return "Every \(langName) verb has its own preposition — and they almost never match the English ones. Don't translate 'think about' → 'pensar sobre.' Each one below has its own rule."
+            return "Each verb has its own preposition — they never match English."
 
         case .idiom:
-            return "These expressions don't translate literally — they carry cultural meaning that you just have to learn. The fun part: using them correctly makes you sound like a local."
+            return "Expressions that don't translate literally. Use them to sound local."
         }
     }
 
@@ -3931,21 +3987,21 @@ struct PracticeSessionView: View {
             if let nativeVersion = sol.nativeCorrectionForUser, !userText.isEmpty {
                 // Use structured mistake_log if available (clean short fragments)
                 // Otherwise fall back to raw correction text
-                if let log = sol.mistakeLog {
+                if let log = sol.mistakeLog,
+                   !log.userFragment.isEmpty,
+                   !log.correctFragment.isEmpty,
+                   log.correctFragment.lowercased() != "null",
+                   log.userFragment.count <= 30,
+                   log.correctFragment.count <= 30,
+                   !log.userFragment.contains("→") {
                     MistakeIngestion.ingestFromSol(
                         userSaid: log.userFragment,
                         nativeCorrection: log.correctFragment,
                         notes: log.rule,
                         language: targetLang
                     )
-                } else {
-                    MistakeIngestion.ingestFromSol(
-                        userSaid: userText,
-                        nativeCorrection: nativeVersion,
-                        notes: sol.nativeCorrectionNotes,
-                        language: targetLang
-                    )
                 }
+                // Skip raw fallback — only ingest clean structured data
             }
 
             // Fire background Gemini enrichment for the NEXT turn.
