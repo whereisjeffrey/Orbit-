@@ -86,8 +86,8 @@ struct CoachEmptyView: View {
                         .foregroundColor(.tsSecondary)
                         .kerning(1.2)
 
-                    howItWorksRow(icon: "bubble.left.and.bubble.right.fill", color: Color.tsAccent, text: "Practice conversations with me — I'll speak like a local and coach you in real time")
                     howItWorksRow(icon: "keyboard", color: Color(hex: "#34C759"), text: "Use the Orbit keyboard on WhatsApp — I'll give you tips as you text")
+                    howItWorksRow(icon: "bubble.left.and.bubble.right.fill", color: Color.tsAccent, text: "Practice conversations with me — I'll speak like a local and coach you in real time")
                     howItWorksRow(icon: "target", color: Color(hex: "#FF3B30"), text: "I target your weak spots and help you improve them")
                     howItWorksRow(icon: "chart.line.uptrend.xyaxis", color: Color(hex: "#FF9500"), text: "I track your patterns and show you exactly where you're improving")
                     howItWorksRow(icon: "brain.head.profile", color: Color(hex: "#AF52DE"), text: "Your native language brain will trick you — I'll help you untrain those habits")
@@ -165,7 +165,7 @@ struct CoachEmptyView: View {
     }
 
     private func howItWorksRow(icon: String, color: Color = .tsAccent, text: String) -> some View {
-        HStack(alignment: .top, spacing: 16) {
+        HStack(alignment: .center, spacing: 16) {
             Image(systemName: icon)
                 .font(.system(size: 20, weight: .medium))
                 .foregroundColor(color)
@@ -816,6 +816,7 @@ extension CoachPopulatedView {
             if breakdown.isEmpty {
                 // All 8 categories at zero — shows what will be tracked
                 ForEach(MistakeCategory.allCases, id: \.self) { category in
+                    let color = categoryColor(category)
                     HStack(spacing: 10) {
                         Text(category.icon)
                             .font(.system(size: 14))
@@ -830,11 +831,11 @@ extension CoachPopulatedView {
                     .padding(14)
                     .background(
                         RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.tsCard.opacity(0.5))
+                            .fill(color.opacity(0.05))
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.tsBorder.opacity(0.15), lineWidth: 0.5)
+                            .stroke(color.opacity(0.12), lineWidth: 0.5)
                     )
                 }
 
@@ -2254,10 +2255,15 @@ struct PracticeSessionView: View {
                                                         if !swipeLeftDone {
                                                             swipeLeftDone = true
                                                             withAnimation { showSwipeLeftHint = false }
-                                                            // Now show double-tap hint
+                                                            // Show double-tap hint after Sol's message is ready
                                                             if !doubleTapValidated {
-                                                                withAnimation(.easeIn(duration: 0.3).delay(0.5)) {
-                                                                    showDoubleTapHint = true
+                                                                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                                                                    let hasSolWithTranslation = messages.contains { $0.role == .sol && $0.translation != nil }
+                                                                    if hasSolWithTranslation && !doubleTapValidated {
+                                                                        withAnimation(.easeIn(duration: 0.3)) {
+                                                                            showDoubleTapHint = true
+                                                                        }
+                                                                    }
                                                                 }
                                                             }
                                                         }
@@ -2500,10 +2506,17 @@ struct PracticeSessionView: View {
             showSwipeLeftHint = false
 
             if swipeRightDone && swipeLeftDone {
-                // Both swipes done — show double-tap hint
+                // Both swipes done — show double-tap hint after Sol's message is ready
                 if !doubleTapValidated && doubleTapDismissCount < 3 {
-                    withAnimation(.easeIn(duration: 0.3).delay(0.5)) {
-                        showDoubleTapHint = true
+                    // Delay to ensure Sol's first message has translation data
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) {
+                        // Only show if a Sol message with translation exists
+                        let hasSolWithTranslation = messages.contains { $0.role == .sol && $0.translation != nil }
+                        if hasSolWithTranslation && !doubleTapValidated {
+                            withAnimation(.easeIn(duration: 0.3)) {
+                                showDoubleTapHint = true
+                            }
+                        }
                     }
                 }
             }

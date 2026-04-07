@@ -81,12 +81,12 @@ struct WordSaveOverlay: View {
                 .padding(16)
                 .background(
                     RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.tsCard)
+                        .fill(headerColor != nil ? headerColor!.opacity(0.06) : Color.tsCard)
                         .shadow(color: .black.opacity(0.08), radius: 8, y: 2)
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 20)
-                        .stroke(Color.tsBorder, lineWidth: 1)
+                        .stroke(headerColor?.opacity(0.15) ?? Color.tsBorder, lineWidth: 1)
                 )
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
@@ -179,11 +179,11 @@ struct WordSaveOverlay: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(
                     RoundedRectangle(cornerRadius: 20)
-                        .fill(Color(hex: "#FF9500").opacity(0.1))
+                        .fill((headerColor ?? Color(hex: "#FF9500")).opacity(0.1))
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 20)
-                        .stroke(Color(hex: "#FF9500").opacity(0.15), lineWidth: 0.5)
+                        .stroke((headerColor ?? Color(hex: "#FF9500")).opacity(0.15), lineWidth: 0.5)
                 )
                 .padding(.horizontal, 16)
                 .padding(.top, 12)
