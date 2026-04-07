@@ -3595,6 +3595,69 @@ struct PracticeSessionView: View {
     }
 
     /// Save a word/phrase selected from Sol's message via tap-hold-slide
+    /// Quick Gemini call to get a more natural version when Sol returned null
+    private func fetchNaturalVersion(text: String, language: String, completion: @escaping (String, String) -> Void) {
+        let langName = LanguageManager.languageName(for: language)
+        let prompt = """
+        A language learner said this in \(langName):
+        "\(text)"
+
+        Rewrite it how a native speaker from their city would say it — more natural, \
+        casual, local. Then explain in 1 sentence what you changed and why.
+
+        JSON only:
+        {"natural": "the native version", "notes": "1 sentence: what changed and why"}
+        """
+
+        let apiKey = APIConfig.geminiAPIKey
+        guard let url = URL(string: "\(APIConfig.geminiBaseURL)?key=\(apiKey)") else {
+            completion("✓ Sounds natural", "Your phrasing was good here.")
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.timeoutInterval = 10
+
+        let body: [String: Any] = [
+            "contents": [["parts": [["text": prompt]]]],
+            "generationConfig": [
+                "temperature": 0.3,
+                "maxOutputTokens": 512,
+                "responseMimeType": "application/json",
+                "thinkingConfig": ["thinkingBudget": 0]
+            ]
+        ]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+
+        URLSession.shared.dataTask(with: request) { data, _, _ in
+            guard let data = data,
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let candidates = json["candidates"] as? [[String: Any]],
+                  let content = candidates.first?["content"] as? [String: Any],
+                  let parts = content["parts"] as? [[String: Any]],
+                  let text = parts.first?["text"] as? String else {
+                completion("✓ Sounds natural", "Your phrasing was good here.")
+                return
+            }
+
+            // Extract JSON from response
+            guard let start = text.firstIndex(of: "{"),
+                  let end = text.lastIndex(of: "}"),
+                  start < end,
+                  let resultData = String(text[start...end]).data(using: .utf8),
+                  let parsed = try? JSONSerialization.jsonObject(with: resultData) as? [String: Any],
+                  let natural = parsed["natural"] as? String else {
+                completion("✓ Sounds natural", "Your phrasing was good here.")
+                return
+            }
+
+            let notes = parsed["notes"] as? String ?? "A more casual, local way to say it."
+            completion(natural, notes)
+        }.resume()
+    }
+
     private func saveWordToLibrary(phrase: String, meaning: String, notes: String) {
         let appGroup = "group.com.jeff.translatehelper"
         guard let defaults = UserDefaults(suiteName: appGroup) else { return }
@@ -3955,11 +4018,28 @@ struct PracticeSessionView: View {
             // Batch all array mutations into one pass to avoid mid-render flashes.
             // Native correction on user's message + Sol's new message = single SwiftUI update.
             var userText = ""
-            if let nativeVersion = sol.nativeCorrectionForUser,
-               let idx = messages.firstIndex(where: { $0.id == userMessageId }) {
+            if let idx = messages.firstIndex(where: { $0.id == userMessageId }) {
                 userText = messages[idx].text
-                messages[idx].nativeVersion = nativeVersion
-                messages[idx].nativeNotes = sol.nativeCorrectionNotes
+                if let nativeVersion = sol.nativeCorrectionForUser {
+                    messages[idx].nativeVersion = nativeVersion
+                    messages[idx].nativeNotes = sol.nativeCorrectionNotes
+                } else {
+                    // Sol returned null — provide a naturalness note so double-tap always works
+                    // Fire a quick Gemini call for a more natural version
+                    let userMsg = messages[idx].text
+                    let msgIdx = idx
+                    let lang = targetLang
+                    DispatchQueue.global(qos: .utility).async {
+                        self.fetchNaturalVersion(text: userMsg, language: lang) { natural, notes in
+                            DispatchQueue.main.async {
+                                if msgIdx < self.messages.count {
+                                    self.messages[msgIdx].nativeVersion = natural
+                                    self.messages[msgIdx].nativeNotes = notes
+                                }
+                            }
+                        }
+                    }
+                }
             }
             messages.append(solMsg)
             messageCount += 1

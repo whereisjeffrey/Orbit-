@@ -488,12 +488,19 @@ class PracticeConversationService {
 
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
 
+        // Helper to execute the request with auto-retry on parse failure
+        func executeRequest(retryCount: Int = 0) {
         URLSession.shared.dataTask(with: request) { data, _, error in
             guard let data = data,
                   let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                   let choices = json["choices"] as? [[String: Any]],
                   let message = choices.first?["message"] as? [String: Any],
                   let content = message["content"] as? String else {
+                if retryCount < 1 {
+                    NSLog("🎤 [Practice] request failed — retrying (attempt \(retryCount + 2))")
+                    executeRequest(retryCount: retryCount + 1)
+                    return
+                }
                 DispatchQueue.main.async { completion(nil) }
                 return
             }
@@ -503,7 +510,12 @@ class PracticeConversationService {
             guard let responseData = content.data(using: .utf8),
                   let parsed = try? JSONSerialization.jsonObject(with: responseData) as? [String: Any],
                   let responseText = (parsed["response"] as? String) ?? (parsed["message"] as? String) else {
-                NSLog("🎤 [Practice] failed to parse Sol response: \(content.prefix(200))")
+                if retryCount < 1 {
+                    NSLog("🎤 [Practice] parse failed — retrying (attempt \(retryCount + 2)): \(content.prefix(200))")
+                    executeRequest(retryCount: retryCount + 1)
+                    return
+                }
+                NSLog("🎤 [Practice] failed to parse Sol response after retry: \(content.prefix(200))")
                 DispatchQueue.main.async { completion(nil) }
                 return
             }
@@ -596,5 +608,8 @@ class PracticeConversationService {
 
             DispatchQueue.main.async { completion(result) }
         }.resume()
+        }  // end executeRequest
+
+        executeRequest()
     }
 }
