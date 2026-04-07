@@ -3547,24 +3547,69 @@ struct PracticeSessionView: View {
         }
     }
 
-    /// Pre-generate the next topic in the background so swiping feels instant
+    /// Pre-generate the next topic using the category engine
     private func preGenerateNextTopic() {
         guard !isPreloading else { return }
         isPreloading = true
 
-        let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper")
-        let cityId = defaults?.string(forKey: "selected_city_id") ?? ""
-        // targetLang comes from @AppStorage — single source of truth
-        let userCity = Self.resolveCityName(cityId)
+        let userCity: String = {
+            if let loc = UserLocationsStore.shared.locations.first { return loc.displayName }
+            let cityId = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "selected_city_id") ?? ""
+            return Self.resolveCityName(cityId)
+        }()
+        let cityName = UserLocationsStore.shared.locations.first?.city ?? userCity
+        let countryName = UserLocationsStore.shared.locations.first?.country ?? ""
 
+        // Pick next category
+        let result = ConversationCategoryEngine.shared.pickForSession(
+            city: cityName, country: countryName
+        )
+
+        let direction = result?.direction ?? ""
+        let needsGemini = result?.needsGemini ?? false
+
+        // Build prompt using category direction
         let prompt = """
         Generate a casual, warm opening message for a practice conversation.
-        Be CREATIVE — invent a unique topic. The user lives in \(userCity).
-        Speak naturally in the target language. Use local slang. 2-3 sentences max.
+
+        CONVERSATION DIRECTION:
+        \(direction.isEmpty ? "Start with a genuine, open-ended question about life in \(userCity)." : direction)
+
+        Ask this question naturally in the target language. Use local slang.
+        2-3 sentences max. Make it feel like a friend asking, not an interviewer.
+
+        The user lives in \(userCity).
+        Speak naturally in the target language. Use local slang and contractions.
+        2-3 sentences max. Ask a question they can easily answer.
+
         Respond ONLY with JSON:
-        {"message": "opening in target language", "translation": "English", "notes": "slang notes", "topic_tag": "tag", "summary": "English summary"}
+        {"message": "your opening in target language", "translation": "English translation", "notes": "brief English note with target-language words inline", "topic_tag": "one_word_tag", "summary": "brief English summary of the topic"}
         """
 
+        // If Gemini needed, fire it first then GPT
+        if needsGemini {
+            let interestsRaw = UserDefaults.standard.string(forKey: "user_interests") ?? ""
+            let interests = interestsRaw.split(separator: ",").map(String.init)
+            let profile = SolMemoryStore.shared.facts.prefix(5).map { $0.fact }.joined(separator: ". ")
+
+            ConversationPoolManager.shared.generateLiveReference(
+                city: cityName,
+                topic: result?.category.label ?? "general",
+                userProfile: profile,
+                interests: interests
+            ) { [self] ref in
+                var geminiPrompt = prompt
+                if let r = ref {
+                    geminiPrompt += "\nUSE THIS REFERENCE: \(r.title) — \(r.whatItIs)"
+                }
+                self.firePreGenGPT(prompt: geminiPrompt, userCity: userCity)
+            }
+        } else {
+            firePreGenGPT(prompt: prompt, userCity: userCity)
+        }
+    }
+
+    private func firePreGenGPT(prompt: String, userCity: String) {
         conversationService.getSolResponse(
             conversationHistory: [(role: "user", text: prompt)],
             userCity: userCity,
@@ -3580,7 +3625,7 @@ struct PracticeSessionView: View {
                     translationNotes: sol.translationNotes
                 )
                 preloadedSlangNotes = sol.slangNotes
-                NSLog("🎯 [Practice] next topic pre-generated: \(sol.text.prefix(40))")
+                NSLog("🎯 [Practice] pre-gen [\(ConversationCategoryEngine.shared.remainingCount) left]: \(sol.text.prefix(40))")
             }
         }
     }
