@@ -3262,6 +3262,10 @@ struct PracticeSessionView: View {
         let topicHistory = loadTopicHistory()
         let historyContext = topicHistory.isEmpty ? "" : "These topics have ALREADY been discussed in past sessions — do NOT repeat any of them:\n\(topicHistory.suffix(20).joined(separator: "\n"))\n"
 
+        // Load specific place names already mentioned — never recommend the same place twice
+        let mentionedPlaces = loadMentionedPlaces()
+        let placesContext = mentionedPlaces.isEmpty ? "" : "SPECIFIC PLACES ALREADY MENTIONED (do NOT bring these up again): \(mentionedPlaces.suffix(30).joined(separator: ", ")). Pick somewhere NEW.\n"
+
         let hintText = showSwipeRightHint
             ? "💡 Sol speaks like a local — casual, full of slang. Respond naturally. Swipe right → for a different topic."
             : showSwipeLeftHint
@@ -3328,6 +3332,7 @@ struct PracticeSessionView: View {
         \(interestContext)
         \(recentBuffer)
         \(historyContext)
+        \(placesContext)
 
         The user lives in \(userCity). \
         LOCATION ACCURACY — CRITICAL: \
@@ -3413,6 +3418,9 @@ struct PracticeSessionView: View {
             // Text is NOT in revealedText yet, so it starts hidden (waveform shows).
             // playSolAudioThenReveal handles the single reveal after audio.
             playSolAudioThenReveal(message: solMsg)
+
+            // Log specific place names from Sol's opening message
+            logMentionedPlaces(from: solMsg.text)
 
             // Add slang notes after a delay (skip already-known phrases)
             if let sol = response, !sol.slangNotes.isEmpty {
@@ -3526,10 +3534,51 @@ struct PracticeSessionView: View {
             history = existing
         }
         history.append(summary)
-        if history.count > 50 { history = Array(history.suffix(50)) } // keep last 50
+        if history.count > 50 { history = Array(history.suffix(50)) }
         if let data = try? JSONSerialization.data(withJSONObject: history) {
             try? data.write(to: file)
         }
+    }
+
+    /// Log specific place names Sol mentions so they never repeat
+    private func logMentionedPlaces(from text: String) {
+        let appGroup = "group.com.jeff.translatehelper"
+        guard let dir = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup) else { return }
+
+        let file = dir.appendingPathComponent("mentioned_places.json")
+        var places: [String] = []
+        if let data = try? Data(contentsOf: file),
+           let existing = try? JSONSerialization.jsonObject(with: data) as? [String] {
+            places = existing
+        }
+
+        // Extract quoted place names from Sol's text (e.g. "Padaria da Esquina")
+        let pattern = #""([^"]+)""#
+        if let regex = try? NSRegularExpression(pattern: pattern) {
+            let matches = regex.matches(in: text, range: NSRange(text.startIndex..., in: text))
+            for match in matches {
+                if let range = Range(match.range(at: 1), in: text) {
+                    let place = String(text[range])
+                    if place.count > 3 && !places.contains(place) {
+                        places.append(place)
+                    }
+                }
+            }
+        }
+
+        if places.count > 100 { places = Array(places.suffix(100)) }
+        if let data = try? JSONSerialization.data(withJSONObject: places) {
+            try? data.write(to: file)
+        }
+    }
+
+    private func loadMentionedPlaces() -> [String] {
+        let appGroup = "group.com.jeff.translatehelper"
+        guard let dir = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup) else { return [] }
+        let file = dir.appendingPathComponent("mentioned_places.json")
+        guard let data = try? Data(contentsOf: file),
+              let places = try? JSONSerialization.jsonObject(with: data) as? [String] else { return [] }
+        return places
     }
 
     /// Loads topic history for the "don't repeat" prompt context
@@ -4127,6 +4176,9 @@ struct PracticeSessionView: View {
 
             // Play audio explicitly for Sol's response
             playSolAudioThenReveal(message: solMsg)
+
+            // Log specific place names from Sol's response
+            logMentionedPlaces(from: solMsg.text)
 
             // Add slang note cards after audio finishes (skip already-known phrases)
             let slangNotes = sol.slangNotes

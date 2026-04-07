@@ -399,6 +399,8 @@ class PracticeConversationService {
           statements, jokes, callbacks to what they said. Rotate constantly. \
         - NEVER repeat the same topic across consecutive messages. If you just talked about \
           bars, do NOT bring up bars again. Switch to something completely different. \
+        - NEVER mention the same specific place, restaurant, bar, or landmark more than once \
+          in a conversation. If you already recommended a place, pick a different one next time. \
         - Think of yourself as having a short attention span — you bounce between topics \
           naturally, like a real friend would in a casual conversation. \
         - If the user keeps the same topic going, that's fine — follow their lead. But when \

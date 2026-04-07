@@ -33,6 +33,7 @@ struct ConversationReference: Codable, Identifiable {
     var engagement: EngagementLevel?
     var refinements: [String]      // accumulated user preferences: "dislikes_yoga", "prefers_pilates"
     let createdAt: Date
+    var lastServed: Date?          // when this reference was last served to Sol
 
     init(topic: String, subtopic: String, title: String, whatItIs: String,
          whyInteresting: String, interestConnection: String, whatsNearby: String,
@@ -114,12 +115,24 @@ class ConversationPoolManager {
         let available = pool.filter { $0.engagement != .rejected }
         guard !available.isEmpty else { return [] }
 
-        // Sort by priority: high engagement first, then user-selected, then by recency
+        // Sort: prefer unserved, then least recently served, then by engagement
         let sorted = available.sorted { a, b in
+            // Never-served references come first
+            let aServed = a.lastServed != nil
+            let bServed = b.lastServed != nil
+            if aServed != bServed { return !aServed }  // unserved first
+
+            // Both served — prefer the one served longest ago
+            if let aDate = a.lastServed, let bDate = b.lastServed {
+                if abs(aDate.timeIntervalSince(bDate)) > 3600 {
+                    return aDate < bDate  // older = higher priority
+                }
+            }
+
+            // Tiebreak by engagement score
             let aScore = engagementScore(a)
             let bScore = engagementScore(b)
-            if aScore != bScore { return aScore > bScore }
-            return a.createdAt > b.createdAt
+            return aScore > bScore
         }
 
         // Take top N, but ensure topic variety
@@ -132,6 +145,14 @@ class ConversationPoolManager {
                 if selected.count >= count { break }
             }
         }
+
+        // Mark as served
+        for ref in selected {
+            if let idx = pool.firstIndex(where: { $0.id == ref.id }) {
+                pool[idx].lastServed = Date()
+            }
+        }
+        savePool()
 
         return selected
     }
