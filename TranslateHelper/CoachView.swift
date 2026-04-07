@@ -3323,142 +3323,46 @@ struct PracticeSessionView: View {
         for msg in messages { revealedText.insert(msg.id) }
         messageCount = 0
 
-        // Blend: personalized topics (70%) once Sol knows enough about the user,
-        // curated scripts (30%) for variety. Threshold: 2+ high-value facts
-        // (work, why here, origin — not pizza preferences).
+        // ── New Category Engine ──────────────────────────────────
+        let cityName = UserLocationsStore.shared.locations.first?.city ?? userCity
+        let countryName = UserLocationsStore.shared.locations.first?.country ?? ""
+
+        let categoryResult = ConversationCategoryEngine.shared.pickForSession(
+            city: cityName, country: countryName
+        )
+
+        // Early sessions: use curated scripts for the party opener etc.
         let facts = SolMemoryStore.shared.facts
-        let highValueCategories = Set(["work", "personal", "goals"])
-        let highValueCount = facts.filter { highValueCategories.contains($0.category) && $0.relevanceScore >= 5 }.count
+        let highValueCount = facts.filter { Set(["work", "personal", "goals"]).contains($0.category) && $0.relevanceScore >= 5 }.count
         let hasEnoughProfile = highValueCount >= 2
 
         let scriptBlock: String
         let hasScript: Bool
 
-        if hasEnoughProfile {
-            // 100% personalized for testing — revert to 70/30 blend later
-            let usePersonalized = true // (PracticeStatsStore.shared.totalSessionCount % 10) < 7
-            if usePersonalized {
-                scriptBlock = ""
-                hasScript = false
-                NSLog("🎬 [Topic] Personalized (\(highValueCount) high-value facts)")
-            } else {
-                let picked = ConversationScriptEngine.shared.buildScriptBlock()
-                scriptBlock = picked
-                hasScript = !picked.isEmpty
-                if hasScript {
-                    NSLog("🎬 [Topic] Script (30%% variety)")
-                } else {
-                    NSLog("🎬 [Topic] Personalized (scripts exhausted)")
-                }
-            }
-        } else {
-            // Early sessions — curated scripts until profile builds
+        if !hasEnoughProfile {
             let picked = ConversationScriptEngine.shared.buildScriptBlock()
             scriptBlock = picked
             hasScript = !picked.isEmpty
-            NSLog("🎬 [Topic] Script (profile building: \(highValueCount) high-value facts)")
+        } else {
+            scriptBlock = ""
+            hasScript = false
         }
 
-        let sessionCount = PracticeStatsStore.shared.totalSessionCount
-        let isEarlyUser = sessionCount < 10
-
-        let earlyUserBoost = (isEarlyUser && !hasScript) ? """
-        IMPORTANT — THIS IS AN EARLY SESSION. Make a STRONG first impression:
-        - Reference a SPECIFIC real place, restaurant, landmark, neighbourhood, or local experience in \(userCity).
-          Not generic — use actual names. "Have you tried the tacos al pastor at El Huequito?" not "Do you like tacos?"
-        - Use a local expression or slang that would surprise them — something they won't find in textbooks.
-        - Make them feel like they're talking to someone who LIVES there and knows the hidden gems.
-        """ : ""
-
-        // Rotating topic categories — weighted by user's expat status
-        let allTopicCategories: [(category: String, newWeight: Int, settlingWeight: Int, localWeight: Int)] = [
-            ("practical life — transport, housing, banking, visa, SIM cards, daily logistics",      5, 2, 1),
-            ("culture & traditions — holidays, local customs, festivals, etiquette, superstitions", 2, 4, 5),
-            ("social life — making friends, dating, social norms, going out, meeting locals",       4, 5, 3),
-            ("language moments — funny misunderstandings, slang discoveries, language milestones",  3, 4, 4),
-            ("current events — what's happening in the city right now, news, local buzz",           1, 3, 5),
-            ("nostalgia & comparison — home vs here, things you miss, things that are better",      1, 2, 5),
-            ("opinions & debates — unpopular opinions about the city, hot takes, local controversies", 1, 2, 4),
-            ("lifestyle — routines, fitness, food habits, work-life balance, weekend plans",        4, 5, 3),
-            ("hidden gems — spots only locals know, off-the-beaten-path experiences",               5, 3, 1),
-            ("personal growth — how living abroad changed you, challenges, breakthroughs",          1, 2, 5),
-        ]
-
-        let status = UserDefaults.standard.string(forKey: "user_expat_status") ?? "settling"
-
-        // Build weighted pool based on status
-        var weightedPool: [String] = []
-        for cat in allTopicCategories {
-            let weight: Int
-            switch status {
-            case "visiting", "just_arrived", "planning":
-                weight = cat.newWeight
-            case "settling":
-                weight = cat.settlingWeight
-            default: // "local" or anything else
-                weight = cat.localWeight
-            }
-            for _ in 0..<weight {
-                weightedPool.append(cat.category)
-            }
-        }
-
-        // Pick from weighted pool using session count for deterministic rotation
-        // but shuffle within the pool so same-weight categories vary
-        let seed = PracticeStatsStore.shared.totalSessionCount
-        let todaysCategory = weightedPool[seed % weightedPool.count]
-
-        // Pull user profile from SolMemoryStore for personalized framing
-        let userProfile = SolMemoryStore.shared.facts
-            .sorted { $0.relevanceScore > $1.relevanceScore }
-            .prefix(8)
-            .map { "- \($0.fact)" }
-            .joined(separator: "\n")
-        let profileBlock = userProfile.isEmpty ? "" : """
-        WHAT YOU KNOW ABOUT THIS PERSON:
-        \(userProfile)
-        You know these things. You DON'T need to mention them. Let this knowledge silently
-        shape your question — don't announce it. "How do you get home late at night?" is
-        better than "As a chef who works late, how do you get home?" Just ask naturally,
-        like a friend who already knows you. Only reference their life directly once every
-        4-5 conversations — the rest of the time, just let it inform your angle.
-        """
+        let categoryDirection = categoryResult?.direction ?? ""
+        let needsGemini = categoryResult?.needsGemini ?? false
 
         let openingPrompt = """
         Generate a casual, warm opening message for a practice conversation.
-        \(scriptBlock)
+        \(hasScript ? scriptBlock : "")
 
         \(hasScript ? "Use the CONVERSATION OPENER direction above as your starting point." : """
-        TODAY'S TOPIC CATEGORY: \(todaysCategory)
-        Stay within this category. Do NOT default to restaurants or landmarks unless
-        this category specifically calls for it.
+        CONVERSATION DIRECTION:
+        \(categoryDirection.isEmpty ? "Start with a genuine, open-ended question about life in \(userCity)." : categoryDirection)
 
-        \(profileBlock)
-
-        HONESTY RULE — CRITICAL:
-        ONLY reference details you ACTUALLY know about this person from the profile above.
-        If you don't know their neighborhood, don't say "near your house" or "in your area."
-        If you don't know their routine, don't say "after your usual morning walk."
-        It's MUCH better to ask a genuine question than to fake knowing something.
-        Guessing wrong destroys trust instantly.
-
-        Be CREATIVE and SPECIFIC — never generic. Think about:
-        - Reference a REAL, SPECIFIC thing about \(userCity) — a named place, a known event,
-          a cultural detail that actually exists. Not "the sunset" or "the weather."
-        - If today's category is culture, name a specific festival or tradition.
-        - If today's category is lifestyle, reference a real neighborhood or routine.
-        - Questions that make the person reflect on their own experience
-        - Slang or expressions that fit this topic naturally
-        - NEVER ask about weather, sunsets, or "how's your day" — those are lazy openers
-        - LEAD WITH THE SPECIFIC DETAIL. Don't say "I heard about an exhibition" then
-          make the user ask what it's called. Say "Have you seen 'Tropicália' at MAM?"
-          Put the name, place, and hook in the FIRST message. Never make the user
-          pull details out of you — give them upfront like an excited friend would.
+        Ask this question naturally in the target language. Use local slang.
+        2-3 sentences max. Make it feel like a friend asking, not an interviewer.
         """)
 
-        LIVE_REFERENCE_PLACEHOLDER
-
-        \(earlyUserBoost)
         \(interestContext)
         \(recentBuffer)
         \(historyContext)
@@ -3536,36 +3440,36 @@ struct PracticeSessionView: View {
             .map { $0.fact }
             .joined(separator: ". ")
 
-        // If personalized mode, fire Gemini first for a real reference
-        if hasEnoughProfile && !hasScript {
+        // If Places & Discovery category, fire Gemini for a real reference
+        if needsGemini && hasEnoughProfile {
+            let interestsRaw = UserDefaults.standard.string(forKey: "user_interests") ?? ""
+            let userInterests = interestsRaw.split(separator: ",").map(String.init)
+            let profileForGemini = facts
+                .sorted { $0.relevanceScore > $1.relevanceScore }
+                .prefix(5)
+                .map { $0.fact }
+                .joined(separator: ". ")
+
             ConversationPoolManager.shared.generateLiveReference(
-                city: userCity,
-                topic: todaysCategory,
+                city: cityName,
+                topic: categoryResult?.category.label ?? "general",
                 userProfile: profileForGemini,
                 interests: userInterests
             ) { [self] liveRef in
-                // Build the final prompt with or without the live reference
-                let refBlock: String
+                var geminiPrompt = openingPrompt
                 if let ref = liveRef {
-                    refBlock = """
-                    USE THIS SPECIFIC REFERENCE IN YOUR OPENER — it is REAL and verified:
+                    geminiPrompt += """
+
+                    USE THIS SPECIFIC REFERENCE — it is REAL and verified:
                     Name: \(ref.title)
                     What it is: \(ref.whatItIs)
                     Why interesting: \(ref.whyInteresting)
-                    Connection: \(ref.interestConnection)
-                    Nearby: \(ref.whatsNearby)
-                    Hooks: \(ref.conversationHooks.prefix(2).joined(separator: " / "))
-
                     Work this into your opening naturally. Use the actual name "\(ref.title)".
                     """
-                } else {
-                    refBlock = "No verified reference available — ask a genuine question about today's topic category."
                 }
 
-                let finalPrompt = openingPrompt.replacingOccurrences(of: "LIVE_REFERENCE_PLACEHOLDER", with: refBlock)
-
                 conversationService.getSolResponse(
-                    conversationHistory: [(role: "user", text: finalPrompt)],
+                    conversationHistory: [(role: "user", text: geminiPrompt)],
                     userCity: userCity,
                     targetLanguage: targetLang,
                     tone: practiceTone
@@ -3576,10 +3480,9 @@ struct PracticeSessionView: View {
             return
         }
 
-        // Script mode or early sessions — no Gemini call needed
-        let finalPrompt = openingPrompt.replacingOccurrences(of: "LIVE_REFERENCE_PLACEHOLDER", with: "")
+        // Non-Gemini categories — curated template already in the prompt
         conversationService.getSolResponse(
-            conversationHistory: [(role: "user", text: finalPrompt)],
+            conversationHistory: [(role: "user", text: openingPrompt)],
             userCity: userCity,
             targetLanguage: targetLang,
             tone: practiceTone

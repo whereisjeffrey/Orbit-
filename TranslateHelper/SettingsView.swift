@@ -359,6 +359,7 @@ struct SettingsView: View {
                             UserDefaults.standard.removeObject(forKey: "word_drag_done_once")
                             // Reset conversation scripts
                             ConversationScriptEngine.shared.resetAll()
+                            ConversationCategoryEngine.shared.resetAll()
                             // Clear saved phrases (clipboard) — both in-memory and on disk
                             SharedPhraseStore.shared.clearAll()
                             let appGroup = UserDefaults(suiteName: "group.com.jeff.translatehelper")
