@@ -356,7 +356,9 @@ struct CoachPopulatedView: View {
                 Spacer(minLength: 80)
             }
         }
-        .fullScreenCover(isPresented: $showPracticeSession) {
+        .fullScreenCover(isPresented: $showPracticeSession, onDismiss: {
+            refreshWeeklyData()
+        }) {
             PracticeSessionView()
         }
         .sheet(isPresented: $showLevelAssessment) {
@@ -577,6 +579,9 @@ extension CoachPopulatedView {
 
     /// Refresh cached weekly data — call on appear and after sessions
     private func refreshWeeklyData() {
+        // Reload stats from disk in case data was written from Sol session
+        PracticeStatsStore.shared.reload()
+
         DispatchQueue.global(qos: .userInitiated).async {
             let roundHistory = LightningRoundEngine.shared.loadRoundHistory()
             let thisWeekRounds = roundHistory.filter {
@@ -1057,85 +1062,63 @@ extension CoachPopulatedView {
 
     @ViewBuilder
     private func mistakeQuizContent(mistake: MistakeEntry, color: Color) -> some View {
-        let isRevealed = revealedAnswers.contains(mistake.id)
-
         VStack(alignment: .leading, spacing: 10) {
-            if !isRevealed {
-                Text("What's the correction?")
-                    .font(.custom("HelveticaNeue", size: 12))
+            // Correction pair
+            HStack(spacing: 6) {
+                Text(truncatePhrase(mistake.userSaid))
+                    .font(.custom("HelveticaNeue", size: 13))
+                    .foregroundColor(Color(hex: "#FF3B30").opacity(0.7))
+                    .strikethrough()
+                Text("→")
+                    .font(.custom("HelveticaNeue", size: 13))
                     .foregroundColor(.tsSecondary)
-                    .italic()
+                Text(truncatePhrase(mistake.correctForm))
+                    .font(.custom("HelveticaNeue-Bold", size: 13))
+                    .foregroundColor(Color(hex: "#34C759"))
+            }
 
+            // Explanation
+            Text(truncateExplanation(mistake.explanation))
+                .font(.custom("HelveticaNeue", size: 12))
+                .foregroundColor(.tsSecondary)
+                .lineSpacing(2)
+                .fixedSize(horizontal: false, vertical: true)
+
+            // Got it / Still learning
+            HStack(spacing: 12) {
                 Button {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        _ = revealedAnswers.insert(mistake.id)
-                    }
+                    MistakeProfileStore.shared.markCorrect(id: mistake.id)
+                    withAnimation { expandedMistakes.remove(mistake.id) }
                 } label: {
-                    Text("Show Answer")
-                        .font(.custom("HelveticaNeue-Medium", size: 13))
-                        .foregroundColor(.tsAccent)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 6)
-                        .background(
-                            Capsule()
-                                .stroke(Color.tsAccent.opacity(0.3), lineWidth: 1)
-                        )
-                }
-            } else {
-                HStack(spacing: 6) {
-                    Text(truncatePhrase(mistake.userSaid))
-                        .font(.custom("HelveticaNeue", size: 13))
-                        .foregroundColor(Color(hex: "#FF3B30").opacity(0.7))
-                        .strikethrough()
-                    Text("→")
-                        .font(.custom("HelveticaNeue", size: 13))
-                        .foregroundColor(.tsSecondary)
-                    Text(truncatePhrase(mistake.correctForm))
-                        .font(.custom("HelveticaNeue-Bold", size: 13))
+                    Text("Got it ✓")
+                        .font(.custom("HelveticaNeue-Medium", size: 12))
                         .foregroundColor(Color(hex: "#34C759"))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 5)
+                        .background(Capsule().fill(Color(hex: "#34C759").opacity(0.1)))
                 }
-
-                Text(truncateExplanation(mistake.explanation))
-                    .font(.custom("HelveticaNeue", size: 12))
-                    .foregroundColor(.tsSecondary)
-                    .lineSpacing(2)
-                    .fixedSize(horizontal: false, vertical: true)
-
-                HStack(spacing: 12) {
-                    Button {
-                        MistakeProfileStore.shared.markCorrect(id: mistake.id)
-                        withAnimation { expandedMistakes.remove(mistake.id) }
-                    } label: {
-                        Text("Got it ✓")
-                            .font(.custom("HelveticaNeue-Medium", size: 12))
-                            .foregroundColor(Color(hex: "#34C759"))
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 5)
-                            .background(Capsule().fill(Color(hex: "#34C759").opacity(0.1)))
-                    }
-                    Button {
-                        MistakeProfileStore.shared.markIncorrect(id: mistake.id)
-                        withAnimation { expandedMistakes.remove(mistake.id) }
-                    } label: {
-                        Text("Still learning")
-                            .font(.custom("HelveticaNeue-Medium", size: 12))
-                            .foregroundColor(Color(hex: "#FF9500"))
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 5)
-                            .background(Capsule().fill(Color(hex: "#FF9500").opacity(0.1)))
-                    }
+                Button {
+                    MistakeProfileStore.shared.markIncorrect(id: mistake.id)
+                    withAnimation { expandedMistakes.remove(mistake.id) }
+                } label: {
+                    Text("Still learning")
+                        .font(.custom("HelveticaNeue-Medium", size: 12))
+                        .foregroundColor(Color(hex: "#FF9500"))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 5)
+                        .background(Capsule().fill(Color(hex: "#FF9500").opacity(0.1)))
                 }
-                .padding(.top, 4)
+            }
+            .padding(.top, 4)
 
-                if mistake.seenCount >= 3 {
-                    HStack(spacing: 6) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .font(.system(size: 10))
-                            .foregroundColor(Color(hex: "#FF9500"))
-                        Text("You've made this mistake \(mistake.seenCount) times.")
-                            .font(.custom("HelveticaNeue-Medium", size: 11))
-                            .foregroundColor(Color(hex: "#FF9500"))
-                    }
+            if mistake.seenCount >= 3 {
+                HStack(spacing: 6) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 10))
+                        .foregroundColor(Color(hex: "#FF9500"))
+                    Text("You've made this mistake \(mistake.seenCount) times.")
+                        .font(.custom("HelveticaNeue-Medium", size: 11))
+                        .foregroundColor(Color(hex: "#FF9500"))
                 }
             }
         }
@@ -3059,6 +3042,24 @@ struct PracticeSessionView: View {
                             }
                         }
                     }
+                .onTapGesture(count: 1) {
+                    // Single tap on Sol's message → toggle audio playback
+                    if message.role == .sol && textVisible && message.text != "..." {
+                        if isPlayingSolAudio && playingAudio == message.id {
+                            ttsService.audioPlayer?.stop()
+                            playingAudio = nil
+                            isPlayingSolAudio = false
+                        } else {
+                            playSolAudio(message: message)
+                        }
+                        if !playbackValidated {
+                            playbackValidated = true
+                            withAnimation(.easeOut(duration: 0.2)) {
+                                showPlaybackHint = false
+                            }
+                        }
+                    }
+                }
                 .onLongPressGesture(minimumDuration: 0.5) {
                     // Long press on Sol's message → open word save overlay
                     if message.role == .sol && textVisible && message.text != "..." {
@@ -3066,30 +3067,9 @@ struct PracticeSessionView: View {
                         generator.impactOccurred()
                         wordSaveMessage = message
 
-                        // Dismiss word save hint if showing
                         if showWordSaveHint {
                             showWordSaveHint = false
                             wordSaveHintShown = true
-                        }
-                    }
-                }
-                .onTapGesture(count: 1) {
-                    // Single tap on Sol's message → toggle audio playback
-                    if message.role == .sol && textVisible && message.text != "..." {
-                        if isPlayingSolAudio && playingAudio == message.id {
-                            // Already playing this message — stop it
-                            ttsService.audioPlayer?.stop()
-                            playingAudio = nil
-                            isPlayingSolAudio = false
-                        } else {
-                            playSolAudio(message: message)
-                        }
-                        // Validate playback hint
-                        if !playbackValidated {
-                            playbackValidated = true
-                            withAnimation(.easeOut(duration: 0.2)) {
-                                showPlaybackHint = false
-                            }
                         }
                     }
                 }
@@ -3377,12 +3357,9 @@ struct PracticeSessionView: View {
 
             let solMsg = buildSolMessage(from: response)
 
-            // Update placeholder in place — keep the same id so SwiftUI doesn't
-            // remove+insert (which causes a visible flicker).
+            // Replace placeholder with real message
             if let idx = messages.firstIndex(where: { $0.id == loadingMsg.id }) {
-                messages[idx].text = solMsg.text
-                messages[idx].translation = solMsg.translation
-                messages[idx].translationNotes = solMsg.translationNotes
+                messages[idx] = solMsg
             } else {
                 messages.insert(solMsg, at: 0)
             }

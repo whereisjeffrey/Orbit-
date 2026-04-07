@@ -948,9 +948,12 @@ class DictateViewController: UIViewController {
         UIView.animate(withDuration: 0.2) {
             self.iconImageView.alpha = 0
         } completion: { _ in
-            // Swap to sparkles — keep invisible
+            // Swap to sparkles — keep invisible until fade-in
+            let goldYellow = UIColor(red: 1.0, green: 0.843, blue: 0.0, alpha: 1.0)
             let starConfig = UIImage.SymbolConfiguration(pointSize: 36, weight: .medium)
+                .applying(UIImage.SymbolConfiguration(hierarchicalColor: goldYellow))
             self.iconImageView.image = UIImage(systemName: "sparkles", withConfiguration: starConfig)
+            self.iconImageView.tintColor = goldYellow
             self.iconImageView.alpha = 0  // stay hidden until after bounce
 
             // Step 2: Shrink circle, then bounce it

@@ -168,6 +168,9 @@ class PracticeStatsStore {
         defaults.synchronize()
     }
 
+    /// Reload data from disk — call when returning to Coach tab
+    func reload() { load() }
+
     private func load() {
         guard let defaults = UserDefaults(suiteName: Self.appGroup) else { return }
 

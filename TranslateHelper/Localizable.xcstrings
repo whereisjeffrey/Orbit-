@@ -8160,9 +8160,6 @@
         }
       }
     },
-    "Show Answer" : {
-
-    },
     "Show less" : {
       "localizations" : {
         "es" : {
@@ -10155,9 +10152,6 @@
           }
         }
       }
-    },
-    "What's the correction?" : {
-
     },
     "What's your name?" : {
       "comment" : "A heading displayed in the onboarding flow, asking for the user's name.",
