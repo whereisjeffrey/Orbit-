@@ -3314,10 +3314,41 @@ struct PracticeSessionView: View {
         for msg in messages { revealedText.insert(msg.id) }
         messageCount = 0
 
-        // Script-driven opener — picks from the user's status/interests/city context.
-        // Falls back to fully generative if all scripts are exhausted.
-        let scriptBlock = ConversationScriptEngine.shared.buildScriptBlock()
-        let hasScript = !scriptBlock.isEmpty
+        // Blend: personalized topics (70%) once Sol knows enough about the user,
+        // curated scripts (30%) for variety. Threshold: 2+ high-value facts
+        // (work, why here, origin — not pizza preferences).
+        let facts = SolMemoryStore.shared.facts
+        let highValueCategories = Set(["work", "personal", "goals"])
+        let highValueCount = facts.filter { highValueCategories.contains($0.category) && $0.relevanceScore >= 5 }.count
+        let hasEnoughProfile = highValueCount >= 2
+
+        let scriptBlock: String
+        let hasScript: Bool
+
+        if hasEnoughProfile {
+            // 70% personalized, 30% scripts
+            let usePersonalized = (PracticeStatsStore.shared.totalSessionCount % 10) < 7
+            if usePersonalized {
+                scriptBlock = ""
+                hasScript = false
+                NSLog("🎬 [Topic] Personalized (\(highValueCount) high-value facts)")
+            } else {
+                let picked = ConversationScriptEngine.shared.buildScriptBlock()
+                scriptBlock = picked
+                hasScript = !picked.isEmpty
+                if hasScript {
+                    NSLog("🎬 [Topic] Script (30%% variety)")
+                } else {
+                    NSLog("🎬 [Topic] Personalized (scripts exhausted)")
+                }
+            }
+        } else {
+            // Early sessions — curated scripts until profile builds
+            let picked = ConversationScriptEngine.shared.buildScriptBlock()
+            scriptBlock = picked
+            hasScript = !picked.isEmpty
+            NSLog("🎬 [Topic] Script (profile building: \(highValueCount) high-value facts)")
+        }
 
         let sessionCount = PracticeStatsStore.shared.totalSessionCount
         let isEarlyUser = sessionCount < 10
