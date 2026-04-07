@@ -3441,7 +3441,18 @@ struct PracticeSessionView: View {
         - Questions that make the person reflect on their own experience
         - Slang or expressions that fit this topic naturally
         - NEVER ask about weather, sunsets, or "how's your day" — those are lazy openers
+        - LEAD WITH THE SPECIFIC DETAIL. Don't say "I heard about an exhibition" then
+          make the user ask what it's called. Say "Have you seen 'Tropicália' at MAM?"
+          Put the name, place, and hook in the FIRST message. Never make the user
+          pull details out of you — give them upfront like an excited friend would.
         """)
+
+        \(ConversationPoolManager.shared.buildPoolContextBlock())
+
+        If the pool above has a reference that fits today's topic category, USE IT.
+        Reference it by name, with specific details. Don't make things up — use the
+        real data from the pool. If nothing in the pool fits, ask a genuine question
+        about the category instead of inventing a fake event or place.
 
         \(earlyUserBoost)
         \(interestContext)
