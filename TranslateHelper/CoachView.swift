@@ -217,6 +217,7 @@ struct CoachPopulatedView: View {
     @State private var assessmentDestination: String = "practice" // "practice" or "lightning"
     @State private var showTalkDrill = false
     @State private var showLevelDetail = false
+    @State private var showMissingProfileSheet = false
     @State private var showLightningRound = false
     @State private var expandedCategories: Set<MistakeCategory> = []
     @State private var expandedMistakes: Set<UUID> = []  // individual mistake rows
@@ -379,6 +380,20 @@ struct CoachPopulatedView: View {
                     }
                 }
             }
+        }
+        .sheet(isPresented: $showMissingProfileSheet) {
+            MissingProfileSheet(onComplete: {
+                showMissingProfileSheet = false
+                // Now start the session
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    if SelfReportedLevel.hasCompleted {
+                        showPracticeSession = true
+                    } else {
+                        assessmentDestination = "practice"
+                        showLevelAssessment = true
+                    }
+                }
+            })
         }
         .fullScreenCover(isPresented: $showLightningRound) {
             LightningRoundView()
@@ -1352,7 +1367,13 @@ extension CoachPopulatedView {
                 .lineSpacing(2)
 
             Button {
-                if SelfReportedLevel.hasCompleted {
+                // Check if we're missing key profile data
+                let hasInterests = !(UserDefaults.standard.string(forKey: "user_interests") ?? "").isEmpty
+                let hasStatus = !(UserDefaults.standard.string(forKey: "user_expat_status") ?? "").isEmpty
+
+                if !hasInterests || !hasStatus {
+                    showMissingProfileSheet = true
+                } else if SelfReportedLevel.hasCompleted {
                     showPracticeSession = true
                 } else {
                     assessmentDestination = "practice"
@@ -4150,6 +4171,156 @@ struct PracticeSessionView: View {
                            translationNotes: "'que legal' — the most common casual way to say 'cool/awesome' in Brazil"),
         ]
         return responses[min(index, responses.count - 1)]
+    }
+}
+
+// MARK: - Missing Profile Sheet
+
+struct MissingProfileSheet: View {
+    let onComplete: () -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    @AppStorage("user_interests") private var savedInterests = ""
+    @AppStorage("user_expat_status") private var savedStatus = ""
+    @State private var selectedInterests: Set<String> = []
+    @State private var selectedStatus: String = ""
+
+    private var needsInterests: Bool { savedInterests.isEmpty }
+    private var needsStatus: Bool { savedStatus.isEmpty }
+
+    private let statuses = [
+        ("visiting", "Just visiting"),
+        ("just_arrived", "Just arrived"),
+        ("settling", "Getting settled (1-6 months)"),
+        ("local", "I live here (6+ months)"),
+        ("planning", "Planning to move"),
+    ]
+
+    var body: some View {
+        NavigationView {
+            ZStack {
+                TSGradientBackground().ignoresSafeArea()
+
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 24) {
+                        // Header
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Before we start")
+                                .font(.custom("HelveticaNeue-Bold", size: 24))
+                                .foregroundColor(.tsLabel)
+                            Text("This helps Sol talk about things you actually care about.")
+                                .font(.custom("HelveticaNeue", size: 15))
+                                .foregroundColor(.tsSecondary)
+                        }
+                        .padding(.top, 8)
+
+                        // Status picker (if needed)
+                        if needsStatus {
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text("How long have you been there?")
+                                    .font(.custom("HelveticaNeue-Bold", size: 17))
+                                    .foregroundColor(.tsLabel)
+
+                                ForEach(statuses, id: \.0) { id, label in
+                                    let isSelected = selectedStatus == id
+                                    Button {
+                                        selectedStatus = id
+                                    } label: {
+                                        HStack {
+                                            Text(label)
+                                                .font(.custom("HelveticaNeue-Medium", size: 15))
+                                                .foregroundColor(.tsLabel)
+                                            Spacer()
+                                            if isSelected {
+                                                Image(systemName: "checkmark.circle.fill")
+                                                    .foregroundColor(.tsAccent)
+                                            }
+                                        }
+                                        .padding(14)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .fill(Color.tsCard)
+                                        )
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .stroke(isSelected ? Color.tsAccent : Color.tsBorder, lineWidth: isSelected ? 2 : 1)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        // Interests picker (if needed)
+                        if needsInterests {
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text("What are you into?")
+                                    .font(.custom("HelveticaNeue-Bold", size: 17))
+                                    .foregroundColor(.tsLabel)
+
+                                LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
+                                    ForEach(allInterests, id: \.id) { interest in
+                                        let isSelected = selectedInterests.contains(interest.id)
+                                        Button {
+                                            if isSelected { selectedInterests.remove(interest.id) }
+                                            else { selectedInterests.insert(interest.id) }
+                                        } label: {
+                                            HStack(spacing: 8) {
+                                                Text(interest.emoji)
+                                                    .font(.system(size: 18))
+                                                Text(interest.label)
+                                                    .font(.custom("HelveticaNeue-Medium", size: 13))
+                                                    .foregroundColor(.tsLabel)
+                                                    .lineLimit(1)
+                                            }
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                            .padding(12)
+                                            .background(
+                                                RoundedRectangle(cornerRadius: 12)
+                                                    .fill(Color.tsCard)
+                                            )
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 12)
+                                                    .stroke(isSelected ? Color.tsAccent : Color.tsBorder, lineWidth: isSelected ? 2 : 1)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Continue button
+                        Button {
+                            if !selectedStatus.isEmpty {
+                                savedStatus = selectedStatus
+                            }
+                            if !selectedInterests.isEmpty {
+                                savedInterests = selectedInterests.joined(separator: ",")
+                            }
+                            onComplete()
+                        } label: {
+                            Text("Let's go")
+                                .font(.custom("HelveticaNeue-Bold", size: 16))
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 52)
+                                .background(Capsule().fill(Color.tsAccent))
+                        }
+                        .padding(.top, 8)
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 40)
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Skip") {
+                        onComplete()
+                    }
+                    .foregroundColor(.tsSecondary)
+                }
+            }
+        }
     }
 }
 

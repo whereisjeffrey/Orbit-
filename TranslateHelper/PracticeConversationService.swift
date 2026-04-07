@@ -615,10 +615,18 @@ class PracticeConversationService {
             var nativeCorrectionNotes = parsed["native_correction_notes"] as? String
 
             // Reject if Sol put its own response in native_correction (common GPT mistake)
-            if let correction = nativeCorrection, correction == responseText {
-                NSLog("🔬 [Correction] REJECTED — Sol put its own response in native_correction")
-                nativeCorrection = nil
-                nativeCorrectionNotes = nil
+            // Check: exact match, starts-with match (first 40 chars), or high overlap
+            if let correction = nativeCorrection {
+                let corrTrimmed = correction.trimmingCharacters(in: .whitespacesAndNewlines)
+                let respTrimmed = responseText.trimmingCharacters(in: .whitespacesAndNewlines)
+                let corrStart = String(corrTrimmed.prefix(40))
+                let respStart = String(respTrimmed.prefix(40))
+
+                if corrTrimmed == respTrimmed || corrStart == respStart {
+                    NSLog("🔬 [Correction] REJECTED — Sol put its own response in native_correction")
+                    nativeCorrection = nil
+                    nativeCorrectionNotes = nil
+                }
             }
 
             if nativeCorrection == nil {

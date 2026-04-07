@@ -2906,6 +2906,7 @@
       }
     },
     "CORRECTION" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -5452,6 +5453,9 @@
           }
         }
       }
+    },
+    "LOCAL" : {
+
     },
     "Locals and fellow newcomers can see\nyou arrived recently and say hi." : {
       "localizations" : {
