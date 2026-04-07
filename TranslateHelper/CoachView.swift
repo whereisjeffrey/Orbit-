@@ -3352,15 +3352,18 @@ struct PracticeSessionView: View {
         let needsGemini = categoryResult?.needsGemini ?? false
 
         let openingPrompt = """
+        \(hasScript ? """
         Generate a casual, warm opening message for a practice conversation.
-        \(hasScript ? scriptBlock : "")
+        \(scriptBlock)
+        Use the CONVERSATION OPENER direction above as your starting point.
+        """ : """
+        Translate this question into natural \(LanguageManager.shared.targetLangName ?? "target language") \
+        with local slang from \(userCity). Say it like a friend would — casual, warm, \
+        no filler. Do NOT add greetings like "E aí, como tá a vida?" — go STRAIGHT \
+        to the question. The question IS the opener.
 
-        \(hasScript ? "Use the CONVERSATION OPENER direction above as your starting point." : """
-        CONVERSATION DIRECTION:
-        \(categoryDirection.isEmpty ? "Start with a genuine, open-ended question about life in \(userCity)." : categoryDirection)
-
-        Ask this question naturally in the target language. Use local slang.
-        2-3 sentences max. Make it feel like a friend asking, not an interviewer.
+        THE QUESTION TO TRANSLATE:
+        "\(categoryDirection.isEmpty ? "What's something about living here that still surprises you?" : categoryDirection)"
         """)
 
         \(interestContext)
@@ -3569,15 +3572,15 @@ struct PracticeSessionView: View {
         let direction = result?.direction ?? ""
         let needsGemini = result?.needsGemini ?? false
 
-        // Build prompt using category direction
+        // Build prompt — direct translation, no filler
         let prompt = """
-        Generate a casual, warm opening message for a practice conversation.
+        Translate this question into natural \(LanguageManager.shared.targetLangName ?? "target language") \
+        with local slang from \(userCity). Say it like a friend — casual, warm, \
+        no filler. Do NOT add greetings like "E aí, como tá a vida?" — go STRAIGHT \
+        to the question.
 
-        CONVERSATION DIRECTION:
-        \(direction.isEmpty ? "Start with a genuine, open-ended question about life in \(userCity)." : direction)
-
-        Ask this question naturally in the target language. Use local slang.
-        2-3 sentences max. Make it feel like a friend asking, not an interviewer.
+        THE QUESTION TO TRANSLATE:
+        "\(direction.isEmpty ? "What's something about living here that still surprises you?" : direction)"
 
         The user lives in \(userCity).
         Speak naturally in the target language. Use local slang and contractions.
