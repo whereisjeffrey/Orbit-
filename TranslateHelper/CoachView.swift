@@ -3603,9 +3603,24 @@ struct PracticeSessionView: View {
                 interests: interests,
                 alreadyMentioned: loadMentionedPlaces()
             ) { [self] ref in
-                var geminiPrompt = prompt
+                let geminiPrompt: String
                 if let r = ref {
-                    geminiPrompt += "\nUSE THIS REFERENCE: \(r.title) — \(r.whatItIs)"
+                    // Build prompt around the Gemini reference — NOT the fallback
+                    geminiPrompt = """
+                    Translate this into natural \(LanguageManager.shared.targetLangName ?? "target language") \
+                    with local slang from \(userCity). Say it like a friend — casual, warm, \
+                    no filler. Do NOT add greetings — go STRAIGHT to the point.
+
+                    THE QUESTION: "Have you checked out \(r.title)? \(r.whyInteresting)"
+
+                    The user lives in \(userCity).
+                    Speak naturally. Use local slang and contractions. 2-3 sentences max.
+
+                    Respond ONLY with JSON:
+                    {"message": "your opening in target language", "translation": "English translation", "notes": "brief English note", "topic_tag": "one_word_tag", "summary": "brief English summary"}
+                    """
+                } else {
+                    geminiPrompt = prompt
                 }
                 self.firePreGenGPT(prompt: geminiPrompt, userCity: userCity)
             }
