@@ -463,8 +463,8 @@ class PracticeConversationService {
           "response": "your response in \(langName) — speak like a real local", \
           "translation": "English translation of your response", \
           "translation_notes": "1 brief English note about a word/phrase you used (optional, null if none)", \
-          "native_correction": "Pick the ONE most important mistake or unnatural phrasing in the user's message. Show it as: 'wrong → correct' for simple fixes (e.g. 'a prédio → o prédio') or the full corrected sentence for structural changes. Only ONE correction — the most impactful one. NEVER put YOUR response here — this is about THEIR message. NEVER return null — there is always something to improve, even if it's just making it sound more local.", \
-          "native_correction_notes": "1 sentence: why you changed it — the rule or pattern. Use \(langName) words inline. NEVER null.", \
+          "native_correction": "Rewrite ONLY the sentence(s) from the user's message that need improvement — skip sentences that were fine. Show 1-2 corrected sentences max, written how a native from \(userCity) would say them. Include the full sentence for context, not just the changed word. If they said 4 sentences and only 1 needs work, show only that 1 corrected sentence. NEVER put YOUR response here. NEVER return null — there is always something to make more natural, even if it's just a more casual phrasing.", \
+          "native_correction_notes": "1-2 sentences: what you changed and why — the rule, pattern, or naturalness improvement. Use \(langName) words inline. NEVER null.", \
           "mistake_log": {"user_fragment": "The EXACT wrong part only — 1-5 words max. No full sentences. No arrows. No 'null'. e.g. 'a prédio' or 'eu sou 25'. If you can't isolate a short fragment, set mistake_log to null.", "correct_fragment": "The corrected version — same length as user_fragment. 1-5 words. e.g. 'o prédio' or 'eu tenho 25'. NEVER put 'null' as the value.", "rule": "One sentence in \(LanguageManager.languageName(for: LanguageManager.shared.nativeLang)): the grammar pattern + 2-3 examples. Max 100 chars. e.g. 'Words ending in -agem are feminine: viagem, garagem, paisagem.'"} or null if no real mistake (naturalness tweaks don't count), \
           "slang_notes": [{"phrase": "the \(langName) slang/expression", "meaning": "English meaning", \
             "context": "English explanation of when/where people use this — be specific to the city/region"}] or [] if none, \
@@ -603,6 +603,13 @@ class PracticeConversationService {
                !userFrag.isEmpty, !correctFrag.isEmpty {
                 mistakeLog = MistakeLog(userFragment: userFrag, correctFragment: correctFrag, rule: rule)
             }
+
+            // DEBUG: Log exactly what Sol returned for correction fields
+            let rawCorrection = parsed["native_correction"]
+            let rawNotes = parsed["native_correction_notes"]
+            NSLog("🔬 [Sol Debug] native_correction type=\(type(of: rawCorrection)), value=\(String(describing: rawCorrection).prefix(150))")
+            NSLog("🔬 [Sol Debug] native_correction_notes type=\(type(of: rawNotes)), value=\(String(describing: rawNotes).prefix(150))")
+            NSLog("🔬 [Sol Debug] mistake_log: \(mistakeLog != nil ? "\(mistakeLog!.userFragment) → \(mistakeLog!.correctFragment)" : "nil")")
 
             let result = SolResponse(
                 text: responseText,

@@ -71,7 +71,7 @@ struct CoachEmptyView: View {
                     .foregroundColor(.tsLabel)
                     .padding(.bottom, 8)
 
-                Text("Think of me as a friend who speaks the language. We can have conversations whenever you want to practice, and when you're texting on WhatsApp, I'll be in your keyboard giving you tips as you go.")
+                Text("Practice speaking with me here. Use your keyboard on WhatsApp. I'll help you sound like a local in both.")
                     .font(.custom("HelveticaNeue", size: 15))
                     .foregroundColor(.tsSecondary)
                     .multilineTextAlignment(.center)
@@ -86,10 +86,10 @@ struct CoachEmptyView: View {
                         .foregroundColor(.tsSecondary)
                         .kerning(1.2)
 
-                    howItWorksRow(icon: "keyboard", color: Color.tsAccent, text: "Write or send audios like you normally do in WhatsApp")
-                    howItWorksRow(icon: "target", color: Color(hex: "#34C759"), text: "I'll give you 1-2 tips per message — pronunciation, grammar, or both")
-                    howItWorksRow(icon: "chart.line.uptrend.xyaxis", color: Color(hex: "#FF9500"), text: "Over time, I'll track your patterns and show you exactly where you're improving")
-                    howItWorksRow(icon: "brain.head.profile", color: Color(hex: "#AF52DE"), text: "I know your native language brain will try to trick you — I'll help you untrain those habits")
+                    howItWorksRow(icon: "bubble.left.and.bubble.right.fill", color: Color.tsAccent, text: "Practice conversations with me — I'll speak like a local and coach you in real time")
+                    howItWorksRow(icon: "keyboard", color: Color(hex: "#34C759"), text: "Use the Orbit keyboard on WhatsApp — I'll give you tips as you text")
+                    howItWorksRow(icon: "chart.line.uptrend.xyaxis", color: Color(hex: "#FF9500"), text: "I track your patterns and show you exactly where you're improving")
+                    howItWorksRow(icon: "brain.head.profile", color: Color(hex: "#AF52DE"), text: "Your native language brain will trick you — I'll help you untrain those habits")
                 }
                 .padding(24)
                 .background(
@@ -1388,17 +1388,20 @@ extension CoachPopulatedView {
                 HStack(spacing: 4) {
                     Image(systemName: "clock")
                         .font(.system(size: 11))
+                        .foregroundColor(Color(hex: "#34C759"))
                     Text("Last session: 2 days ago")
                         .font(.custom("HelveticaNeue", size: 11))
+                        .foregroundColor(.tsSecondary)
                 }
                 HStack(spacing: 4) {
                     Image(systemName: "flame")
                         .font(.system(size: 11))
+                        .foregroundColor(Color(hex: "#FF9500"))
                     Text("Sessions this week: 3")
                         .font(.custom("HelveticaNeue", size: 11))
+                        .foregroundColor(.tsSecondary)
                 }
             }
-            .foregroundColor(.tsSecondary)
         }
         .padding(20)
         .background(
@@ -4021,9 +4024,11 @@ struct PracticeSessionView: View {
             if let idx = messages.firstIndex(where: { $0.id == userMessageId }) {
                 userText = messages[idx].text
                 if let nativeVersion = sol.nativeCorrectionForUser {
+                    NSLog("🔬 [Correction] Sol provided correction: \(nativeVersion.prefix(80))")
                     messages[idx].nativeVersion = nativeVersion
                     messages[idx].nativeNotes = sol.nativeCorrectionNotes
                 } else {
+                    NSLog("🔬 [Correction] Sol returned NULL — firing Gemini fallback for: \(messages[idx].text.prefix(60))")
                     // Sol returned null — provide a naturalness note so double-tap always works
                     // Fire a quick Gemini call for a more natural version
                     let userMsg = messages[idx].text
@@ -4031,6 +4036,7 @@ struct PracticeSessionView: View {
                     let lang = targetLang
                     DispatchQueue.global(qos: .utility).async {
                         self.fetchNaturalVersion(text: userMsg, language: lang) { natural, notes in
+                            NSLog("🔬 [Correction] Gemini fallback returned: \(natural.prefix(80))")
                             DispatchQueue.main.async {
                                 if msgIdx < self.messages.count {
                                     self.messages[msgIdx].nativeVersion = natural
