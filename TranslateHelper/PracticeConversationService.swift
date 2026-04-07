@@ -225,6 +225,16 @@ class PracticeConversationService {
         body.append("Content-Disposition: form-data; name=\"response_format\"\r\n\r\n".data(using: .utf8)!)
         body.append("json\r\n".data(using: .utf8)!)
 
+        // Hint Whisper with city/location names so it recognizes them
+        let locations = UserLocationsStore.shared.locations.map(\.displayName)
+        let langName = LanguageManager.shared.targetLangName ?? ""
+        let whisperHint = (locations + [langName]).joined(separator: ", ")
+        if !whisperHint.isEmpty {
+            body.append("--\(boundary)\r\n".data(using: .utf8)!)
+            body.append("Content-Disposition: form-data; name=\"prompt\"\r\n\r\n".data(using: .utf8)!)
+            body.append("\(whisperHint)\r\n".data(using: .utf8)!)
+        }
+
         body.append("--\(boundary)--\r\n".data(using: .utf8)!)
 
         request.httpBody = body

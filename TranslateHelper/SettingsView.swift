@@ -332,7 +332,8 @@ struct SettingsView: View {
                     .padding(.horizontal, 16)
                     .padding(.bottom, 8)
 
-                    // Debug
+                    // Debug — only visible in development builds
+                    #if DEBUG
                     VStack(spacing: 0) {
                         Button(action: {
                             // Reset onboarding flow
@@ -425,6 +426,7 @@ struct SettingsView: View {
                     .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                     .padding(.horizontal, 16)
                     .padding(.bottom, 8)
+                    #endif
 
                     // Version info
                     Text("Version 2.4.1 (Build 890)")

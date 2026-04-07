@@ -544,11 +544,8 @@ class DictateViewController: UIViewController {
         stopSonarRings()
         stopElapsedTimer()
 
-        let goldYellow = UIColor(red: 1.0, green: 0.843, blue: 0.0, alpha: 1.0) // #FFD700
-        let sparkCfg = UIImage.SymbolConfiguration(pointSize: 44, weight: .medium)
-            .applying(UIImage.SymbolConfiguration(hierarchicalColor: goldYellow))
-        iconImageView.image = UIImage(systemName: "sparkles", withConfiguration: sparkCfg)
-        iconImageView.tintColor = goldYellow
+        // Don't swap to sparkles here — playStarBounce handles it after fade-out
+        // This prevents the brief flash of sparkles before the animation starts
 
         // Hide the timer label — just the stars are enough
         sendButton.isEnabled = false

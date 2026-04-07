@@ -3976,6 +3976,7 @@
       }
     },
     "Every time you write or send an audio, I listen and give you tips to sound more natural. The more you speak, the smarter I get." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -9215,6 +9216,9 @@
         }
       }
     },
+    "Think of me as a friend who speaks the language. We can have conversations whenever you want to practice, and when you're texting on WhatsApp, I'll be in your keyboard giving you tips as you go." : {
+
+    },
     "Thinking..." : {
       "localizations" : {
         "es" : {
@@ -10665,6 +10669,7 @@
       }
     },
     "Your language coach.\nI live inside your keyboard." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {

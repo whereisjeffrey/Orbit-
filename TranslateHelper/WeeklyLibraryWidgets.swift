@@ -124,7 +124,7 @@ struct WeeklyClipboardWidget: View {
 
                         // Empty state text on top of lines
                         VStack(spacing: 6) {
-                            Text("📋").font(.system(size: 28))
+                            Text("📋").font(.system(size: 56))
                             Text("No phrases added yet")
                                 .font(.custom("HelveticaNeue", size: 13))
                                 .foregroundColor(.tsSecondary)

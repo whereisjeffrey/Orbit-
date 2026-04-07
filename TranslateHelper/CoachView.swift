@@ -71,14 +71,7 @@ struct CoachEmptyView: View {
                     .foregroundColor(.tsLabel)
                     .padding(.bottom, 8)
 
-                Text("Your language coach.\nI live inside your keyboard.")
-                    .font(.custom("HelveticaNeue", size: 15))
-                    .foregroundColor(.tsSecondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 40)
-                    .padding(.bottom, 4)
-
-                Text("Every time you write or send an audio, I listen and give you tips to sound more natural. The more you speak, the smarter I get.")
+                Text("Think of me as a friend who speaks the language. We can have conversations whenever you want to practice, and when you're texting on WhatsApp, I'll be in your keyboard giving you tips as you go.")
                     .font(.custom("HelveticaNeue", size: 15))
                     .foregroundColor(.tsSecondary)
                     .multilineTextAlignment(.center)
@@ -388,10 +381,6 @@ struct CoachPopulatedView: View {
             LightningRoundView()
         }
         .onAppear {
-            #if DEBUG
-            // DEBUG seed removed — target areas fill organically now
-            #endif
-
             // Lightning Round pre-gen disabled (shelved for v1.1)
         }
     }
@@ -1305,10 +1294,12 @@ extension CoachPopulatedView {
 
     private var practiceCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Image(systemName: "bubble.left.and.bubble.right.fill")
-                    .font(.system(size: 14))
-                    .foregroundColor(.tsAccent)
+            HStack(spacing: 8) {
+                Image("SolAvaatar")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 24, height: 24)
+                    .clipShape(Circle())
                 Text("CONVERSATION")
                     .font(.custom("HelveticaNeue-Bold", size: 11))
                     .foregroundColor(.tsSecondary)

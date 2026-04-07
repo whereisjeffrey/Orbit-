@@ -1,0 +1,18 @@
+# API Keys — never push to GitHub
+TranslateHelper/Secrets.swift
+TranslateHelperKeyboard/Secrets.swift
+
+# Xcode
+*.xcuserstate
+*.xcscmblueprint
+xcuserdata/
+DerivedData/
+build/
+
+# CocoaPods
+Pods/
+
+# macOS
+.DS_Store
+*.swp
+*~
