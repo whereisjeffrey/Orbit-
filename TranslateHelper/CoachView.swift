@@ -3122,7 +3122,7 @@ struct PracticeSessionView: View {
                         HStack(spacing: 4) {
                             Text(langFlag)
                                 .font(.system(size: 12))
-                            Text("CORRECTION")
+                            Text("LOCAL")
                                 .font(.custom("HelveticaNeue-Bold", size: 9))
                                 .foregroundColor(langAccentColor)
                                 .kerning(0.8)
