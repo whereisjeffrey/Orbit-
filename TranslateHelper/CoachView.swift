@@ -3074,9 +3074,16 @@ struct PracticeSessionView: View {
                     }
                 }
                 .onTapGesture(count: 1) {
-                    // Single tap on Sol's message → replay audio
+                    // Single tap on Sol's message → toggle audio playback
                     if message.role == .sol && textVisible && message.text != "..." {
-                        playSolAudio(message: message)
+                        if isPlayingSolAudio && playingAudio == message.id {
+                            // Already playing this message — stop it
+                            ttsService.audioPlayer?.stop()
+                            playingAudio = nil
+                            isPlayingSolAudio = false
+                        } else {
+                            playSolAudio(message: message)
+                        }
                         // Validate playback hint
                         if !playbackValidated {
                             playbackValidated = true
@@ -3370,10 +3377,12 @@ struct PracticeSessionView: View {
 
             let solMsg = buildSolMessage(from: response)
 
-            // Swap the placeholder's text in-place so SwiftUI sees ONE message change,
-            // not a remove + insert. Keep the same array slot — no layout thrash.
+            // Update placeholder in place — keep the same id so SwiftUI doesn't
+            // remove+insert (which causes a visible flicker).
             if let idx = messages.firstIndex(where: { $0.id == loadingMsg.id }) {
-                messages[idx] = solMsg
+                messages[idx].text = solMsg.text
+                messages[idx].translation = solMsg.translation
+                messages[idx].translationNotes = solMsg.translationNotes
             } else {
                 messages.insert(solMsg, at: 0)
             }
@@ -4170,7 +4179,7 @@ struct PracticeSessionView: View {
 struct PracticeMessage: Identifiable {
     let id = UUID()
     let role: Role
-    let text: String
+    var text: String
     /// English translation for Sol's Portuguese messages (revealed on double-tap)
     var translation: String?
     /// Optional notes about slang, idioms, etc.

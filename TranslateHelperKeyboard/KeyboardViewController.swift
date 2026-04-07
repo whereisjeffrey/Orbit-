@@ -586,8 +586,7 @@ class KeyboardViewController: UIInputViewController {
                         || self.currentTone == "work"
 
                     if needsRefinement {
-                        // Keep showing "Translating..." + spinner until refinement completes
-                        self.outputTextLabel.text = "✨ Refining..."
+                        // Keep showing "Translating..." + spinner — don't flash intermediate text
                         let langCode = detected.code
 
                         TalkSwitchAPI.shared.refineTranslation(

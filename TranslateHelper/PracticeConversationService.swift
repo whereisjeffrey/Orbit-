@@ -463,8 +463,8 @@ class PracticeConversationService {
           "response": "your response in \(langName) — speak like a real local", \
           "translation": "English translation of your response", \
           "translation_notes": "1 brief English note about a word/phrase you used (optional, null if none)", \
-          "native_correction": "Rewrite ONLY the sentence(s) from the user's message that need improvement — skip sentences that were fine. Show 1-2 corrected sentences max, written how a native from \(userCity) would say them. Include the full sentence for context, not just the changed word. If they said 4 sentences and only 1 needs work, show only that 1 corrected sentence. NEVER put YOUR response here. NEVER return null — there is always something to make more natural, even if it's just a more casual phrasing.", \
-          "native_correction_notes": "1-2 sentences: what you changed and why — the rule, pattern, or naturalness improvement. Use \(langName) words inline. NEVER null.", \
+          "native_correction": "REQUIRED. Take the text the USER just said (the last 'user' role message in the conversation) and rewrite it as a native from \(userCity) would say it. FIX their grammar, use local phrasing, add natural contractions. This must be a rewrite of THEIR words — NOT your reply to them. Your reply goes in 'response' above. This field is THEIR message, improved. Never null.", \
+          "native_correction_notes": "REQUIRED — IN ENGLISH: explain what you changed and why. 1-2 sentences. Write in English with \(langName) words inline for examples (e.g. 'Locals say tô instead of estou'). Must ALWAYS be a string, never null.", \
           "mistake_log": {"user_fragment": "The EXACT wrong part only — 1-5 words max. No full sentences. No arrows. No 'null'. e.g. 'a prédio' or 'eu sou 25'. If you can't isolate a short fragment, set mistake_log to null.", "correct_fragment": "The corrected version — same length as user_fragment. 1-5 words. e.g. 'o prédio' or 'eu tenho 25'. NEVER put 'null' as the value.", "rule": "One sentence in \(LanguageManager.languageName(for: LanguageManager.shared.nativeLang)): the grammar pattern + 2-3 examples. Max 100 chars. e.g. 'Words ending in -agem are feminine: viagem, garagem, paisagem.'"} or null if no real mistake (naturalness tweaks don't count), \
           "slang_notes": [{"phrase": "the \(langName) slang/expression", "meaning": "English meaning", \
             "context": "English explanation of when/where people use this — be specific to the city/region"}] or [] if none, \
@@ -611,12 +611,26 @@ class PracticeConversationService {
             NSLog("🔬 [Sol Debug] native_correction_notes type=\(type(of: rawNotes)), value=\(String(describing: rawNotes).prefix(150))")
             NSLog("🔬 [Sol Debug] mistake_log: \(mistakeLog != nil ? "\(mistakeLog!.userFragment) → \(mistakeLog!.correctFragment)" : "nil")")
 
+            var nativeCorrection = parsed["native_correction"] as? String
+            var nativeCorrectionNotes = parsed["native_correction_notes"] as? String
+
+            // Reject if Sol put its own response in native_correction (common GPT mistake)
+            if let correction = nativeCorrection, correction == responseText {
+                NSLog("🔬 [Correction] REJECTED — Sol put its own response in native_correction")
+                nativeCorrection = nil
+                nativeCorrectionNotes = nil
+            }
+
+            if nativeCorrection == nil {
+                NSLog("🔬 [Correction] Sol returned null or rejected — GPT non-compliance")
+            }
+
             let result = SolResponse(
                 text: responseText,
                 translation: parsed["translation"] as? String,
                 translationNotes: parsed["translation_notes"] as? String,
-                nativeCorrectionForUser: parsed["native_correction"] as? String,
-                nativeCorrectionNotes: parsed["native_correction_notes"] as? String,
+                nativeCorrectionForUser: nativeCorrection,
+                nativeCorrectionNotes: nativeCorrectionNotes,
                 slangNotes: slangNotes,
                 mistakeLog: mistakeLog
             )
