@@ -3313,19 +3313,52 @@ struct PracticeSessionView: View {
         - Make them feel like they're talking to someone who LIVES there and knows the hidden gems.
         """ : ""
 
+        // Rotating topic categories — pick one that hasn't been used recently
+        let topicCategories = [
+            "practical life — transport, housing, banking, visa, SIM cards, daily logistics",
+            "culture & traditions — holidays, local customs, festivals, etiquette, superstitions",
+            "social life — making friends, dating, social norms, going out, meeting locals",
+            "language moments — funny misunderstandings, slang discoveries, language milestones",
+            "current events — what's happening in the city right now, news, local buzz",
+            "nostalgia & comparison — home vs here, things you miss, things that are better",
+            "opinions & debates — unpopular opinions about the city, hot takes, local controversies",
+            "lifestyle — routines, fitness, food habits, work-life balance, weekend plans",
+            "hidden gems — spots only locals know, off-the-beaten-path experiences",
+            "personal growth — how living abroad changed you, challenges, breakthroughs",
+        ]
+        let categoryIndex = PracticeStatsStore.shared.totalSessionCount % topicCategories.count
+        let todaysCategory = topicCategories[categoryIndex]
+
+        // Pull user profile from SolMemoryStore for personalized framing
+        let userProfile = SolMemoryStore.shared.facts
+            .sorted { $0.relevanceScore > $1.relevanceScore }
+            .prefix(8)
+            .map { "- \($0.fact)" }
+            .joined(separator: "\n")
+        let profileBlock = userProfile.isEmpty ? "" : """
+        WHAT YOU KNOW ABOUT THIS PERSON (use this to FRAME the topic, not as the topic itself):
+        \(userProfile)
+        Connect today's topic to who they are. A chef gets asked about transport differently
+        than a student. A parent gets asked about weekends differently than a solo traveller.
+        """
+
         let openingPrompt = """
         Generate a casual, warm opening message for a practice conversation.
         \(scriptBlock)
 
         \(hasScript ? "Use the CONVERSATION OPENER direction above as your starting point." : """
+        TODAY'S TOPIC CATEGORY: \(todaysCategory)
+        Stay within this category. Do NOT default to restaurants or landmarks unless
+        this category specifically calls for it.
+
+        \(profileBlock)
+
         Be CREATIVE and SPECIFIC — never generic. Think about:
-        - Real places, restaurants, bars, markets, landmarks in \(userCity)
-        - Local cultural events, traditions, or seasonal things happening
-        - Neighbourhood-specific references (not just the city name)
-        - Local slang, expressions, or inside jokes that residents would know
-        - Food, music, nightlife, dating culture specific to \(userCity)
-        - Funny observations about daily life that only someone living there would notice
-        - Hypothetical questions, unpopular opinions, childhood memories, travel stories
+        - Real experiences, situations, and observations related to today's category
+        - Local cultural context specific to \(userCity)
+        - Questions that make the person reflect on their own experience
+        - Slang or expressions that fit this topic naturally
+        - NOT just "have you been to [place]" — think deeper
         """)
 
         \(earlyUserBoost)
