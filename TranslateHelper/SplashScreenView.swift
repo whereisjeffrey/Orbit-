@@ -42,7 +42,7 @@ struct SplashScreenView: View {
                     .font(.museoModerno(46))
                     .foregroundColor(.white)
                     .kerning(1.5)
-                    .padding(.top, 20)
+                    .padding(.top, 14)
 
                 // ── Tagline ──────────────────────────────────────────────
                 Text("Language in the Wild.")
