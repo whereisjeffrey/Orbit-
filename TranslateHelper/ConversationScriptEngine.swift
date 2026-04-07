@@ -99,8 +99,18 @@ class ConversationScriptEngine {
         // Sort by priority (highest first), then pick from top tier with some randomness
         let sorted = pool.sorted { $0.priority > $1.priority }
         let topPriority = sorted[0].priority
-        let topTier = sorted.filter { $0.priority >= topPriority - 1 }
-        let picked = topTier.randomElement()!
+
+        // Priority 10 scripts (party openers) always go first — no randomization
+        let exactTop = sorted.filter { $0.priority == topPriority }
+        let picked: ConversationScript
+        if exactTop.count == 1 || topPriority == 10 {
+            // Single top script or party opener — use it, no randomization
+            picked = exactTop.randomElement()!
+        } else {
+            // Multiple scripts at same priority — randomize within tier
+            let topTier = sorted.filter { $0.priority >= topPriority - 1 }
+            picked = topTier.randomElement()!
+        }
 
         // Mark as used
         usedScripts.insert(picked.id)

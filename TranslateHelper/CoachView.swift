@@ -88,7 +88,7 @@ struct CoachEmptyView: View {
 
                     howItWorksRow(icon: "bubble.left.and.bubble.right.fill", color: Color.tsAccent, text: "Practice conversations with me — I'll speak like a local and coach you in real time")
                     howItWorksRow(icon: "keyboard", color: Color(hex: "#34C759"), text: "Use the Orbit keyboard on WhatsApp — I'll give you tips as you text")
-                    howItWorksRow(icon: "target", color: Color(hex: "#FF3B30"), text: "I spot your weak areas and keep working on them with you until they stick")
+                    howItWorksRow(icon: "target", color: Color(hex: "#FF3B30"), text: "I target your weak spots and help you improve them")
                     howItWorksRow(icon: "chart.line.uptrend.xyaxis", color: Color(hex: "#FF9500"), text: "I track your patterns and show you exactly where you're improving")
                     howItWorksRow(icon: "brain.head.profile", color: Color(hex: "#AF52DE"), text: "Your native language brain will trick you — I'll help you untrain those habits")
                 }

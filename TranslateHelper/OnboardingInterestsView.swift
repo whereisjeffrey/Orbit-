@@ -16,13 +16,13 @@ let allInterests: [Interest] = [
     Interest(id: "outdoors",     emoji: "🏃", label: "Outdoor activities"),
     Interest(id: "wellness",     emoji: "🧘", label: "Wellness"),
     Interest(id: "music",        emoji: "🎵", label: "Live music"),
-    Interest(id: "history",      emoji: "🏛️", label: "History"),
-    Interest(id: "news",         emoji: "📰", label: "News & events"),
+    Interest(id: "lgbtq",        emoji: "🏳️‍🌈", label: "LGBTQ+ community"),
     Interest(id: "family",       emoji: "🏡", label: "Family life"),
-    Interest(id: "markets",      emoji: "🛍️", label: "Markets"),
+    Interest(id: "news",         emoji: "📰", label: "News & events"),
+    Interest(id: "history",      emoji: "🏛️", label: "History"),
+    Interest(id: "markets",      emoji: "🧺", label: "Markets"),
     Interest(id: "language",     emoji: "💬", label: "Language learning"),
     Interest(id: "photography",  emoji: "📷", label: "Photography"),
-    Interest(id: "lgbtq",        emoji: "🏳️‍🌈", label: "LGBTQ+ community"),
 ]
 
 struct OnboardingInterestsView: View {
