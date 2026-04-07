@@ -653,10 +653,17 @@ class ConversationPoolManager {
     }
 
     private func parseReferences(from text: String) -> [ConversationReference] {
-        // Try direct parse first
+        // Try direct parse as array first
         if let data = text.data(using: .utf8),
            let array = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] {
             return array.compactMap { parseReference($0) }
+        }
+
+        // Try as single object (Gemini sometimes returns {} instead of [{}])
+        if let data = text.data(using: .utf8),
+           let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let ref = parseReference(obj) {
+            return [ref]
         }
 
         // Strip markdown fences if present

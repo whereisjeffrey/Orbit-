@@ -291,6 +291,15 @@ struct CoachPopulatedView: View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 0) {
 
+                // ── Orbit wordmark ──
+                HStack {
+                    OrbitWordmark()
+                    Spacer()
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 16)
+                .padding(.bottom, 8)
+
                 // ── 1. Skill Profile (locked until 3 data sources) ──
                 if isProfileUnlocked {
                     scoreOverview
