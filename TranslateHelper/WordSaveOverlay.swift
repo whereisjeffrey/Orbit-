@@ -179,11 +179,11 @@ struct WordSaveOverlay: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(
                     RoundedRectangle(cornerRadius: 20)
-                        .fill((headerColor ?? Color(hex: "#FF9500")).opacity(0.1))
+                        .fill(Color(hex: "#FF9500").opacity(0.1))
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 20)
-                        .stroke((headerColor ?? Color(hex: "#FF9500")).opacity(0.15), lineWidth: 0.5)
+                        .stroke(Color(hex: "#FF9500").opacity(0.15), lineWidth: 0.5)
                 )
                 .padding(.horizontal, 16)
                 .padding(.top, 12)

@@ -220,6 +220,16 @@ final class MistakeProfileStore: ObservableObject {
         save()
     }
 
+    /// Mark as mastered immediately — hides from target areas.
+    /// Entry stays in storage so it can be un-mastered if the mistake recurs.
+    func markMastered(id: UUID) {
+        guard let idx = entries.firstIndex(where: { $0.id == id }) else { return }
+        entries[idx].masteredAt = Date()
+        save()
+        objectWillChange.send()
+        NSLog("⚡ [MistakeProfile] user marked mastered: \(entries[idx].correctForm)")
+    }
+
     /// Called when the user answers a Lightning Round card incorrectly.
     func markIncorrect(id: UUID) {
         guard let idx = entries.firstIndex(where: { $0.id == id }) else { return }

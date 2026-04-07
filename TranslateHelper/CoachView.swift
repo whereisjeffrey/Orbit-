@@ -1105,7 +1105,11 @@ extension CoachPopulatedView {
             HStack(spacing: 12) {
                 Button {
                     MistakeProfileStore.shared.markCorrect(id: mistake.id)
-                    withAnimation { expandedMistakes.remove(mistake.id) }
+                    withAnimation {
+                        expandedMistakes.remove(mistake.id)
+                        // Hide from target areas — only comes back if mistake recurs
+                        MistakeProfileStore.shared.markMastered(id: mistake.id)
+                    }
                 } label: {
                     Text("Got it ✓")
                         .font(.custom("HelveticaNeue-Medium", size: 12))
@@ -1363,7 +1367,7 @@ extension CoachPopulatedView {
                 Spacer()
             }
 
-            Text("You've been struggling with past subjunctive. Want to work on it?")
+            Text("Ready to practice? Start a conversation.")
                 .font(.custom("HelveticaNeue", size: 14))
                 .foregroundColor(.tsLabel)
                 .lineSpacing(2)
@@ -1395,7 +1399,7 @@ extension CoachPopulatedView {
                     Image(systemName: "clock")
                         .font(.system(size: 11))
                         .foregroundColor(Color(hex: "#34C759"))
-                    Text("Last session: 2 days ago")
+                    Text("Sessions: \(PracticeStatsStore.shared.totalSessionCount)")
                         .font(.custom("HelveticaNeue", size: 11))
                         .foregroundColor(.tsSecondary)
                 }
@@ -1403,7 +1407,7 @@ extension CoachPopulatedView {
                     Image(systemName: "flame")
                         .font(.system(size: 11))
                         .foregroundColor(Color(hex: "#FF9500"))
-                    Text("Sessions this week: 3")
+                    Text("Sessions this week: \(PracticeStatsStore.shared.weeklySessionCount)")
                         .font(.custom("HelveticaNeue", size: 11))
                         .foregroundColor(.tsSecondary)
                 }
@@ -4530,6 +4534,15 @@ class PracticeTTSService: NSObject, AVAudioPlayerDelegate {
         audioPlayer?.stop()
         audioPlayer = nil
         nearlyDoneTimer?.invalidate()
+
+        // Ensure audio session is in playback mode (may have been left in .playAndRecord)
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+            try AVAudioSession.sharedInstance().setActive(true)
+            audioSessionReady = true
+        } catch {
+            NSLog("PracticeTTS: audio session reset failed: \(error)")
+        }
         nearlyDoneTimer = nil
         // Don't call old onComplete — it's stale
         onComplete = completion
