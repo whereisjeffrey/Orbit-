@@ -3336,10 +3336,13 @@ struct PracticeSessionView: View {
             .map { "- \($0.fact)" }
             .joined(separator: "\n")
         let profileBlock = userProfile.isEmpty ? "" : """
-        WHAT YOU KNOW ABOUT THIS PERSON (use this to FRAME the topic, not as the topic itself):
+        WHAT YOU KNOW ABOUT THIS PERSON:
         \(userProfile)
-        Connect today's topic to who they are. A chef gets asked about transport differently
-        than a student. A parent gets asked about weekends differently than a solo traveller.
+        You know these things. You DON'T need to mention them. Let this knowledge silently
+        shape your question — don't announce it. "How do you get home late at night?" is
+        better than "As a chef who works late, how do you get home?" Just ask naturally,
+        like a friend who already knows you. Only reference their life directly once every
+        4-5 conversations — the rest of the time, just let it inform your angle.
         """
 
         let openingPrompt = """
