@@ -650,6 +650,22 @@ class ConversationScriptEngine {
             ),
         ])
 
+        // LGBTQ+ Community
+        scripts.append(contentsOf: [
+            ConversationScript(
+                id: "interest_lgbtq_scene",
+                layer: .interest, status: nil, interest: "lgbtq",
+                direction: "Ask how the queer scene is in {city} compared to where they're from. Have they found their community here? Any favourite spots or neighbourhoods? Keep it natural and warm.",
+                requiresCity: true, priority: 7
+            ),
+            ConversationScript(
+                id: "interest_lgbtq_culture",
+                layer: .interest, status: nil, interest: "lgbtq",
+                direction: "Ask about local attitudes toward the queer community in {city} — have they noticed any cultural differences from home? What has surprised them? Be genuine and curious.",
+                requiresCity: true, priority: 6
+            ),
+        ])
+
         // ═══════════════════════════════════════════════════════
         // LAYER 3: CITY TRANSITION SCRIPTS
         // ═══════════════════════════════════════════════════════

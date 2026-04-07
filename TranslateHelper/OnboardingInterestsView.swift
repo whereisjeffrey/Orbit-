@@ -22,6 +22,7 @@ let allInterests: [Interest] = [
     Interest(id: "markets",      emoji: "🛍️", label: "Markets"),
     Interest(id: "language",     emoji: "💬", label: "Language learning"),
     Interest(id: "photography",  emoji: "📷", label: "Photography"),
+    Interest(id: "lgbtq",        emoji: "🏳️‍🌈", label: "LGBTQ+ community"),
 ]
 
 struct OnboardingInterestsView: View {
