@@ -10,7 +10,7 @@
 import SwiftUI
 
 struct KeyboardSetupBanner: View {
-    @AppStorage("keyboard_banner_dismissed") private var dismissed = false
+    // No dismiss — banner stays until keyboard is actually used
     @State private var keyboardActive = false
     @State private var keyboardInstalled = false
     @State private var showSetupSheet = false
@@ -22,7 +22,7 @@ struct KeyboardSetupBanner: View {
             if keyboardInstalled {
                 // State 2: Installed but never used — teach them the globe
                 globeCard
-            } else if !dismissed {
+            } else {
                 // State 1: Not installed — prompt setup
                 setupCard
             }
@@ -88,20 +88,6 @@ struct KeyboardSetupBanner: View {
             }
 
             Spacer()
-
-            Button {
-                // Dismiss — they know now
-                withAnimation(.easeOut(duration: 0.2)) {
-                    dismissed = true
-                }
-            } label: {
-                Image(systemName: "xmark")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.tsSecondary)
-                    .frame(width: 24, height: 24)
-                    .background(Color.tsSecondary.opacity(0.1))
-                    .clipShape(Circle())
-            }
         }
         .padding(14)
         .background(

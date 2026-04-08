@@ -300,6 +300,10 @@ struct CoachPopulatedView: View {
                 .padding(.top, 16)
                 .padding(.bottom, 8)
 
+                // ── Keyboard setup banner (if not set up yet) ──
+                KeyboardSetupBanner()
+                    .padding(.bottom, 8)
+
                 // ── 1. Skill Profile (locked until 3 data sources) ──
                 if isProfileUnlocked {
                     scoreOverview
