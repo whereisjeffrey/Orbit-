@@ -1730,7 +1730,8 @@ class KeyboardViewController: UIInputViewController {
         dismissBtn.titleLabel?.font = UIFont.systemFont(ofSize: 13, weight: .semibold)
         dismissBtn.setTitleColor(.white, for: .normal)
         dismissBtn.backgroundColor = wingmanOrange.withAlphaComponent(0.3)
-        dismissBtn.layer.cornerRadius = 8
+        dismissBtn.layer.cornerRadius = 12
+        dismissBtn.contentEdgeInsets = UIEdgeInsets(top: 10, left: 24, bottom: 10, right: 24)
         dismissBtn.translatesAutoresizingMaskIntoConstraints = false
         dismissBtn.addTarget(self, action: #selector(dismissWingmanOnboarding), for: .touchUpInside)
         wingmanOnboardingCard.addSubview(dismissBtn)

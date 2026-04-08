@@ -12,8 +12,8 @@ import AVFoundation
 struct CoachView: View {
     @Environment(\.colorScheme) private var colorScheme
 
-    // DEV TESTING: toggle between empty and populated states
-    @State private var showPopulated = false
+    // Show populated state once onboarding is complete
+    @State private var showPopulated = UserDefaults.standard.bool(forKey: "onboarding_complete")
 
     var body: some View {
         ZStack {
