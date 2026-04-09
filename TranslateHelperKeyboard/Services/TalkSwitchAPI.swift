@@ -1254,13 +1254,23 @@ class TalkSwitchAPI {
         var instruction = """
         \
         \
-        LOCATION CONTEXT FOR SLANG DISTRIBUTION:\
-        The user is primarily learning in \(primary.displayName). \
+        LOCATION CONTEXT — GEOGRAPHIC DNA:\
+        The user is in \(primary.city), \(primary.country). \
+        Determine the state/province and cultural region this city belongs to. \
+        When using or explaining slang, ALWAYS label its geographic scope:\
+        - 🌐 UNIVERSAL: understood across all regions where this language is spoken\
+        - 🌎 NATIONWIDE: common across \(primary.country)\
+        - 📍 REGIONAL: specific to the region/state (name the region — e.g. "Southern Brazil", "the Northeast", "Bajío region")\
+        - 🏙️ LOCAL: specific to \(primary.city) or its metro area\
+        Never just say "slang" without scope. The user needs to know WHERE an expression works.\
+        Example: "'Tá ligado' — 🌎 Used across \(primary.country), casual way to say 'you know?'"\
+        Example: "'Mano' — 📍 Paulistano expression (São Paulo), means 'dude/bro'"\
+        \
         When choosing slang expressions, distribute them across these 4 tiers:\
         1. UNIVERSAL (🌐): ~40% — expressions understood broadly across all regions where this language is spoken.\
-        2. PAN-REGIONAL (🌎): ~30% — expressions common across multiple regions.\
-        3. COUNTRY-SPECIFIC (🇦🇷): ~20% — expressions specific to \(primary.country). Label these as "Used in \(primary.country)".\
-        4. CITY-SPECIFIC (📍): ~10% max — expressions specific to \(primary.city). Label these as "Used in \(primary.city)".\
+        2. NATIONWIDE (🌎): ~30% — expressions common across \(primary.country).\
+        3. REGIONAL (📍): ~20% — expressions specific to the region/state around \(primary.city). Label with the region name.\
+        4. LOCAL (🏙️): ~10% max — expressions specific to \(primary.city). Label these as "Used in \(primary.city)".\
         IMPORTANT: Never give more than 30% city-specific slang. The user needs broad, transferable language skills — local flavor is a bonus, not the focus.
         """
 

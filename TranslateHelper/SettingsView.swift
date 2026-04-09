@@ -369,6 +369,9 @@ struct SettingsView: View {
                             appGroup?.removeObject(forKey: "ts_conversation_pool_v1")
                             appGroup?.removeObject(forKey: "ts_interest_refinements_v1")
                             appGroup?.removeObject(forKey: "ts_mistake_profile_v1")
+                            // Reset keyboard hint cards so they show fresh
+                            appGroup?.removeObject(forKey: "ts_paste_hint_shown")
+                            appGroup?.removeObject(forKey: "ts_save_hint_shown")
                             MistakeProfileStore.shared.resetToZero()
                             appGroup?.synchronize()
                             // Reset target areas wipe key so it doesn't re-wipe on next launch

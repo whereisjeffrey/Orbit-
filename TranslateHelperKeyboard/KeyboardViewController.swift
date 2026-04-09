@@ -150,6 +150,8 @@ class KeyboardViewController: UIInputViewController {
     private let correctionTextLabel = UILabel()
 
     private let coachCard = UIView()
+    private let hintCard = UIView()
+    private let hintTextLabel = UILabel()
     private let coachIcon = UILabel()
     private let coachHeader = UILabel()
     private let coachTextLabel = UILabel()
@@ -606,7 +608,8 @@ class KeyboardViewController: UIInputViewController {
                         || self.currentTone == "work"
 
                     if needsRefinement {
-                        // Keep showing "Translating..." + spinner — don't flash intermediate text
+                        // Show refining state while GPT polishes the DeepL translation
+                        self.outputTextLabel.text = "✨ Refining..."
                         let langCode = detected.code
 
                         TalkSwitchAPI.shared.refineTranslation(
@@ -1158,6 +1161,11 @@ class KeyboardViewController: UIInputViewController {
         setupNotesCard()
         contentStack.addArrangedSubview(notesCard)
 
+        // === Hint card (tips like paste-to-translate, save phrases — swipe to dismiss) ===
+        setupHintCard()
+        contentStack.addArrangedSubview(hintCard)
+        hintCard.isHidden = true
+
         // === Tone selector ===
         setupToneStack()
         contentStack.addArrangedSubview(toneStack)
@@ -1513,6 +1521,70 @@ class KeyboardViewController: UIInputViewController {
             notesTextLabel.trailingAnchor.constraint(equalTo: notesCard.trailingAnchor, constant: -12),
             notesTextLabel.bottomAnchor.constraint(equalTo: notesCard.bottomAnchor, constant: -8),
         ])
+    }
+
+    private func setupHintCard() {
+        hintCard.backgroundColor = UIColor.systemPurple.withAlphaComponent(0.10)
+        hintCard.layer.cornerRadius = 10
+        hintCard.layer.borderWidth = 1
+        hintCard.layer.borderColor = UIColor.systemPurple.withAlphaComponent(0.25).cgColor
+        hintCard.translatesAutoresizingMaskIntoConstraints = false
+        hintCard.clipsToBounds = true
+
+        // Top row: 📋 TIP inline
+        let hintHeader = UILabel()
+        hintHeader.text = "📋 TIP"
+        hintHeader.font = UIFont.systemFont(ofSize: 11, weight: .bold)
+        hintHeader.textColor = UIColor.systemPurple
+        hintHeader.translatesAutoresizingMaskIntoConstraints = false
+        hintCard.addSubview(hintHeader)
+
+        hintTextLabel.font = UIFont.systemFont(ofSize: 13)
+        hintTextLabel.textColor = textPrimary
+        hintTextLabel.numberOfLines = 0
+        hintTextLabel.translatesAutoresizingMaskIntoConstraints = false
+        hintCard.addSubview(hintTextLabel)
+
+        // Dismiss button — pill shape
+        let dismissBtn = UIButton(type: .system)
+        dismissBtn.setTitle("Swipe to dismiss →", for: .normal)
+        dismissBtn.titleLabel?.font = UIFont.systemFont(ofSize: 11, weight: .semibold)
+        dismissBtn.setTitleColor(UIColor.systemPurple, for: .normal)
+        dismissBtn.backgroundColor = UIColor.systemPurple.withAlphaComponent(0.12)
+        dismissBtn.layer.cornerRadius = 12
+        dismissBtn.contentEdgeInsets = UIEdgeInsets(top: 4, left: 12, bottom: 4, right: 12)
+        dismissBtn.translatesAutoresizingMaskIntoConstraints = false
+        dismissBtn.addTarget(self, action: #selector(hintCardSwiped), for: .touchUpInside)
+        hintCard.addSubview(dismissBtn)
+
+        NSLayoutConstraint.activate([
+            hintCard.heightAnchor.constraint(greaterThanOrEqualToConstant: 40),
+            hintHeader.topAnchor.constraint(equalTo: hintCard.topAnchor, constant: 8),
+            hintHeader.leadingAnchor.constraint(equalTo: hintCard.leadingAnchor, constant: 12),
+            hintTextLabel.topAnchor.constraint(equalTo: hintHeader.bottomAnchor, constant: 4),
+            hintTextLabel.leadingAnchor.constraint(equalTo: hintCard.leadingAnchor, constant: 12),
+            hintTextLabel.trailingAnchor.constraint(equalTo: hintCard.trailingAnchor, constant: -12),
+            hintTextLabel.bottomAnchor.constraint(equalTo: dismissBtn.topAnchor, constant: -8),
+            dismissBtn.trailingAnchor.constraint(equalTo: hintCard.trailingAnchor, constant: -12),
+            dismissBtn.bottomAnchor.constraint(equalTo: hintCard.bottomAnchor, constant: -8),
+        ])
+
+        // Swipe right to dismiss
+        let swipe = UISwipeGestureRecognizer(target: self, action: #selector(hintCardSwiped))
+        swipe.direction = .right
+        hintCard.addGestureRecognizer(swipe)
+    }
+
+    @objc private func hintCardSwiped() {
+        UIView.animate(withDuration: 0.3, animations: {
+            self.hintCard.transform = CGAffineTransform(translationX: 400, y: 0)
+            self.hintCard.alpha = 0
+        }) { _ in
+            self.hintCard.isHidden = true
+            self.hintCard.transform = .identity
+            self.hintCard.alpha = 1
+        }
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
 
     private func setupCorrectionCard() {
@@ -2213,22 +2285,14 @@ class KeyboardViewController: UIInputViewController {
 
     /// Shows a hint after the user's first outgoing translation, teaching them about paste-to-translate.
     private func showPasteHint() {
-        // TODO: Before shipping, restore the ts_paste_hint_shown persistence check.
-        #if DEBUG
-        // Always show in debug so we can review the copy
-        #else
-        guard !pasteHintShown else { return }
         let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper")
         guard !(defaults?.bool(forKey: "ts_paste_hint_shown") ?? false) else { return }
-        pasteHintShown = true
         defaults?.set(true, forKey: "ts_paste_hint_shown")
         defaults?.synchronize()
-        #endif
 
-        // Show the translate hint in the notes card
-        notesCard.isHidden = false
-        notesIcon.text = "💡"
-        notesTextLabel.text = "Did you know? You can also translate incoming messages — all within the keyboard. Just copy the message and tap 📋 Translate."
+        // Show in the separate hint card — doesn't touch the notes card
+        hintTextLabel.text = "You can also translate incoming messages right here. Just copy the message and tap Translate."
+        hintCard.isHidden = false
 
         NSLog("TSKBD_PASTE_HINT: shown after first translation")
     }
@@ -2240,21 +2304,24 @@ class KeyboardViewController: UIInputViewController {
         defaults?.set(true, forKey: "ts_save_hint_shown")
         defaults?.synchronize()
 
-        notesCard.isHidden = false
-        notesIcon.text = "💾"
-        notesTextLabel.text = "See a word or phrase worth remembering? Tap Save 💾 to add it to your study list and practice it later."
+        // Show in the separate hint card — doesn't touch the notes card
+        hintTextLabel.text = "See a word or phrase worth remembering? Tap Save to add it to your study list."
+        hintCard.isHidden = false
 
         NSLog("TSKBD_SAVE_HINT: shown after 3rd translation")
     }
 
     private func startDictationPolling() {
         dictationPollTimer?.invalidate()
-        // Poll every 0.5s for up to 3 minutes waiting for dictation result
+        // Poll every 0.5s for up to 15 seconds waiting for dictation result
         dictationPollTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
             self?.checkForPendingDictation()
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 180) { [weak self] in
-            self?.dictationPollTimer?.invalidate()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 15) { [weak self] in
+            guard let self = self, self.dictationPollTimer != nil else { return }
+            self.stopDictationPolling()
+            self.hidePollingState()
+            NSLog("TSKBD_SPEAK: polling timed out after 15s")
         }
     }
 
@@ -2268,6 +2335,7 @@ class KeyboardViewController: UIInputViewController {
         panel.isHidden = true
         correctionCard.isHidden = true
         notesCard.isHidden = true
+        hintCard.isHidden = true
         heightConstraint.constant = emptyHeight
         hidePollingState()
 
@@ -2347,12 +2415,12 @@ class KeyboardViewController: UIInputViewController {
     /// Shows a "waiting for result" state in the empty bar while the keyboard polls
     /// for the dictation result from the main app's App Group UserDefaults.
     private func showPollingState() {
-        // Dim and disable the Speak button while waiting
-        micButton.setTitle("⏳ Waiting…", for: .normal)
+        // Dim the Speak button while waiting — but keep it tappable to cancel
+        micButton.setTitle("⏳ Waiting… (tap to cancel)", for: .normal)
         micButton.backgroundColor = UIColor.systemGray.withAlphaComponent(0.12)
         micButton.layer.borderColor = UIColor.systemGray.withAlphaComponent(0.3).cgColor
         micButton.setTitleColor(UIColor.systemGray, for: .normal)
-        micButton.isEnabled = false
+        // Keep enabled so user can tap to cancel
     }
 
     /// Restores the empty bar to its normal idle state.
@@ -2410,8 +2478,13 @@ class KeyboardViewController: UIInputViewController {
     }
 
     @objc private func micTapped() {
-        // Don't double-fire if we're already waiting for a result
-        guard dictationPollTimer == nil else { return }
+        // If already waiting, tap cancels and resets
+        if dictationPollTimer != nil {
+            stopDictationPolling()
+            hidePollingState()
+            NSLog("TSKBD_SPEAK: cancelled by user tap")
+            return
+        }
 
         // Clear any existing text (e.g. pasted message) so the audio reply replaces it
         if let existing = textDocumentProxy.documentContextBeforeInput {

@@ -261,6 +261,7 @@ class PracticeConversationService {
         let phrase: String
         let meaning: String
         let context: String
+        let scope: String
     }
 
     struct MistakeLog {
@@ -442,7 +443,7 @@ class PracticeConversationService {
         \
         SLANG TEACHING — PROACTIVE: \
         - Naturally weave in local slang and expressions from \(userCity) into your messages. \
-        - When you use slang, ALWAYS include it in the slang_notes array so the user can learn and save it. \
+        - When you use slang, ALWAYS include it in the slang_notes array with its geographic scope (LOCAL/REGIONAL/NATIONWIDE/UNIVERSAL). For REGIONAL, name the specific region (e.g. 'Southern Brazil', 'Yucatán Peninsula'). The user needs to know WHERE an expression will be understood. \
         - Prioritize slang specific to \(userCity) or the region — not generic textbook expressions. \
         - Examples of what to teach: greetings locals actually use, street-level expressions, \
           food/drink ordering shortcuts, compliments people really say, common reactions, \
@@ -469,7 +470,8 @@ class PracticeConversationService {
           "native_correction_notes": "REQUIRED — IN ENGLISH: explain how a local would say it differently and why. Frame it as 'Locals say X' or 'On the street you'd hear X' — not 'You made a mistake'. 1-2 sentences with \(langName) words inline. Must ALWAYS be a string, never null.", \
           "mistake_log": {"user_fragment": "The EXACT wrong part only — 1-5 words max. No full sentences. No arrows. No 'null'. e.g. 'a prédio' or 'eu sou 25'. If you can't isolate a short fragment, set mistake_log to null.", "correct_fragment": "The corrected version — same length as user_fragment. 1-5 words. e.g. 'o prédio' or 'eu tenho 25'. NEVER put 'null' as the value.", "rule": "One sentence in \(LanguageManager.languageName(for: LanguageManager.shared.nativeLang)): the grammar pattern + 2-3 examples. Max 100 chars. e.g. 'Words ending in -agem are feminine: viagem, garagem, paisagem.'"} or null if no real mistake (naturalness tweaks don't count), \
           "slang_notes": [{"phrase": "the \(langName) slang/expression", "meaning": "English meaning", \
-            "context": "English explanation of when/where people use this — be specific to the city/region"}] or [] if none, \
+            "scope": "geographic scope — one of: LOCAL (city-specific), REGIONAL (state/province/region — name it), NATIONWIDE (common across the country), UNIVERSAL (used across all countries speaking this language)", \
+            "context": "English explanation of when/where people use this — be specific"}] or [] if none, \
           "user_facts": ["any personal facts the user revealed in their last message — e.g. 'Looking for an apartment in Condesa', 'Works as a designer', 'Has a date on Friday'. Only include NEW information, not things you already know. Empty array if none."] or [], \
           "interest_refinements": [{"interest": "category like wellness/food/outdoors", "likes": ["specific things they expressed liking"], "dislikes": ["specific things they rejected or showed disinterest in"]}] or [] \
         }
@@ -538,7 +540,8 @@ class PracticeConversationService {
                         slangNotes.append(SlangNote(
                             phrase: phrase,
                             meaning: meaning,
-                            context: note["context"] ?? ""
+                            context: note["context"] ?? "",
+                            scope: note["scope"] ?? ""
                         ))
                     }
                 }

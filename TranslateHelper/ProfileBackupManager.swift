@@ -32,6 +32,14 @@ class ProfileBackupManager {
         "lightning_round_recent_prompts",
         "selected_city_id",
         "keyboard_has_launched",
+        "talkswitch_learning_locations",
+        "talkswitch_location",
+        "user_interests",
+        "user_expat_status",
+        "ts_paste_hint_shown",
+        "ts_save_hint_shown",
+        "ts_conversation_pool_v1",
+        "ts_interest_refinements_v1",
     ]
 
     // Keys from standard UserDefaults

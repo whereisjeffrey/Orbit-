@@ -154,9 +154,10 @@ class DictateViewController: UIViewController {
 
         // ── Back arrow (top-left) ──────────────────────────────────────
         cancelButton.translatesAutoresizingMaskIntoConstraints = false
-        let chevronCfg = UIImage.SymbolConfiguration(pointSize: 16, weight: .semibold)
+        let chevronCfg = UIImage.SymbolConfiguration(pointSize: 18, weight: .semibold)
         cancelButton.setImage(UIImage(systemName: "chevron.left", withConfiguration: chevronCfg), for: .normal)
         cancelButton.tintColor = UIColor.white.withAlphaComponent(0.65)
+        cancelButton.contentEdgeInsets = UIEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
         cancelButton.addTarget(self, action: #selector(cancelTapped), for: .touchUpInside)
         view.addSubview(cancelButton)
 
