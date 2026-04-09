@@ -2259,15 +2259,10 @@ struct PracticeSessionView: View {
                                                         if !swipeLeftDone {
                                                             swipeLeftDone = true
                                                             withAnimation { showSwipeLeftHint = false }
-                                                            // Show double-tap hint after Sol's message is ready
+                                                            // Show double-tap hint once user's message has native correction ready
                                                             if !doubleTapValidated {
-                                                                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                                                                    let hasSolWithTranslation = messages.contains { $0.role == .sol && $0.translation != nil }
-                                                                    if hasSolWithTranslation && !doubleTapValidated {
-                                                                        withAnimation(.easeIn(duration: 0.3)) {
-                                                                            showDoubleTapHint = true
-                                                                        }
-                                                                    }
+                                                                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [self] in
+                                                                    pollForNativeCorrection(attempts: 0)
                                                                 }
                                                             }
                                                         }
@@ -2507,17 +2502,11 @@ struct PracticeSessionView: View {
             showSwipeLeftHint = false
 
             if swipeRightDone && swipeLeftDone {
-                // Both swipes done — show double-tap hint after Sol's message is ready
+                // Both swipes done — show double-tap hint once user's message has native correction ready
                 if !doubleTapValidated && doubleTapDismissCount < 3 {
-                    // Delay to ensure Sol's first message has translation data
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) {
-                        // Only show if a Sol message with translation exists
-                        let hasSolWithTranslation = messages.contains { $0.role == .sol && $0.translation != nil }
-                        if hasSolWithTranslation && !doubleTapValidated {
-                            withAnimation(.easeIn(duration: 0.3)) {
-                                showDoubleTapHint = true
-                            }
-                        }
+                    // Poll until a user message has its native correction populated
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [self] in
+                        pollForNativeCorrection(attempts: 0)
                     }
                 }
             }
@@ -2689,6 +2678,22 @@ struct PracticeSessionView: View {
                             .foregroundColor(.tsSecondary)
                     }
                 }
+            }
+        }
+    }
+
+    /// Polls until a user message has its native correction ready, then shows the double-tap hint.
+    /// Gives up after 10 attempts (5 seconds).
+    private func pollForNativeCorrection(attempts: Int) {
+        guard attempts < 10 else { return }
+        let hasUserWithCorrection = messages.contains { $0.role == .user && $0.nativeVersion != nil }
+        if hasUserWithCorrection && !doubleTapValidated {
+            withAnimation(.easeIn(duration: 0.3)) {
+                showDoubleTapHint = true
+            }
+        } else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [self] in
+                pollForNativeCorrection(attempts: attempts + 1)
             }
         }
     }
@@ -4049,6 +4054,10 @@ struct PracticeSessionView: View {
             }
         }
 
+        // Stop the timer before showing summary
+        sessionTimer?.invalidate()
+        sessionTimer = nil
+
         // Show session summary instead of dismissing immediately
         if totalMessagesThisSession > 0 || sessionSeconds > 10 {
             showSessionSummary = true
@@ -4080,16 +4089,11 @@ struct PracticeSessionView: View {
             messageCount += 1
             totalMessagesThisSession += 1
 
-            // Show native hint after first user message
-            if !nativeDoubleTapValidated && nativeDismissCount < 3 && messageCount == 1 {
-                nativeHintShownForMessage = msg.id
-                withAnimation(.easeIn(duration: 0.3).delay(0.3)) {
-                    showNativeHint = true
-                }
-            }
+            // Native hint is triggered AFTER Sol responds (see fetchSolResponse)
+            // so the native correction is ready when the user double-taps.
 
             // Get Sol's real response
-            fetchSolResponse(userMessageId: msg.id)
+            fetchSolResponse(userMessageId: msg.id, isFirstUserMessage: messageCount == 1)
         }
     }
 
@@ -4192,21 +4196,15 @@ struct PracticeSessionView: View {
             logInterest(topic: engagedTag, action: "engaged")
         }
 
-        // Show native hint after first user message
-        if !nativeDoubleTapValidated && nativeDismissCount < 3 && messageCount == 1 {
-            nativeHintShownForMessage = msg.id
-            withAnimation(.easeIn(duration: 0.3).delay(0.3)) {
-                showNativeHint = true
-            }
-        }
+        // Native hint is triggered AFTER Sol responds (see fetchSolResponse)
 
         // Get Sol's real response
-        fetchSolResponse(userMessageId: msg.id)
+        fetchSolResponse(userMessageId: msg.id, isFirstUserMessage: messageCount == 1)
     }
 
     // MARK: - Fetch Sol's Response (GPT-4o-mini)
 
-    private func fetchSolResponse(userMessageId: UUID) {
+    private func fetchSolResponse(userMessageId: UUID, isFirstUserMessage: Bool = false) {
         guard !isFetchingSolResponse2 else {
             NSLog("🔊 [Practice] BLOCKED fetchSolResponse — already fetching")
             return
@@ -4269,10 +4267,8 @@ struct PracticeSessionView: View {
                             self.messages[idx].nativeVersion = local ?? "✓ Sounds natural"
                             self.messages[idx].nativeNotes = notes ?? "Your phrasing was good here."
                         }
-                        // Track for session summary
-                        if let l = local, l != "✓ Sounds natural", let n = notes {
-                            self.sessionCorrections.append((wrong: userText, right: l, note: n))
-                        }
+                        // Session summary corrections are now tracked from mistakeLog
+                        // (short fragments, not full sentences)
                     }
                 }
             }
@@ -4308,6 +4304,8 @@ struct PracticeSessionView: View {
                    log.userFragment.count <= 30,
                    log.correctFragment.count <= 30,
                    !log.userFragment.contains("→") {
+                    // Track scannable fragments for session summary
+                    self.sessionCorrections.append((wrong: log.userFragment, right: log.correctFragment, note: log.rule))
                     MistakeIngestion.ingestFromSol(
                         userSaid: log.userFragment,
                         nativeCorrection: log.correctFragment,
@@ -4327,6 +4325,17 @@ struct PracticeSessionView: View {
                     city: enrichCity,
                     recentMessages: enrichHistory.map { ($0.role, $0.text) }
                 )
+            }
+
+            // Show native hint now that correction data is ready
+            if isFirstUserMessage && !nativeDoubleTapValidated && nativeDismissCount < 3 {
+                // Find the user message to anchor the hint to
+                if let userMsg = messages.first(where: { $0.id == userMessageId }) {
+                    nativeHintShownForMessage = userMsg.id
+                    withAnimation(.easeIn(duration: 0.3)) {
+                        showNativeHint = true
+                    }
+                }
             }
 
             // Play audio explicitly for Sol's response
@@ -4559,72 +4568,109 @@ struct SessionSummaryView: View {
     let wordsSaved: Int
     let onDismiss: () -> Void
 
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var durationText: String {
+        let m = sessionSeconds / 60
+        if m < 1 { return "< 1 min" }
+        return "\(m) min"
+    }
+
+    private var affirmation: String {
+        let m = sessionSeconds / 60
+        if m >= 20 { return "Incredible focus." }
+        if m >= 10 { return "Solid session." }
+        if m >= 5 { return "Every minute counts." }
+        return "Quick and effective."
+    }
+
     var body: some View {
         ZStack {
             TSGradientBackground().ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 24) {
+                VStack(spacing: 24) {
 
-                    // ── Header ──────────────────────────────
+                    // ── Hero: Time ──────────────────────────
                     VStack(spacing: 8) {
-                        Text("Session Complete")
-                            .font(.custom("HelveticaNeue-Bold", size: 24))
+                        Text("⏱")
+                            .font(.system(size: 44))
+                            .padding(.bottom, 4)
+                        Text(durationText)
+                            .font(.custom("HelveticaNeue-Bold", size: 40))
                             .foregroundColor(.tsLabel)
-                        Text(formatDuration(sessionSeconds))
+                        Text(affirmation)
                             .font(.custom("HelveticaNeue-Medium", size: 16))
                             .foregroundColor(.tsSecondary)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.top, 40)
+                    .padding(.top, 48)
+                    .padding(.bottom, 8)
 
                     // ── Stats row ────────────────────────────
-                    HStack(spacing: 20) {
-                        summaryStatCard(value: "\(messageCount)", label: "messages", icon: "💬")
-                        summaryStatCard(value: "\(corrections.count)", label: "patterns", icon: "🎯")
-                        summaryStatCard(value: "\(slangLearned.count)", label: "slang", icon: "📖")
+                    HStack(spacing: 12) {
+                        summaryPill(value: "\(messageCount)", label: "messages", icon: "💬")
+                        summaryPill(value: "\(corrections.count)", label: "patterns", icon: "🎯")
+                        summaryPill(value: "\(slangLearned.count)", label: "new terms", icon: "📖")
                     }
                     .padding(.horizontal, 4)
 
-                    // ── Patterns spotted ─────────────────────
+                    // ── Patterns spotted — scannable ─────────
                     if !corrections.isEmpty {
-                        VStack(alignment: .leading, spacing: 12) {
+                        VStack(alignment: .leading, spacing: 10) {
                             Text("PATTERNS SPOTTED")
                                 .font(.custom("HelveticaNeue-Bold", size: 11))
                                 .foregroundColor(.tsSecondary)
                                 .kerning(1.2)
 
-                            ForEach(Array(corrections.prefix(3).enumerated()), id: \.offset) { _, correction in
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(correction.note)
-                                        .font(.custom("HelveticaNeue-Medium", size: 14))
-                                        .foregroundColor(.tsLabel)
-                                        .lineSpacing(2)
+                            ForEach(Array(corrections.prefix(5).enumerated()), id: \.offset) { _, correction in
+                                VStack(alignment: .leading, spacing: 6) {
+                                    HStack(spacing: 0) {
+                                        Text(correction.wrong)
+                                            .font(.custom("HelveticaNeue-Medium", size: 14))
+                                            .foregroundColor(Color(hex: "#FF3B30"))
+                                            .strikethrough(true, color: Color(hex: "#FF3B30").opacity(0.5))
+                                        Text(" → ")
+                                            .font(.custom("HelveticaNeue", size: 14))
+                                            .foregroundColor(.tsSecondary)
+                                        Text(correction.right)
+                                            .font(.custom("HelveticaNeue-Bold", size: 14))
+                                            .foregroundColor(Color(hex: "#34C759"))
+                                    }
+                                    if !correction.note.isEmpty {
+                                        Text(correction.note)
+                                            .font(.custom("HelveticaNeue", size: 12))
+                                            .foregroundColor(.tsSecondary)
+                                            .lineSpacing(1)
+                                    }
                                 }
-                                .padding(14)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 10)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .background(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(Color.white)
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .fill(colorScheme == .dark
+                                              ? Color.white.opacity(0.06)
+                                              : Color.white)
                                 )
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(Color.tsBorder, lineWidth: 1)
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(Color.tsBorder, lineWidth: 0.5)
                                 )
                             }
                         }
                     }
 
-                    // ── Slang learned ────────────────────────
+                    // ── New Terms ────────────────────────────
                     if !slangLearned.isEmpty {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("SLANG LEARNED")
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("NEW TERMS")
                                 .font(.custom("HelveticaNeue-Bold", size: 11))
                                 .foregroundColor(.tsSecondary)
                                 .kerning(1.2)
 
-                            HStack(spacing: 8) {
-                                ForEach(slangLearned.prefix(5), id: \.self) { phrase in
+                            FlowLayout(spacing: 8) {
+                                ForEach(slangLearned.prefix(8), id: \.self) { phrase in
                                     Text(phrase)
                                         .font(.custom("HelveticaNeue-Medium", size: 13))
                                         .foregroundColor(.tsAccent)
@@ -4638,26 +4684,27 @@ struct SessionSummaryView: View {
                         }
                     }
 
-                    // ── Encouragement ────────────────────────
+                    // ── Encouragement (when nothing to show) ─
                     if corrections.isEmpty && slangLearned.isEmpty {
                         VStack(spacing: 8) {
                             Text("🎉")
-                                .font(.system(size: 32))
-                            Text("Great session! Keep it up.")
+                                .font(.system(size: 36))
+                            Text("Great conversation! Keep showing up.")
                                 .font(.custom("HelveticaNeue-Medium", size: 16))
                                 .foregroundColor(.tsLabel)
+                                .multilineTextAlignment(.center)
                         }
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 20)
+                        .padding(.vertical, 16)
                     }
 
                     // ── Done button ──────────────────────────
                     Button(action: onDismiss) {
                         Text("Done")
-                            .font(.custom("HelveticaNeue-Bold", size: 16))
+                            .font(.custom("HelveticaNeue-Bold", size: 18))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
-                            .frame(height: 52)
+                            .frame(height: 56)
                             .background(Capsule().fill(Color.tsAccent))
                     }
                     .padding(.top, 8)
@@ -4669,34 +4716,70 @@ struct SessionSummaryView: View {
         }
     }
 
-    private func summaryStatCard(value: String, label: String, icon: String) -> some View {
+    private func summaryPill(value: String, label: String, icon: String) -> some View {
         VStack(spacing: 4) {
             Text(icon)
-                .font(.system(size: 20))
+                .font(.system(size: 18))
             Text(value)
-                .font(.custom("HelveticaNeue-Bold", size: 22))
+                .font(.custom("HelveticaNeue-Bold", size: 20))
                 .foregroundColor(.tsLabel)
             Text(label)
-                .font(.custom("HelveticaNeue", size: 12))
+                .font(.custom("HelveticaNeue", size: 11))
                 .foregroundColor(.tsSecondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
+        .padding(.vertical, 14)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.white)
+                .fill(colorScheme == .dark
+                      ? Color.white.opacity(0.06)
+                      : Color.white)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.tsBorder, lineWidth: 1)
+                .stroke(Color.tsBorder, lineWidth: 0.5)
         )
     }
+}
 
-    private func formatDuration(_ seconds: Int) -> String {
-        let m = seconds / 60
-        let s = seconds % 60
-        if m == 0 { return "\(s) seconds" }
-        return "\(m) min \(s) sec"
+// MARK: - Flow Layout (wrapping horizontal layout for tags)
+
+struct FlowLayout: Layout {
+    var spacing: CGFloat = 8
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let result = arrange(proposal: proposal, subviews: subviews)
+        return result.size
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let result = arrange(proposal: ProposedViewSize(width: bounds.width, height: nil), subviews: subviews)
+        for (index, position) in result.positions.enumerated() {
+            subviews[index].place(at: CGPoint(x: bounds.minX + position.x, y: bounds.minY + position.y),
+                                  proposal: .unspecified)
+        }
+    }
+
+    private func arrange(proposal: ProposedViewSize, subviews: Subviews) -> (positions: [CGPoint], size: CGSize) {
+        let maxWidth = proposal.width ?? .infinity
+        var positions: [CGPoint] = []
+        var x: CGFloat = 0
+        var y: CGFloat = 0
+        var rowHeight: CGFloat = 0
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            if x + size.width > maxWidth && x > 0 {
+                x = 0
+                y += rowHeight + spacing
+                rowHeight = 0
+            }
+            positions.append(CGPoint(x: x, y: y))
+            rowHeight = max(rowHeight, size.height)
+            x += size.width + spacing
+        }
+
+        return (positions, CGSize(width: maxWidth, height: y + rowHeight))
     }
 }
 

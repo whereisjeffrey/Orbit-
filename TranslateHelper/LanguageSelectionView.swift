@@ -295,7 +295,7 @@ struct LanguageCard: View {
                             .frame(width: 20, height: 20)
                         Image(systemName: "checkmark")
                             .font(.custom("HelveticaNeue-Bold", size: 10))
-                            .foregroundColor(.tsLabel)
+                            .foregroundColor(.white)
                     }
                     .padding(8)
                 }

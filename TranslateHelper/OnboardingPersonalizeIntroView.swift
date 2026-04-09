@@ -14,11 +14,25 @@ struct OnboardingPersonalizeIntroView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer()
+            Spacer().frame(height: 80)
+
+            // ── Sol avatar with glow ──────────────────────────
+            Image("SolAvaatar")
+                .resizable()
+                .scaledToFill()
+                .frame(width: 128, height: 128)
+                .clipShape(Circle())
+                .overlay(
+                    Circle()
+                        .stroke(Color.tsAccent.opacity(0.3), lineWidth: 2)
+                )
+                .shadow(color: Color.tsAccent.opacity(0.3), radius: 20, x: 0, y: 0)
+                .shadow(color: Color.tsAccent.opacity(0.15), radius: 40, x: 0, y: 0)
+                .padding(.bottom, 40)
 
             // ── Header ────────────────────────────────────────
             VStack(spacing: 8) {
-                Text("Let's personalize your experience")
+                Text("Let Orbit Coach personalize your experience")
                     .font(.custom("HelveticaNeue-Bold", size: 24))
                     .foregroundColor(.tsLabel)
                     .multilineTextAlignment(.center)

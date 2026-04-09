@@ -3,11 +3,11 @@
 import SwiftUI
 
 enum ExpatStatus: String, CaseIterable {
+    case planning    = "planning"
+    case visiting    = "visiting"
     case newArrival  = "just_arrived"
     case settling    = "settling"
     case local       = "local"
-    case planning    = "planning"
-    case visiting    = "visiting"
 
     var emoji: String {
         switch self {
