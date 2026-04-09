@@ -480,7 +480,8 @@ class PracticeConversationService {
           "mistake_log": {"user_fragment": "The EXACT wrong part only — 1-5 words max. No full sentences. No arrows. No 'null'. e.g. 'a prédio' or 'eu sou 25'. If you can't isolate a short fragment, set mistake_log to null.", "correct_fragment": "The corrected version — same length as user_fragment. 1-5 words. e.g. 'o prédio' or 'eu tenho 25'. NEVER put 'null' as the value.", "rule": "One sentence in \(LanguageManager.languageName(for: LanguageManager.shared.nativeLang)): the grammar pattern + 2-3 examples. Max 100 chars. e.g. 'Words ending in -agem are feminine: viagem, garagem, paisagem.'"} or null if no real mistake (naturalness tweaks don't count), \
           "slang_notes": [{"phrase": "the \(langName) slang/expression", "meaning": "English meaning", \
             "scope": "geographic scope — one of: LOCAL (city-specific), REGIONAL (state/province/region — name it), NATIONWIDE (common across the country), UNIVERSAL (used across all countries speaking this language)", \
-            "context": "English explanation of when/where people use this — be specific"}] or [] if none, \
+            "context": "English explanation of when/where people use this — be specific"}] or [] if none. \
+            CRITICAL: If the user asked "how do you say X?" or "what's the word for X?" — you MUST include the answer here. This is NOT optional for vocabulary questions. \
           "user_facts": ["any personal facts the user revealed in their last message — e.g. 'Looking for an apartment in Condesa', 'Works as a designer', 'Has a date on Friday'. Only include NEW information, not things you already know. Empty array if none."] or [], \
           "interest_refinements": [{"interest": "category like wellness/food/outdoors", "likes": ["specific things they expressed liking"], "dislikes": ["specific things they rejected or showed disinterest in"]}] or [] \
         }

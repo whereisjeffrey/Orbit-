@@ -2151,7 +2151,7 @@ struct PracticeSessionView: View {
     @State private var localSaveText: String? = nil  // triggers the zoomed overlay for LOCAL card
     @State private var totalMessagesThisSession = 0
     @State private var showSessionSummary = false
-    @State private var sessionCorrections: [(wrong: String, right: String, note: String)] = []
+    @State private var sessionCorrections: [(wrong: String, right: String, note: String, category: String)] = []
     @State private var sessionSlangLearned: [String] = []
     @State private var sessionWordsSaved: Int = 0
     @State private var sessionSeconds = 0
@@ -2879,7 +2879,7 @@ struct PracticeSessionView: View {
                 Text("See a word you don't know?")
                     .font(.custom("HelveticaNeue-Bold", size: 13))
                     .foregroundColor(.tsLabel)
-                Text("Hold down on any word in Sol's messages and slide to select it. We'll look it up and you can save it to your Library.")
+                Text("Long-press any of Sol's messages to zoom in, then tap a word to look it up and save it to your Library.")
                     .font(.custom("HelveticaNeue", size: 12))
                     .foregroundColor(.tsSecondary)
                     .lineSpacing(1)
@@ -4109,6 +4109,19 @@ struct PracticeSessionView: View {
         return String(format: "%d:%02d", m, s)
     }
 
+    /// Lightweight category inference from rule text — mirrors MistakeIngestion's logic.
+    private static func inferCategoryFromRule(_ rule: String) -> String {
+        let r = rule.lowercased()
+        if r.contains("gender") || r.contains("masculin") || r.contains("feminin") { return "gender" }
+        if r.contains("conjugat") || r.contains("verb form") || r.contains("tense") { return "conjugation" }
+        if r.contains("preposit") || r.contains("por/para") || r.contains("a/em/de") { return "preposition" }
+        if r.contains("word order") || r.contains("order of") { return "wordOrder" }
+        if r.contains("pronunci") || r.contains("accent") { return "pronunciation" }
+        if r.contains("idiom") || r.contains("slang") || r.contains("expression") { return "idiom" }
+        if r.contains("vocab") || r.contains("word choice") || r.contains("instead of") { return "vocabulary" }
+        return "grammar"
+    }
+
     // MARK: - City Resolution
 
     /// Resolves a city ID, display name, or country name into context for Sol's prompts.
@@ -4305,7 +4318,8 @@ struct PracticeSessionView: View {
                    log.correctFragment.count <= 30,
                    !log.userFragment.contains("→") {
                     // Track scannable fragments for session summary
-                    self.sessionCorrections.append((wrong: log.userFragment, right: log.correctFragment, note: log.rule))
+                    let cat = Self.inferCategoryFromRule(log.rule)
+                    self.sessionCorrections.append((wrong: log.userFragment, right: log.correctFragment, note: log.rule, category: cat))
                     MistakeIngestion.ingestFromSol(
                         userSaid: log.userFragment,
                         nativeCorrection: log.correctFragment,
@@ -4563,7 +4577,7 @@ struct MissingProfileSheet: View {
 struct SessionSummaryView: View {
     let sessionSeconds: Int
     let messageCount: Int
-    let corrections: [(wrong: String, right: String, note: String)]
+    let corrections: [(wrong: String, right: String, note: String, category: String)]
     let slangLearned: [String]
     let wordsSaved: Int
     let onDismiss: () -> Void
@@ -4624,38 +4638,51 @@ struct SessionSummaryView: View {
                                 .kerning(1.2)
 
                             ForEach(Array(corrections.prefix(5).enumerated()), id: \.offset) { _, correction in
-                                VStack(alignment: .leading, spacing: 6) {
-                                    HStack(spacing: 0) {
-                                        Text(correction.wrong)
-                                            .font(.custom("HelveticaNeue-Medium", size: 14))
-                                            .foregroundColor(Color(hex: "#FF3B30"))
-                                            .strikethrough(true, color: Color(hex: "#FF3B30").opacity(0.5))
-                                        Text(" → ")
-                                            .font(.custom("HelveticaNeue", size: 14))
-                                            .foregroundColor(.tsSecondary)
-                                        Text(correction.right)
-                                            .font(.custom("HelveticaNeue-Bold", size: 14))
-                                            .foregroundColor(Color(hex: "#34C759"))
-                                    }
-                                    if !correction.note.isEmpty {
-                                        Text(correction.note)
-                                            .font(.custom("HelveticaNeue", size: 12))
-                                            .foregroundColor(.tsSecondary)
-                                            .lineSpacing(1)
+                                let catInfo = categoryInfo(correction.category)
+                                HStack(alignment: .top, spacing: 12) {
+                                    // Category icon with color
+                                    Text(catInfo.icon)
+                                        .font(.system(size: 18))
+                                        .frame(width: 36, height: 36)
+                                        .background(catInfo.color.opacity(0.12))
+                                        .clipShape(RoundedRectangle(cornerRadius: 10))
+
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        HStack(spacing: 0) {
+                                            Text(correction.wrong)
+                                                .font(.custom("HelveticaNeue-Medium", size: 14))
+                                                .foregroundColor(Color(hex: "#FF3B30"))
+                                                .strikethrough(true, color: Color(hex: "#FF3B30").opacity(0.5))
+                                            Text(" → ")
+                                                .font(.custom("HelveticaNeue", size: 14))
+                                                .foregroundColor(.tsSecondary)
+                                            Text(correction.right)
+                                                .font(.custom("HelveticaNeue-Bold", size: 14))
+                                                .foregroundColor(Color(hex: "#34C759"))
+                                        }
+                                        if !correction.note.isEmpty {
+                                            Text(correction.note)
+                                                .font(.custom("HelveticaNeue", size: 12))
+                                                .foregroundColor(.tsSecondary)
+                                                .lineSpacing(1)
+                                        }
+                                        Text(catInfo.name)
+                                            .font(.custom("HelveticaNeue-Bold", size: 10))
+                                            .foregroundColor(catInfo.color)
+                                            .kerning(0.5)
                                     }
                                 }
-                                .padding(.horizontal, 14)
-                                .padding(.vertical, 10)
+                                .padding(14)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .background(
-                                    RoundedRectangle(cornerRadius: 10)
+                                    RoundedRectangle(cornerRadius: 12)
                                         .fill(colorScheme == .dark
                                               ? Color.white.opacity(0.06)
                                               : Color.white)
                                 )
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .stroke(Color.tsBorder, lineWidth: 0.5)
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(catInfo.color.opacity(0.2), lineWidth: 1)
                                 )
                             }
                         }
@@ -4713,6 +4740,20 @@ struct SessionSummaryView: View {
                 }
                 .padding(.horizontal, 20)
             }
+        }
+    }
+
+    private func categoryInfo(_ key: String) -> (icon: String, name: String, color: Color) {
+        switch key {
+        case "grammar":       return ("📐", "GRAMMAR",       Color(hex: "#007AFF"))
+        case "pronunciation": return ("🗣", "PRONUNCIATION", Color(hex: "#34C759"))
+        case "vocabulary":    return ("📖", "VOCABULARY",     Color(hex: "#FF9500"))
+        case "gender":        return ("⚥",  "GENDER",        Color(hex: "#AF52DE"))
+        case "conjugation":   return ("🔄", "CONJUGATION",   Color(hex: "#FF2D55"))
+        case "wordOrder":     return ("🔀", "WORD ORDER",    Color(hex: "#5AC8FA"))
+        case "preposition":   return ("📍", "PREPOSITIONS",  Color(hex: "#FF9500"))
+        case "idiom":         return ("💬", "IDIOMS",        Color(hex: "#FFD60A"))
+        default:              return ("📐", "GRAMMAR",       Color(hex: "#007AFF"))
         }
     }
 
