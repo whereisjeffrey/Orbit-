@@ -542,20 +542,21 @@ class PracticeConversationService {
                 return
             }
 
-            // Parse slang notes
+            // Parse slang notes — handle both [String: String] and [String: Any] (GPT sometimes returns null values)
             var slangNotes: [SlangNote] = []
-            if let rawNotes = parsed["slang_notes"] as? [[String: String]] {
+            if let rawNotes = parsed["slang_notes"] as? [[String: Any]] {
                 for note in rawNotes {
-                    if let phrase = note["phrase"], let meaning = note["meaning"] {
+                    if let phrase = note["phrase"] as? String, let meaning = note["meaning"] as? String {
                         slangNotes.append(SlangNote(
                             phrase: phrase,
                             meaning: meaning,
-                            context: note["context"] ?? "",
-                            scope: note["scope"] ?? ""
+                            context: (note["context"] as? String) ?? "",
+                            scope: (note["scope"] as? String) ?? ""
                         ))
                     }
                 }
             }
+            NSLog("🎯 [Sol] parsed slang_notes: \(slangNotes.count)")
 
             // Extract and save user facts for Sol's cross-session memory
             if let userFacts = parsed["user_facts"] as? [String] {

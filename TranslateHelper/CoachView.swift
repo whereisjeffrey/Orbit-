@@ -4360,6 +4360,7 @@ struct PracticeSessionView: View {
 
             // Add slang note cards after audio finishes (skip already-known phrases)
             let slangNotes = sol.slangNotes
+            NSLog("🎯 [Sol] slang_notes count: \(slangNotes.count) — \(slangNotes.map { $0.phrase }.joined(separator: ", "))")
             if !slangNotes.isEmpty {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
                     for note in slangNotes {
@@ -4650,15 +4651,15 @@ struct SessionSummaryView: View {
                                     VStack(alignment: .leading, spacing: 4) {
                                         HStack(spacing: 0) {
                                             Text(correction.wrong)
-                                                .font(.custom("HelveticaNeue-Medium", size: 14))
-                                                .foregroundColor(Color(hex: "#FF3B30"))
-                                                .strikethrough(true, color: Color(hex: "#FF3B30").opacity(0.5))
+                                                .font(.custom("HelveticaNeue", size: 14))
+                                                .foregroundColor(.tsSecondary)
+                                                .strikethrough(true, color: .tsSecondary.opacity(0.4))
                                             Text(" → ")
                                                 .font(.custom("HelveticaNeue", size: 14))
                                                 .foregroundColor(.tsSecondary)
                                             Text(correction.right)
                                                 .font(.custom("HelveticaNeue-Bold", size: 14))
-                                                .foregroundColor(Color(hex: "#34C759"))
+                                                .foregroundColor(.tsLabel)
                                         }
                                         if !correction.note.isEmpty {
                                             Text(correction.note)
