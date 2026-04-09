@@ -99,10 +99,19 @@ struct OnboardingInterestsView: View {
 
                 // ── CTA ────────────────────────────────────────────
                 VStack(spacing: 16) {
-                    TSButton(title: selected.isEmpty ? "Continue" : "Continue →") {
+                    Button(action: {
                         savedInterests = selected.joined(separator: ",")
                         onContinue()
+                    }) {
+                        Text(selected.isEmpty ? "Continue" : "Continue →")
+                            .font(.custom("HelveticaNeue-Bold", size: 18))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 56)
+                            .background(selected.isEmpty ? Color.tsSecondary.opacity(0.35) : Color.tsAccent)
+                            .clipShape(Capsule())
                     }
+                    .disabled(selected.isEmpty)
                     if selected.isEmpty {
                         Button(action: {
                             savedInterests = ""

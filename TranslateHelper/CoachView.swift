@@ -4023,6 +4023,7 @@ struct PracticeSessionView: View {
                 messageCount: totalMessagesThisSession,
                 tone: practiceTone
             )
+            PracticeStatsStore.shared.recordEngagement()
             NSLog("🎯 [Practice] session saved: \(sessionSeconds)s, \(totalMessagesThisSession) msgs")
 
             // Check if it's time for a Gemini conversation pool refresh

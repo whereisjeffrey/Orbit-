@@ -105,12 +105,21 @@ struct OnboardingStatusView: View {
 
                 // ── CTA ────────────────────────────────────────────
                 VStack(spacing: 16) {
-                    TSButton(title: "Continue") {
+                    Button(action: {
                         if let s = selected {
                             savedStatus = s.rawValue
                             onContinue()
                         }
+                    }) {
+                        Text("Continue")
+                            .font(.custom("HelveticaNeue-Bold", size: 18))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 56)
+                            .background(selected == nil ? Color.tsSecondary.opacity(0.35) : Color.tsAccent)
+                            .clipShape(Capsule())
                     }
+                    .disabled(selected == nil)
                     Button(action: {
                         savedStatus = ""
                         onContinue()

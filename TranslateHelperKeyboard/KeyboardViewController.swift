@@ -219,12 +219,15 @@ class KeyboardViewController: UIInputViewController {
 
         stopDictationPolling()
 
-        // Append dictated text to whatever is already in the field (cumulative)
-        let existingBefore = textDocumentProxy.documentContextBeforeInput ?? ""
-        let existingAfter  = textDocumentProxy.documentContextAfterInput  ?? ""
-        let existingText   = (existingBefore + existingAfter).trimmingCharacters(in: .whitespacesAndNewlines)
-        let separator      = existingText.isEmpty ? "" : " "
-        textDocumentProxy.insertText(separator + dictated)
+        // Clear any stale text first — iOS may have killed the previous keyboard
+        // process that cleared the field, leaving old text behind
+        if let after = textDocumentProxy.documentContextAfterInput, !after.isEmpty {
+            textDocumentProxy.adjustTextPosition(byCharacterOffset: after.count)
+        }
+        while let before = textDocumentProxy.documentContextBeforeInput, !before.isEmpty {
+            for _ in 0..<before.count { textDocumentProxy.deleteBackward() }
+        }
+        textDocumentProxy.insertText(dictated)
 
         // Brief delay so the proxy updates, then read full combined text
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
@@ -1524,18 +1527,18 @@ class KeyboardViewController: UIInputViewController {
     }
 
     private func setupHintCard() {
-        hintCard.backgroundColor = UIColor.systemPurple.withAlphaComponent(0.10)
+        hintCard.backgroundColor = UIColor.systemCyan.withAlphaComponent(0.10)
         hintCard.layer.cornerRadius = 10
         hintCard.layer.borderWidth = 1
-        hintCard.layer.borderColor = UIColor.systemPurple.withAlphaComponent(0.25).cgColor
+        hintCard.layer.borderColor = UIColor.systemCyan.withAlphaComponent(0.25).cgColor
         hintCard.translatesAutoresizingMaskIntoConstraints = false
         hintCard.clipsToBounds = true
 
         // Top row: 📋 TIP inline
         let hintHeader = UILabel()
-        hintHeader.text = "📋 TIP"
+        hintHeader.text = "📋 Need help reading a text?"
         hintHeader.font = UIFont.systemFont(ofSize: 11, weight: .bold)
-        hintHeader.textColor = UIColor.systemPurple
+        hintHeader.textColor = UIColor.systemCyan
         hintHeader.translatesAutoresizingMaskIntoConstraints = false
         hintCard.addSubview(hintHeader)
 
@@ -1549,8 +1552,8 @@ class KeyboardViewController: UIInputViewController {
         let dismissBtn = UIButton(type: .system)
         dismissBtn.setTitle("Swipe to dismiss →", for: .normal)
         dismissBtn.titleLabel?.font = UIFont.systemFont(ofSize: 11, weight: .semibold)
-        dismissBtn.setTitleColor(UIColor.systemPurple, for: .normal)
-        dismissBtn.backgroundColor = UIColor.systemPurple.withAlphaComponent(0.12)
+        dismissBtn.setTitleColor(UIColor.systemCyan, for: .normal)
+        dismissBtn.backgroundColor = UIColor.systemCyan.withAlphaComponent(0.12)
         dismissBtn.layer.cornerRadius = 12
         dismissBtn.contentEdgeInsets = UIEdgeInsets(top: 4, left: 12, bottom: 4, right: 12)
         dismissBtn.translatesAutoresizingMaskIntoConstraints = false
@@ -2285,16 +2288,21 @@ class KeyboardViewController: UIInputViewController {
 
     /// Shows a hint after the user's first outgoing translation, teaching them about paste-to-translate.
     private func showPasteHint() {
+        #if DEBUG
+        // Always show in debug builds so the hint card can be inspected
+        #else
         let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper")
+        defaults?.synchronize()
         guard !(defaults?.bool(forKey: "ts_paste_hint_shown") ?? false) else { return }
         defaults?.set(true, forKey: "ts_paste_hint_shown")
         defaults?.synchronize()
+        #endif
 
         // Show in the separate hint card — doesn't touch the notes card
-        hintTextLabel.text = "You can also translate incoming messages right here. Just copy the message and tap Translate."
+        hintTextLabel.text = "Got a message you can't read? Copy it, paste it into the chat box, and Orbit will translate it for you — right here in the keyboard."
         hintCard.isHidden = false
 
-        NSLog("TSKBD_PASTE_HINT: shown after first translation")
+        NSLog("TSKBD_PASTE_HINT: ✅ shown after first translation")
     }
 
     /// Shows a hint after the 3rd translation, teaching them about saving phrases.

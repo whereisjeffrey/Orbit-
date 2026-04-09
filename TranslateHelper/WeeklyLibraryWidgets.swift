@@ -446,12 +446,6 @@ struct WeeklyStreakCard: View {
         .background(inspirationBackground)
         .cornerRadius(20)
         .onAppear {
-#if DEBUG
-            if daysStr.isEmpty {
-                weekId  = currentWeekId
-                daysStr = "2,4,6,7"
-            }
-#endif
             checkWeekRollover()
         }
     }
