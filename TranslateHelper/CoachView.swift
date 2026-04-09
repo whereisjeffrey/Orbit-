@@ -8,6 +8,7 @@
 import SwiftUI
 import UIKit
 import AVFoundation
+import NaturalLanguage
 
 struct CoachView: View {
     @Environment(\.colorScheme) private var colorScheme
@@ -4326,6 +4327,30 @@ struct PracticeSessionView: View {
                         notes: log.rule,
                         language: targetLang
                     )
+                    // Check if this is a vocab request (English word → target language)
+                    // If so, generate a coaching card automatically
+                    let recognizer = NLLanguageRecognizer()
+                    recognizer.processString(log.userFragment)
+                    let fragmentLang = recognizer.dominantLanguage?.rawValue.components(separatedBy: "-").first ?? ""
+                    if fragmentLang == "en" || fragmentLang == LanguageManager.shared.nativeLang {
+                        // User used an English word → Sol gave the target language equivalent
+                        // This is a vocab card, not just a mistake
+                        let vocabPhrase = log.correctFragment.trimmingCharacters(in: CharacterSet(charactersIn: ".,!?"))
+                        let vocabMeaning = log.userFragment.trimmingCharacters(in: CharacterSet(charactersIn: ".,!?"))
+                        if !isPhraseAlreadyKnown(vocabPhrase) {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                                let noteMsg = PracticeMessage(
+                                    role: .coaching,
+                                    text: "📖 \"\(vocabPhrase)\" — \(vocabMeaning)",
+                                    saveablePhrase: vocabPhrase,
+                                    saveableMeaning: vocabMeaning
+                                )
+                                self.messages.append(noteMsg)
+                                self.sessionSlangLearned.append(vocabPhrase)
+                                NSLog("🎯 [Sol] vocab card from mistake_log: \(vocabPhrase) = \(vocabMeaning)")
+                            }
+                        }
+                    }
                 }
                 // Skip raw fallback — only ingest clean structured data
             }
@@ -4361,19 +4386,85 @@ struct PracticeSessionView: View {
             // Add slang note cards after audio finishes (skip already-known phrases)
             let slangNotes = sol.slangNotes
             NSLog("🎯 [Sol] slang_notes count: \(slangNotes.count) — \(slangNotes.map { $0.phrase }.joined(separator: ", "))")
-            if !slangNotes.isEmpty {
+
+            // If GPT returned slang_notes, use them
+            var cardsToShow: [(phrase: String, meaning: String, context: String)] = slangNotes.map {
+                (phrase: $0.phrase, meaning: $0.meaning, context: $0.context)
+            }
+
+            // If user asked a vocab question but GPT didn't populate slang_notes,
+            // extract the answer from Sol's response using quoted words
+            if cardsToShow.isEmpty {
+                let lastUserText = history.last(where: { $0.role == "user" })?.text.lowercased() ?? ""
+                let vocabTriggers = [
+                    // English
+                    "how do you say", "how would you say", "how do i say",
+                    "what's the word for", "whats the word for", "what is the word for",
+                    "how to say", "what do you call", "how would i say",
+                    "what does", "what is", "translate",
+                    // Portuguese
+                    "como se diz", "como fala", "como você fala", "como eu falo",
+                    "como se fala", "como é que se diz", "qual a palavra",
+                    "o que significa", "o que quer dizer", "como que fala",
+                    // Spanish
+                    "cómo se dice", "como se dice", "cómo digo", "como digo",
+                    "cuál es la palabra", "cual es la palabra", "qué significa",
+                    "que significa", "cómo se llama", "como se llama"
+                ]
+                let isVocabQuestion = vocabTriggers.contains(where: { lastUserText.contains($0) })
+
+                if isVocabQuestion {
+                    // Extract all quoted words from Sol's response
+                    let solText = sol.text
+                    let pattern = try? NSRegularExpression(pattern: "[\"'\u{2018}\u{2019}\u{201C}\u{201D}](.+?)[\"'\u{2018}\u{2019}\u{201C}\u{201D}]")
+                    let matches = pattern?.matches(in: solText, range: NSRange(solText.startIndex..., in: solText)) ?? []
+                    let quotedPhrases = matches.compactMap { match -> String? in
+                        guard let range = Range(match.range(at: 1), in: solText) else { return nil }
+                        return String(solText[range])
+                    }
+
+                    // The target language answer is usually the LAST quoted phrase
+                    // (Sol echoes the English word first, then gives the translation)
+                    // Filter out phrases that match the user's English input
+                    let userWords = Set(lastUserText.split(separator: " ").map { $0.lowercased() })
+                    let targetPhrase = quotedPhrases.last(where: { phrase in
+                        // Skip if the phrase is just English words the user said
+                        let phraseWords = Set(phrase.lowercased().split(separator: " ").map { String($0) })
+                        return !phraseWords.isSubset(of: userWords)
+                    }) ?? quotedPhrases.last
+
+                    if let phrase = targetPhrase, !phrase.isEmpty {
+                        // Extract what the user was asking about — words after the trigger
+                        var meaning = ""
+                        for trigger in vocabTriggers {
+                            if let range = lastUserText.range(of: trigger) {
+                                meaning = String(lastUserText[range.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
+                                // Clean trailing punctuation
+                                meaning = meaning.trimmingCharacters(in: CharacterSet(charactersIn: "?.!"))
+                                break
+                            }
+                        }
+                        if meaning.isEmpty { meaning = phrase }
+
+                        cardsToShow.append((phrase: phrase, meaning: meaning, context: ""))
+                        NSLog("🎯 [Sol] vocab extracted: \(phrase) = \(meaning)")
+                    }
+                }
+            }
+
+            if !cardsToShow.isEmpty {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                    for note in slangNotes {
-                        guard !isPhraseAlreadyKnown(note.phrase) else { continue }
+                    for card in cardsToShow {
+                        guard !isPhraseAlreadyKnown(card.phrase) else { continue }
 
                         let noteMsg = PracticeMessage(
                             role: .coaching,
-                            text: "📖 \"\(note.phrase)\" — \(note.meaning). \(note.context)",
-                            saveablePhrase: note.phrase,
-                            saveableMeaning: note.meaning
+                            text: "📖 \"\(card.phrase)\" — \(card.meaning). \(card.context)",
+                            saveablePhrase: card.phrase,
+                            saveableMeaning: card.meaning
                         )
                         messages.append(noteMsg)
-                        sessionSlangLearned.append(note.phrase)
+                        sessionSlangLearned.append(card.phrase)
 
                         // Show save hint on first coaching tip (slang note)
                         if !saveValidated && saveHintShownForMessage == nil {
