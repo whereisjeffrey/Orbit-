@@ -222,11 +222,12 @@ struct LibraryView: View {
                     .cornerRadius(20)
                     .padding(.horizontal, 16)
                     .padding(.top, 16)
+                    .padding(.bottom, 8)
 
                     // ── This Week's Streak ───────────────────────────
                     WeeklyStreakCard()
                         .padding(.horizontal, 16)
-                        .padding(.top, 8)
+                        .padding(.top, 16)
                         .padding(.bottom, 24)
 
                     // ── MY DECKS ───────────────────────────────────────
@@ -322,6 +323,12 @@ struct LibraryView: View {
         }
         .onAppear {
             store.load()
+            // Mark today as active if the user has engaged at all this session
+            // (keyboard translations, Sol conversations, study cards — anything)
+            if let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper"),
+               defaults.bool(forKey: "keyboard_has_launched") {
+                PracticeStatsStore.shared.recordEngagement()
+            }
             // Demo seed disabled — clipboard fills from real keyboard + Sol usage
             rebuildSearchablePhrases()
 

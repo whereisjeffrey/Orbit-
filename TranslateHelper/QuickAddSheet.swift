@@ -556,22 +556,17 @@ private struct CreateDeckPane: View {
                 // ── CTA button ───────────────────────────────────────
                 Button(action: handleCreate) {
                     ZStack {
-                        HStack(spacing: 10) {
-                            Image(systemName: useAI ? "sparkles" : "rectangle.stack.badge.plus")
-                                .font(.custom("HelveticaNeue-Medium", size: 16))
-                            Text(useAI ? "Generate My Deck" : "Create Deck")
-                                .font(.custom("HelveticaNeue-Bold", size: 17))
-                        }
-                        .foregroundColor(.white).opacity(isGenerating ? 0 : 1)
+                        Text(useAI ? "Generate My Deck" : "Create Deck")
+                            .font(.custom("HelveticaNeue-Bold", size: 18))
+                            .foregroundColor(.white)
+                            .opacity(isGenerating ? 0 : 1)
                         if isGenerating { ProgressView().tint(.white) }
                     }
                     .frame(maxWidth: .infinity).frame(height: 56)
                     .background(canCreate && !aiLimitReached
-                        ? LinearGradient.tsBluePrimary
-                        : LinearGradient(colors: [Color.tsCard], startPoint: .leading, endPoint: .trailing))
+                        ? Color.tsAccent
+                        : Color.tsSecondary.opacity(0.35))
                     .clipShape(Capsule())
-                    .shadow(color: canCreate && !aiLimitReached ? Color.tsAccent.opacity(0.35) : .clear,
-                            radius: 14, x: 0, y: 4)
                 }
                 .disabled(!canCreate || isGenerating || aiLimitReached)
             }

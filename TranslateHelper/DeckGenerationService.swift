@@ -38,10 +38,7 @@ final class DeckGenerationService {
 
     // Keys are stored in App Group so both targets can use them.
     // Falls back to the hardcoded key from Config.swift if not overridden.
-    private var openAIAPIKey: String {
-        UserDefaults(suiteName: appGroup)?.string(forKey: "talkswitch_openai_key")
-            ?? "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"
-    }
+    private var openAIAPIKey: String { APIConfig.openAIAPIKey }
     private let openAIBaseURL = "https://api.openai.com/v1"
 
     // MARK: - Flirting Deck
@@ -82,18 +79,21 @@ final class DeckGenerationService {
     /// Generates a deck from a free-form name + description (Create Deck flow).
     func generateCustomDeck(name: String, description: String, cardCount: Int = 25) async throws -> [GeneratedCard] {
         let count = min(max(cardCount, 5), DeckStore.maxCardsPerDeck) // clamp 5–100
+        let targetLang = LanguageManager.shared.targetLangRequired
+        let langName = LanguageManager.languageName(for: targetLang)
+        let nativeLang = LanguageManager.languageName(for: LanguageManager.shared.nativeLang)
         let system = """
-        You are a Spanish–English language learning expert. \
+        You are a \(langName)–\(nativeLang) language learning expert. \
         Generate exactly \(count) flashcard pairs based on the user's deck topic. \
         Each card should be a natural, useful phrase or word pair — not overly academic. \
         Return ONLY valid JSON as an array: \
-        [{"sourceText": "English phrase", "translatedText": "Spanish phrase", "notes": "brief usage note"}, ...]\
+        [{"sourceText": "\(nativeLang) phrase", "translatedText": "\(langName) phrase", "notes": "brief usage note"}, ...]\
         Do not include any text outside the JSON array.
         """
         let user = """
         Deck topic: \(name)
         Additional context: \(description.isEmpty ? "None provided." : description)
-        Generate \(count) Spanish–English flashcard pairs for this topic.
+        Generate \(count) \(langName)–\(nativeLang) flashcard pairs for this topic.
         """
         let raw = try await callOpenAI(systemPrompt: system, userPrompt: user)
         return try parseCards(from: raw)

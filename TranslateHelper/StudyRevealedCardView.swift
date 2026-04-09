@@ -169,7 +169,7 @@ struct StudyRevealedCardView: View {
                                     .foregroundColor(.tsLabel.opacity(0.9))
                                     .lineSpacing(4)
                             }
-                            .padding(20)
+                            .padding(24)
                             .frame(maxWidth: .infinity, minHeight: 100, alignment: .topLeading)
                             .background(
                                 Color(UIColor { trait in
@@ -183,7 +183,7 @@ struct StudyRevealedCardView: View {
                                 RoundedRectangle(cornerRadius: 16)
                                     .stroke(Color(hex: "F5A623").opacity(0.2), lineWidth: 1)
                             )
-                            .padding(.horizontal, 20)
+                            .padding(.horizontal, 24)
                             .padding(.bottom, 24)
                         } else {
                             Spacer().frame(height: 24)

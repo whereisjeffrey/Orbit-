@@ -376,6 +376,10 @@ struct SettingsView: View {
                             appGroup?.synchronize()
                             // Reset target areas wipe key so it doesn't re-wipe on next launch
                             UserDefaults.standard.removeObject(forKey: "target_areas_wiped_v5")
+                            // Reset streak data
+                            UserDefaults.standard.removeObject(forKey: "study_week_id")
+                            UserDefaults.standard.removeObject(forKey: "study_days_this_week")
+                            UserDefaults.standard.removeObject(forKey: "completed_weeks")
                             // Delete backup files so old data doesn't get restored
                             if let backupDir = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.com.jeff.translatehelper") {
                                 try? FileManager.default.removeItem(at: backupDir.appendingPathComponent("profile_backup.json"))
