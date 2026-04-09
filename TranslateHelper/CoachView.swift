@@ -141,23 +141,23 @@ struct CoachEmptyView: View {
                     .padding(.horizontal, 40)
                     .padding(.bottom, 32)
 
-                // ── DEV: Next button ────────────────────────────
-                #if DEBUG
+                // ── Continue button (all builds) ────────────────
                 Button {
                     withAnimation(.easeInOut(duration: 0.3)) {
                         showPopulated = true
+                        // Mark as seen so it only shows once
+                        UserDefaults.standard.set(true, forKey: "coach_intro_seen")
                     }
                 } label: {
-                    Text("Next → (populated state)")
-                        .font(.custom("HelveticaNeue-Medium", size: 14))
-                        .foregroundColor(.tsAccent)
-                        .padding(.horizontal, 24)
-                        .padding(.vertical, 12)
-                        .background(Color.tsAccent.opacity(0.1))
-                        .clipShape(Capsule())
+                    Text("Continue")
+                        .font(.custom("HelveticaNeue-Bold", size: 16))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 52)
+                        .background(Capsule().fill(Color.tsAccent))
                 }
+                .padding(.horizontal, 24)
                 .padding(.bottom, 40)
-                #endif
 
                 Spacer(minLength: 80)
             }
@@ -2167,6 +2167,10 @@ struct PracticeSessionView: View {
     @State private var wordSaveMessage: PracticeMessage? = nil  // triggers the zoomed overlay for Sol
     @State private var localSaveText: String? = nil  // triggers the zoomed overlay for LOCAL card
     @State private var totalMessagesThisSession = 0
+    @State private var showSessionSummary = false
+    @State private var sessionCorrections: [(wrong: String, right: String, note: String)] = []
+    @State private var sessionSlangLearned: [String] = []
+    @State private var sessionWordsSaved: Int = 0
     @State private var sessionSeconds = 0
     @State private var sessionTimer: Timer?
 
@@ -2540,6 +2544,16 @@ struct PracticeSessionView: View {
         }
         .sheet(isPresented: $showSettings) {
             practiceSettingsSheet
+        }
+        .fullScreenCover(isPresented: $showSessionSummary) {
+            SessionSummaryView(
+                sessionSeconds: sessionSeconds,
+                messageCount: totalMessagesThisSession,
+                corrections: sessionCorrections,
+                slangLearned: sessionSlangLearned,
+                wordsSaved: sessionWordsSaved,
+                onDismiss: { dismiss() }
+            )
         }
         .overlay {
             if let msg = wordSaveMessage {
@@ -4052,7 +4066,13 @@ struct PracticeSessionView: View {
                 }
             }
         }
-        dismiss()
+
+        // Show session summary instead of dismissing immediately
+        if totalMessagesThisSession > 0 || sessionSeconds > 10 {
+            showSessionSummary = true
+        } else {
+            dismiss()
+        }
     }
 
     private func stopAndSendRecording() {
@@ -4267,6 +4287,10 @@ struct PracticeSessionView: View {
                             self.messages[idx].nativeVersion = local ?? "✓ Sounds natural"
                             self.messages[idx].nativeNotes = notes ?? "Your phrasing was good here."
                         }
+                        // Track for session summary
+                        if let l = local, l != "✓ Sounds natural", let n = notes {
+                            self.sessionCorrections.append((wrong: userText, right: l, note: n))
+                        }
                     }
                 }
             }
@@ -4343,6 +4367,7 @@ struct PracticeSessionView: View {
                             saveableMeaning: note.meaning
                         )
                         messages.append(noteMsg)
+                        sessionSlangLearned.append(note.phrase)
 
                         // Show save hint on first coaching tip (slang note)
                         if !saveValidated && saveHintShownForMessage == nil {
@@ -4539,6 +4564,157 @@ struct MissingProfileSheet: View {
                 }
             }
         }
+    }
+}
+
+// MARK: - Session Summary
+
+struct SessionSummaryView: View {
+    let sessionSeconds: Int
+    let messageCount: Int
+    let corrections: [(wrong: String, right: String, note: String)]
+    let slangLearned: [String]
+    let wordsSaved: Int
+    let onDismiss: () -> Void
+
+    var body: some View {
+        ZStack {
+            TSGradientBackground().ignoresSafeArea()
+
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 24) {
+
+                    // ── Header ──────────────────────────────
+                    VStack(spacing: 8) {
+                        Text("Session Complete")
+                            .font(.custom("HelveticaNeue-Bold", size: 24))
+                            .foregroundColor(.tsLabel)
+                        Text(formatDuration(sessionSeconds))
+                            .font(.custom("HelveticaNeue-Medium", size: 16))
+                            .foregroundColor(.tsSecondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 40)
+
+                    // ── Stats row ────────────────────────────
+                    HStack(spacing: 20) {
+                        summaryStatCard(value: "\(messageCount)", label: "messages", icon: "💬")
+                        summaryStatCard(value: "\(corrections.count)", label: "patterns", icon: "🎯")
+                        summaryStatCard(value: "\(slangLearned.count)", label: "slang", icon: "📖")
+                    }
+                    .padding(.horizontal, 4)
+
+                    // ── Patterns spotted ─────────────────────
+                    if !corrections.isEmpty {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("PATTERNS SPOTTED")
+                                .font(.custom("HelveticaNeue-Bold", size: 11))
+                                .foregroundColor(.tsSecondary)
+                                .kerning(1.2)
+
+                            ForEach(Array(corrections.prefix(3).enumerated()), id: \.offset) { _, correction in
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(correction.note)
+                                        .font(.custom("HelveticaNeue-Medium", size: 14))
+                                        .foregroundColor(.tsLabel)
+                                        .lineSpacing(2)
+                                }
+                                .padding(14)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(Color.white)
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.tsBorder, lineWidth: 1)
+                                )
+                            }
+                        }
+                    }
+
+                    // ── Slang learned ────────────────────────
+                    if !slangLearned.isEmpty {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("SLANG LEARNED")
+                                .font(.custom("HelveticaNeue-Bold", size: 11))
+                                .foregroundColor(.tsSecondary)
+                                .kerning(1.2)
+
+                            HStack(spacing: 8) {
+                                ForEach(slangLearned.prefix(5), id: \.self) { phrase in
+                                    Text(phrase)
+                                        .font(.custom("HelveticaNeue-Medium", size: 13))
+                                        .foregroundColor(.tsAccent)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .background(
+                                            Capsule().fill(Color.tsAccent.opacity(0.1))
+                                        )
+                                }
+                            }
+                        }
+                    }
+
+                    // ── Encouragement ────────────────────────
+                    if corrections.isEmpty && slangLearned.isEmpty {
+                        VStack(spacing: 8) {
+                            Text("🎉")
+                                .font(.system(size: 32))
+                            Text("Great session! Keep it up.")
+                                .font(.custom("HelveticaNeue-Medium", size: 16))
+                                .foregroundColor(.tsLabel)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 20)
+                    }
+
+                    // ── Done button ──────────────────────────
+                    Button(action: onDismiss) {
+                        Text("Done")
+                            .font(.custom("HelveticaNeue-Bold", size: 16))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 52)
+                            .background(Capsule().fill(Color.tsAccent))
+                    }
+                    .padding(.top, 8)
+
+                    Spacer(minLength: 40)
+                }
+                .padding(.horizontal, 20)
+            }
+        }
+    }
+
+    private func summaryStatCard(value: String, label: String, icon: String) -> some View {
+        VStack(spacing: 4) {
+            Text(icon)
+                .font(.system(size: 20))
+            Text(value)
+                .font(.custom("HelveticaNeue-Bold", size: 22))
+                .foregroundColor(.tsLabel)
+            Text(label)
+                .font(.custom("HelveticaNeue", size: 12))
+                .foregroundColor(.tsSecondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.white)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.tsBorder, lineWidth: 1)
+        )
+    }
+
+    private func formatDuration(_ seconds: Int) -> String {
+        let m = seconds / 60
+        let s = seconds % 60
+        if m == 0 { return "\(s) seconds" }
+        return "\(m) min \(s) sec"
     }
 }
 

@@ -6068,6 +6068,7 @@
       }
     },
     "Next → (populated state)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
