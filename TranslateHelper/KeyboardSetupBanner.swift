@@ -34,9 +34,8 @@ struct KeyboardSetupBanner: View {
     private var setupCard: some View {
         Button { showSetupSheet = true } label: {
             HStack(spacing: 12) {
-                Image(systemName: "keyboard.fill")
-                    .font(.system(size: 20))
-                    .foregroundColor(.tsAccent)
+                Text("⌨️")
+                    .font(.system(size: 24))
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Set up your keyboard")
@@ -45,6 +44,7 @@ struct KeyboardSetupBanner: View {
                     Text("Tap here to get started — it only takes a minute.")
                         .font(.custom("HelveticaNeue", size: 12))
                         .foregroundColor(.tsSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
 
                 Spacer()
@@ -110,12 +110,22 @@ struct KeyboardSetupBanner: View {
         // Has the keyboard extension ever loaded?
         keyboardActive = defaults.bool(forKey: "keyboard_has_launched")
 
-        // Is the keyboard in the enabled keyboards list?
-        // We infer "installed" if the user has been through the setup flow
-        // (they came back from Settings) or if UITextInputMode shows our keyboard.
+        // Check if Orbit keyboard is actually in the enabled keyboards list.
+        // UITextInputMode.activeInputModes lists all enabled keyboards.
+        // Our keyboard uses "mul" (multilingual) as its primary language.
+        // Only trust keyboard_has_launched if the keyboard is also currently installed.
         let modes = UITextInputMode.activeInputModes
-        keyboardInstalled = modes.contains { mode in
-            mode.primaryLanguage == "mul" // our keyboard uses "mul" (multilingual)
+        let orbitInModes = modes.contains { mode in
+            mode.primaryLanguage == "mul"
+        }
+        keyboardInstalled = orbitInModes
+
+        // If keyboard was "launched" before but is no longer installed
+        // (e.g. after app reinstall), reset the flag
+        if !orbitInModes && keyboardActive {
+            keyboardActive = false
+            defaults.set(false, forKey: "keyboard_has_launched")
+            defaults.synchronize()
         }
     }
 }

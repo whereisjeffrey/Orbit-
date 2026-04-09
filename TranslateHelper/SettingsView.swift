@@ -408,6 +408,62 @@ struct SettingsView: View {
 
                         Divider().background(Color.tsBorder).padding(.leading, 16)
 
+                        // ── Nuclear Reset — wipes EVERYTHING ──
+                        Button(action: {
+                            // Wipe ALL standard UserDefaults
+                            if let bundleId = Bundle.main.bundleIdentifier {
+                                UserDefaults.standard.removePersistentDomain(forName: bundleId)
+                                UserDefaults.standard.synchronize()
+                            }
+                            // Wipe ALL App Group UserDefaults
+                            if let appGroup = UserDefaults(suiteName: "group.com.jeff.translatehelper") {
+                                let dict = appGroup.dictionaryRepresentation()
+                                for key in dict.keys {
+                                    appGroup.removeObject(forKey: key)
+                                }
+                                appGroup.synchronize()
+                            }
+                            // Clear all decks
+                            let deckStore = DeckStore.shared
+                            for deck in deckStore.decks { deckStore.deleteDeck(deck) }
+                            // Clear saved phrases
+                            SharedPhraseStore.shared.clearAll()
+                            // Clear mistake profile
+                            MistakeProfileStore.shared.resetToZero()
+                            // Clear conversation engines
+                            ConversationScriptEngine.shared.resetAll()
+                            ConversationCategoryEngine.shared.resetAll()
+                            // Clear location store
+                            UserLocationsStore.shared.locations.removeAll()
+                            // Delete backup files
+                            if let backupDir = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.com.jeff.translatehelper") {
+                                try? FileManager.default.removeItem(at: backupDir.appendingPathComponent("profile_backup.json"))
+                            }
+                            if let docsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+                                try? FileManager.default.removeItem(at: docsDir.appendingPathComponent("orbit_profile_backup.json"))
+                            }
+                            NSLog("💣 NUCLEAR RESET: everything wiped")
+                        }) {
+                            HStack {
+                                Image(systemName: "trash.fill")
+                                    .foregroundColor(.red)
+                                    .frame(width: 28, height: 28)
+                                    .background(Color.red.opacity(0.15))
+                                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                                Text("Nuclear Reset")
+                                    .font(.custom("HelveticaNeue", size: 17))
+                                    .foregroundColor(.red)
+                                Spacer()
+                                Text("Wipes everything")
+                                    .font(.custom("HelveticaNeue", size: 12))
+                                    .foregroundColor(.tsSecondary)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                        }
+
+                        Divider().background(Color.tsBorder).padding(.leading, 16)
+
                         // Keyboard debug snapshot — shows what the keyboard saw on last translation
                         let kbdSnap = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "talkswitch_kbd_debug") ?? "No snapshot yet — use the keyboard to translate something first."
                         HStack(alignment: .top, spacing: 10) {

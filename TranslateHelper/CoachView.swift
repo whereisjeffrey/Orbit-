@@ -2297,38 +2297,35 @@ struct PracticeSessionView: View {
                                     )
                                     .id(message.id)
 
-                                // Show Sol double-tap hint after Sol's first message
-                                if index == 0 && showDoubleTapHint {
+                                // ── Guidance hints — always appear below the latest message ──
+                                let isLastMessage = index == messages.count - 1
+
+                                if isLastMessage && showDoubleTapHint {
                                     doubleTapHintCard
                                         .transition(.opacity.combined(with: .scale(scale: 0.95)))
                                 }
 
-                                // Show playback hint (after double-tap is validated)
-                                if index == 0 && showPlaybackHint {
+                                if isLastMessage && showPlaybackHint {
                                     playbackHintCard
                                         .transition(.opacity.combined(with: .scale(scale: 0.95)))
                                 }
 
-                                // Show native hint after the first user message
                                 if message.id == nativeHintShownForMessage && showNativeHint {
                                     nativeHintCard
                                         .transition(.opacity.combined(with: .scale(scale: 0.95)))
                                 }
 
-                                // Show save hint after first coaching tip (once 5+ messages in)
                                 if message.id == saveHintShownForMessage && showSaveHint {
                                     saveHintCard
                                         .transition(.opacity.combined(with: .scale(scale: 0.95)))
                                 }
 
-                                // Show word save hint after Sol's 2nd message
-                                if index == 0 && showWordSaveHint {
+                                if isLastMessage && showWordSaveHint {
                                     wordSaveHintCard
                                         .transition(.opacity.combined(with: .scale(scale: 0.95)))
                                 }
 
-                                // Show settings hint after 8+ messages (once per user)
-                                if index == 0 && showSettingsHint {
+                                if isLastMessage && showSettingsHint {
                                     settingsHintCard
                                         .transition(.opacity.combined(with: .scale(scale: 0.95)))
                                 }
@@ -3047,6 +3044,7 @@ struct PracticeSessionView: View {
                             Image(systemName: isSolPlaying ? "speaker.wave.3.fill" : "speaker.wave.2")
                                 .font(.system(size: 10))
                                 .foregroundColor(Color.tsAccent.opacity(isSolPlaying ? 0.6 : 0.2))
+                                .frame(width: 16, height: 12)
                                 .opacity(textVisible ? 1 : 0)
                                 .padding(.bottom, 2)
                         }
@@ -3309,14 +3307,14 @@ struct PracticeSessionView: View {
             PracticeMessage(role: .coaching, text: hintText),
         ]
 
-        // First session ever — let them know they can respond in English
+        // First session ever — let them know they can use English
         let englishHintKey = "practice_english_hint_shown"
         if !UserDefaults.standard.bool(forKey: englishHintKey) {
             UserDefaults.standard.set(true, forKey: englishHintKey)
             let langName = LanguageManager.shared.targetLangName ?? "the target language"
             let englishHint = PracticeMessage(
                 role: .coaching,
-                text: "💬 Not sure what to say? You can respond in English anytime — your answers will be tracked in \(langName), and the conversation keeps going."
+                text: "💬 Not sure what to say? You can respond in English anytime — Sol will keep the conversation going in \(langName).\n\n🆘 Stuck mid-sentence? Switch to English and tell Sol what you're trying to say — she'll show you how to say it in \(langName)."
             )
             messages.append(englishHint)
         }

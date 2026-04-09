@@ -32,11 +32,16 @@ struct OnboardingView: View {
                 onComplete: { step = 3 }
             )
         case 3:
+            OnboardingPersonalizeIntroView(
+                onContinue: { step = 4 },
+                onSkip: { step = 7 }  // skip all personalization → keyboard setup
+            )
+        case 4:
             OnboardingLocationView(
-                step: 3, totalSteps: 6,
-                onBack: { step = 2 },
-                onSkip: { step = 4 },
-                onContinue: { step = 4 }
+                step: 4, totalSteps: 7,
+                onBack: { step = 3 },
+                onSkip: { step = 5 },
+                onContinue: { step = 5 }
             )
             .background(
                 KeyboardPreWarmer(triggered: $keyboardPreWarmed)
@@ -54,20 +59,20 @@ struct OnboardingView: View {
                     DictateViewController.preloadWhisperKit()
                 }
             }
-        case 4:
-            OnboardingStatusView(
-                onBack: { step = 3 },
-                onContinue: { step = 5 }
-            )
         case 5:
-            OnboardingInterestsView(
+            OnboardingStatusView(
                 onBack: { step = 4 },
-                onContinue: {
-                    seedConversationPool()
-                    step = 6
-                }
+                onContinue: { step = 6 }
             )
         case 6:
+            OnboardingInterestsView(
+                onBack: { step = 5 },
+                onContinue: {
+                    seedConversationPool()
+                    step = 7
+                }
+            )
+        case 7:
             KeyboardSetupSplashView(
                 onSkip: { completeOnboarding() }
             )

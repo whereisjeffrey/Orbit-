@@ -451,6 +451,15 @@ class PracticeConversationService {
         - Frame it naturally in conversation — don't say "here's a slang word." Just USE it, \
           and let the slang_notes explain it. \
         \
+        VOCABULARY REQUESTS — ALWAYS CARD IT: \
+        - When the user asks "how do you say X?", "what's the word for X?", "how would you say X?", \
+          or any variation of asking for a translation/word — ALWAYS include the answer in slang_notes. \
+        - Respond conversationally (use the word naturally in your reply), AND put it in slang_notes \
+          so a coaching card appears. This lets them save it to their clipboard with one tap. \
+        - The phrase field should be the \(langName) word/expression. The meaning field should be the English. \
+        - Scope should reflect where the expression is used (LOCAL/REGIONAL/NATIONWIDE/UNIVERSAL). \
+        - This applies to ANY vocabulary question — single words, phrases, idioms, anything. \
+        \
         \(transferBlock) \
         \
         NOTES LANGUAGE RULE: \
