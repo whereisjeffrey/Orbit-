@@ -80,6 +80,8 @@ class KeyboardViewController: UIInputViewController {
     private var lastSourceWasSpeech: Bool = false
     private var lastSpeechDetectedLang: String = ""  // WhisperKit's language detection (more reliable than text detection)
     private var deferredPostTranslation: DispatchWorkItem?  // cancelled on Replace so keyboard releases instantly
+    private var lastTranslationText: String = ""      // de-duplicate guard
+    private var lastTranslationTime: TimeInterval = 0 // de-duplicate guard
 
     // MARK: - Wingman State
     private var isWingmanMode: Bool = false
@@ -388,6 +390,15 @@ class KeyboardViewController: UIInputViewController {
     }
 
     private func performTranslation(text: String, source: String) {
+        // ── De-duplicate: skip if same text was already submitted within 3 seconds ──
+        let now = Date().timeIntervalSince1970
+        if text == lastTranslationText && (now - lastTranslationTime) < 3.0 {
+            NSLog("TSKBD_DEDUP: skipping duplicate — source=\(source) (%.1fs since last)", now - lastTranslationTime)
+            return
+        }
+        lastTranslationText = text
+        lastTranslationTime = now
+        NSLog("TSKBD_TRANSLATE: source=\(source) text='\(text.prefix(40))'")
         // Cancel ALL pending API tasks from previous translations — frees memory immediately
         TalkSwitchAPI.shared.cancelAllTasks()
 
@@ -500,10 +511,17 @@ class KeyboardViewController: UIInputViewController {
                             self.correctionTextLabel.text = "💡 \(self.capToTwoSentences(notes))"
                         }
 
-                        // Fire smart notes after correction is ready
-                        self.updateNotes(original: text, translated: refined.output)
-                        TalkSwitchAPI.shared.recordTranslationForPersona(original: text, translated: refined.output, tone: tone)
                         NSLog("TSKBD_CORRECTED: \(text) → \(refined.output)")
+                        // Defer post-correction work — no immediate API calls
+                        let hasNotes = refined.notes != nil
+                        self.deferredPostTranslation?.cancel()
+                        let work = DispatchWorkItem { [weak self] in
+                            guard let self = self else { return }
+                            if !hasNotes { self.updateNotes(original: text, translated: refined.output) }
+                            TalkSwitchAPI.shared.recordTranslationForPersona(original: text, translated: refined.output, tone: tone)
+                        }
+                        self.deferredPostTranslation = work
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5, execute: work)
 
                     case .failure:
                         // Correction failed — show original text as-is
@@ -513,23 +531,19 @@ class KeyboardViewController: UIInputViewController {
                         self.updateSwipeHint()
                         self.correctionHeader.text = "NATIVE"
                         self.correctionTextLabel.text = "Your \(targetName) sounds good here."
-                        self.updateNotes(original: text, translated: text)
                         NSLog("TSKBD_CORRECT_FALLBACK: showing original text")
                     }
                 }
             }
 
-            // Also fire gentle correction for the coaching card tips
+            // Fire gentle correction — only for mistake tracking, don't overwrite UI
+            // (refinement already set the correction card text — avoid flash)
             TalkSwitchAPI.shared.getGentleCorrection(text: text, language: targetCode) { [weak self] result in
                 DispatchQueue.main.async {
                     switch result {
                     case .success(let correction):
                         if correction.severity != "natural" {
-                            // Single concise tip — don't stack with existing text
-                            let tip = "Instead of \"\(correction.userSaid)\", try \"\(correction.nativeSay)\".\n\n💡 \(correction.explanation)"
-                            self?.correctionTextLabel.text = tip
-
-                            // Queue mistake for Lightning Round
+                            // Queue mistake for profile — but don't touch the correction card
                             self?.queueMistakeForProfile(
                                 userSaid: correction.userSaid,
                                 nativeSay: correction.nativeSay,
@@ -537,13 +551,9 @@ class KeyboardViewController: UIInputViewController {
                                 category: correction.category,
                                 language: targetCode
                             )
-                        } else {
-                            self?.correctionIcon.text = "👌"
-                            self?.correctionHeader.text = "SOUNDS NATIVE"
-                            self?.correctionTextLabel.text = "Your \(targetName) sounds natural here."
                         }
                     case .failure:
-                        break // Refinement handles the fallback
+                        break
                     }
                 }
             }
@@ -628,10 +638,14 @@ class KeyboardViewController: UIInputViewController {
                                     }
                                     NSLog("TSKBD_REFINED: \(text) → \(refined.output)")
                                     // ── Defer post-translation work — cancelled if user taps Replace ──
+                                    let hasRefinedNotes = refined.notes != nil
                                     self.deferredPostTranslation?.cancel()
                                     let work = DispatchWorkItem { [weak self] in
                                         guard let self = self else { return }
-                                        self.updateNotes(original: text, translated: refined.output)
+                                        // Skip updateNotes if refinement already provided notes — avoids flash
+                                        if !hasRefinedNotes {
+                                            self.updateNotes(original: text, translated: refined.output)
+                                        }
                                         TalkSwitchAPI.shared.recordTranslationForPersona(original: text, translated: refined.output, tone: tone)
                                         self.queueTTSCache(text: refined.output, language: targetCode)
                                     }
