@@ -149,7 +149,7 @@ struct CoachEmptyView: View {
                         UserDefaults.standard.set(true, forKey: "coach_intro_seen")
                     }
                 } label: {
-                    Text("Continue")
+                    Text("Get Started!")
                         .font(.custom("HelveticaNeue-Bold", size: 16))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
@@ -350,23 +350,6 @@ struct CoachPopulatedView: View {
                 // Milestones removed — lives in weekly/monthly reports now
                 // Talk card removed — pronunciation drills covered by Lightning Round
 
-                // ── DEV: Back button ─────────────────────────────
-                #if DEBUG
-                Button {
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        showPopulated = false
-                    }
-                } label: {
-                    Text("← Back to empty state")
-                        .font(.custom("HelveticaNeue-Medium", size: 14))
-                        .foregroundColor(.tsAccent)
-                        .padding(.horizontal, 24)
-                        .padding(.vertical, 12)
-                        .background(Color.tsAccent.opacity(0.1))
-                        .clipShape(Capsule())
-                }
-                .padding(.bottom, 40)
-                #endif
 
                 Spacer(minLength: 80)
             }

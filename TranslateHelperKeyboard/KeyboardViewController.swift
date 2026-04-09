@@ -79,6 +79,7 @@ class KeyboardViewController: UIInputViewController {
     }
     private var lastSourceWasSpeech: Bool = false
     private var lastSpeechDetectedLang: String = ""  // WhisperKit's language detection (more reliable than text detection)
+    private var deferredPostTranslation: DispatchWorkItem?  // cancelled on Replace so keyboard releases instantly
 
     // MARK: - Wingman State
     private var isWingmanMode: Bool = false
@@ -460,11 +461,15 @@ class KeyboardViewController: UIInputViewController {
             outputTextLabel.text = "Translating..."
             showPanel()
 
-            // Fire coaching tips in parallel
+            // Defer coaching tips — cancelled if user taps Replace
             if source == "accent_coach" {
                 lowConfidenceWords = ["[spoken aloud — focus on accent, rhythm, and pronunciation tips]"]
                 let spokenLang = self.lastSpeechDetectedLang.isEmpty ? targetCode : self.lastSpeechDetectedLang
-                self.fetchCoachingTipsForCorrectionCard(spokenText: text, spokenLanguage: spokenLang)
+                let work = DispatchWorkItem { [weak self] in
+                    self?.fetchCoachingTipsForCorrectionCard(spokenText: text, spokenLanguage: spokenLang)
+                }
+                self.deferredPostTranslation = work
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5, execute: work)
             }
 
             // Send directly to OpenAI for correction + tone (skip DeepL — same language)
@@ -574,7 +579,12 @@ class KeyboardViewController: UIInputViewController {
                         ? self.lastSpeechDetectedLang
                         : detected.code
                     if self.lastSourceWasSpeech && spokenLang != self.nativeLang {
-                        self.fetchCoachingTips(spokenText: text, spokenLanguage: spokenLang)
+                        // Defer coaching tips — cancelled if user taps Replace
+                        let coachWork = DispatchWorkItem { [weak self] in
+                            self?.fetchCoachingTips(spokenText: text, spokenLanguage: spokenLang)
+                        }
+                        self.deferredPostTranslation = coachWork
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5, execute: coachWork)
                     } else {
                         self.coachCard.isHidden = true
                     }
@@ -616,12 +626,17 @@ class KeyboardViewController: UIInputViewController {
                                         }
                                         self.notesTextLabel.text = "\(icon) \(self.capToTwoSentences(notes))"
                                     }
-                                    // Fire smart notes AFTER refinement — so notes match the final translation
-                                    self.updateNotes(original: text, translated: refined.output)
-                                    TalkSwitchAPI.shared.recordTranslationForPersona(original: text, translated: refined.output, tone: tone)
                                     NSLog("TSKBD_REFINED: \(text) → \(refined.output)")
-                                    // Queue TTS cache for main app to pre-generate Neural2 audio
-                                    self.queueTTSCache(text: refined.output, language: targetCode)
+                                    // ── Defer post-translation work — cancelled if user taps Replace ──
+                                    self.deferredPostTranslation?.cancel()
+                                    let work = DispatchWorkItem { [weak self] in
+                                        guard let self = self else { return }
+                                        self.updateNotes(original: text, translated: refined.output)
+                                        TalkSwitchAPI.shared.recordTranslationForPersona(original: text, translated: refined.output, tone: tone)
+                                        self.queueTTSCache(text: refined.output, language: targetCode)
+                                    }
+                                    self.deferredPostTranslation = work
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5, execute: work)
                                     // Progressive hints — spaced out across first few translations
                                     self.translationsSent += 1
                                     if self.translationsSent == 1 {
@@ -640,9 +655,16 @@ class KeyboardViewController: UIInputViewController {
                                     self.currentHistoryIndex = 0
                                     self.outputTextLabel.text = translation
                                     self.updateSwipeHint()
-                                    self.updateNotes(original: text, translated: translation)
-                                    TalkSwitchAPI.shared.recordTranslationForPersona(original: text, translated: translation, tone: tone)
                                     NSLog("TSKBD_REFINE_FALLBACK: using DeepL translation")
+                                    // ── Defer post-translation work — cancelled if user taps Replace ──
+                                    self.deferredPostTranslation?.cancel()
+                                    let work = DispatchWorkItem { [weak self] in
+                                        guard let self = self else { return }
+                                        self.updateNotes(original: text, translated: translation)
+                                        TalkSwitchAPI.shared.recordTranslationForPersona(original: text, translated: translation, tone: tone)
+                                    }
+                                    self.deferredPostTranslation = work
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5, execute: work)
                                 }
                             }
                         }
@@ -653,9 +675,16 @@ class KeyboardViewController: UIInputViewController {
                         self.currentHistoryIndex = 0
                         self.outputTextLabel.text = translation
                         self.updateSwipeHint()
-                        self.updateNotes(original: text, translated: translation)
-                        TalkSwitchAPI.shared.recordTranslationForPersona(original: text, translated: translation, tone: tone)
-                        self.queueTTSCache(text: translation, language: targetCode)
+                        // ── Defer post-translation work — cancelled if user taps Replace ──
+                        self.deferredPostTranslation?.cancel()
+                        let work = DispatchWorkItem { [weak self] in
+                            guard let self = self else { return }
+                            self.updateNotes(original: text, translated: translation)
+                            TalkSwitchAPI.shared.recordTranslationForPersona(original: text, translated: translation, tone: tone)
+                            self.queueTTSCache(text: translation, language: targetCode)
+                        }
+                        self.deferredPostTranslation = work
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5, execute: work)
                     }
 
                 case .failure(let error):
@@ -2676,16 +2705,16 @@ class KeyboardViewController: UIInputViewController {
     /// Uses brute force deletion — textDocumentProxy only exposes ~200 chars at a time,
     /// so we just delete 2000 times. Extra calls after text is empty are no-ops.
     private func clearTextField() {
-        // Move cursor as far right as possible
-        for _ in 0..<5 {
-            if let after = textDocumentProxy.documentContextAfterInput, !after.isEmpty {
-                textDocumentProxy.adjustTextPosition(byCharacterOffset: after.count)
-            }
+        // Move cursor to the end
+        if let after = textDocumentProxy.documentContextAfterInput, !after.isEmpty {
+            textDocumentProxy.adjustTextPosition(byCharacterOffset: after.count)
         }
 
-        // Brute force delete — guaranteed to clear any length message
-        for _ in 0..<2000 {
-            textDocumentProxy.deleteBackward()
+        // Delete only what's actually there
+        while let before = textDocumentProxy.documentContextBeforeInput, !before.isEmpty {
+            for _ in 0..<before.count {
+                textDocumentProxy.deleteBackward()
+            }
         }
 
         previousTextLength = 0
@@ -2715,16 +2744,21 @@ class KeyboardViewController: UIInputViewController {
               translated != "✨ Refining...",
               translated != "⚠️ Translation failed" else { return }
 
+        // Kill all deferred work — user is done, release the extension immediately
+        deferredPostTranslation?.cancel()
+        deferredPostTranslation = nil
+
         // Move cursor to the very end first
-        for _ in 0..<5 {
-            if let after = textDocumentProxy.documentContextAfterInput, !after.isEmpty {
-                textDocumentProxy.adjustTextPosition(byCharacterOffset: after.count)
-            }
+        if let after = textDocumentProxy.documentContextAfterInput, !after.isEmpty {
+            textDocumentProxy.adjustTextPosition(byCharacterOffset: after.count)
         }
 
-        // Brute force delete everything — handles long text and proxy truncation
-        for _ in 0..<2000 {
-            textDocumentProxy.deleteBackward()
+        // Delete only what's actually there — avoids thousands of unnecessary IPC calls
+        // documentContextBeforeInput can truncate, so loop until empty
+        while let before = textDocumentProxy.documentContextBeforeInput, !before.isEmpty {
+            for _ in 0..<before.count {
+                textDocumentProxy.deleteBackward()
+            }
         }
 
         // Insert the translation into a clean field
