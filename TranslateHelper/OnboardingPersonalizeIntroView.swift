@@ -14,7 +14,7 @@ struct OnboardingPersonalizeIntroView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer().frame(height: 80)
+            Spacer().frame(height: 56)
 
             // ── Sol avatar with glow ──────────────────────────
             Image("SolAvaatar")
