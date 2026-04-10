@@ -40,23 +40,22 @@ struct DeckHomeView: View {
                     // ── Deck identity ──────────────────────
                     VStack(spacing: 12) {
                         if isLocalSlang {
-                            // Map snapshot for slang decks
+                            // Map snapshot for slang decks — large, flat style
                             ZStack {
                                 if let snapshot = mapSnapshot {
                                     Image(uiImage: snapshot)
                                         .resizable()
                                         .scaledToFill()
-                                        .frame(width: 200, height: 140)
-                                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                                        .frame(height: 220)
+                                        .clipShape(RoundedRectangle(cornerRadius: 20))
                                         .overlay(
-                                            RoundedRectangle(cornerRadius: 16)
-                                                .stroke(Color.tsAccent.opacity(0.2), lineWidth: 1)
+                                            RoundedRectangle(cornerRadius: 20)
+                                                .stroke(Color.tsAccent.opacity(0.15), lineWidth: 1)
                                         )
-                                        .shadow(color: Color.tsAccent.opacity(0.2), radius: 12, x: 0, y: 4)
                                 } else {
-                                    RoundedRectangle(cornerRadius: 16)
+                                    RoundedRectangle(cornerRadius: 20)
                                         .fill(Color.tsCard)
-                                        .frame(width: 200, height: 140)
+                                        .frame(height: 220)
                                         .overlay(
                                             ProgressView()
                                                 .tint(.tsSecondary)
@@ -65,17 +64,22 @@ struct DeckHomeView: View {
 
                                 // Pin
                                 Image(systemName: "mappin.circle.fill")
-                                    .font(.system(size: 28))
+                                    .font(.system(size: 36))
                                     .foregroundColor(Color(hex: "#FF3B30"))
                                     .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
                             }
+                            .padding(.horizontal, 24)
                             .onAppear { loadMapSnapshot() }
 
-                            // Title — larger for slang
-                            Text(deck.name)
-                                .font(.custom("HelveticaNeue-Bold", size: 24))
-                                .foregroundColor(.tsLabel)
-                                .multilineTextAlignment(.center)
+                            // Title with pin icon
+                            HStack(spacing: 6) {
+                                Image(systemName: "mappin.and.ellipse")
+                                    .font(.system(size: 18))
+                                    .foregroundColor(Color(hex: "#FF3B30"))
+                                Text(deck.name)
+                                    .font(.custom("HelveticaNeue-Bold", size: 24))
+                                    .foregroundColor(.tsLabel)
+                            }
 
                             // Location subtitle
                             let city = UserLocationsStore.shared.locations.first?.displayName ?? ""
@@ -107,15 +111,15 @@ struct DeckHomeView: View {
                         }
 
                         // Card count pill
-                        HStack(spacing: 6) {
+                        HStack(spacing: 8) {
                             Text("🃏")
-                                .font(.system(size: 12))
+                                .font(.system(size: 16))
                             Text("\(deck.cards.count) cards")
-                                .font(.custom("HelveticaNeue-Bold", size: 13))
+                                .font(.custom("HelveticaNeue-Bold", size: 16))
                                 .foregroundColor(.tsAccent)
                         }
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 6)
+                        .padding(.horizontal, 18)
+                        .padding(.vertical, 10)
                         .background(Color.tsAccent.opacity(0.1))
                         .clipShape(Capsule())
                         .padding(.top, 4)
@@ -189,9 +193,11 @@ struct DeckHomeView: View {
             }
         }
         .fullScreenCover(isPresented: $showStudy) {
+            // Always compute fresh — never rely on stale captured state
+            let freshPhrases = deckStore.decks.first(where: { $0.id == deckId })?.activeCards.map { $0.toSavedPhrase() } ?? studyPhrases
             NavigationView {
                 StudySourceWordView(
-                    phrases: studyPhrases,
+                    phrases: freshPhrases,
                     listName: deck?.name ?? deckName
                 )
             }
@@ -237,10 +243,12 @@ struct DeckHomeView: View {
             let options = MKMapSnapshotter.Options()
             options.region = MKCoordinateRegion(
                 center: coordinate,
-                span: MKCoordinateSpan(latitudeDelta: 0.15, longitudeDelta: 0.15)
+                span: MKCoordinateSpan(latitudeDelta: 0.12, longitudeDelta: 0.12)
             )
-            options.size = CGSize(width: 400, height: 280)  // 2x for retina
-            options.traitCollection = UITraitCollection(userInterfaceStyle: .dark)
+            options.size = CGSize(width: 700, height: 440)  // 2x for retina, larger
+            options.mapType = .mutedStandard  // flat 2D, muted colors, no labels
+            options.pointOfInterestFilter = .excludingAll  // remove POI clutter
+            options.showsBuildings = false
 
             let snapshotter = MKMapSnapshotter(options: options)
             snapshotter.start { snapshot, error in

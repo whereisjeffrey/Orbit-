@@ -79,9 +79,6 @@ struct DeckPhraseListView: View {
                     // ── Selection banner ────────────────────────────────
                     if !selected.isEmpty {
                         HStack {
-                            Text("\(selected.count) selected")
-                                .font(.custom("HelveticaNeue-Medium", size: 14))
-                                .foregroundColor(.tsLabel)
                             Spacer()
                             Button(action: selectAll) {
                                 Text(selected.count == filtered.count ? "Deselect All" : "Select All")
@@ -91,7 +88,6 @@ struct DeckPhraseListView: View {
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
-                        .background(Color.tsAccent.opacity(0.06))
                         .transition(.move(edge: .top).combined(with: .opacity))
                     }
 
@@ -139,6 +135,7 @@ struct DeckPhraseListView: View {
                                     .buttonStyle(.plain)
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 12)
+                                    .background(selected.contains(phrase.id) ? Color.tsAccent.opacity(0.04) : Color.clear)
 
                                     if index < filtered.count - 1 {
                                         Divider()
@@ -158,12 +155,12 @@ struct DeckPhraseListView: View {
                         Spacer()
                         VStack(spacing: 0) {
                             HStack(spacing: 16) {
-                                // Delete — soft red
+                                // Delete — soft red with 3D trash icon
                                 Button(action: deleteSelected) {
-                                    HStack(spacing: 6) {
-                                        Image(systemName: "trash.fill")
-                                            .font(.system(size: 14))
-                                        Text("Delete (\(selected.count))")
+                                    HStack(spacing: 8) {
+                                        Text("🗑️")
+                                            .font(.system(size: 16))
+                                        Text("Delete")
                                             .font(.custom("HelveticaNeue-Bold", size: 14))
                                     }
                                     .foregroundColor(Color(hex: "#FF3B30"))
@@ -173,15 +170,15 @@ struct DeckPhraseListView: View {
                                     .clipShape(Capsule())
                                 }
 
-                                // Remix (deck only) — soft blue
+                                // Remix (deck only) — soft blue with DJ icon
                                 if deckId != nil {
                                     Button(action: remixSelected) {
-                                        HStack(spacing: 6) {
+                                        HStack(spacing: 8) {
                                             if isRemixing {
                                                 ProgressView().tint(.tsAccent)
                                             } else {
-                                                Image(systemName: "shuffle")
-                                                    .font(.system(size: 14))
+                                                Text("🎛️")
+                                                    .font(.system(size: 16))
                                             }
                                             Text("Remix")
                                                 .font(.custom("HelveticaNeue-Bold", size: 14))
@@ -196,13 +193,10 @@ struct DeckPhraseListView: View {
                                 }
                             }
                             .padding(.horizontal, 16)
-                            .padding(.top, 12)
-                            .padding(.bottom, 4)
-
-                            // Extend to bottom safe area
-                            Spacer().frame(height: 0)
+                            .padding(.top, 8)
+                            .padding(.bottom, 2)
                         }
-                        .padding(.bottom, 34) // cover home indicator area
+                        .padding(.bottom, 16)
                         .background(
                             Color.tsBackground
                                 .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: -4)
@@ -215,17 +209,15 @@ struct DeckPhraseListView: View {
             .navigationTitle(deckName)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") { dismiss() }
-                        .foregroundColor(.tsAccent)
-                        .fontWeight(.semibold)
-                }
                 ToolbarItem(placement: .primaryAction) {
-                    Text("\(livePhrases.count) cards")
-                        .font(.custom("HelveticaNeue-Medium", size: 13))
-                        .foregroundColor(.tsSecondary)
-                        .padding(.horizontal, 10).padding(.vertical, 4)
-                        .background(Color.tsCard)
+                    TSDismissButton(action: { dismiss() })
+                }
+                ToolbarItem(placement: .cancellationAction) {
+                    Text("\(selected.isEmpty ? livePhrases.count : selected.count) \(selected.isEmpty ? "cards" : "selected")")
+                        .font(.custom("HelveticaNeue-Bold", size: 13))
+                        .foregroundColor(selected.isEmpty ? .tsSecondary : .tsAccent)
+                        .padding(.horizontal, 12).padding(.vertical, 6)
+                        .background(selected.isEmpty ? Color.tsCard : Color.tsAccent.opacity(0.1))
                         .clipShape(Capsule())
                 }
             }

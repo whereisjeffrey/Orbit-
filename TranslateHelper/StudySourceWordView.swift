@@ -24,8 +24,11 @@ struct StudySourceWordView: View {
         ZStack {
             TSGradientBackground()
                 .ignoresSafeArea()
-            
-            if let phrase = currentPhrase {
+
+            if phrases.isEmpty {
+                // Safety net — never show trophy for an empty deck
+                Color.clear.onAppear { dismiss() }
+            } else if let phrase = currentPhrase {
                 VStack(spacing: 0) {
                     // Header
                     HStack {
