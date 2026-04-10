@@ -114,8 +114,8 @@ struct MyDecksView: View {
                               subtitle: "How locals actually text", cardCount: 30, tint: .green,
                               tintName: "green"),
             // Professional
-            FeaturedDeckModel(id: "f_work", emoji: "💼", title: "Work & Professional",
-                              subtitle: "Office talk, emails & meetings", cardCount: 30, tint: .blue,
+            FeaturedDeckModel(id: "f_work", emoji: "💼", title: "Corporate Lingo",
+                              subtitle: "Meeting buzzwords, email shorthand & office jargon", cardCount: 30, tint: .blue,
                               tintName: "blue"),
             // Practical
             FeaturedDeckModel(id: "f_medical", emoji: "🏥", title: "Medical & Emergencies",
