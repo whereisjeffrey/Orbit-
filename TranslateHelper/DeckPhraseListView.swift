@@ -79,6 +79,9 @@ struct DeckPhraseListView: View {
                     // ── Selection banner ────────────────────────────────
                     if !selected.isEmpty {
                         HStack {
+                            Text("\(selected.count) selected")
+                                .font(.custom("HelveticaNeue-Medium", size: 14))
+                                .foregroundColor(.tsLabel)
                             Spacer()
                             Button(action: selectAll) {
                                 Text(selected.count == filtered.count ? "Deselect All" : "Select All")
@@ -88,6 +91,7 @@ struct DeckPhraseListView: View {
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
+                        .background(Color.tsAccent.opacity(0.06))
                         .transition(.move(edge: .top).combined(with: .opacity))
                     }
 
@@ -155,48 +159,47 @@ struct DeckPhraseListView: View {
                         Spacer()
                         VStack(spacing: 0) {
                             HStack(spacing: 16) {
-                                // Delete — soft red with 3D trash icon
+                                // Delete — soft red
                                 Button(action: deleteSelected) {
-                                    HStack(spacing: 8) {
-                                        Text("🗑️")
-                                            .font(.system(size: 16))
+                                    HStack(spacing: 6) {
+                                        Image(systemName: "trash.fill")
+                                            .font(.system(size: 14))
                                         Text("Delete")
                                             .font(.custom("HelveticaNeue-Bold", size: 14))
                                     }
                                     .foregroundColor(Color(hex: "#FF3B30"))
                                     .frame(maxWidth: .infinity)
-                                    .frame(height: 48)
+                                    .frame(height: 44)
                                     .background(Color(hex: "#FF3B30").opacity(0.12))
                                     .clipShape(Capsule())
                                 }
 
-                                // Remix (deck only) — soft blue with DJ icon
+                                // Remix (deck only) — soft blue
                                 if deckId != nil {
                                     Button(action: remixSelected) {
-                                        HStack(spacing: 8) {
+                                        HStack(spacing: 6) {
                                             if isRemixing {
                                                 ProgressView().tint(.tsAccent)
                                             } else {
-                                                Text("🎛️")
-                                                    .font(.system(size: 16))
+                                                Image(systemName: "shuffle")
+                                                    .font(.system(size: 14))
                                             }
                                             Text("Remix")
                                                 .font(.custom("HelveticaNeue-Bold", size: 14))
                                         }
                                         .foregroundColor(.tsAccent)
                                         .frame(maxWidth: .infinity)
-                                        .frame(height: 48)
+                                        .frame(height: 44)
                                         .background(Color.tsAccent.opacity(0.12))
                                         .clipShape(Capsule())
                                     }
                                     .disabled(isRemixing)
                                 }
                             }
-                            .padding(.horizontal, 16)
-                            .padding(.top, 8)
-                            .padding(.bottom, 2)
+                            .padding(.horizontal, 32)
+                            .padding(.vertical, 6)
                         }
-                        .padding(.bottom, 16)
+                        .padding(.bottom, 4)
                         .background(
                             Color.tsBackground
                                 .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: -4)
@@ -211,14 +214,6 @@ struct DeckPhraseListView: View {
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     TSDismissButton(action: { dismiss() })
-                }
-                ToolbarItem(placement: .cancellationAction) {
-                    Text("\(selected.isEmpty ? livePhrases.count : selected.count) \(selected.isEmpty ? "cards" : "selected")")
-                        .font(.custom("HelveticaNeue-Bold", size: 13))
-                        .foregroundColor(selected.isEmpty ? .tsSecondary : .tsAccent)
-                        .padding(.horizontal, 12).padding(.vertical, 6)
-                        .background(selected.isEmpty ? Color.tsCard : Color.tsAccent.opacity(0.1))
-                        .clipShape(Capsule())
                 }
             }
             .toolbarColorScheme(.dark, for: .navigationBar)

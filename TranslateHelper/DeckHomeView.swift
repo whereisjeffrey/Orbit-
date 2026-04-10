@@ -35,7 +35,7 @@ struct DeckHomeView: View {
             TSGradientBackground().ignoresSafeArea()
 
             VStack(spacing: 20) {
-                    Spacer().frame(height: 60)
+                    Spacer().frame(height: 40)
 
                     // ── Deck identity ──────────────────────
                     VStack(spacing: 12) {
@@ -46,48 +46,41 @@ struct DeckHomeView: View {
                                     Image(uiImage: snapshot)
                                         .resizable()
                                         .scaledToFill()
-                                        .frame(height: 220)
-                                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                                        .frame(width: 270, height: 270)
+                                        .clipShape(RoundedRectangle(cornerRadius: 24))
                                         .overlay(
-                                            RoundedRectangle(cornerRadius: 20)
+                                            RoundedRectangle(cornerRadius: 24)
                                                 .stroke(Color.tsAccent.opacity(0.15), lineWidth: 1)
                                         )
                                 } else {
-                                    RoundedRectangle(cornerRadius: 20)
+                                    RoundedRectangle(cornerRadius: 24)
                                         .fill(Color.tsCard)
-                                        .frame(height: 220)
+                                        .frame(width: 270, height: 270)
                                         .overlay(
                                             ProgressView()
                                                 .tint(.tsSecondary)
                                         )
                                 }
 
-                                // Pin
-                                Image(systemName: "mappin.circle.fill")
-                                    .font(.system(size: 36))
-                                    .foregroundColor(Color(hex: "#FF3B30"))
-                                    .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
                             }
-                            .padding(.horizontal, 24)
                             .onAppear { loadMapSnapshot() }
+                            .padding(.bottom, 8)
 
-                            // Title with pin icon
-                            HStack(spacing: 6) {
-                                Image(systemName: "mappin.and.ellipse")
-                                    .font(.system(size: 18))
-                                    .foregroundColor(Color(hex: "#FF3B30"))
-                                Text(deck.name)
-                                    .font(.custom("HelveticaNeue-Bold", size: 24))
+                            // Title with 3D pin
+                            HStack(spacing: 8) {
+                                Text("📍")
+                                    .font(.system(size: 22))
+                                Text("Local Slang")
+                                    .font(.custom("HelveticaNeue-Bold", size: 26))
                                     .foregroundColor(.tsLabel)
                             }
 
-                            // Location subtitle
+                            // City name subtitle
                             let city = UserLocationsStore.shared.locations.first?.displayName ?? ""
                             if !city.isEmpty {
-                                Text("Expressions specific to \(city)")
-                                    .font(.custom("HelveticaNeue", size: 14))
+                                Text(city)
+                                    .font(.custom("HelveticaNeue-Medium", size: 15))
                                     .foregroundColor(.tsSecondary)
-                                    .multilineTextAlignment(.center)
                             }
                         } else {
                             // Standard emoji for non-slang decks
@@ -111,9 +104,10 @@ struct DeckHomeView: View {
                         }
 
                         // Card count pill
-                        HStack(spacing: 8) {
-                            Text("🃏")
-                                .font(.system(size: 16))
+                        HStack(spacing: 6) {
+                            Image(systemName: "rectangle.stack.fill")
+                                .font(.system(size: 14))
+                                .foregroundColor(.tsAccent)
                             Text("\(deck.cards.count) cards")
                                 .font(.custom("HelveticaNeue-Bold", size: 16))
                                 .foregroundColor(.tsAccent)
@@ -162,7 +156,9 @@ struct DeckHomeView: View {
                     .padding(.horizontal, 24)
                     .padding(.bottom, 48)
                 }
-            }
+        }
+        .onAppear {
+            NSLog("📚 [DeckHome] appeared — name: \(deck.name), cards: \(deck.cards.count), active: \(deck.activeCards.count)")
         }
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
@@ -231,10 +227,11 @@ struct DeckHomeView: View {
                 center: coordinate,
                 span: MKCoordinateSpan(latitudeDelta: 0.12, longitudeDelta: 0.12)
             )
-            options.size = CGSize(width: 700, height: 440)  // 2x for retina, larger
-            options.mapType = .mutedStandard  // flat 2D, muted colors, no labels
-            options.pointOfInterestFilter = .excludingAll  // remove POI clutter
+            options.size = CGSize(width: 500, height: 500)  // square, 2x retina
+            options.mapType = .mutedStandard  // flat 2D, muted colors
+            options.pointOfInterestFilter = .excludingAll
             options.showsBuildings = false
+            options.traitCollection = UITraitCollection(userInterfaceStyle: .light)  // white/yellow palette
 
             let snapshotter = MKMapSnapshotter(options: options)
             snapshotter.start { snapshot, error in

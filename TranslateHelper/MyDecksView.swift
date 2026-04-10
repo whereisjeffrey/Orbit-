@@ -348,10 +348,10 @@ struct AutoDeckCard: View {
             }
             .padding(16)
             .frame(width: 148, height: 148)
-            .background(Color.tsGrayCard)
+            .background(deck.tint.opacity(0.1))
             .cornerRadius(20)
             .overlay(RoundedRectangle(cornerRadius: 20).stroke(
-                Color.tsAccent.opacity(0.08),
+                deck.tint.opacity(0.2),
                 lineWidth: 0.5))
         }
         .buttonStyle(DeckTapStyle())
@@ -376,11 +376,6 @@ struct UserDeckCard: View {
                         Text(deck.emoji).font(.custom("HelveticaNeue", size: 18))
                     }
                     Spacer()
-                    if deck.isAI {
-                        Image(systemName: "sparkles")
-                            .font(.custom("HelveticaNeue-Medium", size: 12))
-                            .foregroundColor(.tsAccent.opacity(0.7))
-                    }
                 }
                 Spacer()
                 Text(deck.title)
@@ -394,10 +389,10 @@ struct UserDeckCard: View {
             }
             .padding(16)
             .frame(width: 148, height: 148)
-            .background(Color.tsGrayCard)
+            .background(deck.tint.opacity(0.1))
             .cornerRadius(20)
             .overlay(RoundedRectangle(cornerRadius: 20).stroke(
-                Color.tsAccent.opacity(0.08),
+                deck.tint.opacity(0.2),
                 lineWidth: 0.5))
         }
         .buttonStyle(DeckTapStyle())
@@ -593,7 +588,7 @@ struct FeaturedDeckRow: View {
         }
         .frame(minHeight: 80)
         .padding(16)
-        .background(Color.tsGrayCard)
+        .background(deck.tint.opacity(0.1))
         .cornerRadius(16)
         .overlay(RoundedRectangle(cornerRadius: 16).stroke(
             deck.tint.opacity(colorScheme == .dark ? 0.45 : 0.35),
@@ -676,7 +671,7 @@ struct LockedFlirtingRow: View {
         }
         .frame(minHeight: 80)
         .padding(16)
-        .background(Color.tsGrayCard)
+        .background(deck.tint.opacity(0.1))
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
@@ -704,7 +699,7 @@ struct EmptyDecksPrompt: View {
         }
         .frame(maxWidth: .infinity)
         .padding(32)
-        .background(Color.tsGrayCard)
+        .background(Color.tsAccent.opacity(0.06))
         .cornerRadius(20)
         .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
     }
@@ -886,14 +881,18 @@ struct CreateDeckSheet: View {
                     .padding(.horizontal, 24).padding(.top, 24).padding(.bottom, 40)
                 }
             }
-            .navigationTitle("Create Deck")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
+            .navigationBarHidden(true)
+            .safeAreaInset(edge: .top) {
+                HStack {
+                    Text("Create New Deck")
+                        .font(.custom("HelveticaNeue-Bold", size: 18))
+                        .foregroundColor(.tsLabel)
+                    Spacer()
                     TSDismissButton(action: { dismiss() })
                 }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
             }
-            .toolbarColorScheme(.dark, for: .navigationBar)
         }
     }
 

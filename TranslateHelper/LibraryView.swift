@@ -27,9 +27,8 @@ struct LibraryView: View {
     @State private var showReviewPrompt: Bool = false
     @State private var activeWidgetPage: Int = 0
     // nil = no deck open; set to a Deck to present study mode.
-    // Using item: binding avoids the Bool + optional race that caused a
-    // blank white screen when SwiftUI re-evaluated the cover body.
-    @State private var deckStudyDeck: Deck? = nil
+    @State private var showDeckHome = false
+    @State private var selectedDeck: Deck? = nil
 
     var goalProgress: Double {
         guard dailyGoal > 0 else { return 0 }
@@ -153,7 +152,7 @@ struct LibraryView: View {
                         for deck in deckList {
                             views.append(AnyView(
                                 DeckClipboardWidget(deck: deck, onStudy: {
-                                    deckStudyDeck = deck
+                                    selectedDeck = deck; showDeckHome = true
                                 })
                                 .padding(.horizontal, 16)
                             ))
@@ -251,7 +250,7 @@ struct LibraryView: View {
                             // User decks — newest first (DeckStore inserts at 0)
                             ForEach(deckStore.decks) { deck in
                                 LibraryDeckCard(emoji: deck.emoji, title: deck.name, count: deck.cards.count, tint: deck.tintColor) {
-                                    deckStudyDeck = deck
+                                    selectedDeck = deck; showDeckHome = true
                                 }
                                 .frame(width: 160)
                             }
@@ -361,9 +360,11 @@ struct LibraryView: View {
             }
         }
         // Deck home screen — shows stats, Study and Review actions
-        .fullScreenCover(item: $deckStudyDeck) { deck in
-            NavigationView {
-                DeckHomeView(initialDeck: deck)
+        .fullScreenCover(isPresented: $showDeckHome) {
+            if let deck = selectedDeck {
+                NavigationView {
+                    DeckHomeView(initialDeck: deck)
+                }
             }
         }
     }

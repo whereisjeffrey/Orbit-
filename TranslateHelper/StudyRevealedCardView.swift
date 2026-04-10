@@ -163,14 +163,15 @@ struct StudyRevealedCardView: View {
                                         .foregroundColor(Color(hex: "F5A623"))
                                         .tracking(1.5)
                                 }
-                                
+
                                 Text(notes)
                                     .font(.custom("HelveticaNeue-Medium", size: 14))
                                     .foregroundColor(.tsLabel.opacity(0.9))
                                     .lineSpacing(4)
+                                    .fixedSize(horizontal: false, vertical: true)
                             }
-                            .padding(24)
-                            .frame(maxWidth: .infinity, minHeight: 100, alignment: .topLeading)
+                            .padding(16)
+                            .frame(maxWidth: .infinity, alignment: .topLeading)
                             .background(
                                 Color(UIColor { trait in
                                     trait.userInterfaceStyle == .dark
@@ -183,8 +184,8 @@ struct StudyRevealedCardView: View {
                                 RoundedRectangle(cornerRadius: 16)
                                     .stroke(Color(hex: "F5A623").opacity(0.2), lineWidth: 1)
                             )
-                            .padding(.horizontal, 24)
-                            .padding(.bottom, 24)
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 16)
                         } else {
                             Spacer().frame(height: 24)
                         }

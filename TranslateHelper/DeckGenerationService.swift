@@ -164,8 +164,13 @@ final class DeckGenerationService {
 
         let (data, response) = try await URLSession.shared.data(for: request)
 
-        guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
-            throw GenerationError.apiError("Non-200 response from OpenAI")
+        guard let http = response as? HTTPURLResponse else {
+            throw GenerationError.apiError("No HTTP response from OpenAI")
+        }
+        if http.statusCode != 200 {
+            let body = String(data: data, encoding: .utf8) ?? "no body"
+            NSLog("📚 [DeckGen] OpenAI error \(http.statusCode): \(body.prefix(300))")
+            throw GenerationError.apiError("OpenAI returned \(http.statusCode)")
         }
 
         guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],

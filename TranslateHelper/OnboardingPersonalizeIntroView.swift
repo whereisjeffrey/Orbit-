@@ -20,14 +20,14 @@ struct OnboardingPersonalizeIntroView: View {
             ZStack {
                 // Soft blue glow behind — larger than image so it radiates out
                 Circle()
-                    .fill(Color.tsAccent.opacity(0.30))
-                    .frame(width: 190, height: 190)
-                    .blur(radius: 38)
+                    .fill(Color.tsAccent.opacity(0.18))
+                    .frame(width: 114, height: 114)
+                    .blur(radius: 23)
 
                 Image("solexplorer")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 174, height: 174)
+                    .frame(width: 172, height: 172)
             }
             .padding(.bottom, 24)
 
@@ -49,12 +49,6 @@ struct OnboardingPersonalizeIntroView: View {
             // ── Benefit rows ──────────────────────────────────
             VStack(spacing: 24) {
                 benefitRow(
-                    icon: "globe.americas.fill",
-                    color: Color(hex: "#34C759"),
-                    title: "Talk like the locals",
-                    subtitle: "We'll match slang and expressions to where you are"
-                )
-                benefitRow(
                     icon: "sparkles",
                     color: Color(hex: "#FF9500"),
                     title: "Focus on what matters",
@@ -65,6 +59,12 @@ struct OnboardingPersonalizeIntroView: View {
                     color: Color.tsAccent,
                     title: "Match your level",
                     subtitle: "Nothing too easy, nothing overwhelming"
+                )
+                benefitRow(
+                    icon: "globe.americas.fill",
+                    color: Color(hex: "#34C759"),
+                    title: "Talk like the locals",
+                    subtitle: "We'll match slang and expressions to where you are"
                 )
             }
             .padding(.horizontal, 32)
