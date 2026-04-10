@@ -84,55 +84,61 @@ struct MyDecksView: View {
         ]
     }
 
-    let allFeatured: [FeaturedDeckModel] = [
-        // Primary pool (f1–f6)
-        FeaturedDeckModel(id: "f1", emoji: "🌆", title: "Mexico City Slang",
-                          subtitle: "Street Spanish, CDMX style", cardCount: 50, tint: .orange,
-                          tintName: "orange"),
-        FeaturedDeckModel(id: "f2", emoji: "💃", title: "Romantic Phrases",
-                          subtitle: "Flirting, love & relationships", cardCount: 40, tint: .red,
-                          tintName: "red"),
-        FeaturedDeckModel(id: "f3", emoji: "🏥", title: "Medical Spanish",
-                          subtitle: "Clinic, pharmacy & emergencies", cardCount: 60, tint: .mint,
-                          tintName: "mint"),
-        FeaturedDeckModel(id: "f4", emoji: "🍽️", title: "Food & Markets",
-                          subtitle: "Order like a local", cardCount: 40, tint: .orange,
-                          tintName: "orange"),
-        FeaturedDeckModel(id: "f5", emoji: "😏", title: "Flirting & Banter",
-                          subtitle: "Playful, real — not textbook", cardCount: 34, tint: .purple,
-                          tintName: "purple"),
-        FeaturedDeckModel(id: "f6", emoji: "⚽", title: "Sports & Fútbol",
-                          subtitle: "Match day vocabulary", cardCount: 36, tint: .green,
-                          tintName: "green"),
-        // Replenishment pool (f7–f12)
-        FeaturedDeckModel(id: "f7", emoji: "🇦🇷", title: "Argentine Slang",
-                          subtitle: "Rioplatense slang & expressions", cardCount: 30, tint: .blue,
-                          tintName: "blue"),
-        FeaturedDeckModel(id: "f8", emoji: "🇨🇺", title: "Cuban Spanish",
-                          subtitle: "Island words & street Cuban", cardCount: 28, tint: .yellow,
-                          tintName: "yellow"),
-        FeaturedDeckModel(id: "f9", emoji: "💼", title: "Business Spanish",
-                          subtitle: "Meetings, deals & office life", cardCount: 30, tint: .indigo,
-                          tintName: "indigo"),
-        FeaturedDeckModel(id: "f10", emoji: "🆘", title: "Travel Emergencies",
-                          subtitle: "Stay safe anywhere", cardCount: 28, tint: .red,
-                          tintName: "red"),
-        FeaturedDeckModel(id: "f11", emoji: "🌙", title: "Nightlife & Going Out",
-                          subtitle: "Bars, clubs & late nights", cardCount: 30, tint: .purple,
-                          tintName: "purple"),
-        FeaturedDeckModel(id: "f12", emoji: "🏠", title: "Home & Daily Life",
-                          subtitle: "Rent, errands & neighbours", cardCount: 30, tint: .green,
-                          tintName: "green"),
-        FeaturedDeckModel(id: "f13", emoji: "📜", title: "Timeless Adages I",
-                          subtitle: "20 proverbs that travel between cultures",
-                          cardCount: 20, tint: .orange, tintName: "orange"),
-        FeaturedDeckModel(id: "f14", emoji: "😏", title: "Euphemisms",
-                          subtitle: "20 phrases with a double meaning",
-                          cardCount: 20, tint: .purple, tintName: "purple"),
-        FeaturedDeckModel(id: "f15", emoji: "💘", title: "Dating & Romance",
-                          subtitle: "20 phrases for love and connection",
-                          cardCount: 20, tint: .pink, tintName: "pink"),
-    ]
+    // Featured decks — language-agnostic, AI-generated on tap
+    var allFeatured: [FeaturedDeckModel] {
+        let city = UserLocationsStore.shared.locations.first?.city ?? "your city"
+        let langName = LanguageManager.languageName(for: LanguageManager.shared.targetLangRequired)
+        return [
+            // Slang
+            FeaturedDeckModel(id: "f_local_slang", emoji: "📍", title: "Local Slang — \(city)",
+                              subtitle: "Expressions specific to where you are", cardCount: 25, tint: .orange,
+                              tintName: "orange"),
+            FeaturedDeckModel(id: "f_street_slang", emoji: "🔥", title: "Street Slang",
+                              subtitle: "Nationwide casual expressions everyone uses", cardCount: 25, tint: .red,
+                              tintName: "red"),
+            // Social
+            FeaturedDeckModel(id: "f_flirting", emoji: "😏", title: "Flirting & Banter",
+                              subtitle: "Playful, confident — not textbook", cardCount: 25, tint: .purple,
+                              tintName: "purple"),
+            FeaturedDeckModel(id: "f_nightlife", emoji: "🌙", title: "Nightlife & Going Out",
+                              subtitle: "Bars, clubs & late nights", cardCount: 25, tint: .indigo,
+                              tintName: "indigo"),
+            // Daily life
+            FeaturedDeckModel(id: "f_food", emoji: "🍽️", title: "Food & Ordering",
+                              subtitle: "Restaurants, street food & markets", cardCount: 25, tint: .orange,
+                              tintName: "orange"),
+            FeaturedDeckModel(id: "f_getting_around", emoji: "🚕", title: "Getting Around",
+                              subtitle: "Uber, directions & public transit", cardCount: 25, tint: .blue,
+                              tintName: "blue"),
+            FeaturedDeckModel(id: "f_texting", emoji: "📱", title: "Texting & WhatsApp",
+                              subtitle: "How locals actually text", cardCount: 25, tint: .green,
+                              tintName: "green"),
+            // Professional
+            FeaturedDeckModel(id: "f_work", emoji: "💼", title: "Work & Professional",
+                              subtitle: "Office talk, emails & meetings", cardCount: 25, tint: .blue,
+                              tintName: "blue"),
+            // Practical
+            FeaturedDeckModel(id: "f_medical", emoji: "🏥", title: "Medical & Emergencies",
+                              subtitle: "Doctor visits, pharmacy & urgent situations", cardCount: 25, tint: .mint,
+                              tintName: "mint"),
+            FeaturedDeckModel(id: "f_housing", emoji: "🏠", title: "Real Estate & Renting",
+                              subtitle: "Apartment hunting & home life", cardCount: 25, tint: .green,
+                              tintName: "green"),
+            // Culture
+            FeaturedDeckModel(id: "f_humor", emoji: "😂", title: "Humor & Sarcasm",
+                              subtitle: "Double meanings, jokes & wordplay", cardCount: 25, tint: .yellow,
+                              tintName: "yellow"),
+            FeaturedDeckModel(id: "f_arguments", emoji: "🗣️", title: "Arguments & Boundaries",
+                              subtitle: "Saying no, complaining & standing your ground", cardCount: 25, tint: .red,
+                              tintName: "red"),
+            FeaturedDeckModel(id: "f_politics", emoji: "🏛️", title: "Political Expressions",
+                              subtitle: "Political terms, idioms & debate vocab", cardCount: 25, tint: .indigo,
+                              tintName: "indigo"),
+            FeaturedDeckModel(id: "f_proverbs", emoji: "📜", title: "Proverbs & Sayings",
+                              subtitle: "Timeless wisdom that travels between cultures", cardCount: 25, tint: .orange,
+                              tintName: "orange"),
+        ]
+    }
 
     var filteredFeatured: [FeaturedDeckModel] {
         let visible = addedIds.isEmpty ? allFeatured : allFeatured.filter { !addedIds.contains($0.id) }
@@ -463,6 +469,7 @@ struct FeaturedDeckRow: View {
     let canAdd: Bool
     let onAdd: () -> Void
     @Environment(\.colorScheme) var colorScheme
+    @State private var isGenerating = false
 
     var body: some View {
         HStack(spacing: 16) {
@@ -515,26 +522,70 @@ struct FeaturedDeckRow: View {
                 .clipShape(Capsule())
             } else {
                 Button(action: {
-                    let cards = FeaturedDeckContent.cards(forId: deck.id)
-                    let newDeck = Deck(
-                        emoji: deck.emoji,
-                        name: deck.title,
-                        deckDescription: deck.subtitle,
-                        isAI: false,
-                        tintName: deck.tintName,
-                        cards: cards
-                    )
-                    DeckStore.shared.addDeck(newDeck)
-                    onAdd()
+                    isGenerating = true
+                    let city = UserLocationsStore.shared.locations.first?.displayName ?? "their city"
+                    let country = UserLocationsStore.shared.locations.first?.country ?? ""
+                    let langName = LanguageManager.languageName(for: LanguageManager.shared.targetLangRequired)
+                    let langCode = LanguageManager.shared.targetLangRequired
+                    let level = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.string(forKey: "ts_self_reported_level") ?? "intermediate"
+
+                    let isSlangDeck = deck.id.contains("slang")
+                    let slangContext = isSlangDeck ? """
+                    SLANG CONTEXT RULES — every card's notes MUST include:
+                    1. WHO uses it: age group, subculture, social class (young people, older generation, urban, etc.)
+                    2. WHERE it's used: city-specific, regional, nationwide, urban vs rural
+                    3. WHEN: current and trendy, been around for decades, fading out, retro
+                    Example note: "Used by young people in urban areas. Came from funk culture in the 2010s. Fine with friends but skip it at work."
+                    The user is in \(city), \(country). For local slang, focus on expressions from this city and surrounding area.
+                    """ : ""
+
+                    Task {
+                        do {
+                            let generated = try await DeckGenerationService.shared.generateCustomDeck(
+                                name: deck.title,
+                                description: """
+                                \(deck.subtitle). Language: \(langName). User level: \(level). User is in \(city).
+                                \(slangContext)
+                                Generate natural, useful expressions — not textbook phrases.
+                                Each card's notes should include cultural context, not just a definition.
+                                """,
+                                cardCount: 25
+                            )
+                            await MainActor.run {
+                                let deckCards = generated.map {
+                                    DeckCard(english: $0.sourceText, spanish: $0.translatedText,
+                                             notes: $0.notes, targetLang: langCode)
+                                }
+                                let newDeck = Deck(emoji: deck.emoji, name: deck.title,
+                                                   deckDescription: deck.subtitle,
+                                                   isAI: true, tintName: deck.tintName, cards: deckCards)
+                                DeckStore.shared.addDeck(newDeck)
+                                isGenerating = false
+                                onAdd()
+                            }
+                        } catch {
+                            await MainActor.run {
+                                isGenerating = false
+                                NSLog("📚 [Featured] generation failed: \(error)")
+                            }
+                        }
+                    }
                 }) {
-                    Text("Add")
-                        .font(.custom("HelveticaNeue-Bold", size: 14))
-                        .foregroundColor(.tsAccent)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color.tsAccent.opacity(0.1))
-                        .clipShape(Capsule())
+                    if isGenerating {
+                        ProgressView()
+                            .tint(.tsAccent)
+                            .frame(width: 60, height: 34)
+                    } else {
+                        Text("Add")
+                            .font(.custom("HelveticaNeue-Bold", size: 14))
+                            .foregroundColor(.tsAccent)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(Color.tsAccent.opacity(0.1))
+                            .clipShape(Capsule())
+                    }
                 }
+                .disabled(isGenerating)
             }
         }
         .frame(minHeight: 80)
@@ -819,7 +870,7 @@ struct CreateDeckSheet: View {
                             HStack(spacing: 12) {
                                 Image(systemName: "info.circle.fill")
                                     .foregroundColor(.tsAccent).font(.custom("HelveticaNeue", size: 16))
-                                Text("AI will generate up to 50 Spanish–English flashcard pairs. You can add more cards after.")
+                                Text("AI will generate up to 50 flashcard pairs in your target language. You can add more cards after.")
                                     .font(.custom("HelveticaNeue", size: 13)).foregroundColor(.tsSecondary)
                             }
                             .padding(16)
@@ -863,7 +914,14 @@ struct CreateDeckSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }.foregroundColor(.tsAccent)
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.tsSecondary)
+                            .frame(width: 32, height: 32)
+                            .background(Color.tsCard)
+                            .clipShape(Circle())
+                    }
                 }
             }
             .toolbarColorScheme(.dark, for: .navigationBar)

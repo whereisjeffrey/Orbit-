@@ -43,8 +43,14 @@ struct QuickAddSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                        .foregroundColor(.tsAccent)
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.tsSecondary)
+                            .frame(width: 32, height: 32)
+                            .background(Color.tsCard)
+                            .clipShape(Circle())
+                    }
                 }
             }
             .toolbarColorScheme(.dark, for: .navigationBar)
@@ -536,7 +542,7 @@ private struct CreateDeckPane: View {
                 if useAI && !aiLimitReached {
                     HStack(spacing: 12) {
                         Image(systemName: "info.circle.fill").foregroundColor(.tsAccent).font(.custom("HelveticaNeue", size: 16))
-                        Text("AI will generate up to 50 Spanish–English flashcard pairs.")
+                        Text("AI will generate up to 50 flashcard pairs in your target language.")
                             .font(.custom("HelveticaNeue", size: 13)).foregroundColor(.tsSecondary)
                     }
                     .padding(16).background(Color.tsAccent.opacity(0.06)).cornerRadius(14)
