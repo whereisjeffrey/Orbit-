@@ -203,6 +203,14 @@ final class DeckStore: ObservableObject {
         persist()
     }
 
+    /// Remove specific cards from a deck by their IDs.
+    func removeCards(_ cardIds: Set<UUID>, fromDeckWithId deckId: UUID) {
+        guard let di = decks.firstIndex(where: { $0.id == deckId }) else { return }
+        decks[di].cards.removeAll { cardIds.contains($0.id) }
+        persist()
+        NSLog("📚 [DeckStore] removed \(cardIds.count) cards from \(decks[di].name)")
+    }
+
     // MARK: - Persistence
 
     private func load() {
