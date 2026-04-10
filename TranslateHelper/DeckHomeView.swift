@@ -5,6 +5,8 @@
 //  Landing screen when tapping a deck — shows stats, Study and Review actions.
 
 import SwiftUI
+import MapKit
+import CoreLocation
 
 struct DeckHomeView: View {
     let deckId: UUID
@@ -13,9 +15,15 @@ struct DeckHomeView: View {
     @State private var showStudy = false
     @State private var showReview = false
     @State private var showDeleteConfirmation = false
+    @State private var mapSnapshot: UIImage?
+    @State private var mapCoordinate: CLLocationCoordinate2D?
 
     private var deck: Deck? {
         deckStore.decks.first(where: { $0.id == deckId })
+    }
+
+    private var isLocalSlang: Bool {
+        deck?.name.contains("Local Slang") == true || deck?.name.contains("Street Slang") == true
     }
 
     var body: some View {
@@ -28,30 +36,86 @@ struct DeckHomeView: View {
 
                     // ── Deck identity ──────────────────────
                     VStack(spacing: 12) {
-                        // Emoji with subtle blue glow
-                        Text(deck.emoji)
-                            .font(.system(size: 48))
-                            .shadow(color: Color.tsAccent.opacity(0.3), radius: 16, x: 0, y: 0)
-                            .shadow(color: Color.tsAccent.opacity(0.15), radius: 32, x: 0, y: 0)
+                        if isLocalSlang {
+                            // Map snapshot for slang decks
+                            ZStack {
+                                if let snapshot = mapSnapshot {
+                                    Image(uiImage: snapshot)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 200, height: 140)
+                                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 16)
+                                                .stroke(Color.tsAccent.opacity(0.2), lineWidth: 1)
+                                        )
+                                        .shadow(color: Color.tsAccent.opacity(0.2), radius: 12, x: 0, y: 4)
+                                } else {
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .fill(Color.tsCard)
+                                        .frame(width: 200, height: 140)
+                                        .overlay(
+                                            ProgressView()
+                                                .tint(.tsSecondary)
+                                        )
+                                }
 
-                        Text(deck.name)
-                            .font(.custom("HelveticaNeue-Bold", size: 22))
-                            .foregroundColor(.tsLabel)
-                            .multilineTextAlignment(.center)
+                                // Pin
+                                Image(systemName: "mappin.circle.fill")
+                                    .font(.system(size: 28))
+                                    .foregroundColor(Color(hex: "#FF3B30"))
+                                    .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
+                            }
+                            .onAppear { loadMapSnapshot() }
 
-                        if !deck.deckDescription.isEmpty {
-                            Text(deck.deckDescription)
-                                .font(.custom("HelveticaNeue", size: 14))
-                                .foregroundColor(.tsSecondary)
+                            // Title — larger for slang
+                            Text(deck.name)
+                                .font(.custom("HelveticaNeue-Bold", size: 24))
+                                .foregroundColor(.tsLabel)
                                 .multilineTextAlignment(.center)
-                                .padding(.horizontal, 40)
+
+                            // Location subtitle
+                            let city = UserLocationsStore.shared.locations.first?.displayName ?? ""
+                            if !city.isEmpty {
+                                Text("Expressions specific to \(city)")
+                                    .font(.custom("HelveticaNeue", size: 14))
+                                    .foregroundColor(.tsSecondary)
+                                    .multilineTextAlignment(.center)
+                            }
+                        } else {
+                            // Standard emoji for non-slang decks
+                            Text(deck.emoji)
+                                .font(.system(size: 48))
+                                .shadow(color: Color.tsAccent.opacity(0.3), radius: 16, x: 0, y: 0)
+                                .shadow(color: Color.tsAccent.opacity(0.15), radius: 32, x: 0, y: 0)
+
+                            Text(deck.name)
+                                .font(.custom("HelveticaNeue-Bold", size: 22))
+                                .foregroundColor(.tsLabel)
+                                .multilineTextAlignment(.center)
+
+                            if !deck.deckDescription.isEmpty {
+                                Text(deck.deckDescription)
+                                    .font(.custom("HelveticaNeue", size: 14))
+                                    .foregroundColor(.tsSecondary)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal, 40)
+                            }
                         }
 
-                        // Card count — simple subline
-                        Text("\(deck.cards.count) cards")
-                            .font(.custom("HelveticaNeue-Medium", size: 13))
-                            .foregroundColor(.tsSecondary)
-                            .padding(.top, 4)
+                        // Card count pill
+                        HStack(spacing: 6) {
+                            Text("🃏")
+                                .font(.system(size: 12))
+                            Text("\(deck.cards.count) cards")
+                                .font(.custom("HelveticaNeue-Bold", size: 13))
+                                .foregroundColor(.tsAccent)
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 6)
+                        .background(Color.tsAccent.opacity(0.1))
+                        .clipShape(Capsule())
+                        .padding(.top, 4)
                     }
 
                     Spacer()
@@ -146,4 +210,41 @@ struct DeckHomeView: View {
         }
     }
 
+    // MARK: - Map Snapshot
+
+    private func loadMapSnapshot() {
+        guard mapSnapshot == nil else { return }
+        let cityName = UserLocationsStore.shared.locations.first?.displayName ?? ""
+        guard !cityName.isEmpty else { return }
+
+        let geocoder = CLGeocoder()
+        geocoder.geocodeAddressString(cityName) { placemarks, error in
+            guard let coordinate = placemarks?.first?.location?.coordinate else {
+                NSLog("🗺️ [Map] geocoding failed for \(cityName): \(error?.localizedDescription ?? "unknown")")
+                return
+            }
+
+            self.mapCoordinate = coordinate
+
+            let options = MKMapSnapshotter.Options()
+            options.region = MKCoordinateRegion(
+                center: coordinate,
+                span: MKCoordinateSpan(latitudeDelta: 0.15, longitudeDelta: 0.15)
+            )
+            options.size = CGSize(width: 400, height: 280)  // 2x for retina
+            options.traitCollection = UITraitCollection(userInterfaceStyle: .dark)
+
+            let snapshotter = MKMapSnapshotter(options: options)
+            snapshotter.start { snapshot, error in
+                guard let snapshot = snapshot else {
+                    NSLog("🗺️ [Map] snapshot failed: \(error?.localizedDescription ?? "unknown")")
+                    return
+                }
+                DispatchQueue.main.async {
+                    self.mapSnapshot = snapshot.image
+                    NSLog("🗺️ [Map] snapshot ready for \(cityName)")
+                }
+            }
+        }
+    }
 }
