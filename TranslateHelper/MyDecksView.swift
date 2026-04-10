@@ -91,52 +91,49 @@ struct MyDecksView: View {
         return [
             // Slang
             FeaturedDeckModel(id: "f_local_slang", emoji: "📍", title: "Local Slang — \(city)",
-                              subtitle: "Expressions specific to where you are", cardCount: 25, tint: .orange,
+                              subtitle: "Expressions specific to where you are", cardCount: 30, tint: .orange,
                               tintName: "orange"),
             FeaturedDeckModel(id: "f_street_slang", emoji: "🔥", title: "Street Slang",
-                              subtitle: "Nationwide casual expressions everyone uses", cardCount: 25, tint: .red,
+                              subtitle: "Nationwide casual expressions everyone uses", cardCount: 30, tint: .red,
                               tintName: "red"),
             // Social
             FeaturedDeckModel(id: "f_flirting", emoji: "😏", title: "Flirting & Banter",
-                              subtitle: "Playful, confident — not textbook", cardCount: 25, tint: .purple,
+                              subtitle: "Playful, confident — not textbook", cardCount: 30, tint: .purple,
                               tintName: "purple"),
             FeaturedDeckModel(id: "f_nightlife", emoji: "🌙", title: "Nightlife & Going Out",
-                              subtitle: "Bars, clubs & late nights", cardCount: 25, tint: .indigo,
+                              subtitle: "Bars, clubs & late nights", cardCount: 30, tint: .indigo,
                               tintName: "indigo"),
             // Daily life
             FeaturedDeckModel(id: "f_food", emoji: "🍽️", title: "Food & Ordering",
-                              subtitle: "Restaurants, street food & markets", cardCount: 25, tint: .orange,
+                              subtitle: "Restaurants, street food & markets", cardCount: 30, tint: .orange,
                               tintName: "orange"),
             FeaturedDeckModel(id: "f_getting_around", emoji: "🚕", title: "Getting Around",
-                              subtitle: "Uber, directions & public transit", cardCount: 25, tint: .blue,
+                              subtitle: "Uber, directions & public transit", cardCount: 30, tint: .blue,
                               tintName: "blue"),
             FeaturedDeckModel(id: "f_texting", emoji: "📱", title: "Texting & WhatsApp",
-                              subtitle: "How locals actually text", cardCount: 25, tint: .green,
+                              subtitle: "How locals actually text", cardCount: 30, tint: .green,
                               tintName: "green"),
             // Professional
             FeaturedDeckModel(id: "f_work", emoji: "💼", title: "Work & Professional",
-                              subtitle: "Office talk, emails & meetings", cardCount: 25, tint: .blue,
+                              subtitle: "Office talk, emails & meetings", cardCount: 30, tint: .blue,
                               tintName: "blue"),
             // Practical
             FeaturedDeckModel(id: "f_medical", emoji: "🏥", title: "Medical & Emergencies",
-                              subtitle: "Doctor visits, pharmacy & urgent situations", cardCount: 25, tint: .mint,
+                              subtitle: "Doctor visits, pharmacy & urgent situations", cardCount: 30, tint: .mint,
                               tintName: "mint"),
             FeaturedDeckModel(id: "f_housing", emoji: "🏠", title: "Real Estate & Renting",
-                              subtitle: "Apartment hunting & home life", cardCount: 25, tint: .green,
+                              subtitle: "Apartment hunting & home life", cardCount: 30, tint: .green,
                               tintName: "green"),
             // Culture
             FeaturedDeckModel(id: "f_humor", emoji: "😂", title: "Humor & Sarcasm",
-                              subtitle: "Double meanings, jokes & wordplay", cardCount: 25, tint: .yellow,
+                              subtitle: "Double meanings, jokes & wordplay", cardCount: 30, tint: .yellow,
                               tintName: "yellow"),
             FeaturedDeckModel(id: "f_arguments", emoji: "🗣️", title: "Arguments & Boundaries",
-                              subtitle: "Saying no, complaining & standing your ground", cardCount: 25, tint: .red,
+                              subtitle: "Saying no, complaining & standing your ground", cardCount: 30, tint: .red,
                               tintName: "red"),
             FeaturedDeckModel(id: "f_politics", emoji: "🏛️", title: "Political Expressions",
-                              subtitle: "Political terms, idioms & debate vocab", cardCount: 25, tint: .indigo,
+                              subtitle: "Political terms, idioms & debate vocab", cardCount: 30, tint: .indigo,
                               tintName: "indigo"),
-            FeaturedDeckModel(id: "f_proverbs", emoji: "📜", title: "Proverbs & Sayings",
-                              subtitle: "Timeless wisdom that travels between cultures", cardCount: 25, tint: .orange,
-                              tintName: "orange"),
         ]
     }
 
@@ -541,6 +538,15 @@ struct FeaturedDeckRow: View {
 
                     Task {
                         do {
+                            // Build exclusion list from all known phrases + clipboard
+                            let deckPhrases = DeckStore.shared.allKnownPhrases
+                            let clipPhrases = SharedPhraseStore.shared.phrases.map { "\($0.sourceText) = \($0.translatedText)" }
+                            let allKnown = deckPhrases + clipPhrases
+                            let exclusionBlock = allKnown.isEmpty ? "" : """
+                            EXCLUSION LIST — the user already knows these. NEVER include any of them:
+                            \(allKnown.prefix(200).joined(separator: "\n"))
+                            """
+
                             let generated = try await DeckGenerationService.shared.generateCustomDeck(
                                 name: deck.title,
                                 description: """
@@ -548,8 +554,9 @@ struct FeaturedDeckRow: View {
                                 \(slangContext)
                                 Generate natural, useful expressions — not textbook phrases.
                                 Each card's notes should include cultural context, not just a definition.
+                                \(exclusionBlock)
                                 """,
-                                cardCount: 25
+                                cardCount: 30
                             )
                             await MainActor.run {
                                 let deckCards = generated.map {

@@ -506,7 +506,7 @@ struct NewDeckCard: View {
             .cornerRadius(24)
             .overlay(
                 RoundedRectangle(cornerRadius: 24)
-                    .strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [6, 4]))
+                    .stroke(style: StrokeStyle(lineWidth: 1.5, dash: [6, 4]))
                     .foregroundColor(Color.tsAccent.opacity(0.3))
             )
         }

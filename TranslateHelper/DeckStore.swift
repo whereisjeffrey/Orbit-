@@ -156,6 +156,11 @@ final class DeckStore: ObservableObject {
             .sorted { ($0.conqueredAt ?? .distantPast) > ($1.conqueredAt ?? .distantPast) }
     }
 
+    /// All known phrases across every deck — used as exclusion list for AI generation.
+    var allKnownPhrases: [String] {
+        decks.flatMap(\.cards).map { "\($0.english) = \($0.spanish)" }
+    }
+
     // MARK: - Deck Mutations
 
     func addDeck(_ deck: Deck) {
