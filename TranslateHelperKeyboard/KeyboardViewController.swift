@@ -2347,11 +2347,12 @@ class KeyboardViewController: UIInputViewController {
         heightConstraint.constant = emptyHeight
         hidePollingState()
 
-        // Show Remove + Translate when clipboard has text, otherwise Speak full width
+        // Show Remove + Translate when clipboard has text OR field has text
         let clipboardHasText = UIPasteboard.general.hasStrings
-        if clipboardHasText {
+        let fieldHasText = !(textDocumentProxy.documentContextBeforeInput ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        if clipboardHasText || fieldHasText {
             removeBtn.isHidden = false
-            translateClipboardBtn.isHidden = false
+            translateClipboardBtn.isHidden = !clipboardHasText  // only show Translate if clipboard has text
             micLeadingToEdge.isActive = false
             micLeadingToThird.isActive = true
         } else {
