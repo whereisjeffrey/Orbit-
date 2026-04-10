@@ -235,6 +235,8 @@ struct LibraryView: View {
                             .foregroundColor(.tsSecondary)
                             .tracking(1.2)
                         Spacer()
+                        Button("See All") { showMyDecks = true }
+                            .foregroundColor(.tsAccent)
                     }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 10)

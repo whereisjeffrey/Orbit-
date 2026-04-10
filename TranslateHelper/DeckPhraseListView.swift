@@ -138,7 +138,7 @@ struct DeckPhraseListView: View {
                                     }
                                     .buttonStyle(.plain)
                                     .padding(.horizontal, 16)
-                                    .padding(.vertical, 12)
+                                    .padding(.vertical, 16)
                                     .background(selected.contains(phrase.id) ? Color.tsAccent.opacity(0.04) : Color.clear)
 
                                     if index < filtered.count - 1 {
@@ -219,8 +219,8 @@ struct DeckPhraseListView: View {
                     TSDismissButton(action: { dismiss() })
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 8)
-                .padding(.bottom, 12)
+                .padding(.top, 24)
+                .padding(.bottom, 16)
                 .background(Color.tsBackground)
             }
             .animation(.easeInOut(duration: 0.25), value: selected.isEmpty)
