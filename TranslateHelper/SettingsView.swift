@@ -190,40 +190,6 @@ struct SettingsView: View {
                         .padding(.horizontal, 16)
                         .frame(height: 56)
                         
-                        Divider().background(Color.tsBorder).padding(.leading, 16)
-                        
-                        Button(action: {}) {
-                            HStack {
-                                Text("Plan")
-                                    .font(.custom("HelveticaNeue", size: 17))
-                                    .foregroundColor(.tsLabel)
-                                Spacer()
-                                Text("Premium")
-                                    .font(.custom("HelveticaNeue", size: 17))
-                                    .foregroundColor(Color.tsAccent)
-                                Image(systemName: "chevron.right")
-                                    .font(.custom("HelveticaNeue-Medium", size: 14))
-                                    .foregroundColor(Color.tsSecondary.opacity(0.6))
-                            }
-                            .padding(.horizontal, 16)
-                            .frame(height: 48)
-                        }
-                        
-                        Divider().background(Color.tsBorder).padding(.leading, 16)
-                        
-                        HStack {
-                            Text("Notifications")
-                                .font(.custom("HelveticaNeue", size: 17))
-                                .foregroundColor(.tsLabel)
-                            Spacer()
-                            Toggle("", isOn: $notificationsEnabled)
-                                .labelsHidden()
-                                .tint(Color(hex: "#34C759"))
-                                .scaleEffect(CGSize(width: 0.82, height: 0.82), anchor: .trailing)
-                                .frame(width: 42)
-                        }
-                        .padding(.horizontal, 16)
-                        .frame(height: 48)
                     }
                     .background(Color.tsGrayCard)
                     .cornerRadius(12)
@@ -246,21 +212,6 @@ struct SettingsView: View {
                     // .padding(.horizontal, 16)
                     .padding(.bottom, 32)
 
-                    // Log Out Button
-                    Button(action: {
-                        auth.signOut()
-                    }) {
-                        Text("Log Out")
-                            .font(.custom("HelveticaNeue-Medium", size: 17))
-                            .foregroundColor(Color(hex: "FF453A"))
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 52)
-                            .background(Color.tsGrayCard)
-                            .cornerRadius(12)
-                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
-                    }
-                    .padding(.horizontal, 16)
-                    
                     // Coaching Preferences
                     SectionHeader(title: "Coaching")
                     VStack(spacing: 16) {
@@ -293,44 +244,23 @@ struct SettingsView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 16))
                     .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                     .padding(.horizontal, 16)
-                    .padding(.bottom, 8)
+                    .padding(.bottom, 32)
 
-                    // Subscription (debug toggle)
-                    SectionHeader(title: "Subscription")
-                    VStack(spacing: 0) {
-                        HStack {
-                            Image(systemName: sub.isPro ? "star.fill" : "star")
-                                .foregroundColor(.tsAccent)
-                                .frame(width: 28, height: 28)
-                                .background(Color.tsAccent.opacity(0.12))
-                                .clipShape(RoundedRectangle(cornerRadius: 6))
-                            Toggle(sub.isPro ? "TalkSwitch Pro ✓" : "TalkSwitch Pro", isOn: $sub.isPro)
-                                .font(.custom("HelveticaNeue-Medium", size: 17))
-                                .foregroundColor(.tsLabel)
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
-                        if !sub.isPro {
-                            Divider().padding(.leading, 60)
-                            HStack {
-                                Image(systemName: "keyboard.fill")
-                                    .foregroundColor(.tsSecondary)
-                                    .frame(width: 28, height: 28)
-                                    .background(Color.tsSecondary.opacity(0.1))
-                                    .clipShape(RoundedRectangle(cornerRadius: 6))
-                                Text("\(sub.keyboardUsesRemaining) keyboard translations left today")
-                                    .font(.custom("HelveticaNeue", size: 15))
-                                    .foregroundColor(.tsSecondary)
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 12)
-                        }
+                    // Log Out Button
+                    Button(action: {
+                        auth.signOut()
+                    }) {
+                        Text("Log Out")
+                            .font(.custom("HelveticaNeue-Medium", size: 17))
+                            .foregroundColor(Color(hex: "FF453A"))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 52)
+                            .background(Color.tsGrayCard)
+                            .cornerRadius(12)
+                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                     }
-                    .background(Color.tsGrayCard)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
                     .padding(.horizontal, 16)
-                    .padding(.bottom, 8)
+                    .padding(.bottom, 32)
 
                     // Debug — only visible in development builds
                     #if DEBUG
