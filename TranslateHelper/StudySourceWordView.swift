@@ -25,10 +25,7 @@ struct StudySourceWordView: View {
             TSGradientBackground()
                 .ignoresSafeArea()
 
-            if phrases.isEmpty {
-                // Safety net — never show trophy for an empty deck
-                Color.clear.onAppear { dismiss() }
-            } else if let phrase = currentPhrase {
+            if let phrase = currentPhrase {
                 VStack(spacing: 0) {
                     // Header
                     HStack {
@@ -117,9 +114,9 @@ struct StudySourceWordView: View {
                     // 2.0-second slow fade-in when revealing, 0.2s quick fade-out when hiding
                     .animation(isFlipped ? .easeInOut(duration: 2.0) : .easeOut(duration: 0.2), value: isFlipped)
                 }
-            } else {
+            } else if currentIndex > 0 {
+                // Only show completion if user actually studied at least one card
                 ZStack {
-                    // Confetti layer — stays alive on its own; doesn't control UI visibility
                     if showConfetti {
                         ConfettiView()
                             .ignoresSafeArea()

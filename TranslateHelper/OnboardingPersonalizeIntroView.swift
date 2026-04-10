@@ -14,21 +14,22 @@ struct OnboardingPersonalizeIntroView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer().frame(height: 56)
+            Spacer().frame(height: 24)
 
-            // ── Sol avatar with glow ──────────────────────────
-            Image("SolAvaatar")
-                .resizable()
-                .scaledToFill()
-                .frame(width: 128, height: 128)
-                .clipShape(Circle())
-                .overlay(
-                    Circle()
-                        .stroke(Color.tsAccent.opacity(0.3), lineWidth: 2)
-                )
-                .shadow(color: Color.tsAccent.opacity(0.3), radius: 20, x: 0, y: 0)
-                .shadow(color: Color.tsAccent.opacity(0.15), radius: 40, x: 0, y: 0)
-                .padding(.bottom, 40)
+            // ── Sol Explorer ──────────────────────────────────
+            ZStack {
+                // Soft blue glow behind — larger than image so it radiates out
+                Circle()
+                    .fill(Color.tsAccent.opacity(0.30))
+                    .frame(width: 190, height: 190)
+                    .blur(radius: 38)
+
+                Image("solexplorer")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 193, height: 193)
+            }
+            .padding(.bottom, 24)
 
             // ── Header ────────────────────────────────────────
             VStack(spacing: 8) {
@@ -97,15 +98,15 @@ struct OnboardingPersonalizeIntroView: View {
     private func benefitRow(icon: String, color: Color, title: String, subtitle: String) -> some View {
         HStack(spacing: 16) {
             Image(systemName: icon)
-                .font(.system(size: 20))
+                .font(.system(size: 22))
                 .foregroundColor(color)
-                .frame(width: 48, height: 48)
+                .frame(width: 55, height: 55)
                 .background(color.opacity(0.12))
-                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .clipShape(RoundedRectangle(cornerRadius: 16))
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.custom("HelveticaNeue-Bold", size: 16))
+                    .font(.custom("HelveticaNeue-Bold", size: 18))
                     .foregroundColor(.tsLabel)
                 Text(subtitle)
                     .font(.custom("HelveticaNeue", size: 13))

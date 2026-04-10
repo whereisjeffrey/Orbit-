@@ -193,11 +193,9 @@ struct DeckHomeView: View {
             }
         }
         .fullScreenCover(isPresented: $showStudy) {
-            // Always compute fresh — never rely on stale captured state
-            let freshPhrases = deckStore.decks.first(where: { $0.id == deckId })?.activeCards.map { $0.toSavedPhrase() } ?? studyPhrases
             NavigationView {
                 StudySourceWordView(
-                    phrases: freshPhrases,
+                    phrases: studyPhrases,
                     listName: deck?.name ?? deckName
                 )
             }
