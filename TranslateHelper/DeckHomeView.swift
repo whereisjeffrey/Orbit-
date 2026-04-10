@@ -9,7 +9,7 @@ import MapKit
 import CoreLocation
 
 struct DeckHomeView: View {
-    let deckId: UUID
+    let initialDeck: Deck
     @Environment(\.dismiss) var dismiss
     @ObservedObject private var deckStore = DeckStore.shared
     @State private var showStudy = false
@@ -19,22 +19,22 @@ struct DeckHomeView: View {
     @State private var mapSnapshot: UIImage?
     @State private var mapCoordinate: CLLocationCoordinate2D?
 
-    private var deck: Deck? {
-        deckStore.decks.first(where: { $0.id == deckId })
+    // Live deck from store (for updates after delete/remix), falls back to initial
+    private var deck: Deck {
+        deckStore.decks.first(where: { $0.id == initialDeck.id }) ?? initialDeck
     }
 
-    private var deckName: String { deck?.name ?? "Deck" }
+    private var deckName: String { deck.name }
 
     private var isLocalSlang: Bool {
-        deck?.name.contains("Local Slang") == true || deck?.name.contains("Street Slang") == true
+        deck.name.contains("Local Slang") || deck.name.contains("Street Slang")
     }
 
     var body: some View {
         ZStack {
             TSGradientBackground().ignoresSafeArea()
 
-            if let deck = deck {
-                VStack(spacing: 20) {
+            VStack(spacing: 20) {
                     Spacer().frame(height: 60)
 
                     // ── Deck identity ──────────────────────
@@ -162,14 +162,6 @@ struct DeckHomeView: View {
                     .padding(.horizontal, 24)
                     .padding(.bottom, 48)
                 }
-            } else {
-                // Deck was deleted while viewing
-                VStack {
-                    Text("Deck not found")
-                        .foregroundColor(.tsSecondary)
-                    Button("Go Back") { dismiss() }
-                        .foregroundColor(.tsAccent)
-                }
             }
         }
         .toolbar {
@@ -196,26 +188,22 @@ struct DeckHomeView: View {
             NavigationView {
                 StudySourceWordView(
                     phrases: studyPhrases,
-                    listName: deck?.name ?? deckName
+                    listName: deckName
                 )
             }
         }
         .sheet(isPresented: $showReview) {
-            if let deck = deck {
-                DeckPhraseListView(
-                    phrases: deck.cards.map { $0.toSavedPhrase() },
-                    deckName: deck.name,
-                    deckId: deck.id
-                )
-            }
+            DeckPhraseListView(
+                phrases: deck.cards.map { $0.toSavedPhrase() },
+                deckName: deck.name,
+                deckId: deck.id
+            )
         }
         .alert("Remove Deck?", isPresented: $showDeleteConfirmation) {
             Button("Cancel", role: .cancel) { }
             Button("Remove", role: .destructive) {
-                if let deck = deck {
-                    deckStore.deleteDeck(deck)
-                    dismiss()
-                }
+                deckStore.deleteDeck(deck)
+                dismiss()
             }
         } message: {
             Text("This will permanently remove this deck and all its cards.")

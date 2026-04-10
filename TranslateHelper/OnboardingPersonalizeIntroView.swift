@@ -27,7 +27,7 @@ struct OnboardingPersonalizeIntroView: View {
                 Image("solexplorer")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 193, height: 193)
+                    .frame(width: 174, height: 174)
             }
             .padding(.bottom, 24)
 

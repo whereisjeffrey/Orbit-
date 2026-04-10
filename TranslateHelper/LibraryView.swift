@@ -363,7 +363,7 @@ struct LibraryView: View {
         // Deck home screen — shows stats, Study and Review actions
         .fullScreenCover(item: $deckStudyDeck) { deck in
             NavigationView {
-                DeckHomeView(deckId: deck.id)
+                DeckHomeView(initialDeck: deck)
             }
         }
     }
