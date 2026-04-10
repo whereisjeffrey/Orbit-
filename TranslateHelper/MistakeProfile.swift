@@ -28,16 +28,18 @@ struct MistakeEntry: Codable, Identifiable, Equatable {
     // Source
     let source: MistakeSource
 
-    // SRS fields
+    // SRS fields (SM-2 algorithm)
     var seenCount: Int                // Total times surfaced in Lightning Round
-    var correctCount: Int             // Times answered correctly
+    var correctCount: Int             // Times answered correctly (non-Again)
+    var consecutiveCorrect: Int       // Streak of non-Again answers (for graduation)
     var lastTested: Date?
     var lastCorrect: Date?
-    var intervalDays: Int             // Current SRS interval (1, 3, 7, 14, 30)
+    var intervalDays: Int             // Current SRS interval in calendar days
+    var easeFactor: Double            // Per-card difficulty multiplier (starts 2.5, floor 1.3)
     var nextReviewDate: Date
 
     // Graduation
-    var masteredAt: Date?             // Set after 3 consecutive correct at interval >= 14
+    var masteredAt: Date?             // Set after 3 consecutive correct at interval >= 21
 
     // Variety tracking — sentences already used to test this mistake (never repeat)
     var usedSentences: [String]
@@ -65,12 +67,38 @@ struct MistakeEntry: Codable, Identifiable, Equatable {
         self.source = source
         self.seenCount = 0
         self.correctCount = 0
+        self.consecutiveCorrect = 0
         self.lastTested = nil
         self.lastCorrect = nil
         self.intervalDays = 1
+        self.easeFactor = 2.5
         self.nextReviewDate = Date()  // Immediately eligible
         self.masteredAt = nil
         self.usedSentences = []
+    }
+
+    // Custom decoder — handles migration from old entries without easeFactor/consecutiveCorrect
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(UUID.self, forKey: .id)
+        category = try c.decode(MistakeCategory.self, forKey: .category)
+        language = try c.decode(String.self, forKey: .language)
+        createdAt = try c.decode(Date.self, forKey: .createdAt)
+        userSaid = try c.decode(String.self, forKey: .userSaid)
+        correctForm = try c.decode(String.self, forKey: .correctForm)
+        explanation = try c.decode(String.self, forKey: .explanation)
+        pattern = try c.decodeIfPresent(String.self, forKey: .pattern)
+        source = try c.decode(MistakeSource.self, forKey: .source)
+        seenCount = try c.decode(Int.self, forKey: .seenCount)
+        correctCount = try c.decode(Int.self, forKey: .correctCount)
+        consecutiveCorrect = try c.decodeIfPresent(Int.self, forKey: .consecutiveCorrect) ?? 0
+        lastTested = try c.decodeIfPresent(Date.self, forKey: .lastTested)
+        lastCorrect = try c.decodeIfPresent(Date.self, forKey: .lastCorrect)
+        intervalDays = try c.decode(Int.self, forKey: .intervalDays)
+        easeFactor = try c.decodeIfPresent(Double.self, forKey: .easeFactor) ?? 2.5
+        nextReviewDate = try c.decode(Date.self, forKey: .nextReviewDate)
+        masteredAt = try c.decodeIfPresent(Date.self, forKey: .masteredAt)
+        usedSentences = try c.decodeIfPresent([String].self, forKey: .usedSentences) ?? []
     }
 }
 
@@ -187,38 +215,82 @@ final class MistakeProfileStore: ObservableObject {
         NSLog("⚡ [MistakeProfile] recorded: \(category.rawValue) — \(normalizedUser) → \(normalizedCorrect)")
     }
 
-    // MARK: - SRS Updates
+    // MARK: - SRS Updates (SM-2 Algorithm)
 
-    /// Called when the user answers a Lightning Round card correctly.
-    func markCorrect(id: UUID) {
+    /// SM-2 rating levels — matches Anki's 4-button system
+    enum SRSRating {
+        case again  // Complete blank — reset to 1 day, ease −20%
+        case hard   // Got it but struggled — interval × 1.2, ease −15%
+        case good   // Normal recall — interval × ease factor
+        case easy   // Instant recall — interval × ease × 1.3 bonus, ease +15%
+    }
+
+    /// Rate a card using SM-2 algorithm. Call this instead of markCorrect/markIncorrect.
+    func rate(id: UUID, rating: SRSRating) {
         guard let idx = entries.firstIndex(where: { $0.id == id }) else { return }
-        entries[idx].correctCount += 1
+        entries[idx].seenCount += 1
         entries[idx].lastTested = Date()
-        entries[idx].lastCorrect = Date()
 
-        // Advance interval: 1 → 3 → 7 → 14 → 30
-        let intervals = [1, 3, 7, 14, 30]
-        if let currentIdx = intervals.firstIndex(of: entries[idx].intervalDays),
-           currentIdx + 1 < intervals.count {
-            entries[idx].intervalDays = intervals[currentIdx + 1]
-        } else if entries[idx].intervalDays < 30 {
-            entries[idx].intervalDays = 30
+        switch rating {
+        case .again:
+            // Reset — card was forgotten
+            entries[idx].intervalDays = 1
+            entries[idx].easeFactor = max(1.3, entries[idx].easeFactor - 0.2)
+            entries[idx].consecutiveCorrect = 0
+            entries[idx].masteredAt = nil  // Un-master if they slip
+
+        case .hard:
+            // Struggled but got it — small interval bump
+            let newInterval = max(entries[idx].intervalDays + 1, Int(Double(entries[idx].intervalDays) * 1.2))
+            entries[idx].intervalDays = newInterval
+            entries[idx].easeFactor = max(1.3, entries[idx].easeFactor - 0.15)
+            entries[idx].correctCount += 1
+            entries[idx].consecutiveCorrect += 1
+            entries[idx].lastCorrect = Date()
+
+        case .good:
+            // Normal recall — standard SM-2 advancement
+            let newInterval = entries[idx].intervalDays == 1
+                ? 3  // First correct: 1 → 3 days (graduating interval)
+                : max(entries[idx].intervalDays + 1, Int(Double(entries[idx].intervalDays) * entries[idx].easeFactor))
+            entries[idx].intervalDays = newInterval
+            // Ease factor unchanged for Good
+            entries[idx].correctCount += 1
+            entries[idx].consecutiveCorrect += 1
+            entries[idx].lastCorrect = Date()
+
+        case .easy:
+            // Instant recall — aggressive spacing + ease boost
+            let newInterval = entries[idx].intervalDays == 1
+                ? 4  // First correct easy: jump to 4 days
+                : max(entries[idx].intervalDays + 1, Int(Double(entries[idx].intervalDays) * entries[idx].easeFactor * 1.3))
+            entries[idx].intervalDays = newInterval
+            entries[idx].easeFactor += 0.15
+            entries[idx].correctCount += 1
+            entries[idx].consecutiveCorrect += 1
+            entries[idx].lastCorrect = Date()
         }
 
+        // Set next review date (calendar days)
         entries[idx].nextReviewDate = Calendar.current.date(
             byAdding: .day,
             value: entries[idx].intervalDays,
             to: Date()
         ) ?? Date()
 
-        // Graduate after 3 consecutive correct at interval >= 14
-        if entries[idx].correctCount >= 3 && entries[idx].intervalDays >= 14 {
+        // Graduate after 3 consecutive non-Again answers at interval >= 21 days
+        if entries[idx].consecutiveCorrect >= 3 && entries[idx].intervalDays >= 21 {
             entries[idx].masteredAt = Date()
-            NSLog("⚡ [MistakeProfile] MASTERED: \(entries[idx].correctForm)")
+            NSLog("⚡ [MistakeProfile] MASTERED: \(entries[idx].correctForm) (ease: \(String(format: "%.2f", entries[idx].easeFactor)))")
         }
 
+        NSLog("⚡ [SRS] \(rating): \(entries[idx].correctForm) → interval=\(entries[idx].intervalDays)d, ease=\(String(format: "%.2f", entries[idx].easeFactor)), streak=\(entries[idx].consecutiveCorrect)")
         save()
     }
+
+    // Legacy wrappers — keep old callsites working until UI is updated
+    func markCorrect(id: UUID) { rate(id: id, rating: .good) }
+    func markIncorrect(id: UUID) { rate(id: id, rating: .again) }
 
     /// Mark as mastered immediately — hides from target areas.
     /// Entry stays in storage so it can be un-mastered if the mistake recurs.
@@ -228,21 +300,6 @@ final class MistakeProfileStore: ObservableObject {
         save()
         objectWillChange.send()
         NSLog("⚡ [MistakeProfile] user marked mastered: \(entries[idx].correctForm)")
-    }
-
-    /// Called when the user answers a Lightning Round card incorrectly.
-    func markIncorrect(id: UUID) {
-        guard let idx = entries.firstIndex(where: { $0.id == id }) else { return }
-        entries[idx].lastTested = Date()
-        entries[idx].intervalDays = 1  // Reset to 1 day
-        entries[idx].nextReviewDate = Calendar.current.date(
-            byAdding: .day,
-            value: 1,
-            to: Date()
-        ) ?? Date()
-        entries[idx].masteredAt = nil  // Un-master if they slip
-        entries[idx].correctCount = max(0, entries[idx].correctCount - 1)
-        save()
     }
 
     /// Record a sentence used in Lightning Round so it's never repeated for this mistake.

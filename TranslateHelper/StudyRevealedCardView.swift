@@ -205,10 +205,10 @@ struct StudyRevealedCardView: View {
                     Spacer().frame(height: 24)
                     
                     HStack(spacing: 12) {
-                        RatingButton(title: "Again", time: "< 1 MIN", color: Color(hex: "FF453A")) { nextCard() }
-                        RatingButton(title: "Hard", time: "6 MIN", color: Color(hex: "FF9F0A")) { nextCard() }
-                        RatingButton(title: "Good", time: "10 MIN", color: Color(hex: "30D158")) { nextCard() }
-                        RatingButton(title: "Easy", time: "3 DAYS", color: Color(hex: "0A84FF")) { nextCard() }
+                        RatingButton(title: "Again", time: "1 DAY", color: Color(hex: "FF453A")) { rateAndNext(.again) }
+                        RatingButton(title: "Hard", time: hardTimeLabel, color: Color(hex: "FF9F0A")) { rateAndNext(.hard) }
+                        RatingButton(title: "Good", time: goodTimeLabel, color: Color(hex: "30D158")) { rateAndNext(.good) }
+                        RatingButton(title: "Easy", time: easyTimeLabel, color: Color(hex: "0A84FF")) { rateAndNext(.easy) }
                     }
                     .padding(.horizontal, 16)
                     .padding(.bottom, 40)
@@ -236,11 +236,46 @@ struct StudyRevealedCardView: View {
         }
     }
     
-    private func nextCard() {
+    // MARK: - SM-2 Rating
+
+    private var hardTimeLabel: String {
+        guard let p = currentPhrase else { return "2 DAYS" }
+        let days = max(p.interval + 1, Int(Double(p.interval) * 1.2))
+        return formatInterval(days)
+    }
+
+    private var goodTimeLabel: String {
+        guard let p = currentPhrase else { return "3 DAYS" }
+        let days = p.interval <= 1 ? 3 : max(p.interval + 1, Int(Double(p.interval) * p.easinessFactor))
+        return formatInterval(days)
+    }
+
+    private var easyTimeLabel: String {
+        guard let p = currentPhrase else { return "4 DAYS" }
+        let days = p.interval <= 1 ? 4 : max(p.interval + 1, Int(Double(p.interval) * p.easinessFactor * 1.3))
+        return formatInterval(days)
+    }
+
+    private func formatInterval(_ days: Int) -> String {
+        if days == 1 { return "1 DAY" }
+        if days < 30 { return "\(days) DAYS" }
+        if days < 365 {
+            let months = days / 30
+            return months == 1 ? "1 MO" : "\(months) MO"
+        }
+        return "1 YR+"
+    }
+
+    private func rateAndNext(_ rating: SharedPhraseStore.PhraseRating) {
         let generator = UIImpactFeedbackGenerator(style: .light)
         generator.impactOccurred()
-        
-        // Return to Front face (StudySourceWordView) while indexing the card
+
+        // Record the rating in the SRS system
+        if let phrase = currentPhrase {
+            SharedPhraseStore.shared.rate(phrase, rating: rating)
+        }
+
+        // Advance to next card
         if currentIndex < phrases.count {
             currentIndex += 1
         }

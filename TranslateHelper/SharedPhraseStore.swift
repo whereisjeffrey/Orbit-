@@ -158,6 +158,57 @@ class SharedPhraseStore: ObservableObject {
         }
     }
 
+    // MARK: - SM-2 Rating
+
+    enum PhraseRating { case again, hard, good, easy }
+
+    func rate(_ phrase: SavedPhrase, rating: PhraseRating) {
+        guard let index = phrases.firstIndex(where: { $0.id == phrase.id }) else { return }
+
+        switch rating {
+        case .again:
+            phrases[index].repetitions = 0
+            phrases[index].interval = 1
+            phrases[index].easinessFactor = max(1.3, phrases[index].easinessFactor - 0.2)
+
+        case .hard:
+            phrases[index].repetitions += 1
+            let newInterval = max(phrases[index].interval + 1, Int(Double(phrases[index].interval) * 1.2))
+            phrases[index].interval = newInterval
+            phrases[index].easinessFactor = max(1.3, phrases[index].easinessFactor - 0.15)
+
+        case .good:
+            phrases[index].repetitions += 1
+            let ef = phrases[index].easinessFactor
+            let newInterval = phrases[index].interval <= 1 ? 3 : max(phrases[index].interval + 1, Int(Double(phrases[index].interval) * ef))
+            phrases[index].interval = newInterval
+
+        case .easy:
+            phrases[index].repetitions += 1
+            let ef = phrases[index].easinessFactor
+            let newInterval = phrases[index].interval <= 1 ? 4 : max(phrases[index].interval + 1, Int(Double(phrases[index].interval) * ef * 1.3))
+            phrases[index].interval = newInterval
+            phrases[index].easinessFactor += 0.15
+        }
+
+        // Set next review date in calendar days
+        phrases[index].nextReviewDate = Calendar.current.date(
+            byAdding: .day,
+            value: phrases[index].interval,
+            to: Date()
+        ) ?? Date()
+
+        // Conquer after 3 successful reviews at interval >= 21 days
+        if phrases[index].repetitions >= 3 && phrases[index].interval >= 21 {
+            phrases[index].isConquered = true
+            phrases[index].conqueredAt = Date()
+            NSLog("📋 [SRS] CONQUERED: \(phrases[index].translatedText)")
+        }
+
+        NSLog("📋 [SRS] \(rating): \(phrases[index].translatedText) → interval=\(phrases[index].interval)d, ease=\(String(format: "%.2f", phrases[index].easinessFactor))")
+        persist()
+    }
+
     func delete(_ phrase: SavedPhrase) {
         phrases.removeAll { $0.id == phrase.id }
         persist()
