@@ -721,15 +721,37 @@ struct CreateDeckSheet: View {
     @State private var useAI           = true
     @State private var isGenerating    = false
     @State private var errorMessage: String? = nil
-    @State private var selectedEmoji   = "📚"
-    @State private var selectedTint    = "blue"
+    // Auto-selected by AI based on deck topic
+    private var selectedEmoji: String {
+        let name = deckName.lowercased()
+        if name.contains("food") || name.contains("cook") || name.contains("restaurant") { return "🍽️" }
+        if name.contains("medical") || name.contains("health") || name.contains("doctor") { return "🏥" }
+        if name.contains("sport") || name.contains("gym") || name.contains("fitness") { return "⚽" }
+        if name.contains("travel") || name.contains("flight") || name.contains("airport") { return "✈️" }
+        if name.contains("music") || name.contains("song") || name.contains("band") { return "🎵" }
+        if name.contains("work") || name.contains("business") || name.contains("office") || name.contains("corporate") { return "💼" }
+        if name.contains("flirt") || name.contains("dating") || name.contains("romance") || name.contains("love") { return "💘" }
+        if name.contains("slang") || name.contains("street") || name.contains("casual") { return "🔥" }
+        if name.contains("night") || name.contains("bar") || name.contains("club") || name.contains("party") { return "🌙" }
+        if name.contains("tech") || name.contains("science") || name.contains("computer") { return "🔬" }
+        if name.contains("nature") || name.contains("outdoor") || name.contains("hike") { return "🌿" }
+        if name.contains("art") || name.contains("culture") || name.contains("movie") || name.contains("film") { return "🎭" }
+        if name.contains("politic") || name.contains("law") || name.contains("government") { return "🏛️" }
+        if name.contains("home") || name.contains("house") || name.contains("rent") { return "🏠" }
+        return "📚"
+    }
 
-    let emojiOptions = ["📚","🎯","💼","🏥","🍽️","✈️","💬","🎵","⚽","🌆","💡","🛒","🎭","🏋️","🌍","🔬"]
-    let tintOptions: [(name: String, color: Color)] = [
-        ("blue", .blue), ("green", .green), ("orange", .orange),
-        ("purple", .purple), ("pink", .pink), ("red", .red),
-        ("yellow", .yellow), ("mint", .mint)
-    ]
+    private var selectedTint: String {
+        let name = deckName.lowercased()
+        if name.contains("food") || name.contains("slang") || name.contains("street") { return "orange" }
+        if name.contains("medical") || name.contains("nature") || name.contains("home") { return "green" }
+        if name.contains("flirt") || name.contains("night") || name.contains("art") { return "purple" }
+        if name.contains("sport") || name.contains("travel") { return "blue" }
+        if name.contains("work") || name.contains("politic") { return "indigo" }
+        if name.contains("love") || name.contains("dating") || name.contains("romance") { return "pink" }
+        if name.contains("music") { return "red" }
+        return "blue"
+    }
 
     var canCreate: Bool    { !deckName.trimmingCharacters(in: .whitespaces).isEmpty }
     var aiLimitReached: Bool { useAI && !deckStore.canCreateAIDeck }
@@ -762,55 +784,6 @@ struct CreateDeckSheet: View {
                             .cornerRadius(14)
                             .overlay(RoundedRectangle(cornerRadius: 14)
                                 .stroke(Color.orange.opacity(0.25), lineWidth: 1))
-                        }
-
-                        // ── Emoji Picker ─────────────────────────────────
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("CHOOSE AN EMOJI")
-                                .font(.custom("HelveticaNeue-Medium", size: 12))
-                                .foregroundColor(.tsSecondary)
-                                .tracking(1.0)
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                HStack(spacing: 8) {
-                                    ForEach(emojiOptions, id: \.self) { emoji in
-                                        Button(action: { selectedEmoji = emoji }) {
-                                            Text(emoji)
-                                                .font(.custom("HelveticaNeue", size: 22))
-                                                .frame(width: 44, height: 44)
-                                                .background(selectedEmoji == emoji
-                                                    ? Color.tsAccent.opacity(0.15) : Color.tsCard)
-                                                .cornerRadius(12)
-                                                .overlay(RoundedRectangle(cornerRadius: 12)
-                                                    .stroke(selectedEmoji == emoji
-                                                        ? Color.tsAccent.opacity(0.6) : Color.clear,
-                                                            lineWidth: 1.5))
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        // ── Tint Picker ──────────────────────────────────
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("COLOUR")
-                                .font(.custom("HelveticaNeue-Medium", size: 12))
-                                .foregroundColor(.tsSecondary)
-                                .tracking(1.0)
-                            HStack(spacing: 10) {
-                                ForEach(tintOptions, id: \.name) { opt in
-                                    Button(action: { selectedTint = opt.name }) {
-                                        Circle()
-                                            .fill(opt.color)
-                                            .frame(width: 30, height: 30)
-                                            .overlay(Circle()
-                                                .stroke(Color.white.opacity(0.9), lineWidth: 2)
-                                                .scaleEffect(selectedTint == opt.name ? 1 : 0))
-                                            .scaleEffect(selectedTint == opt.name ? 1.15 : 1.0)
-                                            .animation(.spring(response: 0.2), value: selectedTint)
-                                    }
-                                }
-                                Spacer()
-                            }
                         }
 
                         // ── Deck Name ────────────────────────────────────
@@ -916,7 +889,7 @@ struct CreateDeckSheet: View {
             .navigationTitle("Create Deck")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+                ToolbarItem(placement: .primaryAction) {
                     TSDismissButton(action: { dismiss() })
                 }
             }
