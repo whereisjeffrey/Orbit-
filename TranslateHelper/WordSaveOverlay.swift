@@ -41,11 +41,7 @@ struct WordSaveOverlay: View {
                 // ── TOP: Close button ─────────────────────────────
                 HStack {
                     Spacer()
-                    Button(action: dismissWithAnimation) {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 26))
-                            .foregroundColor(.tsSecondary.opacity(0.5))
-                    }
+                    TSDismissButton(action: dismissWithAnimation)
                     .padding(.trailing, 20)
                     .padding(.top, 12)
                 }

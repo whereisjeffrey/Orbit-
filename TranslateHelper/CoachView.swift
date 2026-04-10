@@ -2028,10 +2028,7 @@ struct LevelDetailView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button { dismiss() } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.tsSecondary)
-                    }
+                    TSDismissButton(action: { dismiss() })
                 }
             }
         }
@@ -2674,10 +2671,7 @@ struct PracticeSessionView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button { showSettings = false } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.tsSecondary)
-                    }
+                    TSDismissButton(action: { showSettings = false })
                 }
             }
         }

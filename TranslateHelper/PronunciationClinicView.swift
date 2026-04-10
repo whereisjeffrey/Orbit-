@@ -78,14 +78,7 @@ struct PronunciationClinicView: View {
 
                 // ── Header ────────────────────────────────────────────────
                 HStack {
-                    Button(action: { stopListening(); dismiss() }) {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(.tsSecondary)
-                            .frame(width: 32, height: 32)
-                            .background(Color.tsCard)
-                            .clipShape(Circle())
-                    }
+                    TSDismissButton(action: { stopListening(); dismiss() })
 
                     Spacer()
 

@@ -43,14 +43,7 @@ struct QuickAddSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(.tsSecondary)
-                            .frame(width: 32, height: 32)
-                            .background(Color.tsCard)
-                            .clipShape(Circle())
-                    }
+                    TSDismissButton(action: { dismiss() })
                 }
             }
             .toolbarColorScheme(.dark, for: .navigationBar)

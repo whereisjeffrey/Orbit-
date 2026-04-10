@@ -383,6 +383,22 @@ struct TSPickerField<MenuContent: View>: View {
     }
 }
 
+/// Universal dismiss button — light blue circle with accent X.
+/// Always placed on the right side unless a three-dot menu occupies that spot.
+struct TSDismissButton: View {
+    let action: () -> Void
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "xmark")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(.tsAccent)
+                .frame(width: 32, height: 32)
+                .background(Color.tsAccent.opacity(0.1))
+                .clipShape(Circle())
+        }
+    }
+}
+
 struct TSButton: View {
     let title: String
     var isLoading = false

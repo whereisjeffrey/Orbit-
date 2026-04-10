@@ -159,11 +159,7 @@ struct MyDecksView: View {
                             .font(.custom("HelveticaNeue-Bold", size: 30))
                             .foregroundColor(.tsLabel)
                         Spacer()
-                        Button(action: { dismiss() }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.custom("HelveticaNeue", size: 28))
-                                .foregroundColor(.tsSecondary)
-                        }
+                        TSDismissButton(action: { dismiss() })
                     }
                     .padding(.horizontal, 24)
                     .padding(.top, 16)
@@ -921,14 +917,7 @@ struct CreateDeckSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(.tsSecondary)
-                            .frame(width: 32, height: 32)
-                            .background(Color.tsCard)
-                            .clipShape(Circle())
-                    }
+                    TSDismissButton(action: { dismiss() })
                 }
             }
             .toolbarColorScheme(.dark, for: .navigationBar)
