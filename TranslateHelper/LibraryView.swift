@@ -360,16 +360,10 @@ struct LibraryView: View {
                 StudySourceWordView(phrases: duePhrases.isEmpty ? store.activePhrases : duePhrases, listName: "Clipboard List")
             }
         }
-        // item: binding — SwiftUI only shows this cover when deckStudyDeck
-        // is non-nil, and always passes the unwrapped value to the body.
-        // This prevents the blank white screen that occurred when the Bool
-        // flag was true but the optional deck was nil on re-evaluation.
+        // Deck home screen — shows stats, Study and Review actions
         .fullScreenCover(item: $deckStudyDeck) { deck in
             NavigationView {
-                StudySourceWordView(
-                    phrases: deck.cards.map { $0.toSavedPhrase() },
-                    listName: deck.name
-                )
+                DeckHomeView(deckId: deck.id)
             }
         }
     }
