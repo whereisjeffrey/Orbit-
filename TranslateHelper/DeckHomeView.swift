@@ -15,12 +15,15 @@ struct DeckHomeView: View {
     @State private var showStudy = false
     @State private var showReview = false
     @State private var showDeleteConfirmation = false
+    @State private var studyPhrases: [SavedPhrase] = []
     @State private var mapSnapshot: UIImage?
     @State private var mapCoordinate: CLLocationCoordinate2D?
 
     private var deck: Deck? {
         deckStore.decks.first(where: { $0.id == deckId })
     }
+
+    private var deckName: String { deck?.name ?? "Deck" }
 
     private var isLocalSlang: Bool {
         deck?.name.contains("Local Slang") == true || deck?.name.contains("Street Slang") == true
@@ -123,7 +126,14 @@ struct DeckHomeView: View {
                     // ── Actions ────────────────────────────
                     VStack(spacing: 12) {
                         // Study — primary
-                        Button(action: { showStudy = true }) {
+                        Button(action: {
+                            // Capture phrases NOW before presenting the cover
+                            studyPhrases = deck.activeCards.map { $0.toSavedPhrase() }
+                            NSLog("📚 [DeckHome] Study tapped — \(studyPhrases.count) active cards")
+                            if !studyPhrases.isEmpty {
+                                showStudy = true
+                            }
+                        }) {
                             Text("Study")
                                 .font(.custom("HelveticaNeue-Bold", size: 18))
                                 .foregroundColor(.white)
@@ -144,14 +154,6 @@ struct DeckHomeView: View {
                                 .background(Color.tsAccent.opacity(0.1))
                                 .clipShape(Capsule())
                         }
-
-                        // Remove deck
-                        Button(action: { showDeleteConfirmation = true }) {
-                            Text("Remove Deck")
-                                .font(.custom("HelveticaNeue-Medium", size: 15))
-                                .foregroundColor(.tsSecondary)
-                        }
-                        .padding(.top, 8)
                     }
                     .padding(.horizontal, 24)
                     .padding(.bottom, 48)
@@ -169,23 +171,29 @@ struct DeckHomeView: View {
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button(action: { dismiss() }) {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 14, weight: .semibold))
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.tsAccent)
+                }
+            }
+            ToolbarItem(placement: .primaryAction) {
+                Menu {
+                    Button(role: .destructive, action: { showDeleteConfirmation = true }) {
+                        Label("Remove Deck", systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis")
+                        .font(.system(size: 16, weight: .medium))
                         .foregroundColor(.tsSecondary)
-                        .frame(width: 32, height: 32)
-                        .background(Color.tsCard)
-                        .clipShape(Circle())
                 }
             }
         }
         .fullScreenCover(isPresented: $showStudy) {
-            if let deck = deck {
-                NavigationView {
-                    StudySourceWordView(
-                        phrases: deck.activeCards.map { $0.toSavedPhrase() },
-                        listName: deck.name
-                    )
-                }
+            NavigationView {
+                StudySourceWordView(
+                    phrases: studyPhrases,
+                    listName: deck?.name ?? deckName
+                )
             }
         }
         .sheet(isPresented: $showReview) {

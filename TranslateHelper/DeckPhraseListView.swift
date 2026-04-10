@@ -156,49 +156,57 @@ struct DeckPhraseListView: View {
                 if !selected.isEmpty {
                     VStack {
                         Spacer()
-                        HStack(spacing: 16) {
-                            // Delete
-                            Button(action: deleteSelected) {
-                                HStack(spacing: 6) {
-                                    Image(systemName: "trash")
-                                        .font(.system(size: 14))
-                                    Text("Delete (\(selected.count))")
-                                        .font(.custom("HelveticaNeue-Bold", size: 14))
-                                }
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 48)
-                                .background(Color(hex: "#FF3B30"))
-                                .clipShape(Capsule())
-                            }
-
-                            // Remix (deck only)
-                            if deckId != nil {
-                                Button(action: remixSelected) {
+                        VStack(spacing: 0) {
+                            HStack(spacing: 16) {
+                                // Delete — soft red
+                                Button(action: deleteSelected) {
                                     HStack(spacing: 6) {
-                                        if isRemixing {
-                                            ProgressView().tint(.white)
-                                        } else {
-                                            Image(systemName: "shuffle")
-                                                .font(.system(size: 14))
-                                        }
-                                        Text("Remix")
+                                        Image(systemName: "trash.fill")
+                                            .font(.system(size: 14))
+                                        Text("Delete (\(selected.count))")
                                             .font(.custom("HelveticaNeue-Bold", size: 14))
                                     }
-                                    .foregroundColor(.white)
+                                    .foregroundColor(Color(hex: "#FF3B30"))
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 48)
-                                    .background(Color.tsAccent)
+                                    .background(Color(hex: "#FF3B30").opacity(0.12))
                                     .clipShape(Capsule())
                                 }
-                                .disabled(isRemixing)
+
+                                // Remix (deck only) — soft blue
+                                if deckId != nil {
+                                    Button(action: remixSelected) {
+                                        HStack(spacing: 6) {
+                                            if isRemixing {
+                                                ProgressView().tint(.tsAccent)
+                                            } else {
+                                                Image(systemName: "shuffle")
+                                                    .font(.system(size: 14))
+                                            }
+                                            Text("Remix")
+                                                .font(.custom("HelveticaNeue-Bold", size: 14))
+                                        }
+                                        .foregroundColor(.tsAccent)
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 48)
+                                        .background(Color.tsAccent.opacity(0.12))
+                                        .clipShape(Capsule())
+                                    }
+                                    .disabled(isRemixing)
+                                }
                             }
+                            .padding(.horizontal, 16)
+                            .padding(.top, 12)
+                            .padding(.bottom, 4)
+
+                            // Extend to bottom safe area
+                            Spacer().frame(height: 0)
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
+                        .padding(.bottom, 34) // cover home indicator area
                         .background(
                             Color.tsBackground
-                                .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: -4)
+                                .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: -4)
+                                .ignoresSafeArea(edges: .bottom)
                         )
                     }
                     .transition(.move(edge: .bottom))

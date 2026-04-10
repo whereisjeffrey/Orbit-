@@ -308,13 +308,13 @@ struct WeeklyStreakCard: View {
         let streak = currentConsecutiveStreak
         
         // 1. Perfect Week
-        if daysHit == 7 { return "God tier 👑" }
-        
+        if daysHit == 7 { return "Legend 👑" }
+
         // 2. Goal Met
-        if daysHit >= Self.goal { return "Week won 🏆" }
-        
+        if daysHit >= Self.goal { return "Crushed it 🏆" }
+
         // 3. Hot Streak
-        if streak >= 3 { return "That's hot 🔥" }
+        if streak >= 3 { return "On fire 🔥" }
         
         // 4. Momentum
         if streak == 2 { return "Back-to-back ✌️" }
@@ -326,7 +326,7 @@ struct WeeklyStreakCard: View {
         
         // 7. Slipping (missed yesterday and today)
         if daysHit > 0 && !studiedDays.contains(today) && !studiedDays.contains(today - 1) {
-            return "Ice cold. Time to warm up 🥶"
+            return "Gone quiet — come back 🥶"
         }
         
         // 8. On the Board
@@ -406,7 +406,7 @@ struct WeeklyStreakCard: View {
                         .foregroundColor(.white)
                     Text(streakMessage)
                         .font(.custom("HelveticaNeue", size: 12))
-                        .foregroundColor(weekComplete ? Color(hex: "#30D158") : Color.white.opacity(0.65))
+                        .foregroundColor(.white)
                 }
                 Spacer()
                 if completed > 0 {
