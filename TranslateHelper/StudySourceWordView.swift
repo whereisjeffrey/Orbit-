@@ -31,9 +31,8 @@ struct StudySourceWordView: View {
                     HStack {
                         Button(action: { dismiss() }) {
                             Image(systemName: "chevron.left")
-                                .font(.custom("HelveticaNeue-Bold", size: 24))
+                                .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.tsAccent)
-                                .frame(width: 40, height: 40)
                         }
                         
                         Spacer()

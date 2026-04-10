@@ -197,9 +197,9 @@ struct DeckPhraseListView: View {
                                 }
                             }
                             .padding(.horizontal, 32)
-                            .padding(.vertical, 6)
+                            .padding(.vertical, 12)
                         }
-                        .padding(.bottom, 4)
+                        .padding(.bottom, 12)
                         .background(
                             Color.tsBackground
                                 .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: -4)
@@ -209,14 +209,20 @@ struct DeckPhraseListView: View {
                     .transition(.move(edge: .bottom))
                 }
             }
-            .navigationTitle(deckName)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
+            .navigationBarHidden(true)
+            .safeAreaInset(edge: .top) {
+                HStack {
+                    Text(deckName)
+                        .font(.custom("HelveticaNeue-Bold", size: 18))
+                        .foregroundColor(.tsLabel)
+                    Spacer()
                     TSDismissButton(action: { dismiss() })
                 }
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
+                .padding(.bottom, 12)
+                .background(Color.tsBackground)
             }
-            .toolbarColorScheme(.dark, for: .navigationBar)
             .animation(.easeInOut(duration: 0.25), value: selected.isEmpty)
         }
     }

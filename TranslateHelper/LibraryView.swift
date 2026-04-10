@@ -27,7 +27,6 @@ struct LibraryView: View {
     @State private var showReviewPrompt: Bool = false
     @State private var activeWidgetPage: Int = 0
     // nil = no deck open; set to a Deck to present study mode.
-    @State private var showDeckHome = false
     @State private var selectedDeck: Deck? = nil
 
     var goalProgress: Double {
@@ -152,7 +151,7 @@ struct LibraryView: View {
                         for deck in deckList {
                             views.append(AnyView(
                                 DeckClipboardWidget(deck: deck, onStudy: {
-                                    selectedDeck = deck; showDeckHome = true
+                                    selectedDeck = deck
                                 })
                                 .padding(.horizontal, 16)
                             ))
@@ -236,8 +235,6 @@ struct LibraryView: View {
                             .foregroundColor(.tsSecondary)
                             .tracking(1.2)
                         Spacer()
-                    Button("See All") { showMyDecks = true }
-                            .foregroundColor(.tsAccent)
                     }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 10)
@@ -250,7 +247,7 @@ struct LibraryView: View {
                             // User decks — newest first (DeckStore inserts at 0)
                             ForEach(deckStore.decks) { deck in
                                 LibraryDeckCard(emoji: deck.emoji, title: deck.name, count: deck.cards.count, tint: deck.tintColor) {
-                                    selectedDeck = deck; showDeckHome = true
+                                    selectedDeck = deck
                                 }
                                 .frame(width: 160)
                             }
@@ -360,11 +357,9 @@ struct LibraryView: View {
             }
         }
         // Deck home screen — shows stats, Study and Review actions
-        .fullScreenCover(isPresented: $showDeckHome) {
-            if let deck = selectedDeck {
-                NavigationView {
-                    DeckHomeView(initialDeck: deck)
-                }
+        .fullScreenCover(item: $selectedDeck) { deck in
+            NavigationView {
+                DeckHomeView(initialDeck: deck)
             }
         }
     }

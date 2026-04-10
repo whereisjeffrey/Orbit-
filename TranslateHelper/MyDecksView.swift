@@ -45,6 +45,7 @@ struct MyDecksView: View {
     @State private var showFlirtySheet = false
     @State private var flirtyDeckAdded = false
     @State private var showStudyMode = false
+    @State private var selectedDeckForHome: Deck? = nil
     @State private var activeDeckName = ""
     @State private var activeDeckPhrases: [SavedPhrase] = []
     @StateObject private var store = SharedPhraseStore.shared
@@ -213,7 +214,7 @@ struct MyDecksView: View {
                                     tint: deck.tintColor, isAI: deck.isAI
                                 )
                                 UserDeckCard(deck: dm) {
-                                    launchDeckStudy(deck)
+                                    selectedDeckForHome = deck
                                 }
                             }
                         }
@@ -265,6 +266,11 @@ struct MyDecksView: View {
                     phrases: activeDeckPhrases,
                     listName: activeDeckName
                 )
+            }
+        }
+        .fullScreenCover(item: $selectedDeckForHome) { deck in
+            NavigationView {
+                DeckHomeView(initialDeck: deck)
             }
         }
     }
@@ -348,10 +354,10 @@ struct AutoDeckCard: View {
             }
             .padding(16)
             .frame(width: 148, height: 148)
-            .background(deck.tint.opacity(0.1))
+            .background(Color.tsGrayCard)
             .cornerRadius(20)
             .overlay(RoundedRectangle(cornerRadius: 20).stroke(
-                deck.tint.opacity(0.2),
+                Color.tsAccent.opacity(0.08),
                 lineWidth: 0.5))
         }
         .buttonStyle(DeckTapStyle())
@@ -389,10 +395,10 @@ struct UserDeckCard: View {
             }
             .padding(16)
             .frame(width: 148, height: 148)
-            .background(deck.tint.opacity(0.1))
+            .background(Color.tsGrayCard)
             .cornerRadius(20)
             .overlay(RoundedRectangle(cornerRadius: 20).stroke(
-                deck.tint.opacity(0.2),
+                Color.tsAccent.opacity(0.08),
                 lineWidth: 0.5))
         }
         .buttonStyle(DeckTapStyle())
@@ -588,7 +594,7 @@ struct FeaturedDeckRow: View {
         }
         .frame(minHeight: 80)
         .padding(16)
-        .background(deck.tint.opacity(0.1))
+        .background(Color.tsGrayCard)
         .cornerRadius(16)
         .overlay(RoundedRectangle(cornerRadius: 16).stroke(
             deck.tint.opacity(colorScheme == .dark ? 0.45 : 0.35),
@@ -671,7 +677,7 @@ struct LockedFlirtingRow: View {
         }
         .frame(minHeight: 80)
         .padding(16)
-        .background(deck.tint.opacity(0.1))
+        .background(Color.tsGrayCard)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
@@ -699,7 +705,7 @@ struct EmptyDecksPrompt: View {
         }
         .frame(maxWidth: .infinity)
         .padding(32)
-        .background(Color.tsAccent.opacity(0.06))
+        .background(Color.tsGrayCard)
         .cornerRadius(20)
         .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.tsAccent.opacity(0.08), lineWidth: 0.5))
     }
@@ -885,13 +891,15 @@ struct CreateDeckSheet: View {
             .safeAreaInset(edge: .top) {
                 HStack {
                     Text("Create New Deck")
-                        .font(.custom("HelveticaNeue-Bold", size: 18))
+                        .font(.custom("HelveticaNeue-Bold", size: 20))
                         .foregroundColor(.tsLabel)
                     Spacer()
                     TSDismissButton(action: { dismiss() })
                 }
                 .padding(.horizontal, 20)
-                .padding(.vertical, 12)
+                .padding(.top, 8)
+                .padding(.bottom, 12)
+                .background(Color.tsBackground)
             }
         }
     }

@@ -2843,17 +2843,22 @@ class KeyboardViewController: UIInputViewController {
         deferredPostTranslation?.cancel()
         deferredPostTranslation = nil
 
-        // Move cursor to the very end first
-        if let after = textDocumentProxy.documentContextAfterInput, !after.isEmpty {
-            textDocumentProxy.adjustTextPosition(byCharacterOffset: after.count)
+        // Move cursor to the very end — repeat to handle proxy truncation
+        for _ in 0..<5 {
+            if let after = textDocumentProxy.documentContextAfterInput, !after.isEmpty {
+                textDocumentProxy.adjustTextPosition(byCharacterOffset: after.count)
+            } else {
+                break
+            }
         }
 
-        // Delete only what's actually there — avoids thousands of unnecessary IPC calls
-        // documentContextBeforeInput can truncate, so loop until empty
-        while let before = textDocumentProxy.documentContextBeforeInput, !before.isEmpty {
+        // Delete everything before cursor — loop handles proxy truncation (~200 char chunks)
+        var safety = 0
+        while let before = textDocumentProxy.documentContextBeforeInput, !before.isEmpty, safety < 20 {
             for _ in 0..<before.count {
                 textDocumentProxy.deleteBackward()
             }
+            safety += 1
         }
 
         // Insert the translation into a clean field

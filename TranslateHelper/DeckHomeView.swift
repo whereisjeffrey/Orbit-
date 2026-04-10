@@ -15,7 +15,6 @@ struct DeckHomeView: View {
     @State private var showStudy = false
     @State private var showReview = false
     @State private var showDeleteConfirmation = false
-    @State private var studyPhrases: [SavedPhrase] = []
     @State private var mapSnapshot: UIImage?
     @State private var mapCoordinate: CLLocationCoordinate2D?
 
@@ -66,14 +65,13 @@ struct DeckHomeView: View {
                             .onAppear { loadMapSnapshot() }
                             .padding(.bottom, 8)
 
-                            // Title with 3D pin
-                            HStack(spacing: 8) {
-                                Text("📍")
-                                    .font(.system(size: 22))
-                                Text("Local Slang")
-                                    .font(.custom("HelveticaNeue-Bold", size: 26))
-                                    .foregroundColor(.tsLabel)
-                            }
+                            // Title
+                            Text("📍")
+                                .font(.system(size: 32))
+                                .padding(.top, 8)
+                            Text("Local Slang")
+                                .font(.custom("HelveticaNeue-Bold", size: 24))
+                                .foregroundColor(.tsLabel)
 
                             // City name subtitle
                             let city = UserLocationsStore.shared.locations.first?.displayName ?? ""
@@ -125,12 +123,7 @@ struct DeckHomeView: View {
                     VStack(spacing: 12) {
                         // Study — primary
                         Button(action: {
-                            // Capture phrases NOW before presenting the cover
-                            studyPhrases = deck.activeCards.map { $0.toSavedPhrase() }
-                            NSLog("📚 [DeckHome] Study tapped — \(studyPhrases.count) active cards")
-                            if !studyPhrases.isEmpty {
-                                showStudy = true
-                            }
+                            showStudy = true
                         }) {
                             Text("Study")
                                 .font(.custom("HelveticaNeue-Bold", size: 18))
@@ -160,15 +153,15 @@ struct DeckHomeView: View {
         .onAppear {
             NSLog("📚 [DeckHome] appeared — name: \(deck.name), cards: \(deck.cards.count), active: \(deck.activeCards.count)")
         }
-        .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
+        .navigationBarHidden(true)
+        .safeAreaInset(edge: .top) {
+            HStack {
                 Button(action: { dismiss() }) {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.tsAccent)
                 }
-            }
-            ToolbarItem(placement: .primaryAction) {
+                Spacer()
                 Menu {
                     Button(role: .destructive, action: { showDeleteConfirmation = true }) {
                         Label("Remove Deck", systemImage: "trash")
@@ -179,12 +172,14 @@ struct DeckHomeView: View {
                         .foregroundColor(.tsSecondary)
                 }
             }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 8)
         }
         .fullScreenCover(isPresented: $showStudy) {
             NavigationView {
                 StudySourceWordView(
-                    phrases: studyPhrases,
-                    listName: deckName
+                    phrases: deck.activeCards.map { $0.toSavedPhrase() },
+                    listName: deck.name
                 )
             }
         }
