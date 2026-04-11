@@ -301,6 +301,8 @@ struct SettingsView: View {
                             appGroup?.removeObject(forKey: "ts_mistake_profile_v1")
                             // Reset keyboard hint cards so they show fresh
                             appGroup?.removeObject(forKey: "ts_paste_hint_shown")
+                            appGroup?.removeObject(forKey: "kbd_welcome_shown")
+                            appGroup?.removeObject(forKey: "kbd_translate_hint_shown")
                             appGroup?.removeObject(forKey: "ts_save_hint_shown")
                             MistakeProfileStore.shared.resetToZero()
                             appGroup?.synchronize()

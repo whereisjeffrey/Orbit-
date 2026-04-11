@@ -95,6 +95,16 @@ class KeyboardViewController: UIInputViewController {
         return fontScale > 1.2
     }
 
+    // MARK: - Onboarding
+
+    private let welcomeOverlay = UIView()
+    private var welcomeShown: Bool {
+        UserDefaults(suiteName: "group.com.jeff.translatehelper")?.bool(forKey: "kbd_welcome_shown") ?? false
+    }
+    private var translateHintShown: Bool {
+        UserDefaults(suiteName: "group.com.jeff.translatehelper")?.bool(forKey: "kbd_translate_hint_shown") ?? false
+    }
+
     // MARK: - State
 
     private var heightConstraint: NSLayoutConstraint!
@@ -339,9 +349,118 @@ class KeyboardViewController: UIInputViewController {
 
         setupEmptyBar()
         setupPanel()
+        setupWelcomeOverlay()
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
             self?.autoDetect()
+        }
+    }
+
+    // MARK: - Welcome Overlay
+
+    private func setupWelcomeOverlay() {
+        guard !welcomeShown else { return }
+
+        welcomeOverlay.translatesAutoresizingMaskIntoConstraints = false
+        welcomeOverlay.backgroundColor = panelBg
+        welcomeOverlay.isHidden = false
+        view.addSubview(welcomeOverlay)
+
+        NSLayoutConstraint.activate([
+            welcomeOverlay.topAnchor.constraint(equalTo: view.topAnchor),
+            welcomeOverlay.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            welcomeOverlay.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            welcomeOverlay.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+        ])
+
+        // Title
+        let titleLabel = UILabel()
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        titleLabel.text = "Welcome to Orbit"
+        titleLabel.font = UIFont.systemFont(ofSize: scaled(18), weight: .bold)
+        titleLabel.textColor = .white
+        titleLabel.textAlignment = .center
+        welcomeOverlay.addSubview(titleLabel)
+
+        // Steps
+        let step1 = makeStepLabel(number: "1", text: "Tap 🌐 to switch to your regular keyboard and type your message")
+        let step2 = makeStepLabel(number: "2", text: "Switch back to Orbit — your translation appears automatically")
+        let step3 = makeStepLabel(number: "3", text: "Swipe up to send, or tap Replace")
+        welcomeOverlay.addSubview(step1)
+        welcomeOverlay.addSubview(step2)
+        welcomeOverlay.addSubview(step3)
+
+        // Speak tip
+        let speakTip = UILabel()
+        speakTip.translatesAutoresizingMaskIntoConstraints = false
+        speakTip.text = "🎤 Or tap Speak below to record a voice message — use Orbit's mic, not the other ones on screen."
+        speakTip.font = UIFont.systemFont(ofSize: scaled(12), weight: .regular)
+        speakTip.textColor = UIColor.white.withAlphaComponent(0.6)
+        speakTip.textAlignment = .center
+        speakTip.numberOfLines = 0
+        welcomeOverlay.addSubview(speakTip)
+
+        // Got it button
+        let gotItBtn = UIButton(type: .system)
+        gotItBtn.translatesAutoresizingMaskIntoConstraints = false
+        gotItBtn.setTitle("Got it!", for: .normal)
+        gotItBtn.titleLabel?.font = UIFont.systemFont(ofSize: scaledButton(15), weight: .bold)
+        gotItBtn.setTitleColor(.white, for: .normal)
+        gotItBtn.backgroundColor = UIColor.systemBlue
+        gotItBtn.layer.cornerRadius = 22
+        gotItBtn.addTarget(self, action: #selector(welcomeDismissed), for: .touchUpInside)
+        welcomeOverlay.addSubview(gotItBtn)
+
+        NSLayoutConstraint.activate([
+            titleLabel.topAnchor.constraint(equalTo: welcomeOverlay.topAnchor, constant: 20),
+            titleLabel.centerXAnchor.constraint(equalTo: welcomeOverlay.centerXAnchor),
+
+            step1.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 16),
+            step1.leadingAnchor.constraint(equalTo: welcomeOverlay.leadingAnchor, constant: 20),
+            step1.trailingAnchor.constraint(equalTo: welcomeOverlay.trailingAnchor, constant: -20),
+
+            step2.topAnchor.constraint(equalTo: step1.bottomAnchor, constant: 8),
+            step2.leadingAnchor.constraint(equalTo: step1.leadingAnchor),
+            step2.trailingAnchor.constraint(equalTo: step1.trailingAnchor),
+
+            step3.topAnchor.constraint(equalTo: step2.bottomAnchor, constant: 8),
+            step3.leadingAnchor.constraint(equalTo: step1.leadingAnchor),
+            step3.trailingAnchor.constraint(equalTo: step1.trailingAnchor),
+
+            speakTip.topAnchor.constraint(equalTo: step3.bottomAnchor, constant: 16),
+            speakTip.leadingAnchor.constraint(equalTo: welcomeOverlay.leadingAnchor, constant: 24),
+            speakTip.trailingAnchor.constraint(equalTo: welcomeOverlay.trailingAnchor, constant: -24),
+
+            gotItBtn.bottomAnchor.constraint(equalTo: welcomeOverlay.bottomAnchor, constant: -16),
+            gotItBtn.centerXAnchor.constraint(equalTo: welcomeOverlay.centerXAnchor),
+            gotItBtn.widthAnchor.constraint(equalToConstant: 160),
+            gotItBtn.heightAnchor.constraint(equalToConstant: 44),
+        ])
+
+        // Set height to expanded so the overlay has room
+        heightConstraint.constant = expandedHeight
+    }
+
+    private func makeStepLabel(number: String, text: String) -> UILabel {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "\(number).  \(text)"
+        label.font = UIFont.systemFont(ofSize: scaled(14), weight: .medium)
+        label.textColor = UIColor.white.withAlphaComponent(0.85)
+        label.numberOfLines = 0
+        return label
+    }
+
+    @objc private func welcomeDismissed() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper")
+        defaults?.set(true, forKey: "kbd_welcome_shown")
+        defaults?.synchronize()
+
+        UIView.animate(withDuration: 0.3, animations: {
+            self.welcomeOverlay.alpha = 0
+        }) { _ in
+            self.welcomeOverlay.removeFromSuperview()
         }
     }
 
@@ -708,6 +827,12 @@ class KeyboardViewController: UIInputViewController {
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.5, execute: work)
                                     // Progressive hints — spaced out across first few translations
                                     self.translationsSent += 1
+                                    // First translation hint — teach swipe up and replace
+                                    if self.translationsSent == 1 && !self.translateHintShown {
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                                            self.showTranslateHint()
+                                        }
+                                    }
                                     if self.translationsSent == 1 {
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
                                             self.showPasteHint()
@@ -2414,6 +2539,19 @@ class KeyboardViewController: UIInputViewController {
     }
 
     /// Shows a hint after the user's first outgoing translation, teaching them about paste-to-translate.
+    private func showTranslateHint() {
+        let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper")
+        defaults?.synchronize()
+        guard !(defaults?.bool(forKey: "kbd_translate_hint_shown") ?? false) else { return }
+        defaults?.set(true, forKey: "kbd_translate_hint_shown")
+        defaults?.synchronize()
+
+        // Show in the hint card
+        hintTextLabel.text = "⬆️ Swipe up on your translation to drop it into the chat. Or tap Replace below."
+        hintCard.isHidden = false
+        NSLog("TSKBD_TRANSLATE_HINT: shown after first translation")
+    }
+
     private func showPasteHint() {
         #if DEBUG
         // Always show in debug builds so the hint card can be inspected
