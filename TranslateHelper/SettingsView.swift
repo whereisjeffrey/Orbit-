@@ -378,6 +378,10 @@ struct SettingsView: View {
                                 try? FileManager.default.removeItem(at: docsDir.appendingPathComponent("orbit_profile_backup.json"))
                             }
                             NSLog("💣 NUCLEAR RESET: everything wiped")
+                            // Force app restart so RootView re-evaluates onboarding state
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                exit(0)
+                            }
                         }) {
                             HStack {
                                 Image(systemName: "trash.fill")

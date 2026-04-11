@@ -382,6 +382,15 @@ class KeyboardViewController: UIInputViewController {
             welcomeOverlay.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
 
+        // Container card — icy blue with rounded corners
+        let card = UIView()
+        card.translatesAutoresizingMaskIntoConstraints = false
+        card.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.08)
+        card.layer.cornerRadius = 16
+        card.layer.borderWidth = 1
+        card.layer.borderColor = UIColor.systemBlue.withAlphaComponent(0.2).cgColor
+        welcomeOverlay.addSubview(card)
+
         // Title
         let titleLabel = UILabel()
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -390,25 +399,25 @@ class KeyboardViewController: UIInputViewController {
         titleLabel.textColor = .white
         titleLabel.textAlignment = .center
         titleLabel.numberOfLines = 0
-        welcomeOverlay.addSubview(titleLabel)
+        card.addSubview(titleLabel)
 
         // Steps
         let step1 = makeStepLabel(number: "1", text: "Tap the 🌐 globe below to switch to your WhatsApp keyboard and type your message")
         let step2 = makeStepLabel(number: "2", text: "Tap the globe again to switch back to Orbit — your translation appears automatically")
-        welcomeOverlay.addSubview(step1)
-        welcomeOverlay.addSubview(step2)
+        card.addSubview(step1)
+        card.addSubview(step2)
 
         // Practice tip
         let practiceTip = UILabel()
         practiceTip.translatesAutoresizingMaskIntoConstraints = false
-        practiceTip.text = "💡 Want to practice first? Send yourself a message in WhatsApp — just search your name to find your own chat."
+        practiceTip.text = "💡 Want to practice first? Send yourself a message — just search your name in WhatsApp."
         practiceTip.font = UIFont.systemFont(ofSize: scaled(12), weight: .regular)
-        practiceTip.textColor = UIColor.white.withAlphaComponent(0.6)
+        practiceTip.textColor = UIColor.white.withAlphaComponent(0.5)
         practiceTip.textAlignment = .center
         practiceTip.numberOfLines = 0
-        welcomeOverlay.addSubview(practiceTip)
+        card.addSubview(practiceTip)
 
-        // Got it button
+        // Got it button — outside the card
         let gotItBtn = UIButton(type: .system)
         gotItBtn.translatesAutoresizingMaskIntoConstraints = false
         gotItBtn.setTitle("Got it!", for: .normal)
@@ -420,23 +429,28 @@ class KeyboardViewController: UIInputViewController {
         welcomeOverlay.addSubview(gotItBtn)
 
         NSLayoutConstraint.activate([
-            titleLabel.topAnchor.constraint(equalTo: welcomeOverlay.topAnchor, constant: 24),
-            titleLabel.leadingAnchor.constraint(equalTo: welcomeOverlay.leadingAnchor, constant: 24),
-            titleLabel.trailingAnchor.constraint(equalTo: welcomeOverlay.trailingAnchor, constant: -24),
+            card.topAnchor.constraint(equalTo: welcomeOverlay.topAnchor, constant: 16),
+            card.leadingAnchor.constraint(equalTo: welcomeOverlay.leadingAnchor, constant: 12),
+            card.trailingAnchor.constraint(equalTo: welcomeOverlay.trailingAnchor, constant: -12),
 
-            step1.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 20),
-            step1.leadingAnchor.constraint(equalTo: welcomeOverlay.leadingAnchor, constant: 24),
-            step1.trailingAnchor.constraint(equalTo: welcomeOverlay.trailingAnchor, constant: -24),
+            titleLabel.topAnchor.constraint(equalTo: card.topAnchor, constant: 20),
+            titleLabel.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 16),
+            titleLabel.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -16),
 
-            step2.topAnchor.constraint(equalTo: step1.bottomAnchor, constant: 10),
+            step1.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 16),
+            step1.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 16),
+            step1.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -16),
+
+            step2.topAnchor.constraint(equalTo: step1.bottomAnchor, constant: 8),
             step2.leadingAnchor.constraint(equalTo: step1.leadingAnchor),
             step2.trailingAnchor.constraint(equalTo: step1.trailingAnchor),
 
-            practiceTip.topAnchor.constraint(equalTo: step2.bottomAnchor, constant: 20),
-            practiceTip.leadingAnchor.constraint(equalTo: welcomeOverlay.leadingAnchor, constant: 28),
-            practiceTip.trailingAnchor.constraint(equalTo: welcomeOverlay.trailingAnchor, constant: -28),
+            practiceTip.topAnchor.constraint(equalTo: step2.bottomAnchor, constant: 16),
+            practiceTip.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 20),
+            practiceTip.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -20),
+            practiceTip.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -16),
 
-            gotItBtn.bottomAnchor.constraint(equalTo: welcomeOverlay.bottomAnchor, constant: -16),
+            gotItBtn.topAnchor.constraint(equalTo: card.bottomAnchor, constant: 12),
             gotItBtn.centerXAnchor.constraint(equalTo: welcomeOverlay.centerXAnchor),
             gotItBtn.widthAnchor.constraint(equalToConstant: 160),
             gotItBtn.heightAnchor.constraint(equalToConstant: 44),
@@ -454,6 +468,30 @@ class KeyboardViewController: UIInputViewController {
         label.textColor = UIColor.white.withAlphaComponent(0.85)
         label.numberOfLines = 0
         return label
+    }
+
+    /// Called after ANY translation path completes — fires progressive onboarding hints.
+    private func translationDidComplete() {
+        translationsSent += 1
+        NSLog("TSKBD_TRANSLATION_COMPLETE: #\(translationsSent)")
+
+        // Step 2: First translation → teach Replace
+        if translationsSent == 1 && !translateHintShown {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+                self?.showTranslateHint()
+            }
+        }
+
+        // Paste hint (existing)
+        if translationsSent == 1 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
+                self?.showPasteHint()
+            }
+        } else if translationsSent == 3 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
+                self?.showSaveHint()
+            }
+        }
     }
 
     @objc private func welcomeDismissed() {
@@ -830,23 +868,7 @@ class KeyboardViewController: UIInputViewController {
                                     }
                                     self.deferredPostTranslation = work
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.5, execute: work)
-                                    // Progressive hints — spaced out across first few translations
-                                    self.translationsSent += 1
-                                    // First translation hint — teach swipe up and replace
-                                    if self.translationsSent == 1 && !self.translateHintShown {
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                                            self.showTranslateHint()
-                                        }
-                                    }
-                                    if self.translationsSent == 1 {
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                                            self.showPasteHint()
-                                        }
-                                    } else if self.translationsSent == 3 {
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                                            self.showSaveHint()
-                                        }
-                                    }
+                                    self.translationDidComplete()
                                 case .failure:
                                     self.loadingSpinner.stopAnimating()
                                     // Refinement failed — show DeepL translation as fallback
@@ -857,6 +879,7 @@ class KeyboardViewController: UIInputViewController {
                                     self.originalSubtitleLabel.isHidden = false
                                     self.updateSwipeHint()
                                     NSLog("TSKBD_REFINE_FALLBACK: using DeepL translation")
+                                    self.translationDidComplete()
                                     // ── Defer post-translation work — cancelled if user taps Replace ──
                                     self.deferredPostTranslation?.cancel()
                                     let work = DispatchWorkItem { [weak self] in
@@ -878,6 +901,7 @@ class KeyboardViewController: UIInputViewController {
                         self.originalSubtitleLabel.text = "\"\(text)\""
                         self.originalSubtitleLabel.isHidden = false
                         self.updateSwipeHint()
+                        self.translationDidComplete()
                         // ── Defer post-translation work — cancelled if user taps Replace ──
                         self.deferredPostTranslation?.cancel()
                         let work = DispatchWorkItem { [weak self] in

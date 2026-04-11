@@ -219,8 +219,8 @@ struct DeckPhraseListView: View {
                     TSDismissButton(action: { dismiss() })
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 24)
-                .padding(.bottom, 16)
+                .padding(.top, 36)
+                .padding(.bottom, 24)
                 .background(Color.tsBackground)
             }
             .animation(.easeInOut(duration: 0.25), value: selected.isEmpty)
