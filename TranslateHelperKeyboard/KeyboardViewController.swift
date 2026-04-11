@@ -85,6 +85,16 @@ class KeyboardViewController: UIInputViewController {
         return baseSize * fontScale
     }
 
+    /// Capped scale for buttons — max 1.3x to prevent overflow.
+    private func scaledButton(_ baseSize: CGFloat) -> CGFloat {
+        return baseSize * min(fontScale, 1.3)
+    }
+
+    /// Whether to hide emoji from tone buttons to save space at larger sizes.
+    private var shouldHideToneEmoji: Bool {
+        return fontScale > 1.2
+    }
+
     // MARK: - State
 
     private var heightConstraint: NSLayoutConstraint!
@@ -1737,8 +1747,9 @@ class KeyboardViewController: UIInputViewController {
 
         for (i, tone) in tones.enumerated() {
             let btn = UIButton(type: .system)
-            btn.setTitle("\(tone.icon) \(tone.label)", for: .normal)
-            btn.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
+            let title = shouldHideToneEmoji ? tone.label : "\(tone.icon) \(tone.label)"
+            btn.setTitle(title, for: .normal)
+            btn.titleLabel?.font = UIFont.systemFont(ofSize: scaledButton(12), weight: .semibold)
             btn.layer.cornerRadius = 16
             btn.clipsToBounds = true
             btn.tag = i
@@ -1764,7 +1775,7 @@ class KeyboardViewController: UIInputViewController {
         for (title, action) in actions {
             let btn = UIButton(type: .custom)
             btn.setTitle(title, for: .normal)
-            btn.titleLabel?.font = UIFont.systemFont(ofSize: 13, weight: .semibold)
+            btn.titleLabel?.font = UIFont.systemFont(ofSize: scaledButton(13), weight: .semibold)
             btn.setTitleColor(.white, for: .normal)
             btn.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.1)
             btn.layer.cornerRadius = 10
@@ -1787,7 +1798,7 @@ class KeyboardViewController: UIInputViewController {
 
         let translateBtn = UIButton(type: .system)
         translateBtn.setTitle("💬 Translate", for: .normal)
-        translateBtn.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
+        translateBtn.titleLabel?.font = UIFont.systemFont(ofSize: scaledButton(12), weight: .semibold)
         translateBtn.layer.cornerRadius = 16
         translateBtn.clipsToBounds = true
         translateBtn.tag = 0
@@ -1796,7 +1807,7 @@ class KeyboardViewController: UIInputViewController {
 
         let wingmanBtn = UIButton(type: .system)
         wingmanBtn.setTitle("🔥 Wingman", for: .normal)
-        wingmanBtn.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
+        wingmanBtn.titleLabel?.font = UIFont.systemFont(ofSize: scaledButton(12), weight: .semibold)
         wingmanBtn.layer.cornerRadius = 16
         wingmanBtn.clipsToBounds = true
         wingmanBtn.tag = 1
