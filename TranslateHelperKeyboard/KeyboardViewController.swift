@@ -463,8 +463,8 @@ class KeyboardViewController: UIInputViewController {
             self.outputCard.isHidden = false
             self.correctionCard.isHidden = false
             self.correctionCard.backgroundColor = UIColor.systemGreen.withAlphaComponent(0.05)
-            self.correctionIcon.text = "💬"
-            self.correctionHeader.text = "NATIVE"
+            self.correctionIcon.text = "🗣️"
+            self.correctionHeader.text = "NOTES"
             self.correctionTextLabel.text = "Analyzing your \(targetName)..."
             self.coachCard.isHidden = true
 
@@ -511,8 +511,8 @@ class KeyboardViewController: UIInputViewController {
 
                         if let notes = refined.notes {
                             self.correctionCard.isHidden = false
-                            self.correctionIcon.text = "💬"
-                            self.correctionHeader.text = "NATIVE"
+                            self.correctionIcon.text = "🗣️"
+                            self.correctionHeader.text = "NOTES"
                             self.correctionTextLabel.text = "💡 \(self.capToTwoSentences(notes))"
                         }
 
@@ -534,7 +534,7 @@ class KeyboardViewController: UIInputViewController {
                         self.currentHistoryIndex = 0
                         self.outputTextLabel.text = text
                         self.updateSwipeHint()
-                        self.correctionHeader.text = "NATIVE"
+                        self.correctionHeader.text = "NOTES"
                         self.correctionTextLabel.text = "Your \(targetName) sounds good here."
                         NSLog("TSKBD_CORRECT_FALLBACK: showing original text")
                     }
@@ -917,7 +917,7 @@ class KeyboardViewController: UIInputViewController {
             emptyBar.topAnchor.constraint(equalTo: view.topAnchor),
             emptyBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             emptyBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            emptyBar.heightAnchor.constraint(equalToConstant: emptyHeight),
+            emptyBar.heightAnchor.constraint(equalToConstant: expandedHeight),
         ])
 
         // Shared style — matches the action buttons in the big keyboard (Replace/Save/Speak)
@@ -957,7 +957,12 @@ class KeyboardViewController: UIInputViewController {
         updateLangPill()
 
         emptyLabel.translatesAutoresizingMaskIntoConstraints = false
-        emptyLabel.isHidden = true
+        emptyLabel.text = "🌐 Type your message, then switch to Orbit to translate"
+        emptyLabel.font = UIFont.systemFont(ofSize: 13, weight: .medium)
+        emptyLabel.textColor = UIColor.white.withAlphaComponent(0.5)
+        emptyLabel.textAlignment = .center
+        emptyLabel.numberOfLines = 0
+        emptyLabel.isHidden = false
         emptyBar.addSubview(emptyLabel)
 
         // Switchable constraints for mic button leading edge
@@ -990,7 +995,9 @@ class KeyboardViewController: UIInputViewController {
             langPill.heightAnchor.constraint(equalToConstant: 26),
 
             emptyLabel.centerXAnchor.constraint(equalTo: emptyBar.centerXAnchor),
-            emptyLabel.centerYAnchor.constraint(equalTo: emptyBar.centerYAnchor),
+            emptyLabel.bottomAnchor.constraint(equalTo: micButton.topAnchor, constant: -20),
+            emptyLabel.leadingAnchor.constraint(equalTo: emptyBar.leadingAnchor, constant: 32),
+            emptyLabel.trailingAnchor.constraint(equalTo: emptyBar.trailingAnchor, constant: -32),
         ])
 
         // ── Recording bar (hidden until mic is tapped) ──────────────────────
@@ -1347,13 +1354,25 @@ class KeyboardViewController: UIInputViewController {
             gesture.state = .cancelled
             return
         }
-        let tx = gesture.translation(in: outputCard).x
+        let translation = gesture.translation(in: outputCard)
+        let tx = translation.x
+        let ty = translation.y
         let canGoBack    = currentHistoryIndex > 0
         let canGoForward = true // always: either advance index or fetch new
 
+        // Determine primary axis — vertical or horizontal
+        let isVertical = abs(ty) > abs(tx)
+
         switch gesture.state {
         case .changed:
-            if tx > 0 && canGoForward {
+            if isVertical && ty < 0 {
+                // Swipe up → flick to send
+                let clamped = min(0, ty)
+                outputCard.transform = CGAffineTransform(translationX: 0, y: clamped)
+                let progress = min(abs(clamped) / 120, 1.0)
+                outputCard.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.1)
+                    .blend(with: UIColor.systemGreen.withAlphaComponent(0.25), ratio: progress)
+            } else if tx > 0 && canGoForward && !isVertical {
                 // Rightward swipe → new version
                 let clamped = max(0, tx)
                 outputCard.transform = CGAffineTransform(translationX: clamped, y: 0)
@@ -1361,7 +1380,7 @@ class KeyboardViewController: UIInputViewController {
                 let progress = min(clamped / 120, 1.0)
                 outputCard.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.1)
                     .blend(with: UIColor.systemGreen.withAlphaComponent(0.18), ratio: progress)
-            } else if tx < 0 && canGoBack {
+            } else if tx < 0 && canGoBack && !isVertical {
                 // Leftward swipe → go back in history
                 let clamped = min(0, tx)
                 outputCard.transform = CGAffineTransform(translationX: clamped, y: 0)
@@ -1372,6 +1391,20 @@ class KeyboardViewController: UIInputViewController {
             }
 
         case .ended, .cancelled:
+            if isVertical && ty < -90 {
+                // Committed swipe up — flick card up, replace text, switch keyboard
+                UIView.animate(withDuration: 0.2, animations: {
+                    self.outputCard.transform = CGAffineTransform(translationX: 0, y: -400)
+                    self.outputCard.alpha = 0
+                }) { _ in
+                    self.outputCard.transform = .identity
+                    self.outputCard.alpha = 1
+                    self.outputCard.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.1)
+                    self.replaceTapped()
+                    self.replaceTappedFlash()
+                }
+                return
+            }
             if tx > 90 {
                 // Committed right swipe — fly card off right, fetch/advance
                 UIView.animate(withDuration: 0.22, animations: {
@@ -1595,12 +1628,12 @@ class KeyboardViewController: UIInputViewController {
         correctionCard.layer.cornerRadius = 10
         correctionCard.translatesAutoresizingMaskIntoConstraints = false
 
-        correctionIcon.text = "💬"
+        correctionIcon.text = "🗣️"
         correctionIcon.font = UIFont.systemFont(ofSize: 14)
         correctionIcon.translatesAutoresizingMaskIntoConstraints = false
         correctionCard.addSubview(correctionIcon)
 
-        correctionHeader.text = "NATIVE"
+        correctionHeader.text = "NOTES"
         correctionHeader.font = UIFont.systemFont(ofSize: 10, weight: .bold)
         correctionHeader.textColor = UIColor.systemGreen
         correctionHeader.translatesAutoresizingMaskIntoConstraints = false
@@ -2344,7 +2377,7 @@ class KeyboardViewController: UIInputViewController {
         correctionCard.isHidden = true
         notesCard.isHidden = true
         hintCard.isHidden = true
-        heightConstraint.constant = emptyHeight
+        heightConstraint.constant = expandedHeight
         hidePollingState()
 
         // Show Remove + Translate when clipboard has text OR field has text

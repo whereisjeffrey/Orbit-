@@ -325,6 +325,7 @@
       }
     },
     "%lld keyboard translations left today" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -6577,6 +6578,7 @@
       }
     },
     "Notifications" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -6859,6 +6861,7 @@
       }
     },
     "Plan" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -7003,6 +7006,7 @@
 
     },
     "Premium" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -9067,6 +9071,7 @@
       }
     },
     "TalkSwitch Pro" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -9083,6 +9088,7 @@
       }
     },
     "TalkSwitch Pro ✓" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
