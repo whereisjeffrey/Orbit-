@@ -1010,14 +1010,47 @@ class KeyboardViewController: UIInputViewController {
         emptyBar.addSubview(langPill)
         updateLangPill()
 
+        // Hint card — icy blue container with switch keyboard action
+        let hintContainer = UIView()
+        hintContainer.translatesAutoresizingMaskIntoConstraints = false
+        hintContainer.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.08)
+        hintContainer.layer.cornerRadius = 14
+        hintContainer.layer.borderWidth = 1
+        hintContainer.layer.borderColor = UIColor.systemBlue.withAlphaComponent(0.2).cgColor
+        emptyBar.addSubview(hintContainer)
+
         emptyLabel.translatesAutoresizingMaskIntoConstraints = false
-        emptyLabel.text = "🌐 Type your message, then switch to Orbit to translate"
+        emptyLabel.text = "Type your message, then tap here to switch back to your keyboard"
         emptyLabel.font = UIFont.systemFont(ofSize: scaled(13), weight: .medium)
-        emptyLabel.textColor = UIColor.white.withAlphaComponent(0.5)
+        emptyLabel.textColor = UIColor.white.withAlphaComponent(0.7)
         emptyLabel.textAlignment = .center
         emptyLabel.numberOfLines = 0
         emptyLabel.isHidden = false
-        emptyBar.addSubview(emptyLabel)
+        hintContainer.addSubview(emptyLabel)
+
+        let globeIcon = UILabel()
+        globeIcon.translatesAutoresizingMaskIntoConstraints = false
+        globeIcon.text = "🌐"
+        globeIcon.font = UIFont.systemFont(ofSize: 28)
+        globeIcon.textAlignment = .center
+        hintContainer.addSubview(globeIcon)
+
+        // Make the whole card tappable — switches keyboard
+        let switchTap = UITapGestureRecognizer(target: self, action: #selector(switchKeyboardTapped))
+        hintContainer.addGestureRecognizer(switchTap)
+        hintContainer.isUserInteractionEnabled = true
+
+        NSLayoutConstraint.activate([
+            hintContainer.topAnchor.constraint(equalTo: emptyBar.topAnchor, constant: 16),
+            hintContainer.leadingAnchor.constraint(equalTo: emptyBar.leadingAnchor, constant: 16),
+            hintContainer.trailingAnchor.constraint(equalTo: emptyBar.trailingAnchor, constant: -16),
+            globeIcon.topAnchor.constraint(equalTo: hintContainer.topAnchor, constant: 16),
+            globeIcon.centerXAnchor.constraint(equalTo: hintContainer.centerXAnchor),
+            emptyLabel.topAnchor.constraint(equalTo: globeIcon.bottomAnchor, constant: 8),
+            emptyLabel.leadingAnchor.constraint(equalTo: hintContainer.leadingAnchor, constant: 16),
+            emptyLabel.trailingAnchor.constraint(equalTo: hintContainer.trailingAnchor, constant: -16),
+            emptyLabel.bottomAnchor.constraint(equalTo: hintContainer.bottomAnchor, constant: -16),
+        ])
 
         // Switchable constraints for mic button leading edge
         micLeadingToEdge = micButton.leadingAnchor.constraint(equalTo: emptyBar.leadingAnchor, constant: 10)
@@ -1025,19 +1058,19 @@ class KeyboardViewController: UIInputViewController {
         micLeadingToEdge.isActive = true
 
         NSLayoutConstraint.activate([
-            // Mic (Speak) — right, fixed 38pt height, centered vertically
+            // Mic (Speak) — right, fixed 38pt height, pinned to bottom
             micButton.trailingAnchor.constraint(equalTo: emptyBar.trailingAnchor, constant: -10),
-            micButton.centerYAnchor.constraint(equalTo: emptyBar.centerYAnchor),
+            micButton.bottomAnchor.constraint(equalTo: emptyBar.bottomAnchor, constant: -12),
             micButton.heightAnchor.constraint(equalToConstant: 38),
 
-            // Remove — left, fixed 38pt height, centered vertically
+            // Remove — left, fixed 38pt height, pinned to bottom
             removeBtn.leadingAnchor.constraint(equalTo: emptyBar.leadingAnchor, constant: 10),
-            removeBtn.centerYAnchor.constraint(equalTo: emptyBar.centerYAnchor),
+            removeBtn.bottomAnchor.constraint(equalTo: emptyBar.bottomAnchor, constant: -12),
             removeBtn.heightAnchor.constraint(equalToConstant: 38),
 
-            // Translate — center, fixed 38pt height, centered vertically
+            // Translate — center, fixed 38pt height, pinned to bottom
             translateClipboardBtn.leadingAnchor.constraint(equalTo: removeBtn.trailingAnchor, constant: 6),
-            translateClipboardBtn.centerYAnchor.constraint(equalTo: emptyBar.centerYAnchor),
+            translateClipboardBtn.bottomAnchor.constraint(equalTo: emptyBar.bottomAnchor, constant: -12),
             translateClipboardBtn.heightAnchor.constraint(equalToConstant: 38),
             translateClipboardBtn.widthAnchor.constraint(equalTo: removeBtn.widthAnchor),
 
@@ -1045,13 +1078,8 @@ class KeyboardViewController: UIInputViewController {
             micButton.widthAnchor.constraint(equalTo: removeBtn.widthAnchor),
 
             langPill.trailingAnchor.constraint(equalTo: emptyBar.trailingAnchor, constant: -12),
-            langPill.centerYAnchor.constraint(equalTo: emptyBar.centerYAnchor),
+            langPill.bottomAnchor.constraint(equalTo: emptyBar.bottomAnchor, constant: -12),
             langPill.heightAnchor.constraint(equalToConstant: 26),
-
-            emptyLabel.centerXAnchor.constraint(equalTo: emptyBar.centerXAnchor),
-            emptyLabel.bottomAnchor.constraint(equalTo: micButton.topAnchor, constant: -20),
-            emptyLabel.leadingAnchor.constraint(equalTo: emptyBar.leadingAnchor, constant: 32),
-            emptyLabel.trailingAnchor.constraint(equalTo: emptyBar.trailingAnchor, constant: -32),
         ])
 
         // ── Recording bar (hidden until mic is tapped) ──────────────────────
@@ -2543,6 +2571,11 @@ class KeyboardViewController: UIInputViewController {
 
     // MARK: - Mic (Speech-to-Text)
     
+    @objc private func switchKeyboardTapped() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        advanceToNextInputMode()
+    }
+
     @objc private func removeTextTapped() {
         // Brute force clear the text field
         for _ in 0..<5 {
