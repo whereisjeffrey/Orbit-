@@ -490,8 +490,8 @@ class KeyboardViewController: UIInputViewController {
             self.inputCard.isHidden = true
             self.outputCard.isHidden = false
             self.correctionCard.isHidden = false
-            self.correctionCard.backgroundColor = UIColor.systemGreen.withAlphaComponent(0.05)
-            self.correctionIcon.text = "🗣️"
+            self.correctionCard.backgroundColor = UIColor.systemYellow.withAlphaComponent(0.12)
+            self.correctionIcon.text = "📝"
             self.correctionHeader.text = "NOTES"
             self.correctionTextLabel.text = "Analyzing your \(targetName)..."
             self.coachCard.isHidden = true
@@ -539,7 +539,7 @@ class KeyboardViewController: UIInputViewController {
 
                         if let notes = refined.notes {
                             self.correctionCard.isHidden = false
-                            self.correctionIcon.text = "🗣️"
+                            self.correctionIcon.text = "📝"
                             self.correctionHeader.text = "NOTES"
                             self.correctionTextLabel.text = "💡 \(self.capToTwoSentences(notes))"
                         }
@@ -660,7 +660,11 @@ class KeyboardViewController: UIInputViewController {
                                     self.currentHistoryIndex = 0
                                     self.outputTextLabel.text = refined.output
                                     self.updateSwipeHint()
-                                    if let notes = refined.notes {
+                                    // Show notes based on input method:
+                                    // Typed → refinement notes (about translation choices)
+                                    // Speech → updateNotes with pronunciation tips (about YOUR input)
+                                    if !self.lastSourceWasSpeech, let notes = refined.notes {
+                                        // Typed: show refinement notes immediately
                                         self.notesCard.isHidden = false
                                         let icon: String
                                         switch self.currentTone {
@@ -672,12 +676,13 @@ class KeyboardViewController: UIInputViewController {
                                     }
                                     NSLog("TSKBD_REFINED: \(text) → \(refined.output)")
                                     // ── Defer post-translation work — cancelled if user taps Replace ──
-                                    let hasRefinedNotes = refined.notes != nil
+                                    let wasSpeech = self.lastSourceWasSpeech
                                     self.deferredPostTranslation?.cancel()
                                     let work = DispatchWorkItem { [weak self] in
                                         guard let self = self else { return }
-                                        // Skip updateNotes if refinement already provided notes — avoids flash
-                                        if !hasRefinedNotes {
+                                        // Speech → always fire updateNotes (has pronunciation context)
+                                        // Typed → skip updateNotes if refinement already provided notes
+                                        if wasSpeech || refined.notes == nil {
                                             self.updateNotes(original: text, translated: refined.output)
                                         }
                                         TalkSwitchAPI.shared.recordTranslationForPersona(original: text, translated: refined.output, tone: tone)
@@ -1653,18 +1658,18 @@ class KeyboardViewController: UIInputViewController {
     }
 
     private func setupCorrectionCard() {
-        correctionCard.backgroundColor = UIColor.systemGreen.withAlphaComponent(0.10)
+        correctionCard.backgroundColor = UIColor.systemYellow.withAlphaComponent(0.12)
         correctionCard.layer.cornerRadius = 10
         correctionCard.translatesAutoresizingMaskIntoConstraints = false
 
-        correctionIcon.text = "🗣️"
+        correctionIcon.text = "📝"
         correctionIcon.font = UIFont.systemFont(ofSize: 14)
         correctionIcon.translatesAutoresizingMaskIntoConstraints = false
         correctionCard.addSubview(correctionIcon)
 
         correctionHeader.text = "NOTES"
         correctionHeader.font = UIFont.systemFont(ofSize: scaled(10), weight: .bold)
-        correctionHeader.textColor = UIColor.systemGreen
+        correctionHeader.textColor = UIColor.systemOrange
         correctionHeader.translatesAutoresizingMaskIntoConstraints = false
         correctionCard.addSubview(correctionHeader)
 
