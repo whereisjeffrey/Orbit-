@@ -410,7 +410,7 @@ class KeyboardViewController: UIInputViewController {
         // Practice tip
         let practiceTip = UILabel()
         practiceTip.translatesAutoresizingMaskIntoConstraints = false
-        practiceTip.text = "💡 Want to practice first? Send yourself a message — just search your name in WhatsApp."
+        practiceTip.text = "💡 Don't worry — your translation won't send until you tap the green Send button."
         practiceTip.font = UIFont.systemFont(ofSize: scaled(12), weight: .regular)
         practiceTip.textColor = UIColor.white.withAlphaComponent(0.5)
         practiceTip.textAlignment = .center
@@ -479,6 +479,14 @@ class KeyboardViewController: UIInputViewController {
         if translationsSent == 1 && !translateHintShown {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
                 self?.showTranslateHint()
+            }
+        }
+
+        // Step 3: After they've used Replace, next translation → teach swipe-up
+        let replaceUsed = UserDefaults(suiteName: "group.com.jeff.translatehelper")?.bool(forKey: "kbd_replace_used") ?? false
+        if translationsSent >= 2 && replaceUsed && !swipeHintOnboardingShown {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+                self?.showSwipeUpHint()
             }
         }
 
@@ -3299,11 +3307,11 @@ class KeyboardViewController: UIInputViewController {
 
     @objc private func replaceTappedFlash() {
         flashActionButton(index: 0, tempTitle: "Replaced! ✅", originalTitle: "Replace ↩️")
-        // After first Replace, queue swipe-up hint for next translation
+        // Mark that they've used Replace — swipe hint will show on next translation
         if !swipeHintOnboardingShown {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-                self?.showSwipeUpHint()
-            }
+            let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper")
+            defaults?.set(true, forKey: "kbd_replace_used")
+            defaults?.synchronize()
         }
     }
 

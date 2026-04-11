@@ -306,6 +306,7 @@ struct SettingsView: View {
                             appGroup?.removeObject(forKey: "kbd_swipe_hint_shown")
                             appGroup?.removeObject(forKey: "kbd_speak_hint_shown")
                             appGroup?.removeObject(forKey: "kbd_notes_hint_shown")
+                            appGroup?.removeObject(forKey: "kbd_replace_used")
                             appGroup?.removeObject(forKey: "ts_save_hint_shown")
                             MistakeProfileStore.shared.resetToZero()
                             appGroup?.synchronize()
