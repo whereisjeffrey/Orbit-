@@ -104,6 +104,15 @@ class KeyboardViewController: UIInputViewController {
     private var translateHintShown: Bool {
         UserDefaults(suiteName: "group.com.jeff.translatehelper")?.bool(forKey: "kbd_translate_hint_shown") ?? false
     }
+    private var swipeHintOnboardingShown: Bool {
+        UserDefaults(suiteName: "group.com.jeff.translatehelper")?.bool(forKey: "kbd_swipe_hint_shown") ?? false
+    }
+    private var speakHintShown: Bool {
+        UserDefaults(suiteName: "group.com.jeff.translatehelper")?.bool(forKey: "kbd_speak_hint_shown") ?? false
+    }
+    private var notesHintShown: Bool {
+        UserDefaults(suiteName: "group.com.jeff.translatehelper")?.bool(forKey: "kbd_notes_hint_shown") ?? false
+    }
 
     // MARK: - State
 
@@ -376,29 +385,28 @@ class KeyboardViewController: UIInputViewController {
         // Title
         let titleLabel = UILabel()
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.text = "Welcome to Orbit"
+        titleLabel.text = "Welcome to your Orbit keyboard"
         titleLabel.font = UIFont.systemFont(ofSize: scaled(18), weight: .bold)
         titleLabel.textColor = .white
         titleLabel.textAlignment = .center
+        titleLabel.numberOfLines = 0
         welcomeOverlay.addSubview(titleLabel)
 
         // Steps
-        let step1 = makeStepLabel(number: "1", text: "Tap 🌐 to switch to your regular keyboard and type your message")
-        let step2 = makeStepLabel(number: "2", text: "Switch back to Orbit — your translation appears automatically")
-        let step3 = makeStepLabel(number: "3", text: "Swipe up to send, or tap Replace")
+        let step1 = makeStepLabel(number: "1", text: "Tap the 🌐 globe below to switch to your WhatsApp keyboard and type your message")
+        let step2 = makeStepLabel(number: "2", text: "Tap the globe again to switch back to Orbit — your translation appears automatically")
         welcomeOverlay.addSubview(step1)
         welcomeOverlay.addSubview(step2)
-        welcomeOverlay.addSubview(step3)
 
-        // Speak tip
-        let speakTip = UILabel()
-        speakTip.translatesAutoresizingMaskIntoConstraints = false
-        speakTip.text = "🎤 Or tap Speak below to record a voice message — use Orbit's mic, not the other ones on screen."
-        speakTip.font = UIFont.systemFont(ofSize: scaled(12), weight: .regular)
-        speakTip.textColor = UIColor.white.withAlphaComponent(0.6)
-        speakTip.textAlignment = .center
-        speakTip.numberOfLines = 0
-        welcomeOverlay.addSubview(speakTip)
+        // Practice tip
+        let practiceTip = UILabel()
+        practiceTip.translatesAutoresizingMaskIntoConstraints = false
+        practiceTip.text = "💡 Want to practice first? Send yourself a message in WhatsApp — just search your name to find your own chat."
+        practiceTip.font = UIFont.systemFont(ofSize: scaled(12), weight: .regular)
+        practiceTip.textColor = UIColor.white.withAlphaComponent(0.6)
+        practiceTip.textAlignment = .center
+        practiceTip.numberOfLines = 0
+        welcomeOverlay.addSubview(practiceTip)
 
         // Got it button
         let gotItBtn = UIButton(type: .system)
@@ -412,24 +420,21 @@ class KeyboardViewController: UIInputViewController {
         welcomeOverlay.addSubview(gotItBtn)
 
         NSLayoutConstraint.activate([
-            titleLabel.topAnchor.constraint(equalTo: welcomeOverlay.topAnchor, constant: 20),
-            titleLabel.centerXAnchor.constraint(equalTo: welcomeOverlay.centerXAnchor),
+            titleLabel.topAnchor.constraint(equalTo: welcomeOverlay.topAnchor, constant: 24),
+            titleLabel.leadingAnchor.constraint(equalTo: welcomeOverlay.leadingAnchor, constant: 24),
+            titleLabel.trailingAnchor.constraint(equalTo: welcomeOverlay.trailingAnchor, constant: -24),
 
-            step1.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 16),
-            step1.leadingAnchor.constraint(equalTo: welcomeOverlay.leadingAnchor, constant: 20),
-            step1.trailingAnchor.constraint(equalTo: welcomeOverlay.trailingAnchor, constant: -20),
+            step1.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 20),
+            step1.leadingAnchor.constraint(equalTo: welcomeOverlay.leadingAnchor, constant: 24),
+            step1.trailingAnchor.constraint(equalTo: welcomeOverlay.trailingAnchor, constant: -24),
 
-            step2.topAnchor.constraint(equalTo: step1.bottomAnchor, constant: 8),
+            step2.topAnchor.constraint(equalTo: step1.bottomAnchor, constant: 10),
             step2.leadingAnchor.constraint(equalTo: step1.leadingAnchor),
             step2.trailingAnchor.constraint(equalTo: step1.trailingAnchor),
 
-            step3.topAnchor.constraint(equalTo: step2.bottomAnchor, constant: 8),
-            step3.leadingAnchor.constraint(equalTo: step1.leadingAnchor),
-            step3.trailingAnchor.constraint(equalTo: step1.trailingAnchor),
-
-            speakTip.topAnchor.constraint(equalTo: step3.bottomAnchor, constant: 16),
-            speakTip.leadingAnchor.constraint(equalTo: welcomeOverlay.leadingAnchor, constant: 24),
-            speakTip.trailingAnchor.constraint(equalTo: welcomeOverlay.trailingAnchor, constant: -24),
+            practiceTip.topAnchor.constraint(equalTo: step2.bottomAnchor, constant: 20),
+            practiceTip.leadingAnchor.constraint(equalTo: welcomeOverlay.leadingAnchor, constant: 28),
+            practiceTip.trailingAnchor.constraint(equalTo: welcomeOverlay.trailingAnchor, constant: -28),
 
             gotItBtn.bottomAnchor.constraint(equalTo: welcomeOverlay.bottomAnchor, constant: -16),
             gotItBtn.centerXAnchor.constraint(equalTo: welcomeOverlay.centerXAnchor),
@@ -975,6 +980,8 @@ class KeyboardViewController: UIInputViewController {
                     }
 
                     self.notesTextLabel.text = capped
+                    // Step 5: Notes hint on first notes appearance
+                    self.showNotesHint()
                     // Track this note's key phrase to avoid future repeats
                     let words = capped.components(separatedBy: "'")
                     if words.count >= 2 {
@@ -2547,9 +2554,53 @@ class KeyboardViewController: UIInputViewController {
         defaults?.synchronize()
 
         // Show in the hint card
-        hintTextLabel.text = "⬆️ Swipe up on your translation to drop it into the chat. Or tap Replace below."
+        hintTextLabel.text = "Tap Replace below to drop your translation into the chat."
         hintCard.isHidden = false
         NSLog("TSKBD_TRANSLATE_HINT: shown after first translation")
+    }
+
+    /// Step 3: After first Replace, teach swipe-up shortcut
+    private func showSwipeUpHint() {
+        let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper")
+        defaults?.synchronize()
+        guard !(defaults?.bool(forKey: "kbd_swipe_hint_shown") ?? false) else { return }
+        defaults?.set(true, forKey: "kbd_swipe_hint_shown")
+        defaults?.synchronize()
+
+        hintTextLabel.text = "You can also swipe up on your translation to send it even faster."
+        hintCard.isHidden = false
+        NSLog("TSKBD_SWIPE_HINT: shown after first Replace")
+    }
+
+    /// Step 4: First time empty state after a translation — teach Speak
+    private func showSpeakHint() {
+        let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper")
+        defaults?.synchronize()
+        guard !(defaults?.bool(forKey: "kbd_speak_hint_shown") ?? false) else { return }
+        guard translationsSent > 0 else { return }  // only after they've done at least one translation
+        defaults?.set(true, forKey: "kbd_speak_hint_shown")
+        defaults?.synchronize()
+
+        hintTextLabel.text = "🎤 Want to speak instead of type? Tap Speak below to record and translate your voice."
+        hintCard.isHidden = false
+        NSLog("TSKBD_SPEAK_HINT: shown on empty state")
+    }
+
+    /// Step 5: First time notes appear
+    private func showNotesHint() {
+        let defaults = UserDefaults(suiteName: "group.com.jeff.translatehelper")
+        defaults?.synchronize()
+        guard !(defaults?.bool(forKey: "kbd_notes_hint_shown") ?? false) else { return }
+        defaults?.set(true, forKey: "kbd_notes_hint_shown")
+        defaults?.synchronize()
+
+        // Will auto-dismiss after 5 seconds
+        hintTextLabel.text = "Orbit explains what it changed and why — helping you learn as you go."
+        hintCard.isHidden = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) { [weak self] in
+            self?.hintCard.isHidden = true
+        }
+        NSLog("TSKBD_NOTES_HINT: shown after first notes")
     }
 
     private func showPasteHint() {
@@ -2628,6 +2679,13 @@ class KeyboardViewController: UIInputViewController {
             micLeadingToEdge.isActive = true
         }
         emptyBar.layoutIfNeeded()
+
+        // Step 4: Teach Speak after they've done at least one translation
+        if !speakHintShown && translationsSent > 0 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                self?.showSpeakHint()
+            }
+        }
     }
 
     private func showPanel() {
@@ -3217,6 +3275,12 @@ class KeyboardViewController: UIInputViewController {
 
     @objc private func replaceTappedFlash() {
         flashActionButton(index: 0, tempTitle: "Replaced! ✅", originalTitle: "Replace ↩️")
+        // After first Replace, queue swipe-up hint for next translation
+        if !swipeHintOnboardingShown {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                self?.showSwipeUpHint()
+            }
+        }
     }
 
     private func flashActionButton(index: Int, tempTitle: String, originalTitle: String) {
