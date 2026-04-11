@@ -178,6 +178,7 @@ class KeyboardViewController: UIInputViewController {
     private let outputCard = UIView()
     private let outputLangLabel = UILabel()
     private let outputTextLabel = UILabel()
+    private let originalSubtitleLabel = UILabel()  // shows English original below translation
     private let notesCard = UIView()
     private let notesIcon = UILabel()
     private let notesTextLabel = UILabel()
@@ -545,6 +546,8 @@ class KeyboardViewController: UIInputViewController {
                         self.translationHistory = [refined.output]
                         self.currentHistoryIndex = 0
                         self.outputTextLabel.text = refined.output
+                        self.originalSubtitleLabel.text = "\"\(text)\""
+                        self.originalSubtitleLabel.isHidden = false
                         self.updateSwipeHint()
 
                         if let notes = refined.notes {
@@ -669,6 +672,9 @@ class KeyboardViewController: UIInputViewController {
                                     self.translationHistory = [refined.output]
                                     self.currentHistoryIndex = 0
                                     self.outputTextLabel.text = refined.output
+                                    // Show original text as subtitle
+                                    self.originalSubtitleLabel.text = "\"\(text)\""
+                                    self.originalSubtitleLabel.isHidden = false
                                     self.updateSwipeHint()
                                     // Show notes based on input method:
                                     // Typed → refinement notes (about translation choices)
@@ -717,6 +723,8 @@ class KeyboardViewController: UIInputViewController {
                                     self.translationHistory = [translation]
                                     self.currentHistoryIndex = 0
                                     self.outputTextLabel.text = translation
+                                    self.originalSubtitleLabel.text = "\"\(text)\""
+                                    self.originalSubtitleLabel.isHidden = false
                                     self.updateSwipeHint()
                                     NSLog("TSKBD_REFINE_FALLBACK: using DeepL translation")
                                     // ── Defer post-translation work — cancelled if user taps Replace ──
@@ -737,6 +745,8 @@ class KeyboardViewController: UIInputViewController {
                         self.translationHistory = [translation]
                         self.currentHistoryIndex = 0
                         self.outputTextLabel.text = translation
+                        self.originalSubtitleLabel.text = "\"\(text)\""
+                        self.originalSubtitleLabel.isHidden = false
                         self.updateSwipeHint()
                         // ── Defer post-translation work — cancelled if user taps Replace ──
                         self.deferredPostTranslation?.cancel()
@@ -1341,6 +1351,14 @@ class KeyboardViewController: UIInputViewController {
         pan.require(toFail: expandTap)
         outputCard.addGestureRecognizer(pan)
 
+        // Original text subtitle — shows English original below translation
+        originalSubtitleLabel.font = UIFont.systemFont(ofSize: scaled(12))
+        originalSubtitleLabel.textColor = UIColor.white.withAlphaComponent(0.4)
+        originalSubtitleLabel.numberOfLines = 2
+        originalSubtitleLabel.translatesAutoresizingMaskIntoConstraints = false
+        originalSubtitleLabel.isHidden = true
+        outputCard.addSubview(originalSubtitleLabel)
+
         // Swipe hint label
         swipeHintLabel.translatesAutoresizingMaskIntoConstraints = false
         swipeHintLabel.text = "swipe for another version →"
@@ -1382,7 +1400,10 @@ class KeyboardViewController: UIInputViewController {
             outputTextLabel.topAnchor.constraint(equalTo: outputLangLabel.bottomAnchor, constant: 2),
             outputTextLabel.leadingAnchor.constraint(equalTo: outputCard.leadingAnchor, constant: 12),
             outputTextLabel.trailingAnchor.constraint(equalTo: speakerBtn.leadingAnchor, constant: -8),
-            outputTextLabel.bottomAnchor.constraint(equalTo: outputCard.bottomAnchor, constant: -10),
+            originalSubtitleLabel.topAnchor.constraint(equalTo: outputTextLabel.bottomAnchor, constant: 4),
+            originalSubtitleLabel.leadingAnchor.constraint(equalTo: outputCard.leadingAnchor, constant: 12),
+            originalSubtitleLabel.trailingAnchor.constraint(equalTo: speakerBtn.leadingAnchor, constant: -8),
+            originalSubtitleLabel.bottomAnchor.constraint(equalTo: outputCard.bottomAnchor, constant: -10),
             swipeHintLabel.bottomAnchor.constraint(equalTo: outputCard.bottomAnchor, constant: -4),
             swipeHintLabel.trailingAnchor.constraint(equalTo: speakerBtn.leadingAnchor, constant: -6),
             loadingSpinner.trailingAnchor.constraint(equalTo: speakerBtn.leadingAnchor, constant: -8),
@@ -2422,6 +2443,7 @@ class KeyboardViewController: UIInputViewController {
         correctionCard.isHidden = true
         notesCard.isHidden = true
         hintCard.isHidden = true
+        originalSubtitleLabel.isHidden = true
         heightConstraint.constant = expandedHeight
         hidePollingState()
 
