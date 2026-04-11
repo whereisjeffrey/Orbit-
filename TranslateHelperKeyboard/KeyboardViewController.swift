@@ -57,6 +57,34 @@ let TSProfiles: [String: TSLangProfile] = [
 
 class KeyboardViewController: UIInputViewController {
 
+    // MARK: - Dynamic Type Scale
+
+    /// Reads the user's preferred text size and returns a multiplier.
+    /// Default system size = 1.0, each step up adds ~0.12.
+    private var fontScale: CGFloat {
+        let category = traitCollection.preferredContentSizeCategory
+        switch category {
+        case .extraSmall:                      return 0.85
+        case .small:                           return 0.90
+        case .medium:                          return 0.95
+        case .large:                           return 1.0   // system default
+        case .extraLarge:                      return 1.12
+        case .extraExtraLarge:                 return 1.24
+        case .extraExtraExtraLarge:            return 1.36
+        case .accessibilityMedium:             return 1.48
+        case .accessibilityLarge:              return 1.60
+        case .accessibilityExtraLarge:         return 1.72
+        case .accessibilityExtraExtraLarge:    return 1.84
+        case .accessibilityExtraExtraExtraLarge: return 1.96
+        default:                               return 1.0
+        }
+    }
+
+    /// Convenience — scales a base font size by the user's Dynamic Type preference.
+    private func scaled(_ baseSize: CGFloat) -> CGFloat {
+        return baseSize * fontScale
+    }
+
     // MARK: - State
 
     private var heightConstraint: NSLayoutConstraint!
@@ -921,10 +949,11 @@ class KeyboardViewController: UIInputViewController {
         ])
 
         // Shared style — matches the action buttons in the big keyboard (Replace/Save/Speak)
+        let scale = fontScale
         let btnStyle: (UIButton, String) -> Void = { btn, title in
             btn.translatesAutoresizingMaskIntoConstraints = false
             btn.setTitle(title, for: .normal)
-            btn.titleLabel?.font = UIFont.systemFont(ofSize: 13, weight: .semibold)
+            btn.titleLabel?.font = UIFont.systemFont(ofSize: 13 * scale, weight: .semibold)
             btn.setTitleColor(.white, for: .normal)
             btn.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.1)
             btn.layer.cornerRadius = 10
@@ -958,7 +987,7 @@ class KeyboardViewController: UIInputViewController {
 
         emptyLabel.translatesAutoresizingMaskIntoConstraints = false
         emptyLabel.text = "🌐 Type your message, then switch to Orbit to translate"
-        emptyLabel.font = UIFont.systemFont(ofSize: 13, weight: .medium)
+        emptyLabel.font = UIFont.systemFont(ofSize: scaled(13), weight: .medium)
         emptyLabel.textColor = UIColor.white.withAlphaComponent(0.5)
         emptyLabel.textAlignment = .center
         emptyLabel.numberOfLines = 0
@@ -1141,7 +1170,7 @@ class KeyboardViewController: UIInputViewController {
         topBar.heightAnchor.constraint(equalToConstant: 24).isActive = true
 
         directionLabel.translatesAutoresizingMaskIntoConstraints = false
-        directionLabel.font = UIFont.systemFont(ofSize: 14, weight: .bold)
+        directionLabel.font = UIFont.systemFont(ofSize: scaled(14), weight: .bold)
         directionLabel.textColor = UIColor.systemBlue
         topBar.addSubview(directionLabel)
 
@@ -1209,12 +1238,12 @@ class KeyboardViewController: UIInputViewController {
         inputCard.layer.cornerRadius = 10
         inputCard.translatesAutoresizingMaskIntoConstraints = false
 
-        inputLangLabel.font = UIFont.systemFont(ofSize: 10, weight: .bold)
+        inputLangLabel.font = UIFont.systemFont(ofSize: scaled(10), weight: .bold)
         inputLangLabel.textColor = textSecondary
         inputLangLabel.translatesAutoresizingMaskIntoConstraints = false
         inputCard.addSubview(inputLangLabel)
 
-        inputTextLabel.font = UIFont.systemFont(ofSize: 15)
+        inputTextLabel.font = UIFont.systemFont(ofSize: scaled(15))
         inputTextLabel.textColor = textPrimary
         inputTextLabel.numberOfLines = 2
         inputTextLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -1262,12 +1291,12 @@ class KeyboardViewController: UIInputViewController {
         outputCard.translatesAutoresizingMaskIntoConstraints = false
         outputCard.clipsToBounds = true
 
-        outputLangLabel.font = UIFont.systemFont(ofSize: 10, weight: .bold)
+        outputLangLabel.font = UIFont.systemFont(ofSize: scaled(10), weight: .bold)
         outputLangLabel.textColor = UIColor.systemBlue
         outputLangLabel.translatesAutoresizingMaskIntoConstraints = false
         outputCard.addSubview(outputLangLabel)
 
-        outputTextLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        outputTextLabel.font = UIFont.systemFont(ofSize: scaled(16), weight: .medium)
         outputTextLabel.textColor = textPrimary
         outputTextLabel.numberOfLines = 4
         outputTextLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -1300,7 +1329,7 @@ class KeyboardViewController: UIInputViewController {
         // Swipe hint label
         swipeHintLabel.translatesAutoresizingMaskIntoConstraints = false
         swipeHintLabel.text = "swipe for another version →"
-        swipeHintLabel.font = UIFont.systemFont(ofSize: 10, weight: .regular)
+        swipeHintLabel.font = UIFont.systemFont(ofSize: scaled(10), weight: .regular)
         swipeHintLabel.textColor = UIColor.systemBlue.withAlphaComponent(0.55)
         swipeHintLabel.textAlignment = .right
         swipeHintLabel.isHidden = true
@@ -1535,12 +1564,12 @@ class KeyboardViewController: UIInputViewController {
 
         let notesHeader = UILabel()
         notesHeader.text = "NOTES"
-        notesHeader.font = UIFont.systemFont(ofSize: 10, weight: .bold)
+        notesHeader.font = UIFont.systemFont(ofSize: scaled(10), weight: .bold)
         notesHeader.textColor = UIColor.systemOrange
         notesHeader.translatesAutoresizingMaskIntoConstraints = false
         notesCard.addSubview(notesHeader)
 
-        notesTextLabel.font = UIFont.systemFont(ofSize: 14.5)
+        notesTextLabel.font = UIFont.systemFont(ofSize: scaled(14.5))
         notesTextLabel.textColor = textPrimary
         notesTextLabel.numberOfLines = 0
         notesTextLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -1634,12 +1663,12 @@ class KeyboardViewController: UIInputViewController {
         correctionCard.addSubview(correctionIcon)
 
         correctionHeader.text = "NOTES"
-        correctionHeader.font = UIFont.systemFont(ofSize: 10, weight: .bold)
+        correctionHeader.font = UIFont.systemFont(ofSize: scaled(10), weight: .bold)
         correctionHeader.textColor = UIColor.systemGreen
         correctionHeader.translatesAutoresizingMaskIntoConstraints = false
         correctionCard.addSubview(correctionHeader)
 
-        correctionTextLabel.font = UIFont.systemFont(ofSize: 14.5)
+        correctionTextLabel.font = UIFont.systemFont(ofSize: scaled(14.5))
         correctionTextLabel.textColor = textPrimary
         correctionTextLabel.numberOfLines = 0
         correctionTextLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -1670,7 +1699,7 @@ class KeyboardViewController: UIInputViewController {
         coachCard.addSubview(coachIcon)
 
         coachHeader.text = "COACH"
-        coachHeader.font = UIFont.systemFont(ofSize: 10, weight: .bold)
+        coachHeader.font = UIFont.systemFont(ofSize: scaled(10), weight: .bold)
         coachHeader.textColor = UIColor.systemBlue
         coachHeader.translatesAutoresizingMaskIntoConstraints = false
         coachCard.addSubview(coachHeader)
