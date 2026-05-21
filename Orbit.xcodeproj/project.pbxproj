@@ -12,6 +12,10 @@
 		006F75152F547CA800D581A9 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 006F75142F547CA800D581A9 /* FirebaseFirestore */; };
 		006F75ED2F547E3500D581A9 /* TranslateHelperKeyboard.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 006F75E62F547E3500D581A9 /* TranslateHelperKeyboard.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		006F769E2F54C7FA00D581A9 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 006F769D2F54C7FA00D581A9 /* GoogleSignIn */; };
+		007B71FD2FBE716200AFB81B /* KeyboardKit.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 007B71FC2FBE716200AFB81B /* KeyboardKit.xcframework */; };
+		007B71FE2FBE716200AFB81B /* KeyboardKit.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 007B71FC2FBE716200AFB81B /* KeyboardKit.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		007B72012FBE762E00AFB81B /* LicenseKit.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 007B72002FBE762E00AFB81B /* LicenseKit.xcframework */; };
+		007B72022FBE762E00AFB81B /* LicenseKit.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 007B72002FBE762E00AFB81B /* LicenseKit.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -36,11 +40,25 @@
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		007B71FF2FBE716200AFB81B /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				007B72022FBE762E00AFB81B /* LicenseKit.xcframework in Embed Frameworks */,
+				007B71FE2FBE716200AFB81B /* KeyboardKit.xcframework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		003133452F3DE56A00F7A418 /* TranslateHelper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TranslateHelper.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		006F75E62F547E3500D581A9 /* TranslateHelperKeyboard.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TranslateHelperKeyboard.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		007B71FC2FBE716200AFB81B /* KeyboardKit.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = KeyboardKit.xcframework; sourceTree = "<group>"; };
+		007B72002FBE762E00AFB81B /* LicenseKit.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = LicenseKit.xcframework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -95,6 +113,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				007B72012FBE762E00AFB81B /* LicenseKit.xcframework in Frameworks */,
+				007B71FD2FBE716200AFB81B /* KeyboardKit.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -123,6 +143,8 @@
 		006F769C2F54C7FA00D581A9 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				007B72002FBE762E00AFB81B /* LicenseKit.xcframework */,
+				007B71FC2FBE716200AFB81B /* KeyboardKit.xcframework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -165,6 +187,7 @@
 				006F75E22F547E3500D581A9 /* Sources */,
 				006F75E32F547E3500D581A9 /* Frameworks */,
 				006F75E42F547E3500D581A9 /* Resources */,
+				007B71FF2FBE716200AFB81B /* Embed Frameworks */,
 			);
 			buildRules = (
 			);

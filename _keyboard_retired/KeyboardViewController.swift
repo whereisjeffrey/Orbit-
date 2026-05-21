@@ -1,6 +1,8 @@
 import UIKit
 import AVFoundation
 import NaturalLanguage
+import KeyboardKit
+import SwiftUI
 
 struct TSLangProfile {
     let code: String
@@ -55,7 +57,7 @@ let TSProfiles: [String: TSLangProfile] = [
     "ca": TSLangProfile(code: "ca", deepL: .catalan,       flag: "🇪🇸", name: "CATALAN",     emojiFont: true),
 ]
 
-class KeyboardViewController: UIInputViewController {
+class KeyboardViewController: KeyboardKit.KeyboardInputViewController {
 
     // MARK: - Dynamic Type Scale
 
@@ -114,9 +116,13 @@ class KeyboardViewController: UIInputViewController {
         UserDefaults(suiteName: "group.com.jeff.translatehelper")?.bool(forKey: "kbd_notes_hint_shown") ?? false
     }
 
+    // MARK: - QWERTY Mode
+
+    private let qwertyView = QWERTYView()
+
     // MARK: - State
 
-    private var heightConstraint: NSLayoutConstraint!
+    private var heightConstraint: NSLayoutConstraint?
     private let expandedHeight: CGFloat = 340
     private let fullExpandedHeight: CGFloat = 500
     private let emptyHeight: CGFloat = 80
@@ -174,8 +180,8 @@ class KeyboardViewController: UIInputViewController {
     // Translate clipboard button + Remove button + layout constraints
     private let translateClipboardBtn = UIButton(type: .system)
     private let removeBtn = UIButton(type: .system)
-    private var micLeadingToEdge: NSLayoutConstraint!    // full width (no translate/remove)
-    private var micLeadingToThird: NSLayoutConstraint!   // right third (translate + remove visible)
+    private var micLeadingToEdge: NSLayoutConstraint?
+    private var micLeadingToThird: NSLayoutConstraint?
     private var translationHistory: [String] = []
     private var pendingTranslationTasks: [URLSessionTask] = []  // cancel on new translation
     private var currentHistoryIndex: Int = -1
@@ -239,10 +245,10 @@ class KeyboardViewController: UIInputViewController {
         ("flirty",  "Flirty",  "🔥")
     ]
 
-    // MARK: - Colors (always dark — consistent premium feel regardless of system theme)
+    // MARK: - Colors (light mode — matches native iOS keyboard)
 
     private var panelBg: UIColor {
-        UIColor(red: 0.13, green: 0.13, blue: 0.14, alpha: 1.0)
+        UIColor(red: 0.82, green: 0.83, blue: 0.85, alpha: 1.0)  // #D1D3D9 native light kb bg
     }
     private var cardBg: UIColor {
         UIColor(white: 0.18, alpha: 1.0)
@@ -330,7 +336,6 @@ class KeyboardViewController: UIInputViewController {
         let defaults = UserDefaults(suiteName: appGroup)
         let saved = defaults?.string(forKey: "talkswitch_lang") ?? LanguageManager.shared.targetLangRequired
         selectedLanguage = saved
-        updateLangPill()
 
         // Signal to the main app that the keyboard has been activated at least once.
         // LibraryView's KeyboardSetupBanner reads this to auto-hide itself.
@@ -347,22 +352,7 @@ class KeyboardViewController: UIInputViewController {
         #endif
 
 
-        // Force dark appearance — all system colors resolve to dark variants,
-        // so alpha-blended cards look correct regardless of host app theme.
-        overrideUserInterfaceStyle = .dark
-
-        heightConstraint = view.heightAnchor.constraint(equalToConstant: emptyHeight)
-        heightConstraint.priority = .required
-        heightConstraint.isActive = true
-        view.backgroundColor = panelBg
-
-        setupEmptyBar()
-        setupPanel()
-        setupWelcomeOverlay()
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
-            self?.autoDetect()
-        }
+        // KeyboardKit handles the keyboard UI — no manual setup needed
     }
 
     // MARK: - Welcome Overlay
@@ -457,7 +447,7 @@ class KeyboardViewController: UIInputViewController {
         ])
 
         // Set height to expanded so the overlay has room
-        heightConstraint.constant = expandedHeight
+        heightConstraint?.constant = expandedHeight
     }
 
     private func makeStepLabel(number: String, text: String) -> UILabel {
@@ -534,41 +524,20 @@ class KeyboardViewController: UIInputViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        checkForPendingDictation()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
-            self?.autoDetect()
-        }
+        // KeyboardKit manages the keyboard — old autoDetect/dictation not needed on appear
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        // Re-run autoDetect when keyboard becomes visible again — viewWillAppear
-        // doesn't always fire when iOS reuses the keyboard process.
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
-            guard let self = self else { return }
-            // Only run if we're showing the empty bar but there's text in the field
-            if !self.emptyBar.isHidden {
-                let before = self.textDocumentProxy.documentContextBeforeInput ?? ""
-                let after = self.textDocumentProxy.documentContextAfterInput ?? ""
-                let text = (before + after).trimmingCharacters(in: .whitespacesAndNewlines)
-                if !text.isEmpty {
-                    self.autoDetect()
-                }
-            }
-        }
-    }
-
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-        if traitCollection.userInterfaceStyle != previousTraitCollection?.userInterfaceStyle {
-            view.backgroundColor = panelBg
-            applyColors()
-        }
+        // KeyboardKit manages the keyboard
     }
 
     // MARK: - Auto Detection
 
     private func autoDetect() {
+        // In QWERTY mode, user types on our keyboard — no auto-detect needed
+        if !qwertyView.isHidden { return }
+
         let before = textDocumentProxy.documentContextBeforeInput ?? ""
         let after  = textDocumentProxy.documentContextAfterInput  ?? ""
         let fieldText = (before + after).trimmingCharacters(in: .whitespacesAndNewlines)
@@ -1125,6 +1094,86 @@ class KeyboardViewController: UIInputViewController {
         }
     }
 
+    // MARK: - KeyboardKit Setup
+
+    override func viewWillSetupKeyboardKit() {
+        super.viewWillSetupKeyboardKit()
+        // Wire our custom action handler for the Translate button
+        let handler = OrbitActionHandler(controller: self)
+        handler.onPrimaryAction = { [weak self] in self?.handleTranslateAction() }
+        services.actionHandler = handler
+    }
+
+    override func viewWillSetupKeyboardView() {
+        // Don't call super — we provide our own keyboard view
+        setupKeyboardView { controller in
+            KeyboardView(
+                services: controller.services,
+                buttonContent: { params in
+                    if case .primary = params.item.action {
+                        Text("Translate")
+                            .font(.system(size: 14, weight: .semibold))
+                    } else {
+                        params.view
+                    }
+                },
+                buttonView: { params in params.view },
+                collapsedView: { params in params.view },
+                emojiKeyboard: { params in params.view },
+                toolbar: { _ in EmptyView() }
+            )
+        }
+    }
+
+    /// Handle the primary (return/Translate) key action
+    func handleTranslateAction() {
+        let before = textDocumentProxy.documentContextBeforeInput ?? ""
+        let after = textDocumentProxy.documentContextAfterInput ?? ""
+        let fullText = (before + after).trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard !fullText.isEmpty else {
+            NSLog("TSKBD_TRANSLATE: no text to translate")
+            return
+        }
+
+        NSLog("TSKBD_TRANSLATE: translating '\(fullText.prefix(60))'")
+        inputText = fullText
+        lastSourceWasSpeech = false
+
+        let detected = detectLanguage(fullText)
+        let targetCode = LanguageManager.shared.targetLangRequired
+        let native = nativeLang
+
+        let isNative = detected.code == native || (detected.code == "en" && native == "en")
+        let sourceLang = detected.code
+        let destLang = isNative ? targetCode : native
+
+        let sourceProf = TSProfiles[sourceLang] ?? TSProfiles["en"]!
+        let destProf = TSProfiles[destLang] ?? TSProfiles[targetCode]!
+
+        TranslationService.shared.translate(
+            text: fullText,
+            from: sourceProf.deepL,
+            to: destProf.deepL,
+            style: .natural
+        ) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                switch result {
+                case .success(let translation):
+                    self.translationHistory = [translation]
+                    self.currentHistoryIndex = 0
+                    self.lastTranslationText = translation
+                    self.translationsSent += 1
+                    self.clearAndInsertTranslation(translation)
+                    NSLog("TSKBD_TRANSLATE: ✅ '\(fullText.prefix(30))' → '\(translation.prefix(30))'")
+                case .failure(let error):
+                    NSLog("TSKBD_TRANSLATE: ❌ \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+
     // MARK: - Empty State
 
     private func setupEmptyBar() {
@@ -1219,7 +1268,7 @@ class KeyboardViewController: UIInputViewController {
         // Switchable constraints for mic button leading edge
         micLeadingToEdge = micButton.leadingAnchor.constraint(equalTo: emptyBar.leadingAnchor, constant: 10)
         micLeadingToThird = micButton.leadingAnchor.constraint(equalTo: translateClipboardBtn.trailingAnchor, constant: 6)
-        micLeadingToEdge.isActive = true
+        micLeadingToEdge?.isActive = true
 
         NSLayoutConstraint.activate([
             // Mic (Speak) — right, fixed 38pt height, pinned to bottom
@@ -2687,13 +2736,18 @@ class KeyboardViewController: UIInputViewController {
     }
 
     private func showEmpty() {
+        // In QWERTY mode, just ensure the QWERTY keyboard is visible
+        if !qwertyView.isHidden {
+            heightConstraint?.constant = qwertyView.requiredHeight
+            return
+        }
         emptyBar.isHidden = false
         panel.isHidden = true
         correctionCard.isHidden = true
         notesCard.isHidden = true
         hintCard.isHidden = true
         originalSubtitleLabel.isHidden = true
-        heightConstraint.constant = expandedHeight
+        heightConstraint?.constant = expandedHeight
         hidePollingState()
 
         // Show Remove + Translate when clipboard has text OR field has text
@@ -2702,13 +2756,13 @@ class KeyboardViewController: UIInputViewController {
         if clipboardHasText || fieldHasText {
             removeBtn.isHidden = false
             translateClipboardBtn.isHidden = !clipboardHasText  // only show Translate if clipboard has text
-            micLeadingToEdge.isActive = false
-            micLeadingToThird.isActive = true
+            micLeadingToEdge?.isActive = false
+            micLeadingToThird?.isActive = true
         } else {
             removeBtn.isHidden = true
             translateClipboardBtn.isHidden = true
-            micLeadingToThird.isActive = false
-            micLeadingToEdge.isActive = true
+            micLeadingToThird?.isActive = false
+            micLeadingToEdge?.isActive = true
         }
         emptyBar.layoutIfNeeded()
 
@@ -2721,9 +2775,11 @@ class KeyboardViewController: UIInputViewController {
     }
 
     private func showPanel() {
+        // In QWERTY mode, results show in the translation strip — no panel needed
+        if !qwertyView.isHidden { return }
         emptyBar.isHidden = true
         panel.isHidden = false
-        heightConstraint.constant = expandedHeight
+        heightConstraint?.constant = expandedHeight
     }
 
     // MARK: - Colors
@@ -3115,12 +3171,12 @@ class KeyboardViewController: UIInputViewController {
             // Expand — show all text, grow keyboard
             outputTextLabel.numberOfLines = 0
             inputTextLabel.numberOfLines = 0
-            heightConstraint.constant = fullExpandedHeight
+            heightConstraint?.constant = fullExpandedHeight
         } else {
             // Collapse back
             outputTextLabel.numberOfLines = 4
             inputTextLabel.numberOfLines = 2
-            heightConstraint.constant = expandedHeight
+            heightConstraint?.constant = expandedHeight
         }
         
         UIView.animate(withDuration: 0.25) {
@@ -3583,6 +3639,215 @@ extension KeyboardViewController: SpeechServiceDelegate {
         enhancedVoiceBanner = nil
     }
 
+}
+
+// MARK: - QWERTYViewDelegate
+
+extension KeyboardViewController: QWERTYViewDelegate {
+
+    func qwertyDidTapKey(_ character: String) {
+        textDocumentProxy.insertText(character)
+        qwertyView.checkAutoCapitalization()
+    }
+
+    func qwertyDidTapBackspace() {
+        textDocumentProxy.deleteBackward()
+    }
+
+    func qwertyDidTapSpace() {
+        textDocumentProxy.insertText(" ")
+        qwertyView.checkAutoCapitalization()
+    }
+
+    func qwertyDidTapReturn() {
+        textDocumentProxy.insertText("\n")
+    }
+
+    func qwertyDidTapTranslate() {
+        // Grab all text from the text field
+        let before = textDocumentProxy.documentContextBeforeInput ?? ""
+        let after = textDocumentProxy.documentContextAfterInput ?? ""
+        let fullText = (before + after).trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard !fullText.isEmpty else {
+            NSLog("TSKBD_QWERTY: translate tapped but no text")
+            return
+        }
+
+        NSLog("TSKBD_QWERTY: translating '\(fullText.prefix(60))'")
+        inputText = fullText
+        lastSourceWasSpeech = false
+
+        // Detect language and translate
+        let detected = detectLanguage(fullText)
+        let targetCode = LanguageManager.shared.targetLangRequired
+        let native = nativeLang
+
+        // Determine direction: if text is in native language → translate to target
+        // If text is in target language → translate to native
+        let isNative = detected.code == native || (detected.code == "en" && native == "en")
+        let sourceLang = detected.code
+        let destLang = isNative ? targetCode : native
+
+        let sourceProf = TSProfiles[sourceLang] ?? TSProfiles["en"]!
+        let destProf = TSProfiles[destLang] ?? TSProfiles[targetCode]!
+
+        // Use existing TranslationService
+        TranslationService.shared.translate(
+            text: fullText,
+            from: sourceProf.deepL,
+            to: destProf.deepL,
+            style: .natural
+        ) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                switch result {
+                case .success(let translation):
+                    NSLog("TSKBD_QWERTY: translated for strip")
+                    self.translationHistory = [translation]
+                    self.currentHistoryIndex = 0
+                    self.lastTranslationText = translation
+                    self.translationsSent += 1
+
+                    // Clear original text and insert translation so user can send
+                    self.clearAndInsertTranslation(translation)
+
+                    // Fetch notes for the drawer
+                    self.fetchQWERTYNotes(original: fullText, translated: translation, targetLang: destLang)
+
+                    NSLog("TSKBD_QWERTY: ✅ '\(fullText.prefix(30))' → '\(translation.prefix(30))'")
+
+                case .failure(let error):
+                    self.qwertyView.showTranslation(original: fullText, translated: "⚠️ Translation failed")
+                    NSLog("TSKBD_QWERTY: ❌ \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+
+    func qwertyDidTapGlobe() {
+        advanceToNextInputMode()
+    }
+
+    func qwertyDidTapSpeak() {
+        micTapped()
+    }
+
+    func qwertyDidTapDrawer() {
+        heightConstraint?.constant = qwertyView.requiredHeight
+        UIView.animate(withDuration: 0.25) {
+            self.view.superview?.layoutIfNeeded()
+        }
+    }
+
+    func qwertyDidTapSavePhrase() {
+        // Reuse existing save logic
+        saveTapped()
+    }
+
+    func qwertyDidLongPressWord(_ word: String, inTranslation: Bool) {
+        NSLog("TSKBD_QWERTY: long-pressed word '\(word)' inTranslation=\(inTranslation)")
+
+        // Save single word via App Group — similar to saveTapped but for one word
+        let appGroup = "group.com.jeff.translatehelper"
+        guard let defaults = UserDefaults(suiteName: appGroup) else { return }
+
+        let targetCode = LanguageManager.shared.targetLangRequired
+        let key = "talkswitch_saved_phrases"
+        let entry: [String: String] = [
+            "id":          UUID().uuidString,
+            "sourceText":  word,
+            "translation": "", // will be filled by main app lookup
+            "sourceLang":  inTranslation ? targetCode : nativeLang,
+            "targetLang":  inTranslation ? nativeLang : targetCode,
+            "savedAt":     ISO8601DateFormatter().string(from: Date()),
+            "saveType":    "word_select"
+        ]
+        var existing = defaults.array(forKey: key) as? [[String: String]] ?? []
+        existing.insert(entry, at: 0)
+        defaults.set(existing, forKey: key)
+        defaults.synchronize()
+
+        // Open drawer with word info
+        qwertyView.updateDrawerContent(
+            notes: "📝 \"\(word)\" saved to your deck",
+            pronunciation: nil
+        )
+        qwertyView.showDrawerAutoOpen()
+
+        NSLog("TSKBD_QWERTY: saved word '\(word)'")
+    }
+
+    // MARK: - QWERTY Helpers
+
+    /// Clears the text field and inserts the translation, ready to send.
+    private func clearAndInsertTranslation(_ translation: String) {
+        // Move cursor to end
+        if let after = textDocumentProxy.documentContextAfterInput, !after.isEmpty {
+            textDocumentProxy.adjustTextPosition(byCharacterOffset: after.count)
+        }
+        // Delete all
+        var safety = 0
+        while let before = textDocumentProxy.documentContextBeforeInput, !before.isEmpty, safety < 20 {
+            for _ in 0..<before.count { textDocumentProxy.deleteBackward() }
+            safety += 1
+        }
+        // Insert translation
+        textDocumentProxy.insertText(translation)
+    }
+
+    func qwertyNeedsAutoCapCheck() -> Bool {
+        // Check if we should auto-capitalize based on what precedes the cursor
+        let capType = textDocumentProxy.autocapitalizationType ?? .sentences
+        guard capType != .none else { return false }
+        if capType == .allCharacters { return true }
+
+        let before = textDocumentProxy.documentContextBeforeInput
+        // Start of field — capitalize
+        guard let context = before, !context.isEmpty else { return true }
+
+        if capType == .words {
+            return context.hasSuffix(" ") || context.hasSuffix("\n")
+        }
+
+        // .sentences — capitalize after sentence-ending punctuation + space, or newline
+        let trimmed = context.trimmingCharacters(in: .whitespaces)
+        if context.hasSuffix("\n") { return true }
+        if (context.hasSuffix(" ") || context.hasSuffix("  ")) &&
+           (trimmed.hasSuffix(".") || trimmed.hasSuffix("?") || trimmed.hasSuffix("!")) {
+            return true
+        }
+        return false
+    }
+
+    /// Fetches contextual notes for the drawer content
+    private func fetchQWERTYNotes(original: String, translated: String, targetLang: String) {
+        let tone = Tone(rawValue: currentTone) ?? .casual
+        TalkSwitchAPI.shared.extractKeyPhraseForSaving(
+            original: original,
+            translated: translated,
+            sourceLang: nativeLang,
+            targetLang: targetLang,
+            tone: tone
+        ) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                switch result {
+                case .success(let keyPhrase):
+                    let notes = keyPhrase.notes.isEmpty ? "💡 Translated with \(tone.rawValue) tone" : "📝 \(keyPhrase.notes)"
+                    self.qwertyView.updateDrawerContent(notes: notes, pronunciation: nil)
+                case .failure:
+                    self.qwertyView.updateDrawerContent(notes: "💡 Translated with \(tone.rawValue) tone", pronunciation: nil)
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Keyboard Click Sound Support
+
+extension UIInputView: UIInputViewAudioFeedback {
+    open var enableInputClicksWhenVisible: Bool { true }
 }
 
 // MARK: - UIColor blend helper

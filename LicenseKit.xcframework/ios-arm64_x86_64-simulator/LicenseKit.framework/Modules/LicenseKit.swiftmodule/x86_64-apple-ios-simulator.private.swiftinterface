@@ -1,0 +1,743 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.1.2 (swiftlang-6.1.2.1.2 clang-1700.0.13.5)
+// swift-module-flags: -target x86_64-apple-ios16.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 6 -enforce-exclusivity=checked -O -enable-experimental-feature DebugDescriptionMacro -module-name LicenseKit
+// swift-module-flags-ignorable: -no-verify-emitted-module-interface -interface-compiler-version 6.1.2
+import CryptoKit
+import Foundation
+@_exported import LicenseKit
+import Swift
+import SwiftUI
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+public enum LicenseSource : Swift.CaseIterable, Swift.Identifiable, LicenseKit.LicenseModel {
+  case api
+  case binary
+  case file
+  case gumroad
+  case licensekit
+  case other(name: Swift.String)
+  public static func == (a: LicenseKit.LicenseSource, b: LicenseKit.LicenseSource) -> Swift.Bool
+  public typealias AllCases = [LicenseKit.LicenseSource]
+  public typealias ID = Swift.String
+  public func encode(to encoder: any Swift.Encoder) throws
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+  public init(from decoder: any Swift.Decoder) throws
+}
+extension LicenseKit.LicenseSource {
+  public var id: Swift.String {
+    get
+  }
+  public var name: Swift.String {
+    get
+  }
+}
+extension LicenseKit.LicenseSource {
+  public static var allCases: [LicenseKit.LicenseSource] {
+    get
+  }
+}
+extension Swift.Collection where Self.Element == LicenseKit.LicenseSource {
+  public static var all: [LicenseKit.LicenseSource] {
+    get
+  }
+}
+public protocol LicenseModel : Swift.Decodable, Swift.Encodable, Swift.Hashable, Swift.Sendable {
+}
+public struct LicenseTierGroup : Swift.Equatable, Swift.Identifiable, LicenseKit.LicenseModel {
+  public init(name: Swift.String, tiers: [LicenseKit.LicenseTier])
+  public var id: Swift.String {
+    get
+  }
+  public let name: Swift.String
+  public let tiers: [LicenseKit.LicenseTier]
+  public static func == (a: LicenseKit.LicenseTierGroup, b: LicenseKit.LicenseTierGroup) -> Swift.Bool
+  public typealias ID = Swift.String
+  public func encode(to encoder: any Swift.Encoder) throws
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct LicenseTier : Swift.Codable, Swift.Equatable, Swift.Hashable, Swift.Identifiable, Swift.Sendable {
+  public init(name: Swift.String, level: Swift.Int)
+  public init?(name: Swift.String)
+  public var id: Swift.String {
+    get
+  }
+  public let name: Swift.String
+  public let level: Swift.Int
+  public static func == (a: LicenseKit.LicenseTier, b: LicenseKit.LicenseTier) -> Swift.Bool
+  public typealias ID = Swift.String
+  public func encode(to encoder: any Swift.Encoder) throws
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+  public init(from decoder: any Swift.Decoder) throws
+}
+extension LicenseKit.LicenseTier {
+  public static var allPredefined: [LicenseKit.LicenseTier] {
+    get
+  }
+}
+extension Swift.Collection where Self.Element == LicenseKit.LicenseTier {
+  public static var allPredefined: [LicenseKit.LicenseTier] {
+    get
+  }
+}
+extension LicenseKit.LicenseTier {
+  public static var standard: LicenseKit.LicenseTier {
+    get
+  }
+  public static var trial: LicenseKit.LicenseTier {
+    get
+  }
+}
+extension LicenseKit.LicenseTier {
+  public static var basic: LicenseKit.LicenseTier {
+    get
+  }
+  public static var silver: LicenseKit.LicenseTier {
+    get
+  }
+  public static var gold: LicenseKit.LicenseTier {
+    get
+  }
+}
+extension LicenseKit.LicenseTier {
+  public static var small: LicenseKit.LicenseTier {
+    get
+  }
+  public static var medium: LicenseKit.LicenseTier {
+    get
+  }
+  public static var large: LicenseKit.LicenseTier {
+    get
+  }
+}
+extension LicenseKit.LicenseTier {
+  public static var indie: LicenseKit.LicenseTier {
+    get
+  }
+  public static var startup: LicenseKit.LicenseTier {
+    get
+  }
+  public static var business: LicenseKit.LicenseTier {
+    get
+  }
+  public static var enterprise: LicenseKit.LicenseTier {
+    get
+  }
+}
+extension LicenseKit.LicenseTierGroup {
+  public static var value: LicenseKit.LicenseTierGroup {
+    get
+  }
+  public static var size: LicenseKit.LicenseTierGroup {
+    get
+  }
+  public static var business: LicenseKit.LicenseTierGroup {
+    get
+  }
+}
+extension LicenseKit.LicenseTier {
+  public func matches(_ tier: LicenseKit.LicenseTier) -> Swift.Bool
+  public func meets(_ tier: LicenseKit.LicenseTier) -> Swift.Bool
+}
+public struct LicenseCustomer : Swift.Equatable, LicenseKit.LicenseModel {
+  public init(name: Swift.String, fullName: Swift.String? = nil, contact: Swift.String? = nil, address: Swift.String? = nil, email: Swift.String? = nil, phone: Swift.String? = nil, website: Swift.String? = nil, additionalInfo: [Swift.String : Swift.String] = [:])
+  public let name: Swift.String
+  public let fullName: Swift.String?
+  public let contact: Swift.String?
+  public let address: Swift.String?
+  public let email: Swift.String?
+  public let phone: Swift.String?
+  public let website: Swift.String?
+  public let additionalInfo: [Swift.String : Swift.String]
+  public static func == (a: LicenseKit.LicenseCustomer, b: LicenseKit.LicenseCustomer) -> Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+  public init(from decoder: any Swift.Decoder) throws
+}
+public protocol LicenseFeature {
+  var featureId: Swift.String? { get }
+  var unlockedByTier: LicenseKit.LicenseTier? { get }
+}
+extension LicenseKit.LicenseFeature {
+  public var isUnlockedByTier: LicenseKit.LicenseTier? {
+    get
+  }
+}
+public enum LicenseEnvironment : Swift.CaseIterable, Swift.Equatable, Swift.Identifiable, LicenseKit.LicenseModel {
+  case test
+  case staging
+  case production
+  case custom(name: Swift.String)
+  public static func == (a: LicenseKit.LicenseEnvironment, b: LicenseKit.LicenseEnvironment) -> Swift.Bool
+  public typealias AllCases = [LicenseKit.LicenseEnvironment]
+  public typealias ID = Swift.String
+  public func encode(to encoder: any Swift.Encoder) throws
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+  public init(from decoder: any Swift.Decoder) throws
+}
+extension LicenseKit.LicenseEnvironment {
+  public var id: Swift.String {
+    get
+  }
+  public var name: Swift.String {
+    get
+  }
+}
+extension LicenseKit.LicenseEnvironment {
+  public static var all: [LicenseKit.LicenseEnvironment] {
+    get
+  }
+  public static func newFunc(value: Swift.Bool)
+  public static var allCases: [LicenseKit.LicenseEnvironment] {
+    get
+  }
+}
+extension Swift.Collection where Self.Element == LicenseKit.LicenseEnvironment {
+  public static var all: [LicenseKit.LicenseEnvironment] {
+    get
+  }
+  public var isAll: Swift.Bool {
+    get
+  }
+}
+public enum LicensePlatform : Swift.CaseIterable, Swift.Equatable, Swift.Identifiable, LicenseKit.LicenseModel {
+  case iOS
+  case macOS
+  case tvOS
+  case watchOS
+  case visionOS
+  case custom(name: Swift.String)
+  public static func == (a: LicenseKit.LicensePlatform, b: LicenseKit.LicensePlatform) -> Swift.Bool
+  public typealias AllCases = [LicenseKit.LicensePlatform]
+  public typealias ID = Swift.String
+  public func encode(to encoder: any Swift.Encoder) throws
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+  public init(from decoder: any Swift.Decoder) throws
+}
+extension LicenseKit.LicensePlatform {
+  public var id: Swift.String {
+    get
+  }
+  public static var current: LicenseKit.LicensePlatform {
+    get
+  }
+  public var name: Swift.String {
+    get
+  }
+}
+extension LicenseKit.LicensePlatform {
+  public static var all: [LicenseKit.LicensePlatform] {
+    get
+  }
+  public static var allCases: [LicenseKit.LicensePlatform] {
+    get
+  }
+}
+extension Swift.Collection where Self.Element == LicenseKit.LicensePlatform {
+  public static var all: [LicenseKit.LicensePlatform] {
+    get
+  }
+}
+public enum LicenseServiceType : Swift.Identifiable, Swift.Sendable {
+  public typealias ApiConfiguration = LicenseKit.LicenseIntegrations.ApiConfiguration
+  case api(configuration: LicenseKit.LicenseServiceType.ApiConfiguration, cached: Swift.Bool = false, urlSession: Foundation.URLSession = .shared, licenseMapping: @Sendable (LicenseKit.License.Key, Foundation.Data) -> LicenseKit.License)
+  case binary(licenses: [LicenseKit.License])
+  indirect case cached(service: LicenseKit.LicenseServiceType)
+  case csvFile(fileName: Swift.String, fileExtension: Swift.String, bundle: Foundation.Bundle = .main, componentSeparator: Swift.Character = ",", licenseMapping: @Sendable ([Swift.String]) throws -> LicenseKit.License)
+  case csvFileUrl(_: Foundation.URL, componentSeparator: Swift.Character = ",", licenseMapping: @Sendable ([Swift.String]) throws -> LicenseKit.License)
+  case gumroad(productId: Swift.String, cached: Swift.Bool = false, urlSession: Foundation.URLSession = .shared, licenseMapping: @Sendable (LicenseKit.License.Key, LicenseKit.LicenseIntegrations.Gumroad.Purchase) -> LicenseKit.License)
+  case licenseFile(fileName: Swift.String, fileExtension: Swift.String, fileGenerator: LicenseKit.LicenseFileGenerator, fileBundle: Foundation.Bundle = .main)
+  case proxy(services: [LicenseKit.LicenseServiceType])
+  public typealias ID = Swift.String
+}
+extension LicenseKit.LicenseServiceType {
+  public var id: Swift.String {
+    get
+  }
+  public var name: Swift.String {
+    get
+  }
+}
+extension LicenseKit.LicenseIntegrations {
+  public struct ApiConfiguration : Swift.Sendable {
+    public init(url: @escaping LicenseKit.LicenseIntegrations.ApiConfiguration.UrlBuilder, httpMethod: @escaping LicenseKit.LicenseIntegrations.ApiConfiguration.HttpMethodBuilder = { _ in "GET" }, httpHeaders: @escaping LicenseKit.LicenseIntegrations.ApiConfiguration.HttpHeadersBuilder = { _ in [:] }, httpFormData: @escaping LicenseKit.LicenseIntegrations.ApiConfiguration.HttpFormDataBuilder = { _ in nil }, httpPostData: @escaping LicenseKit.LicenseIntegrations.ApiConfiguration.HttpPostDataBuilder = { _ in nil })
+    public typealias HttpHeadersBuilder = @Sendable (_ licenseKey: Swift.String) -> [Swift.String : Swift.String]
+    public typealias HttpMethodBuilder = @Sendable (_ licenseKey: Swift.String) -> Swift.String
+    public typealias HttpFormDataBuilder = @Sendable (_ licenseKey: Swift.String) -> [Swift.String : Swift.String]?
+    public typealias HttpPostDataBuilder = @Sendable (_ licenseKey: Swift.String) -> Foundation.Data?
+    public typealias UrlBuilder = @Sendable (_ licenseKey: Swift.String) -> Swift.String
+    public let url: LicenseKit.LicenseIntegrations.ApiConfiguration.UrlBuilder
+    public let httpMethod: LicenseKit.LicenseIntegrations.ApiConfiguration.HttpMethodBuilder
+    public let httpHeaders: LicenseKit.LicenseIntegrations.ApiConfiguration.HttpHeadersBuilder
+    public let httpFormData: LicenseKit.LicenseIntegrations.ApiConfiguration.HttpFormDataBuilder
+    public let httpPostData: LicenseKit.LicenseIntegrations.ApiConfiguration.HttpPostDataBuilder
+  }
+}
+extension LicenseKit.LicenseIntegrations.ApiConfiguration {
+  public static func standard(for url: @escaping LicenseKit.LicenseIntegrations.ApiConfiguration.UrlBuilder) -> LicenseKit.LicenseIntegrations.ApiConfiguration
+}
+final public class LicenseStore : @unchecked Swift.Sendable {
+  public init()
+  final public var license: LicenseKit.License? {
+    get
+  }
+  public static let shared: LicenseKit.LicenseStore
+  final public var hasLicense: Swift.Bool {
+    get
+  }
+  final public func removeLicense()
+  final public func storeLicense(_ license: LicenseKit.License)
+  @objc deinit
+}
+extension LicenseKit.License {
+  public static func current(in store: LicenseKit.LicenseStore) -> LicenseKit.License?
+}
+@_hasMissingDesignatedInitializers public class LicenseEngine {
+  convenience public init(licenseKey: Swift.String, productBundle: Foundation.Bundle = .main, licenseStore: LicenseKit.LicenseStore? = nil, licenseService: @escaping LicenseKit.LicenseEngine.ServiceBuilder) async throws
+  public typealias ServiceBuilder = (LicenseKit.License) throws -> LicenseKit.LicenseServiceType
+  final public let engineLicense: LicenseKit.License
+  final public let serviceType: LicenseKit.LicenseServiceType
+  @objc deinit
+}
+extension LicenseKit.LicenseEngine {
+  public func getLicense(withKey key: Swift.String) async throws -> LicenseKit.License
+}
+final public class LicenseFileGenerator : Swift.Sendable {
+  public init(privateKey: Swift.String)
+  @objc deinit
+}
+extension LicenseKit.LicenseFileGenerator {
+  public static func generateUniqueEncryptionKey() -> Swift.String
+}
+extension LicenseKit.LicenseFileGenerator {
+  final public func generateEncryptedFileContent(for license: LicenseKit.License) throws -> Swift.String
+  final public func decryptEncryptedFileContent(_ fileData: Swift.String) throws -> LicenseKit.License
+}
+extension LicenseKit.License {
+  public enum EncryptedFileError : Swift.String, Foundation.LocalizedError {
+    case invalidLicenseString
+    case invalidPayload
+    case invalidPrivateKey
+    case invalidSignatureData
+    case invalidSignature
+    case missingFile
+    public init?(rawValue: Swift.String)
+    public typealias RawValue = Swift.String
+    public var rawValue: Swift.String {
+      get
+    }
+  }
+}
+
+extension LicenseKit.License {
+  public var daysUntilExpiration: Swift.Int? {
+    get
+  }
+  public var hasExpired: Swift.Bool {
+    get
+  }
+  public func isExpiringWithinDays(_ days: Swift.Int) -> Swift.Bool
+}
+extension LicenseKit.License {
+  public static func validate(_ license: LicenseKit.License?, bundleId: Swift.String? = nil, date: Foundation.Date? = nil, platform: LicenseKit.LicensePlatform? = nil, environment: LicenseKit.LicenseEnvironment? = nil, productVersion: Swift.Double? = nil, additionalValidation: (LicenseKit.License) throws -> Swift.Void = { _ in }) throws
+}
+extension LicenseKit.License {
+  public func validate(bundleId: Swift.String? = nil, date: Foundation.Date? = nil, platform: LicenseKit.LicensePlatform? = nil, environment: LicenseKit.LicenseEnvironment? = nil, productVersion: Swift.Double? = nil) throws
+  public func validateBundle(_ bundle: Foundation.Bundle = .main) throws
+  public func validateBundleId(_ bundleId: Swift.String) throws
+  public func validateBundleId(_ bundleId: Swift.String, for licenseBundleId: Swift.String) -> Swift.Bool
+  public func validateEnvironment(_ environment: LicenseKit.LicenseEnvironment) throws
+  public func validateExpirationDate(_ date: Foundation.Date = .now) throws
+  public func validateExpirationProductVersion(_ productVersion: Swift.Double) throws
+  public func validateFeature(_ feature: any LicenseKit.LicenseFeature) throws
+  public func validateFeature(_ feature: any LicenseKit.LicenseFeature, orMeets tier: LicenseKit.LicenseTier) throws
+  public func validatePlatform() throws
+  public func validatePlatform(_ platform: LicenseKit.LicensePlatform) throws
+  public func validateTier(_ tier: LicenseKit.LicenseTier) throws
+}
+extension Foundation.Bundle {
+  public var licenseValidationId: Swift.String {
+    get
+  }
+}
+public struct LicenseIntegrations {
+}
+public struct License : Swift.Codable, Swift.Equatable, Swift.Hashable, Swift.Identifiable, Swift.Sendable {
+  public init(licenseKey: Swift.String, name: Swift.String? = nil, source: LicenseKit.LicenseSource? = nil, customer: LicenseKit.LicenseCustomer? = nil, tier: LicenseKit.LicenseTier = .standard, activationDate: Foundation.Date? = nil, billingDate: Foundation.Date? = nil, renewalDate: Foundation.Date? = nil, expirationDate: Foundation.Date? = nil, expirationProductVersion: Swift.Double? = nil, allowsExpiration: Swift.Bool = false, renewalPrice: Swift.Double? = nil, bundleIds: [Swift.String] = [], platforms: [LicenseKit.LicensePlatform] = .all, environments: [LicenseKit.LicenseEnvironment] = .all, features: [any LicenseKit.LicenseFeature] = [], featureIds: [Swift.String] = [], additionalInfo: [Swift.String : Swift.String] = [:])
+  public typealias Key = Swift.String
+  public var id: Swift.String {
+    get
+  }
+  public var bundleIds: [Swift.String]
+  public var customer: LicenseKit.LicenseCustomer?
+  public var activationDate: Foundation.Date?
+  public var billingDate: Foundation.Date?
+  public var renewalDate: Foundation.Date?
+  public var expirationDate: Foundation.Date?
+  public var expirationProductVersion: Swift.Double?
+  public var featureIds: [Swift.String]
+  public var licenseKey: Swift.String
+  public var name: Swift.String?
+  public var platforms: [LicenseKit.LicensePlatform]
+  public var environments: [LicenseKit.LicenseEnvironment]
+  public var renewalPrice: Swift.Double?
+  public var source: LicenseKit.LicenseSource?
+  public var tier: LicenseKit.LicenseTier
+  public var additionalInfo: [Swift.String : Swift.String]
+  public static func == (a: LicenseKit.License, b: LicenseKit.License) -> Swift.Bool
+  public typealias ID = Swift.String
+  public func encode(to encoder: any Swift.Encoder) throws
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+  public init(from decoder: any Swift.Decoder) throws
+}
+extension LicenseKit.License {
+  public func hasFeature(_ feature: any LicenseKit.LicenseFeature) -> Swift.Bool
+  public func matches(_ query: Swift.String) -> Swift.Bool
+}
+extension Swift.Collection where Self.Element == LicenseKit.License {
+  public func matching(_ query: Swift.String) -> [Self.Element]
+  public func sorted() -> [Self.Element]
+}
+
+extension LicenseKit.LicenseApp {
+  @_Concurrency.MainActor @preconcurrency public struct LicenseFileDecryptionScreen : SwiftUICore.View {
+    @_Concurrency.MainActor @preconcurrency public init(fileGenerator: LicenseKit.LicenseFileGenerator)
+    @_Concurrency.MainActor @preconcurrency public var body: some SwiftUICore.View {
+      get
+    }
+    public typealias Body = @_opaqueReturnTypeOf("$s10LicenseKit0A3AppV0A20FileDecryptionScreenV4bodyQrvp", 0) __
+  }
+}
+
+@_Concurrency.MainActor @preconcurrency public struct LicenseManagerApp<Icon> : SwiftUICore.View where Icon : SwiftUICore.View {
+  @_Concurrency.MainActor @preconcurrency public init(title: SwiftUICore.LocalizedStringKey = "License Manager", icon: Icon, licenses: [LicenseKit.License] = [], fileGenerator: LicenseKit.LicenseFileGenerator? = nil, services: [LicenseKit.LicenseServiceType] = [])
+  @_Concurrency.MainActor @preconcurrency public var body: some SwiftUICore.View {
+    get
+  }
+  public typealias Body = @_opaqueReturnTypeOf("$s10LicenseKit0A10ManagerAppV4bodyQrvp", 0) __<Icon>
+}
+extension LicenseKit.License {
+  @available(*, deprecated, renamed: "LicenseCustomer")
+  public typealias Customer = LicenseKit.LicenseCustomer
+  @available(*, deprecated, renamed: "LicenseEnvironment")
+  public typealias Environment = LicenseKit.LicenseEnvironment
+  @available(*, deprecated, renamed: "LicenseFeature")
+  public typealias Feature = LicenseKit.LicenseFeature
+  @available(*, deprecated, renamed: "LicensePlatform")
+  public typealias Platform = LicenseKit.LicensePlatform
+  @available(*, deprecated, renamed: "LicenseSource")
+  public typealias Source = LicenseKit.LicenseSource
+  @available(*, deprecated, renamed: "LicenseTier")
+  public typealias Tier = LicenseKit.LicenseTier
+}
+extension LicenseKit.LicenseServiceType {
+  @available(*, deprecated, renamed: "licenseFile")
+  public static func encryptedFile(fileName: Swift.String, fileExtension: Swift.String, fileGenerator: LicenseKit.LicenseFileGenerator, fileBundle: Foundation.Bundle = .main) -> LicenseKit.LicenseServiceType
+}
+extension LicenseKit.LicenseApp {
+  @_Concurrency.MainActor @preconcurrency public struct LicenseKeyGeneratorScreen : SwiftUICore.View {
+    @_Concurrency.MainActor @preconcurrency public init()
+    @_Concurrency.MainActor @preconcurrency public var body: some SwiftUICore.View {
+      get
+    }
+    public typealias Body = @_opaqueReturnTypeOf("$s10LicenseKit0A3AppV0A18KeyGeneratorScreenV4bodyQrvp", 0) __
+  }
+}
+extension Foundation.UUID {
+  public static func generate() -> Foundation.UUID
+}
+
+extension LicenseKit.LicenseApp {
+  @_Concurrency.MainActor @preconcurrency public struct LicenseInfoView : SwiftUICore.View {
+    @_Concurrency.MainActor @preconcurrency public init(license: LicenseKit.License, fileGenerator generator: LicenseKit.LicenseFileGenerator? = nil)
+    @_Concurrency.MainActor @preconcurrency public var body: some SwiftUICore.View {
+      get
+    }
+    @_Concurrency.MainActor @preconcurrency public var bodyContent: some SwiftUICore.View {
+      get
+    }
+    public typealias Body = @_opaqueReturnTypeOf("$s10LicenseKit0A3AppV0A8InfoViewV4bodyQrvp", 0) __
+  }
+}
+
+extension LicenseKit.LicenseApp {
+  @_Concurrency.MainActor @preconcurrency public struct LicenseInfoSection : SwiftUICore.View {
+    @_Concurrency.MainActor @preconcurrency public var body: some SwiftUICore.View {
+      get
+    }
+    public typealias Body = @_opaqueReturnTypeOf("$s10LicenseKit0A3AppV0A11InfoSectionV4bodyQrvp", 0) __
+  }
+}
+
+extension LicenseKit.LicenseApp {
+  @_Concurrency.MainActor @preconcurrency public struct LicenseInfoRow : SwiftUICore.View {
+    @_Concurrency.MainActor @preconcurrency public init(_ title: SwiftUICore.LocalizedStringKey, _ value: Swift.String?, _ color: SwiftUICore.Color? = nil)
+    @_Concurrency.MainActor @preconcurrency public init(_ title: SwiftUICore.LocalizedStringKey, _ values: [Swift.String]?, _ color: SwiftUICore.Color? = nil)
+    @_Concurrency.MainActor @preconcurrency public init(_ title: SwiftUICore.LocalizedStringKey, _ values: [Swift.String : Swift.String]?, _ color: SwiftUICore.Color? = nil)
+    @_Concurrency.MainActor @preconcurrency public init(_ title: SwiftUICore.LocalizedStringKey, _ value: Foundation.Date?, _ color: SwiftUICore.Color? = nil)
+    @_Concurrency.MainActor @preconcurrency public var body: some SwiftUICore.View {
+      get
+    }
+    public typealias Body = @_opaqueReturnTypeOf("$s10LicenseKit0A3AppV0A7InfoRowV4bodyQrvp", 0) __
+  }
+  @_Concurrency.MainActor @preconcurrency public struct LicenseInfoRowView : SwiftUICore.View {
+    @_Concurrency.MainActor @preconcurrency public init(item: LicenseKit.LicenseApp.LicenseInfoRow)
+    @_Concurrency.MainActor @preconcurrency public var body: some SwiftUICore.View {
+      get
+    }
+    public typealias Body = @_opaqueReturnTypeOf("$s10LicenseKit0A3AppV0A11InfoRowViewV4bodyQrvp", 0) __
+  }
+}
+
+extension LicenseKit.LicenseApp {
+  @_Concurrency.MainActor @preconcurrency public struct LicenseServiceScreen : SwiftUICore.View {
+    @_Concurrency.MainActor @preconcurrency public init(service: LicenseKit.LicenseServiceType)
+    @_Concurrency.MainActor @preconcurrency public var body: some SwiftUICore.View {
+      get
+    }
+    public typealias Body = @_opaqueReturnTypeOf("$s10LicenseKit0A3AppV0A13ServiceScreenV4bodyQrvp", 0) __
+  }
+}
+
+public struct LicenseApp {
+}
+extension LicenseKit.License {
+  public enum ValidationError : Swift.Error, Swift.Equatable, Foundation.LocalizedError {
+    case invalidBundle(_: Swift.String)
+    case invalidEnvironment(LicenseKit.LicenseEnvironment)
+    case invalidFileName(_: Swift.String, fileExtension: Swift.String, inBundle: Foundation.Bundle)
+    case invalidLicenseKey(_: Swift.String, message: Swift.String? = nil)
+    case invalidPlatform(LicenseKit.LicensePlatform)
+    case invalidProductVersion(Swift.Double)
+    case invalidProxy
+    case invalidUrl(_: Swift.String)
+    case licenseExpired(_: Foundation.Date)
+    case licenseFeatureRequired(_: Swift.String)
+    case licenseFeatureOrTierRequired(_: Swift.String, LicenseKit.LicenseTier)
+    case licenseMissing
+    case licenseTierRequired(_: LicenseKit.LicenseTier)
+    case tooManyLicenses(count: Swift.Int, allowed: Swift.Int)
+    case other(reason: Swift.String)
+    public static func == (a: LicenseKit.License.ValidationError, b: LicenseKit.License.ValidationError) -> Swift.Bool
+  }
+}
+extension LicenseKit.License.ValidationError {
+  public var displayName: Swift.String {
+    get
+  }
+  public var errorDescription: Swift.String? {
+    get
+  }
+  public var isExpired: Swift.Bool {
+    get
+  }
+  public var isInvalidBundle: Swift.Bool {
+    get
+  }
+  public var isInvalidEnvironment: Swift.Bool {
+    get
+  }
+  public var isInvalidLicenseKey: Swift.Bool {
+    get
+  }
+  public var isInvalidPlatform: Swift.Bool {
+    get
+  }
+  public var isInvalidProductVersion: Swift.Bool {
+    get
+  }
+  public var islicenseFeatureRequired: Swift.Bool {
+    get
+  }
+  public var isLicenseTierRequired: LicenseKit.LicenseTier? {
+    get
+  }
+}
+extension Foundation.Date {
+  public init(licenseYear year: Swift.Int, month: Swift.Int, day: Swift.Int, hour: Swift.Int = 0, minute: Swift.Int = 0, second: Swift.Int = 0, calendar: Foundation.Calendar = .current)
+}
+extension LicenseKit.LicenseIntegrations {
+  public struct Gumroad {
+  }
+}
+extension LicenseKit.LicenseIntegrations.Gumroad {
+  public struct Response : Swift.Codable {
+    public let uses: Swift.Int?
+    public let purchase: LicenseKit.LicenseIntegrations.Gumroad.Purchase?
+    public let success: Swift.Bool
+    public let message: Swift.String?
+    public func encode(to encoder: any Swift.Encoder) throws
+    public init(from decoder: any Swift.Decoder) throws
+  }
+  public struct Purchase : Swift.Codable {
+    public var license_key: Swift.String {
+      get
+    }
+    public var seller_id: Swift.String? {
+      get
+    }
+    public var product_id: Swift.String? {
+      get
+    }
+    public var product_name: Swift.String? {
+      get
+    }
+    public var permalink: Swift.String? {
+      get
+    }
+    public var product_permalink: Swift.String? {
+      get
+    }
+    public var short_product_id: Swift.String? {
+      get
+    }
+    public var email: Swift.String? {
+      get
+    }
+    public var price: Swift.Double? {
+      get
+    }
+    public var gumroad_fee: Swift.Double? {
+      get
+    }
+    public var currency: Swift.String? {
+      get
+    }
+    public var quantity: Swift.Int? {
+      get
+    }
+    public var discover_fee_charged: Swift.Bool? {
+      get
+    }
+    public var can_contact: Swift.Bool? {
+      get
+    }
+    public var referrer: Swift.String? {
+      get
+    }
+    public var card: LicenseKit.LicenseIntegrations.Gumroad.PurchaseCard? {
+      get
+    }
+    public var order_number: Swift.Int? {
+      get
+    }
+    public var sale_id: Swift.String? {
+      get
+    }
+    public var sale_timestamp: Swift.String? {
+      get
+    }
+    public var full_name: Swift.String? {
+      get
+    }
+    public var purchaser_id: Swift.String? {
+      get
+    }
+    public var ip_country: Swift.String? {
+      get
+    }
+    public var is_gift_receiver_purchase: Swift.Bool? {
+      get
+    }
+    public var is_multiseat_license: Swift.Bool? {
+      get
+    }
+    public var refunded: Swift.Bool? {
+      get
+    }
+    public var disputed: Swift.Bool? {
+      get
+    }
+    public var dispute_won: Swift.Bool? {
+      get
+    }
+    public var id: Swift.String? {
+      get
+    }
+    public var created_at: Swift.String? {
+      get
+    }
+    public var variants: Swift.String? {
+      get
+    }
+    public var chargebacked: Swift.Bool? {
+      get
+    }
+    public var subscription_ended_at: Swift.String? {
+      get
+    }
+    public var subscription_cancelled_at: Swift.String? {
+      get
+    }
+    public var subscription_failed_at: Swift.String? {
+      get
+    }
+    public var custom_fields: [Swift.String]? {
+      get
+    }
+    public func encode(to encoder: any Swift.Encoder) throws
+    public init(from decoder: any Swift.Decoder) throws
+  }
+  public struct PurchaseCard : Swift.Codable {
+    public let visual: Swift.String?
+    public let type: Swift.String?
+    public let bin: Swift.String?
+    public let expiry_month: Swift.Int?
+    public let expiry_year: Swift.Int?
+    public func encode(to encoder: any Swift.Encoder) throws
+    public init(from decoder: any Swift.Decoder) throws
+  }
+}
+extension LicenseKit.LicenseIntegrations.Gumroad.Purchase {
+  public var license: LicenseKit.License {
+    get
+  }
+  public var customer: LicenseKit.LicenseCustomer? {
+    get
+  }
+  public var customFields: [Swift.String : Swift.String]? {
+    get
+  }
+  public var activationDate: Foundation.Date? {
+    get
+  }
+  public var expirationDate: Foundation.Date? {
+    get
+  }
+  public var tier: LicenseKit.LicenseTier {
+    get
+  }
+}
+extension LicenseKit.License.EncryptedFileError : Swift.Equatable {}
+extension LicenseKit.License.EncryptedFileError : Swift.Hashable {}
+extension LicenseKit.License.EncryptedFileError : Swift.RawRepresentable {}
+extension LicenseKit.LicenseManagerApp : Swift.Sendable {}
+extension LicenseKit.LicenseApp.LicenseFileDecryptionScreen : Swift.Sendable {}
+extension LicenseKit.LicenseApp.LicenseKeyGeneratorScreen : Swift.Sendable {}
+extension LicenseKit.LicenseApp.LicenseInfoView : Swift.Sendable {}
+extension LicenseKit.LicenseApp.LicenseInfoSection : Swift.Sendable {}
+extension LicenseKit.LicenseApp.LicenseInfoRow : Swift.Sendable {}
+extension LicenseKit.LicenseApp.LicenseInfoRowView : Swift.Sendable {}
+extension LicenseKit.LicenseApp.LicenseServiceScreen : Swift.Sendable {}
